@@ -1,0 +1,57 @@
+buildscript {
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+group = GROUP
+version = VERSION_NAME
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation project(path: ':cache')
+    implementation libraries.coroutinesCore
+
+    compileOnly libraries.jsr305
+
+    testImplementation libraries.mockito
+    testImplementation libraries.mockitoInline
+    testImplementation libraries.mockitoKotlin
+    testImplementation libraries.assertJ
+    testImplementation libraries.junit
+    testImplementation libraries.coroutinesTest
+    testCompileOnly libraries.jsr305
+}
+
+apply from: rootProject.file("gradle/maven-push.gradle")
+apply from: rootProject.file("gradle/checkstyle.gradle")
+apply from: rootProject.file("gradle/pmd.gradle")
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+repositories {
+    mavenCentral()
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}

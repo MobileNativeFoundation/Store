@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+group = GROUP
+version = VERSION_NAME
+
+dependencies {
+    compileOnly libraries.jsr305
+}
+
+buildscript {
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+apply from: rootProject.file("gradle/maven-push.gradle")
