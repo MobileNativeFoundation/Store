@@ -1,0 +1,94 @@
+apply from: 'buildsystem/dependencies.gradle'
+
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext.kotlin_version = '1.3.31'
+    repositories {
+        mavenCentral()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+
+        maven {
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+        }
+
+        jcenter()
+
+        google()
+    }
+
+    rootProject.ext.versions = [
+        kotlin: '1.3.21'
+    ]
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0-beta02'
+        classpath 'com.google.gms:google-services:3.0.0'
+        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.5.6'
+//        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.11'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.ext.versions.kotlin"
+        classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.17'
+    }
+}
+
+allprojects {
+    buildscript {}
+
+    repositories {
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+        mavenCentral()
+        jcenter()
+    }
+
+
+    // Workaround to prevent Gradle from stealing focus from other apps during tests run/etc.
+    // https://gist.github.com/artem-zinnatullin/4c250e04636e25797165
+    tasks.withType(JavaForkOptions) {
+        jvmArgs '-Djava.awt.headless=true'
+    }
+}
+
+ext {
+    // POM file
+    GROUP = "com.nytimes.android"
+    VERSION_NAME = "3.1.1-SNAPSHOT"
+    POM_PACKAGING = "pom"
+    POM_DESCRIPTION = "Store3 is built with RxJava2"
+
+    POM_URL = "https://github.com/nytimes/Store/"
+    POM_SCM_URL = "https://github.com/nytimes/Store/"
+    POM_SCM_CONNECTION = "scm:git:https://github.com/nytm/Store.git"
+    POM_SCM_DEV_CONNECTION = "scm:git:git@github.com:nytm/Store.git"
+
+    POM_LICENCE_NAME = "Apache License"
+    POM_LICENCE_URL = "http://www.apache.org/licenses/"
+    POM_LICENCE_DIST = "repo"
+
+    POM_DEVELOPER_ID = "nytimesandroid"
+    POM_DEVELOPER_NAME = "New York Times"
+}
+
+
+// From command line use: -PdisablePreDex to disable it: primarily for jenkins
+project.ext.preDexLibs = !project.hasProperty('disablePreDex')
+
+subprojects {
+    project.plugins.whenPluginAdded { plugin ->
+        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        }
+    }
+//    project.plugins.apply('net.ltgt.errorprone')
+
+//    configurations.errorprone {
+//        resolutionStrategy.force 'com.google.errorprone:error_prone_core:2.0.15'
+//    }
+}
+
+task gitHooksInit (type:Exec) {
+    workingDir "$projectDir"
+    commandLine './init-git-hooks'
+}

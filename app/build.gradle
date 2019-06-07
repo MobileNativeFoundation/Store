@@ -1,0 +1,76 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.getkeepsafe.dexcount'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    defaultConfig {
+        applicationId "com.nytimes.android.store.sample"
+        minSdkVersion 19
+        compileSdkVersion versions.compileSdk
+        targetSdkVersion versions.targetSdk
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+        disable 'InvalidPackage'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+
+    testImplementation libraries.junit
+    testImplementation libraries.mockito
+    testImplementation libraries.assertJ
+    testImplementation libraries.junit
+    testImplementation libraries.coroutinesTest
+    testCompileOnly libraries.jsr305
+    implementation libraries.supportRecyclerView
+    implementation libraries.supportAppCompat
+    implementation libraries.supportCardView
+    implementation libraries.supportDesign
+    implementation libraries.retrofit
+
+    implementation libraries.picasso
+    implementation libraries.guava
+    implementation libraries.moshi
+    implementation libraries.retrofitMoshiConverter
+    kapt(libraries.moshiCodegen)
+    implementation project(':store')
+    implementation project(':cache')
+    implementation project(':middleware')
+    implementation project(':middleware-moshi')
+    implementation project(':filesystem')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
+
+    implementation libraries.coroutinesCore
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
+    implementation libraries.coroutinesAndroid
+}
+repositories {
+    mavenCentral()
+}
+
+configurations.all {
+    resolutionStrategy.force 'com.android.support:support-v4:26.1.0'
+}
