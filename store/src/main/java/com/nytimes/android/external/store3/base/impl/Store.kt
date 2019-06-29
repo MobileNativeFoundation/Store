@@ -2,6 +2,8 @@ package com.nytimes.android.external.store3.base.impl
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 /**
  * a [StoreBuilder]
@@ -43,7 +45,8 @@ interface Store<T, V> {
      *
      */
     @FlowPreview
-    fun stream(key: V): Flow<T>
+    fun stream(key: V): Flow<T> =
+            stream().filter { it.first == key }.map { (_, value) -> value }
 
     /**
      * Clear the memory cache of all entries

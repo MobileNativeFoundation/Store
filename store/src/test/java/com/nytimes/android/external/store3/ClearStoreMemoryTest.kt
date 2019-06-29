@@ -1,25 +1,15 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.wrappers.Store
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 
 class ClearStoreMemoryTest {
 
     private var networkCalls = 0
-    private lateinit var store: Store<Int, BarCode>
-
-    @Before
-    fun setUp() {
-        networkCalls = 0
-        store = StoreBuilder.barcode<Int>()
-                .fetcher { networkCalls++ }
-                .open()
-    }
+    private val store = Store<Int, BarCode> { networkCalls++ }
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {

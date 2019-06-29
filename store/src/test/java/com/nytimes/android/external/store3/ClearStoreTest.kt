@@ -3,28 +3,18 @@ package com.nytimes.android.external.store3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.wrappers.addPersister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.verify
 import java.util.concurrent.atomic.AtomicInteger
 
 class ClearStoreTest {
-    val persister: ClearingPersister = mock()
-    private lateinit var networkCalls: AtomicInteger
-    private lateinit var store: Store<Int, BarCode>
-
-    @Before
-    fun setUp() {
-        networkCalls = AtomicInteger(0)
-        store = StoreBuilder.barcode<Int>()
-                .fetcher { networkCalls.incrementAndGet() }
-                .persister(persister)
-                .open()
-    }
+    private val persister: ClearingPersister = mock()
+    private val networkCalls = AtomicInteger(0)
+    private val store = Store<Int, BarCode> { networkCalls.incrementAndGet() }.addPersister(persister)
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {
@@ -45,7 +35,7 @@ class ClearStoreTest {
         // after clearing the memory another call should be made
         store.clear(barcode)
         store.get(barcode)
-        verify<ClearingPersister>(persister).clear(barcode)
+        verify(persister).clear(barcode)
         assertThat(networkCalls.toInt()).isEqualTo(2)
     }
 
