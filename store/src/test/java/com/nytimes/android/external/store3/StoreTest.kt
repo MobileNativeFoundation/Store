@@ -5,7 +5,10 @@ import com.nytimes.android.external.cache3.CacheBuilder
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.impl.StalePolicy
+import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.wrappers.addCache
+import com.nytimes.android.external.store3.base.wrappers.addPersister
 import com.nytimes.android.external.store3.util.NoopPersister
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -23,12 +26,7 @@ class StoreTest {
 
     @Test
     fun testSimple() = runBlocking<Unit> {
-
-        val simpleStore = StoreBuilder.barcode<String>()
-                .persister(persister)
-                .fetcher(fetcher)
-                .open()
-
+        val simpleStore = Store(fetcher).addPersister(persister)
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -50,11 +48,7 @@ class StoreTest {
 
     @Test
     fun testDoubleTap() = runBlocking<Unit> {
-
-        val simpleStore = StoreBuilder.barcode<String>()
-                .persister(persister)
-                .fetcher(fetcher)
-                .open()
+        val simpleStore = Store(fetcher).addPersister(persister)
 
         whenever(fetcher.fetch(barCode))
                 .thenAnswer {
@@ -83,7 +77,7 @@ class StoreTest {
     @Test
     fun testSubclass() = runBlocking<Unit> {
 
-        val simpleStore = SampleStore(fetcher, persister)
+        val simpleStore = Store(fetcher).addPersister(persister)
         simpleStore.clearMemory()
 
         whenever(fetcher.fetch(barCode))
@@ -103,10 +97,8 @@ class StoreTest {
 
     @Test
     fun testNoopAndDefault() = runBlocking<Unit> {
-
         val persister = spy(NoopPersister.create<String, BarCode>())
-        val simpleStore = SampleStore(fetcher, persister)
-
+        val simpleStore = Store(fetcher).addPersister(persister).addCache()
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -143,11 +135,7 @@ class StoreTest {
 
     @Test
     fun testFreshUsesOnlyNetwork() = runBlocking<Unit> {
-        val simpleStore = StoreBuilder.barcode<String>()
-                .persister(persister)
-                .fetcher(fetcher)
-                .networkBeforeStale()
-                .open()
+        val simpleStore = Store(fetcher).addPersister(persister, StalePolicy.NETWORK_BEFORE_STALE)
 
         whenever(fetcher.fetch(barCode)) doThrow RuntimeException(ERROR)
 

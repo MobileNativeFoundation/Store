@@ -5,7 +5,8 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.wrappers.addPersister
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.first
@@ -24,10 +25,7 @@ class StreamTest {
 
     private val barCode = BarCode("key", "value")
 
-    private val store = StoreBuilder.barcode<String>()
-            .persister(persister)
-            .fetcher(fetcher)
-            .open()
+    private val store = Store(fetcher).addPersister(persister)
 
     @Before
     fun setUp() = runBlocking<Unit> {

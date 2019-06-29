@@ -2,10 +2,9 @@ package com.nytimes.android.external.store3.base.impl
 
 
 import com.nytimes.android.external.store3.base.*
+import com.nytimes.android.external.store3.base.wrappers.*
 import com.nytimes.android.external.store3.util.KeyParser
 import com.nytimes.android.external.store3.util.NoKeyParser
-import com.nytimes.android.external.store3.util.NoopParserFunc
-import com.nytimes.android.external.store3.util.NoopPersister
 import java.util.*
 
 
@@ -87,19 +86,17 @@ class RealStoreBuilder<Raw, Parsed, Key> {
     }
 
     fun open(): Store<Parsed, Key> {
-        if (persister == null) {
-            persister = NoopPersister.create(memoryPolicy)
-        }
+        var store = Store(fetcher!!)
 
-        if (parsers.isEmpty()) {
-            parser(NoopParserFunc())
+        persister?.let {
+            store = store.addPersister(it, stalePolicy)
         }
 
         val multiParser = MultiParser<Key, Raw, Parsed>(parsers)
 
-        val realInternalStore: RealInternalStore<Raw, Parsed, Key> = RealInternalStore(fetcher!!, persister!!, multiParser, memoryPolicy, stalePolicy)
-
-        return RealStore<Parsed, Key>(realInternalStore)
+        return store.addParser(multiParser)
+                .addCache(memoryPolicy)
+                .addInflight(memoryPolicy)
     }
 
     companion object {

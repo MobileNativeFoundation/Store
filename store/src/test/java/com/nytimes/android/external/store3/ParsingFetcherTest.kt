@@ -7,7 +7,8 @@ import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.ParsingFetcher
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.wrappers.addPersister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -23,10 +24,8 @@ class ParsingFetcherTest {
 
     @Test
     fun testPersistFetcher() = runBlocking<Unit> {
-        val simpleStore = StoreBuilder.barcode<String>()
-                .fetcher(ParsingFetcher.from(fetcher, parser))
-                .persister(persister)
-                .open()
+        val simpleStore = Store(ParsingFetcher.from(fetcher, parser))
+                .addPersister(persister)
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(RAW_DATA)
@@ -51,7 +50,7 @@ class ParsingFetcherTest {
     }
 
     companion object {
-        internal val RAW_DATA = "Test data."
-        internal val PARSED = "DATA PARSED"
+        private const val RAW_DATA = "Test data."
+        private const val PARSED = "DATA PARSED"
     }
 }
