@@ -1,5 +1,5 @@
 ![FriendlyRepo Logo](https://raw.githubusercontent.com/friendlyrobotnyc/FriendlyRepo/feature/coroutines/Images/friendly_robot_icon.png) 
-# Core (Coroutines backed Store) [![CircleCI](https://circleci.com/gh/friendlyrobotnyc/FriendlyRepo.svg?style=svg)](https://circleci.com/gh/friendlyrobotnyc/FriendlyRepo)
+# Core (Coroutines backed Store) [![CircleCI](https://circleci.com/gh/friendlyrobotnyc/Core.svg?style=svg)](https://circleci.com/gh/friendlyrobotnyc/Core)
 
 Core is a Kotlin library for effortless data loading.
 
