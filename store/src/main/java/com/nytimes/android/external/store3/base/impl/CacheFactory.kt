@@ -2,12 +2,14 @@ package com.nytimes.android.external.store3.base.impl
 
 import com.nytimes.android.external.cache3.Cache
 import com.nytimes.android.external.cache3.CacheBuilder
+import com.nytimes.android.external.cache3.CacheLoader
+import com.nytimes.android.external.cache3.LoadingCache
 import java.util.concurrent.TimeUnit
 
 object CacheFactory {
 
-    internal fun <Key, Parsed> createCache(memoryPolicy: MemoryPolicy?): Cache<Key, Parsed> {
-        return createBaseCache(memoryPolicy)
+    internal fun <Key, Parsed> createCache(memoryPolicy: MemoryPolicy?, cacheLoader: CacheLoader<Key, Parsed>): LoadingCache<Key, Parsed> {
+        return createBaseCache(memoryPolicy, cacheLoader)
     }
 
     internal fun <Key, Parsed> createInflighter(memoryPolicy: MemoryPolicy?): Cache<Key, Parsed> {
@@ -38,26 +40,27 @@ object CacheFactory {
     }
 
 
-    private fun <Key, Value> createBaseCache(memoryPolicy: MemoryPolicy?): Cache<Key, Value> {
+    private fun <Key, Value> createBaseCache(memoryPolicy: MemoryPolicy?,
+                                             cacheLoader: CacheLoader<Key,Value>): LoadingCache<Key, Value> {
         return if (memoryPolicy == null) {
             CacheBuilder
                     .newBuilder()
                     .maximumSize(StoreDefaults.cacheSize)
                     .expireAfterWrite(StoreDefaults.cacheTTL, StoreDefaults.cacheTTLTimeUnit)
-                    .build()
+                    .build(cacheLoader)
         } else {
             if (memoryPolicy.expireAfterAccess == MemoryPolicy.DEFAULT_POLICY) {
                 CacheBuilder
                         .newBuilder()
                         .maximumSize(memoryPolicy.maxSize)
                         .expireAfterWrite(memoryPolicy.expireAfterWrite, memoryPolicy.expireAfterTimeUnit)
-                        .build()
+                        .build(cacheLoader)
             } else {
                 CacheBuilder
                         .newBuilder()
                         .maximumSize(memoryPolicy.maxSize)
                         .expireAfterAccess(memoryPolicy.expireAfterAccess, memoryPolicy.expireAfterTimeUnit)
-                        .build()
+                        .build(cacheLoader)
             }
         }
     }
