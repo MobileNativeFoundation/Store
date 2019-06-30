@@ -11,7 +11,7 @@ interface Persister<Raw, Key> : DiskRead<Raw, Key>, DiskWrite<Raw, Key>, BasePer
     /**
      * @param key to use to get data from persister
      * If data is not available implementer needs to
-     * either return Observable.empty or throw an exception
+     * either return null or throw an exception
      */
     override suspend fun read(key: Key): Raw?
 

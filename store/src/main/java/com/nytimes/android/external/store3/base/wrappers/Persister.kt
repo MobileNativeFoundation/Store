@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 fun <V, K> Store<V, K>.addPersister(
         persister: Persister<V, K>,
@@ -24,21 +23,18 @@ internal class PersisterStore<V, K>(
     private val refreshOnStaleScope = CoroutineScope(SupervisorJob())
 
     override suspend fun get(key: K): V {
-        val cachedValue = runCatching { persister.read(key) }.getOrNull()
-        return if (cachedValue != null) {
-            if (StoreUtil.persisterIsStale<Any, K>(key, persister)) {
-                if (stalePolicy == StalePolicy.REFRESH_ON_STALE) {
-                    refreshOnStaleScope.launch {
-                        runCatching { fresh(key) }
-                    }
-                    cachedValue
-                } else {
-                    runCatching { fresh(key) }.getOrDefault(cachedValue)
+        return try {
+            val cachedValue = persister.read(key)!!
+            if (StoreUtil.persisterIsStale<Any, K>(key, persister)
+                    && stalePolicy == StalePolicy.REFRESH_ON_STALE) {
+                try {
+                    fresh(key)
+                } catch (e: Exception) {
+                    //do nothing
                 }
-            } else {
-                cachedValue
             }
-        } else {
+            cachedValue
+        } catch (e: Exception) {
             val newValue = wrappedStore.get(key)
             persister.write(key, newValue)
             return persister.read(key)!!
@@ -48,7 +44,7 @@ internal class PersisterStore<V, K>(
     override suspend fun fresh(key: K): V {
         val newValue = wrappedStore.fresh(key)
         persister.write(key, newValue)
-        return newValue
+        return persister.read(key)!!
     }
 
     @FlowPreview
