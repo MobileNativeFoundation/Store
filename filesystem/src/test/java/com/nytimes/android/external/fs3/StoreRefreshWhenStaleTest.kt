@@ -35,14 +35,13 @@ class StoreRefreshWhenStaleTest {
                 .thenReturn(disk1)  //get should return from disk
         whenever(persister.getRecordState(barCode))
                 .thenReturn(RecordState.STALE)
-                .thenReturn(RecordState.FRESH)
 
         whenever(persister.write(barCode, network1))
                 .thenReturn(true)
 
         store.get(barCode)
         verify(fetcher, times(1)).fetch(barCode)
-        verify(persister, times(2)).getRecordState(barCode)
+        verify(persister, times(1)).getRecordState(barCode)
         verify(persister, times(1)).write(barCode, network1)
         verify(persister, times(2)).read(barCode) //reads from disk a second time when backfilling
     }
