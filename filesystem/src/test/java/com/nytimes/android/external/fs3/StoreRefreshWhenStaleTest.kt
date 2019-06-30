@@ -5,7 +5,11 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.RecordState
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.StoreBuilder
+import com.nytimes.android.external.store3.base.impl.StalePolicy
+import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.wrappers.addPersister
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import org.assertj.core.api.Assertions.assertThat
@@ -21,11 +25,8 @@ class StoreRefreshWhenStaleTest {
     private val disk2: BufferedSource = mock()
 
     private val barCode = BarCode("key", "value")
-    private val store = StoreBuilder.barcode<BufferedSource>()
-            .fetcher(fetcher)
-            .persister(persister)
-            .refreshOnStale()
-            .open()
+    private val store = Store(fetcher)
+            .addPersister(persister, StalePolicy.REFRESH_ON_STALE, CoroutineScope(Dispatchers.Unconfined))
 
     @Test
     fun diskWasRefreshedWhenStaleRecord() = runBlocking<Unit> {
