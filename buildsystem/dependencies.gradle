@@ -58,14 +58,10 @@ ext.versions = [
 
 ext.libraries = [
         // UI libs.
-        supportAppCompat        : "com.android.support:appcompat-v7:$versions.supportLibs",
-        supportCardView         : "com.android.support:cardview-v7:$versions.supportLibs",
-        supportDesign           : "com.android.support:design:$versions.supportLibs",
-        supportPercent          : "com.android.support:percent:$versions.supportLibs",
-        supportV13              : "com.android.support:support-v13:$versions.supportLibs",
-        supportRecyclerView     : "com.android.support:recyclerview-v7:$versions.supportLibs",
-        supportVectorDrawable   : "com.android.support:support-vector-drawable:$versions.supportLibs",
-        supportAnimatedDrawable : "com.android.support:animated-vector-drawable:$versions.supportLibs",
+        supportAppCompat        : 'androidx.appcompat:appcompat:1.0.0',
+        supportCardView         : 'androidx.cardview:cardview:1.0.0',
+        supportDesign           : 'com.google.android.material:material:1.0.0',
+        supportRecyclerView     : 'androidx.recyclerview:recyclerview:1.0.0',
         picasso                 : "com.squareup.picasso:picasso:$versions.picasso",
         butterKnife             : "com.jakewharton:butterknife:$versions.butterKnife",
 
