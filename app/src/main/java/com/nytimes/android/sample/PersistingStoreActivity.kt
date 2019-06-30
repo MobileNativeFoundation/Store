@@ -1,12 +1,12 @@
 package com.nytimes.android.sample
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.Toolbar
 import android.view.View
 import android.widget.Toast
 import android.widget.Toast.makeText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.sample.data.model.Children
@@ -15,11 +15,7 @@ import com.nytimes.android.sample.data.model.RedditData
 import com.nytimes.android.sample.reddit.PostAdapter
 import com.squareup.moshi.Moshi
 import kotlinx.android.synthetic.main.activity_store.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 
