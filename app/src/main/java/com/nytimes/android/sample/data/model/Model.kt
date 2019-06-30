@@ -1,6 +1,5 @@
 package com.nytimes.android.sample.data.model
 
-import com.google.common.base.Optional
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)

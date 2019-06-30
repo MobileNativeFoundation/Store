@@ -1,9 +1,9 @@
 package com.nytimes.android.sample
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import kotlinx.coroutines.*
@@ -15,6 +15,7 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
+    @FlowPreview
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.stream_activity)

@@ -13,7 +13,7 @@ android {
         targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -69,8 +69,4 @@ dependencies {
 }
 repositories {
     mavenCentral()
-}
-
-configurations.all {
-    resolutionStrategy.force 'com.android.support:support-v4:26.1.0'
 }
