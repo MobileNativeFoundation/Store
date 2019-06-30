@@ -1,8 +1,8 @@
 package com.nytimes.android.sample.reddit
 
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.nytimes.android.sample.R
 import com.nytimes.android.sample.data.model.Post
 
