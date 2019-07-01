@@ -7,17 +7,17 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-fun <V1, V2, K> Store<V1, K>.addParser(parser: (V1) -> V2): Store<V2, K> = addParser(object : Parser<V1, V2> {
+fun <V1, V2, K> Store4Builder<V1, K>.parser(parser: (V1) -> V2): Store4Builder<V2, K> = parser(object : Parser<V1, V2> {
     override suspend fun apply(raw: V1) = parser(raw)
 })
 
-fun <V1, V2, K> Store<V1, K>.addParser(parser: Parser<V1, V2>): Store<V2, K> =
-        addParser(object : KeyParser<K, V1, V2> {
+fun <V1, V2, K> Store4Builder<V1, K>.parser(parser: Parser<V1, V2>): Store4Builder<V2, K> =
+        parser(object : KeyParser<K, V1, V2> {
             override suspend fun apply(key: K, raw: V1) = parser.apply(raw)
         })
 
-fun <V1, V2, K> Store<V1, K>.addParser(parser: KeyParser<K, V1, V2>): Store<V2, K> =
-        ParserStore(this, parser)
+fun <V1, V2, K> Store4Builder<V1, K>.parser(parser: KeyParser<K, V1, V2>): Store4Builder<V2, K> =
+        Store4Builder(ParserStore(wrappedStore, parser))
 
 internal class ParserStore<V1, V2, K>(
         private val wrappedStore: Store<V1, K>,

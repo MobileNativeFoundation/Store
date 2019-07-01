@@ -7,9 +7,8 @@ import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.Store
-import com.nytimes.android.external.store3.base.wrappers.addParser
-import com.nytimes.android.external.store3.base.wrappers.addPersister
+import com.nytimes.android.external.store3.base.wrappers.parser
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -25,7 +24,7 @@ class StoreWithParserTest {
 
     @Test
     fun testSimple() = runBlocking<Unit> {
-        val simpleStore: Store<String, BarCode> = Store(fetcher).addPersister(persister).addParser(parser)
+        val simpleStore: Store<String, BarCode> = Store.from(fetcher).persister(persister).parser(parser).open()
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -48,7 +47,7 @@ class StoreWithParserTest {
 
     @Test
     fun testSubclass() = runBlocking<Unit> {
-        val simpleStore = Store(fetcher).addPersister(persister).addParser(parser)
+        val simpleStore = Store.from(fetcher).persister(persister).parser(parser).open()
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -70,7 +69,7 @@ class StoreWithParserTest {
     }
 
     companion object {
-        private const val DISK = "addPersister"
+        private const val DISK = "persister"
         private const val NETWORK = "fresh"
     }
 }

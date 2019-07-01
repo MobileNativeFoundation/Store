@@ -11,11 +11,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-fun <V, K> Store<V, K>.addPersister(
+fun <V, K> Store4Builder<V, K>.persister(
         persister: Persister<V, K>,
         stalePolicy: StalePolicy = UNSPECIFIED,
         refreshOnStaleScope: CoroutineScope = CoroutineScope(SupervisorJob())
-): Store<V, K> = PersisterStore(this, persister, stalePolicy, refreshOnStaleScope)
+): Store4Builder<V, K> = Store4Builder(PersisterStore(wrappedStore, persister, stalePolicy, refreshOnStaleScope))
 
 internal class PersisterStore<V, K>(
         private val wrappedStore: Store<V, K>,

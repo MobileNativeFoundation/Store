@@ -86,17 +86,17 @@ class RealStoreBuilder<Raw, Parsed, Key> {
     }
 
     fun open(): Store<Parsed, Key> {
-        var store = Store(fetcher!!)
+        var store = Store.from(fetcher!!)
 
         persister?.let {
-            store = store.addPersister(it, stalePolicy)
+            store = store.persister(it, stalePolicy)
         }
 
         val multiParser = MultiParser<Key, Raw, Parsed>(parsers)
 
-        return store.addParser(multiParser)
-                .addCache(memoryPolicy)
-                .addInflight(memoryPolicy)
+        return store.parser(multiParser)
+                .cache(memoryPolicy)
+                .open()
     }
 
     companion object {

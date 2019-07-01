@@ -4,9 +4,8 @@ package com.nytimes.android.external.store3
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.Store
-import com.nytimes.android.external.store3.base.wrappers.addParser
-import com.nytimes.android.external.store3.base.wrappers.addPersister
+import com.nytimes.android.external.store3.base.wrappers.parser
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -17,19 +16,19 @@ class StoreBuilderTest {
     @Test
     fun testBuildersBuildWithCorrectTypes() = runBlocking<Unit> {
         //test  is checking whether types are correct in builders
-        val store: Store<Date, Int> = Store<String, Int> { key ->
+        val store: Store<Date, Int> = Store.from<String, Int> { key ->
             key.toString()
-        }.addPersister(object : Persister<String, Int> {
+        }.persister(object : Persister<String, Int> {
             override suspend fun read(key: Int): String? {
                 return key.toString()
             }
 
             override suspend fun write(key: Int, raw: String) = true
-        }).addParser { DATE }
+        }).parser { DATE }.open()
 
-        val barCodeStore: Store<Date, BarCode> = Store { DATE }
+        val barCodeStore = Store.from<Date, BarCode> { DATE }.open()
 
-        val keyStore: Store<Date, Int> = Store { DATE }
+        val keyStore = Store.from<Date, Int> { DATE }.open()
         var result = store.get(5)
         result = barCodeStore.get(BarCode("test", "5"))
         result = keyStore.get(5)

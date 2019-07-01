@@ -3,8 +3,8 @@ package com.nytimes.android.external.store3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.wrappers.Store
-import com.nytimes.android.external.store3.base.wrappers.addPersister
+import com.nytimes.android.external.store3.base.impl.Store
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class ClearStoreTest {
     private val persister: ClearingPersister = mock()
     private val networkCalls = AtomicInteger(0)
-    private val store = Store<Int, BarCode> { networkCalls.incrementAndGet() }.addPersister(persister)
+    private val store = Store.from<Int, BarCode> { networkCalls.incrementAndGet() }.persister(persister).open()
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {

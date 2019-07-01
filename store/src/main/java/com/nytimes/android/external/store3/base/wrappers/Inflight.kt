@@ -7,16 +7,11 @@ import com.nytimes.android.external.store3.base.impl.Store
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 
-fun <V, K> Store<V, K>.addInflight(
-        memoryPolicy: MemoryPolicy? = null
-): Store<V, K> = InflightStore(this, memoryPolicy)
-
 internal class InflightStore<V, K>(
         private val wrappedStore: Store<V, K>,
         memoryPolicy: MemoryPolicy?
 ) : Store<V, K> {
 
-    // TODO is one cache enough? Or is it better to use a cache for get and another for fresh?
     private val inFlightRequests: Cache<K, Deferred<V>> = CacheFactory.createInflighter(memoryPolicy)
 
     private val inFlightScope = CoroutineScope(SupervisorJob())
