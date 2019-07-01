@@ -1,6 +1,8 @@
 package com.nytimes.android.external.store3.base.wrappers
 
 import com.nytimes.android.external.cache3.Cache
+import com.nytimes.android.external.cache3.CacheLoader
+import com.nytimes.android.external.cache3.LoadingCache
 import com.nytimes.android.external.store3.base.impl.CacheFactory
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.Store
@@ -17,17 +19,20 @@ internal class MemoryCacheStore<V, K>(
 ) : Store<V, K> {
 
     //TODO this could be a Cache<K, V> but it uses a deferred because memCache.get doesn't support suspending methods
-    private val memCache: Cache<K, Deferred<V>> = CacheFactory.createCache(memoryPolicy)
+    private val memCache: LoadingCache<K, Deferred<V>> = CacheFactory.createCache(memoryPolicy,
+            object : CacheLoader<K, Deferred<V>>() {
+                override fun load(key: K): Deferred<V>? =
+                        memoryScope.async {
+                            wrappedStore.get(key)
+                        }
+
+            })
     private val memoryScope = CoroutineScope(SupervisorJob())
 
 
     override suspend fun get(key: K): V {
         return try {
-            memCache.get(key) {
-                memoryScope.async {
-                    wrappedStore.get(key)
-                }
-            }.await()
+            memCache.get(key)!!.await()
         } catch (e: Exception) {
             memCache.invalidate(key)
             throw e
