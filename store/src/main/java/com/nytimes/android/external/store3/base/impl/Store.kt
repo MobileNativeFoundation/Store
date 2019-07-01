@@ -1,5 +1,9 @@
 package com.nytimes.android.external.store3.base.impl
 
+import com.nytimes.android.external.store3.base.Fetcher
+import com.nytimes.android.external.store3.base.wrappers.FetcherStore
+import com.nytimes.android.external.store3.base.wrappers.InflightStore
+import com.nytimes.android.external.store3.base.wrappers.Store4Builder
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -58,4 +62,20 @@ interface Store<T, V> {
      * Persister will only be cleared if they implements Clearable
      */
     fun clear(key: V)
+
+    companion object {
+        fun <V, K> from(inflight: Boolean = true, f: suspend (K) -> V) =
+                from(object : Fetcher<V, K> {
+                    override suspend fun fetch(key: K): V = f(key)
+                }, inflight)
+
+        fun <V, K> from(f: Fetcher<V, K>, inflight: Boolean = true): Store4Builder<V, K> {
+            val fetcherStore = FetcherStore(f)
+            return Store4Builder(if (inflight) {
+                InflightStore(fetcherStore, null)
+            } else {
+                fetcherStore
+            })
+        }
+    }
 }

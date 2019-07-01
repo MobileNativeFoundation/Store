@@ -6,8 +6,8 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.RecordState
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.StalePolicy
-import com.nytimes.android.external.store3.base.wrappers.Store
-import com.nytimes.android.external.store3.base.wrappers.addPersister
+import com.nytimes.android.external.store3.base.impl.Store
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -25,8 +25,9 @@ class StoreRefreshWhenStaleTest {
     private val disk2: BufferedSource = mock()
 
     private val barCode = BarCode("key", "value")
-    private val store = Store(fetcher)
-            .addPersister(persister, StalePolicy.REFRESH_ON_STALE, CoroutineScope(Dispatchers.Unconfined))
+    private val store = Store.from(fetcher)
+            .persister(persister, StalePolicy.REFRESH_ON_STALE, CoroutineScope(Dispatchers.Unconfined))
+            .open()
 
     @Test
     fun diskWasRefreshedWhenStaleRecord() = runBlocking<Unit> {

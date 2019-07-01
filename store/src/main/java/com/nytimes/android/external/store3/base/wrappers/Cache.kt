@@ -1,6 +1,5 @@
 package com.nytimes.android.external.store3.base.wrappers
 
-import com.nytimes.android.external.cache3.Cache
 import com.nytimes.android.external.cache3.CacheLoader
 import com.nytimes.android.external.cache3.LoadingCache
 import com.nytimes.android.external.store3.base.impl.CacheFactory
@@ -9,9 +8,9 @@ import com.nytimes.android.external.store3.base.impl.Store
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 
-fun <V, K> Store<V, K>.addCache(
+fun <V, K> Store4Builder<V, K>.cache(
         memoryPolicy: MemoryPolicy? = null
-): Store<V, K> = MemoryCacheStore(this, memoryPolicy)
+): Store4Builder<V, K> = Store4Builder(MemoryCacheStore(wrappedStore, memoryPolicy))
 
 internal class MemoryCacheStore<V, K>(
         private val wrappedStore: Store<V, K>,

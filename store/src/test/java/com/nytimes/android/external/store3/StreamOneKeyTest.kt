@@ -6,8 +6,7 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.Store
-import com.nytimes.android.external.store3.base.wrappers.addPersister
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -21,7 +20,7 @@ class StreamOneKeyTest {
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")
 
-    private val store: Store<String, BarCode> = Store(fetcher).addPersister(persister)
+    private val store: Store<String, BarCode> = Store.from(fetcher).persister(persister).open()
 
     @Before
     fun setUp() = runBlocking<Unit> {

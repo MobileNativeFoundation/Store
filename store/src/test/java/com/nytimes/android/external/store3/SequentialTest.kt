@@ -3,7 +3,9 @@ package com.nytimes.android.external.store3
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.*
+import com.nytimes.android.external.store3.base.wrappers.cache
+import com.nytimes.android.external.store3.base.wrappers.parser
+import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -13,9 +15,9 @@ import kotlin.random.Random
 class SequentialTest {
 
     var networkCalls = 0
-    private val store = Store<Int, BarCode> { networkCalls++ }
-            .addCache()
-            .addInflight()
+    private val store = Store.from<Int, BarCode> { networkCalls++ }
+            .cache()
+            .open()
 
     @Test
     fun sequentially() = runBlocking<Unit> {
@@ -48,11 +50,11 @@ class SequentialTest {
             }
         }
 
-        val store: Store<String, Int> = Store<Int, Int> { it + Random.nextInt() }
-                .addParser { it.toString() }
-                .addPersister(persister)
-                .addCache()
-                .addInflight()
+        val store: Store<String, Int> = Store.from<Int, Int> { it + Random.nextInt() } with {
+            parser { it.toString() }
+                    .persister(persister)
+                    .cache()
+        }
 
         val v1 = store.get(4)
         val v2 = store.get(4)

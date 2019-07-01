@@ -1,7 +1,7 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.wrappers.Store
+import com.nytimes.android.external.store3.base.impl.Store
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -9,7 +9,7 @@ import org.junit.Test
 class ClearStoreMemoryTest {
 
     private var networkCalls = 0
-    private val store = Store<Int, BarCode> { networkCalls++ }
+    private val store = Store.from<Int, BarCode> { networkCalls++ }.open()
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {
