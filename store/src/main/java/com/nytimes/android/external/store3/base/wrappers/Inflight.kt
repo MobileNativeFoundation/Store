@@ -1,26 +1,26 @@
 package com.nytimes.android.external.store3.base.wrappers
 
-import com.nytimes.android.external.cache3.Cache
-import com.nytimes.android.external.store3.base.impl.CacheFactory
+import com.com.nytimes.suspendCache.StoreCache
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.Store
-import kotlinx.coroutines.*
+import com.nytimes.android.external.store3.base.impl.StoreDefaults
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 
 internal class InflightStore<V, K>(
         private val wrappedStore: Store<V, K>,
         memoryPolicy: MemoryPolicy?
 ) : Store<V, K> {
-
-    private val inFlightRequests: Cache<K, Deferred<V>> = CacheFactory.createInflighter(memoryPolicy)
-
-    private val inFlightScope = CoroutineScope(SupervisorJob())
+    private val inFlightRequests = StoreCache.from(
+            loader = { key: K ->
+                wrappedStore.get(key)
+            },
+            memoryPolicy = memoryPolicy ?: StoreDefaults.memoryPolicy
+    )
 
     override suspend fun get(key: K): V {
         return try {
-            inFlightRequests
-                    .get(key) { inFlightScope.async { wrappedStore.get(key) } }
-                    .await()
+            inFlightRequests.get(key)
         } finally {
             inFlightRequests.invalidate(key)
         }
@@ -28,9 +28,7 @@ internal class InflightStore<V, K>(
 
     override suspend fun fresh(key: K): V {
         return try {
-            inFlightRequests
-                    .get(key) { inFlightScope.async { wrappedStore.fresh(key) } }
-                    .await()
+            inFlightRequests.fresh(key)
         } finally {
             inFlightRequests.invalidate(key)
         }
@@ -39,12 +37,12 @@ internal class InflightStore<V, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
-    override fun clearMemory() {
-        inFlightRequests.invalidateAll()
+    override suspend fun clearMemory() {
+        inFlightRequests.clearAll()
         wrappedStore.clearMemory()
     }
 
-    override fun clear(key: K) {
+    override suspend fun clear(key: K) {
         inFlightRequests.invalidate(key)
         wrappedStore.clear(key)
     }

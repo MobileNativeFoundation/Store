@@ -55,13 +55,13 @@ interface Store<T, V> {
     /**
      * Clear the memory cache of all entries
      */
-    fun clearMemory()
+    suspend fun clearMemory()
 
     /**
      * Purge a particular entry from memory and disk cache.
      * Persister will only be cleared if they implements Clearable
      */
-    fun clear(key: V)
+    suspend fun clear(key: V)
 
     companion object {
         fun <V, K> from(inflight: Boolean = true, f: suspend (K) -> V) =

@@ -1,8 +1,6 @@
 package com.nytimes.android.external.store3.base.impl
 
 
-import com.nytimes.android.external.store3.util.NoopPersister
-
 import java.util.concurrent.TimeUnit
 
 /**

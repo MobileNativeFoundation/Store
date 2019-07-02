@@ -16,6 +16,7 @@ javadoc.dependsOn dokka
 dependencies {
     implementation project(':store')
     apiElements project(':store')
+    implementation project(':suspendCache')
     implementation libraries.kotlinStdLib
     apiElements libraries.kotlinStdLib
 
