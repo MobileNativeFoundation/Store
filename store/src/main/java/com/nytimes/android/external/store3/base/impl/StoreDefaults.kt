@@ -22,4 +22,10 @@ internal object StoreDefaults {
 
     val cacheTTLTimeUnit: TimeUnit
         get() = TimeUnit.SECONDS
+
+    val memoryPolicy = MemoryPolicy.builder()
+            .setMemorySize(cacheSize)
+            .setExpireAfterWrite(cacheTTL)
+            .setExpireAfterTimeUnit(cacheTTLTimeUnit)
+            .build()
 }

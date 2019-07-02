@@ -5,11 +5,8 @@ import com.nytimes.android.external.store3.base.impl.StalePolicy
 import com.nytimes.android.external.store3.base.impl.StalePolicy.*
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 fun <V, K> Store4Builder<V, K>.persister(
         persister: Persister<V, K>,
@@ -60,11 +57,14 @@ internal class PersisterStore<V, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
-    override fun clearMemory() {
+    override suspend fun clearMemory() {
         wrappedStore.clearMemory()
     }
 
-    override fun clear(key: K) {
-        StoreUtil.clearPersister<Any, K>(persister, key)
+    override suspend fun clear(key: K) {
+        // TODO we should somehow receive it or not make this suspend
+        withContext(Dispatchers.IO) {
+            StoreUtil.clearPersister<Any, K>(persister, key)
+        }
     }
 }

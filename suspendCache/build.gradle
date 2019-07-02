@@ -1,0 +1,18 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+group = GROUP
+version = VERSION_NAME
+sourceCompatibility = "8"
+targetCompatibility = "8"
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation project(path: ":cache")
+    implementation libraries.coroutinesCore
+    testImplementation libraries.junit
+    testImplementation libraries.coroutinesTest
+    testImplementation libraries.assertJ
+
+}
+

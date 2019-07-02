@@ -61,6 +61,7 @@ dependencies {
     implementation project(':middleware')
     implementation project(':middleware-moshi')
     implementation project(':filesystem')
+    implementation project(':suspendCache')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 
     implementation libraries.coroutinesCore
