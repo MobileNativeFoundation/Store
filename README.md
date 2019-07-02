@@ -3,7 +3,7 @@
 
 Core is a Kotlin library for effortless data loading.
 
-### The Problems:
+### The Problems
 
 + Modern software needs data representations to be fluid and always available.
 + Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an application is social, news, or business-to-business, users expect a seamless experience both online and offline.
