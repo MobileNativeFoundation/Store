@@ -10,14 +10,17 @@ import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import com.nytimes.android.external.store3.middleware.moshi.MoshiParserFactory
+import com.nytimes.android.external.store3.pipeline.*
 import com.nytimes.android.sample.data.model.RedditData
 import com.nytimes.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
-import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flow
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -25,15 +28,21 @@ class SampleApp : Application() {
 
     lateinit var nonPersistedStore: Store<RedditData, BarCode>
     lateinit var persistedStore: Store<RedditData, BarCode>
+    lateinit var persistentPipelineStore: Store<RedditData, BarCode>
+    lateinit var nonPersistentPipielineStore : Store<RedditData, BarCode>
     val moshi = Moshi.Builder().build()
     lateinit var persister: Persister<BufferedSource, BarCode>
 
+    @FlowPreview
+    @ExperimentalCoroutinesApi
     override fun onCreate() {
         super.onCreate()
         appContext = this
         initPersister();
         nonPersistedStore = provideRedditStore();
         persistedStore = providePersistedRedditStore();
+        persistentPipelineStore = providePersistentPipelineStore()
+        nonPersistentPipielineStore = provideMemoryCachedPipelineStore()
     }
 
     private fun initPersister() {
@@ -71,6 +80,63 @@ class SampleApp : Application() {
                 .persister(newPersister())
                 .parser(MoshiParserFactory.createSourceParser(moshi))
                 .open()
+    }
+
+    @ExperimentalCoroutinesApi
+    @FlowPreview
+    private fun providePersistentPipelineStore(): Store<RedditData, BarCode> {
+        val persister = providePersistedPipelineStore()
+        val parser = MoshiParserFactory.createSourceParser<RedditData>(moshi)
+        val pipeline = beginPipeline<BarCode, BufferedSource> {
+            flow {
+                emit(fetcher(it).await().source())
+            }
+        }.withNonFlowPersister(
+                reader = persister::read,
+                writer = { key: BarCode, source: BufferedSource ->
+                    persister.write(key, source)
+                }
+        ).withConverter {
+            parser.apply(it)
+        }
+        return pipeline.open()
+    }
+
+    @ExperimentalCoroutinesApi
+    @FlowPreview
+    private fun provideMemoryCachedPipelineStore(): Store<RedditData, BarCode> {
+        val pipeline = beginPipeline<BarCode, RedditData> {
+            flow {
+                emit(provideRetrofit().fetchSubreddit(it.key, "10").await())
+            }
+        }.withCache(MemoryPolicy
+                .builder()
+                .setExpireAfterWrite(10)
+                .setExpireAfterTimeUnit(TimeUnit.SECONDS)
+                .build())
+        return pipeline.open()
+    }
+
+    /**
+     * Returns a new Persister that uses [newPersister] but maps FileNotFoundExceptions to null
+     */
+    @Throws(IOException::class)
+    private fun providePersistedPipelineStore(): Persister<BufferedSource, BarCode> {
+        val delegate = newPersister()
+        return object : Persister<BufferedSource, BarCode> {
+            override suspend fun read(key: BarCode): BufferedSource? = withContext(Dispatchers.IO){
+                return@withContext try {
+                    // TODO figure out why FSReader prefers to throw instead of returning null
+                    delegate.read(key)
+                } catch (ex : FileNotFoundException) {
+                    null
+                }
+            }
+
+            override suspend fun write(key: BarCode, raw: BufferedSource): Boolean = withContext(Dispatchers.IO) {
+                delegate.write(key, raw)
+            }
+        }
     }
 
     /**

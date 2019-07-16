@@ -1,15 +1,22 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class ClearStoreMemoryTest {
-
+@FlowPreview
+@RunWith(Parameterized::class)
+class ClearStoreMemoryTest(
+        storeType : TestStoreType
+) {
     private var networkCalls = 0
-    private val store = Store.from<Int, BarCode> { networkCalls++ }.open()
+    private val store = TestStoreBuilder.from<BarCode, Int> {
+        networkCalls ++
+    }.build(storeType)
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {
@@ -41,5 +48,12 @@ class ClearStoreMemoryTest {
         store.get(b1)
         store.get(b2)
         assertThat(networkCalls).isEqualTo(4)
+    }
+
+    @FlowPreview
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }

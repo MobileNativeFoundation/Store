@@ -6,18 +6,24 @@ import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.wrappers.cache
 import com.nytimes.android.external.store3.base.wrappers.parser
 import com.nytimes.android.external.store3.base.wrappers.persister
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import kotlin.random.Random
 
-class SequentialTest {
+@FlowPreview
+@RunWith(Parameterized::class)
+class SequentialTes(
+        storeType: TestStoreType) {
 
     var networkCalls = 0
-    private val store = Store.from<Int, BarCode> { networkCalls++ }
-            .cache()
-            .open()
+    private val store = TestStoreBuilder.from<BarCode, Int>(cached = true) {
+        networkCalls ++
+    }.build(storeType)
 
     @Test
     fun sequentially() = runBlocking<Unit> {
@@ -59,5 +65,12 @@ class SequentialTest {
         val v1 = store.get(4)
         val v2 = store.get(4)
         assertThat(v1).isEqualTo(v2)
+    }
+
+    @FlowPreview
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }
