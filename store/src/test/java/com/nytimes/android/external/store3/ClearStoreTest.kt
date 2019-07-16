@@ -3,18 +3,29 @@ package com.nytimes.android.external.store3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.persister
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.mockito.Mockito.verify
 import java.util.concurrent.atomic.AtomicInteger
 
-class ClearStoreTest {
+@FlowPreview
+@RunWith(Parameterized::class)
+class ClearStoreTest(
+        storeType: TestStoreType
+) {
     private val persister: ClearingPersister = mock()
     private val networkCalls = AtomicInteger(0)
-    private val store = Store.from<Int, BarCode> { networkCalls.incrementAndGet() }.persister(persister).open()
+
+    private val store = TestStoreBuilder.from(
+            fetcher = {
+                networkCalls.incrementAndGet()
+            },
+            persister = persister
+    ).build(storeType)
 
     @Test
     fun testClearSingleBarCode() = runBlocking<Unit> {
@@ -72,5 +83,12 @@ class ClearStoreTest {
         store.get(barcode1)
         store.get(barcode2)
         assertThat(networkCalls.toInt()).isEqualTo(4)
+    }
+
+    @FlowPreview
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }

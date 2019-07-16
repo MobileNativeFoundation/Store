@@ -5,27 +5,34 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.persister
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.broadcastIn
-import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.AssumptionViolatedException
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class StreamTest {
+@ExperimentalCoroutinesApi
+@ObsoleteCoroutinesApi
+@FlowPreview
+@RunWith(Parameterized::class)
+class StreamTest(
+        private val storeType: TestStoreType
+) {
 
     private val fetcher: Fetcher<String, BarCode> = mock()
     private val persister: Persister<String, BarCode> = mock()
 
     private val barCode = BarCode("key", "value")
 
-    private val store = Store.from(fetcher).persister(persister).open()
+    private val store = TestStoreBuilder.from(
+            fetcher = fetcher,
+            persister = persister
+    ).build(storeType)
 
     @Before
     fun setUp() = runBlocking<Unit> {
@@ -39,8 +46,12 @@ class StreamTest {
                 .thenReturn(true)
     }
 
+    @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
     fun testStream() = runBlocking<Unit> {
+        if (storeType == TestStoreType.Pipeline) {
+            throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
+        }
         val streamSubscription = store.stream().openChannelSubscription()
         try {
             assertThat(streamSubscription.isEmpty).isTrue()
@@ -51,8 +62,12 @@ class StreamTest {
         }
     }
 
+    @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
     fun testStreamEmitsOnlyFreshData() = runBlocking<Unit> {
+        if (storeType == TestStoreType.Pipeline) {
+            throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
+        }
         store.get(barCode)
         val streamSubscription = store.stream().openChannelSubscription()
         try {
@@ -64,8 +79,14 @@ class StreamTest {
 
     companion object {
         private const val TEST_ITEM = "test"
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }
 
+@ExperimentalCoroutinesApi
+@FlowPreview
 fun <T> Flow<T>.openChannelSubscription() =
         broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()

@@ -5,14 +5,21 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.persister
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class StreamOneKeyTest {
+@ExperimentalCoroutinesApi
+@FlowPreview
+@RunWith(Parameterized::class)
+class StreamOneKeyTest(
+        private val storeType: TestStoreType
+) {
 
     val fetcher: Fetcher<String, BarCode> = mock()
     val persister: Persister<String, BarCode> = mock()
@@ -20,7 +27,10 @@ class StreamOneKeyTest {
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")
 
-    private val store: Store<String, BarCode> = Store.from(fetcher).persister(persister).open()
+    private val store = TestStoreBuilder.from(
+            fetcher = fetcher,
+            persister = persister
+    ).build(storeType)
 
     @Before
     fun setUp() = runBlocking<Unit> {
@@ -38,17 +48,30 @@ class StreamOneKeyTest {
                 .thenReturn(true)
     }
 
+    @Suppress("UsePropertyAccessSyntax") // for assert isTrue() isFalse()
     @Test
     fun testStream() = runBlocking<Unit> {
-        val streamSubscription = store.stream(barCode).openChannelSubscription()
-        try {//stream doesn't invoke get anymore so when we call it the channel is empty
-            assertThat(streamSubscription.isEmpty).isTrue()
+        val streamSubscription = store.stream(barCode)
+                .openChannelSubscription()
+        try {
+            if (storeType == TestStoreType.Store) {
+                //stream doesn't invoke get anymore so when we call it the channel is empty
+                assertThat(streamSubscription.isEmpty).isTrue()
+            } else {
+                // for pipeline store, there is no `get` so it is not empty
+                assertThat(streamSubscription.isEmpty).isFalse()
+            }
+
 
             store.clearMemory()
-            //fresh should notify subscribers again
-            store.fresh(barCode)
+
+            if (storeType == TestStoreType.Store) {
+                //fresh should notify subscribers in Store. In Pipeline, calling stream
+                // will already trigger a get, we don't want another here
+                store.fresh(barCode)
+            }
+
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
-//        assertThat(streamObservable.poll()).isEqualTo(TEST_ITEM2)
 
             //get for another barcode should not trigger a stream for barcode1
             whenever(fetcher.fetch(barCode2))
@@ -59,6 +82,10 @@ class StreamOneKeyTest {
                     .thenReturn(true)
             store.get(barCode2)
             assertThat(streamSubscription.isEmpty).isTrue()
+
+            // get a another barCode one and ensure subscribers are notified
+            store.fresh(barCode)
+            assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM2)
         } finally {
             streamSubscription.cancel()
         }
@@ -67,5 +94,9 @@ class StreamOneKeyTest {
     companion object {
         private const val TEST_ITEM = "test"
         private const val TEST_ITEM2 = "test2"
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }

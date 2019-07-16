@@ -6,25 +6,33 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.parser
-import com.nytimes.android.external.store3.base.wrappers.persister
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
-class StoreWithParserTest {
-    val fetcher: Fetcher<String, BarCode> = mock()
-    val persister: Persister<String, BarCode> = mock()
-    val parser: Parser<String, String> = mock()
+@FlowPreview
+@RunWith(Parameterized::class)
+class StoreWithParserTest(
+        private val storeType: TestStoreType
+) {
+    private val fetcher: Fetcher<String, BarCode> = mock()
+    private val persister: Persister<String, BarCode> = mock()
+    private val parser: Parser<String, String> = mock()
 
     private val barCode = BarCode("key", "value")
 
     @Test
     fun testSimple() = runBlocking<Unit> {
-        val simpleStore: Store<String, BarCode> = Store.from(fetcher).persister(persister).parser(parser).open()
+        val simpleStore = TestStoreBuilder.fromPostParser(
+                fetcher = fetcher,
+                persister = persister,
+                postParser = parser
+        ).build(storeType)
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -47,8 +55,11 @@ class StoreWithParserTest {
 
     @Test
     fun testSubclass() = runBlocking<Unit> {
-        val simpleStore = Store.from(fetcher).persister(persister).parser(parser).open()
-
+        val simpleStore = TestStoreBuilder.fromPostParser(
+                fetcher = fetcher,
+                persister = persister,
+                postParser = parser
+        ).build(storeType)
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
 
@@ -71,5 +82,9 @@ class StoreWithParserTest {
     companion object {
         private const val DISK = "persister"
         private const val NETWORK = "fresh"
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun params() = TestStoreType.values()
     }
 }
