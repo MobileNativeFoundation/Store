@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @FlowPreview
 internal class PipelineFetcherStore<Key, Output>(
     private val fetcher: (Key) -> Flow<Output>
-) : PipelineStore<Key, Output> {
+) : PipelineStore<Key, NoInput, Output> {
     override suspend fun get(key: Key): Output? {
         return fetcher(key).singleOrNull()
     }

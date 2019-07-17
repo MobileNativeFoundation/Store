@@ -5,43 +5,46 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 
+// used when there is no input
+class NoInput
+
 @FlowPreview
 fun <Key, Output> beginPipeline(
     fetcher: (Key) -> Flow<Output>
-): PipelineStore<Key, Output> {
+): PipelineStore<Key, NoInput, Output> {
     return PipelineFetcherStore(fetcher)
 }
 
 
 @FlowPreview
-fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withConverter(
+fun <Key, Input, OldOutput, NewOutput> PipelineStore<Key, Input, OldOutput>.withConverter(
     converter: suspend (OldOutput) -> NewOutput
-): PipelineStore<Key, NewOutput> {
+): PipelineStore<Key, Input, NewOutput> {
     return PipelineConverterStore(this) { key, value ->
         converter(value)
     }
 }
 
 @FlowPreview
-fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withKeyConverter(
+fun <Key, Input, OldOutput, NewOutput> PipelineStore<Key, Input, OldOutput>.withKeyConverter(
     converter: suspend (Key, OldOutput) -> NewOutput
-): PipelineStore<Key, NewOutput> {
+): PipelineStore<Key, Input, NewOutput> {
     return PipelineConverterStore(this, converter)
 }
 
 @FlowPreview
-fun <Key, Output> PipelineStore<Key, Output>.withCache(
+fun <Key, Input, Output> PipelineStore<Key, Input, Output>.withCache(
     memoryPolicy: MemoryPolicy? = null
-): PipelineStore<Key, Output> {
+): PipelineStore<Key, Input, Output> {
     return PipelineCacheStore(this, memoryPolicy)
 }
 
 @FlowPreview
-fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
+fun <Key, OldInput, OldOutput, NewOutput> PipelineStore<Key, OldInput, OldOutput>.withPersister(
     reader: (Key) -> Flow<NewOutput>,
     writer: suspend (Key, OldOutput) -> Unit,
     delete: (suspend (Key) -> Unit)? = null
-): PipelineStore<Key, NewOutput> {
+): PipelineStore<Key, OldOutput, NewOutput> {
     return PipelinePersister(
         fetcher = this,
         reader = reader,
@@ -52,11 +55,11 @@ fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withNonFlowPersister(
+fun <Key, OldInput, OldOutput, NewOutput> PipelineStore<Key, OldInput, OldOutput>.withNonFlowPersister(
     reader: suspend (Key) -> NewOutput?,
     writer: suspend (Key, OldOutput) -> Unit,
     delete: (suspend (Key) -> Unit)? = null
-): PipelineStore<Key, NewOutput> {
+): PipelineStore<Key, OldOutput, NewOutput> {
     val flowable = SimplePersisterAsFlowable(
         reader = reader,
         writer = writer,
