@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 
 @FlowPreview
-internal class PipelineCacheStore<Key, Input, Output>(
-    private val delegate: PipelineStore<Key, Input, Output>,
-    memoryPolicy: MemoryPolicy? = null
-) : PipelineStore<Key, Input, Output> {
+internal class PipelineCacheStore<Key, Output>(
+        private val delegate: PipelineStore<Key, Output>,
+        memoryPolicy: MemoryPolicy? = null
+) : PipelineStore<Key, Output> {
     private val memCache = StoreCache.from(
         loader = { key: Key ->
             delegate.get(key)
