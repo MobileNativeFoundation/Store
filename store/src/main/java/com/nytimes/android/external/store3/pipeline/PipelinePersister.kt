@@ -1,20 +1,18 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.switchMap
-import kotlinx.coroutines.launch
 
 @FlowPreview
 class PipelinePersister<Key, Input, Output>(
-    private val fetcher: PipelineStore<Key, *, Input>,
-    private val reader: (Key) -> Flow<Output?>,
-    private val writer: suspend (Key, Input) -> Unit,
-    private val delete: (suspend (Key) -> Unit)? = null
-) : PipelineStore<Key, Input, Output> {
+        private val fetcher: PipelineStore<Key, Input>,
+        private val reader: (Key) -> Flow<Output?>,
+        private val writer: suspend (Key, Input) -> Unit,
+        private val delete: (suspend (Key) -> Unit)? = null
+) : PipelineStore<Key, Output> {
     override suspend fun get(key: Key): Output? {
         val value: Output? = reader(key).singleOrNull()
         value?.let {
