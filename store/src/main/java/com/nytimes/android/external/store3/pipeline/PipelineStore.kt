@@ -14,7 +14,7 @@ internal class AbortFlowException :
 // if this class becomes public, should probaly be named IntermediateStore to distingush from
 // Store and also clarify that it still needs to be built/open? (how do we ensure?)
 @FlowPreview
-interface PipelineStore<Key, Input, Output> {
+interface PipelineStore<Key, Output> {
     /**
      * Return a flow for the given key
      */
@@ -48,7 +48,7 @@ interface PipelineStore<Key, Input, Output> {
 }
 
 @FlowPreview
-fun <Key, Input, Output> PipelineStore<Key, Input, Output>.open(): Store<Output, Key> {
+fun <Key, Output> PipelineStore<Key, Output>.open(): Store<Output, Key> {
     val self = this
     return object : Store<Output, Key> {
         override suspend fun get(key: Key) = self.get(key)!!
