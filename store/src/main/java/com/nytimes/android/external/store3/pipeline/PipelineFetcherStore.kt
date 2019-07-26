@@ -7,17 +7,12 @@ import kotlinx.coroutines.flow.Flow
 internal class PipelineFetcherStore<Key, Output>(
     private val fetcher: (Key) -> Flow<Output>
 ) : PipelineStore<Key, Output> {
-    override suspend fun get(key: Key): Output? {
-        return fetcher(key).singleOrNull()
+
+    override suspend fun get(request: StoreRequest<Key>): Output? {
+        return fetcher(request.key).singleOrNull()
     }
 
-    override suspend fun fresh(key: Key): Output? {
-        return fetcher(key).singleOrNull()
-    }
-
-    override fun stream(key: Key) = fetcher(key)
-
-    override fun streamFresh(key: Key) = fetcher(key)
+    override fun stream(request: StoreRequest<Key>) = fetcher(request.key)
 
     override suspend fun clearMemory() {
 

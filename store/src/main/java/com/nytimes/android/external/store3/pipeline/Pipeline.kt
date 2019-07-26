@@ -4,12 +4,25 @@ import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 @FlowPreview
 fun <Key, Output> beginPipeline(
     fetcher: (Key) -> Flow<Output>
 ): PipelineStore<Key, Output> {
     return PipelineFetcherStore(fetcher)
+}
+
+// this really needs a better name :/
+@FlowPreview
+fun <Key, Output> beginNonFlowingPipeline(
+    fetcher: suspend (Key) -> Output
+): PipelineStore<Key, Output> {
+    return PipelineFetcherStore {
+        flow {
+            emit(fetcher(it))
+        }
+    }
 }
 
 

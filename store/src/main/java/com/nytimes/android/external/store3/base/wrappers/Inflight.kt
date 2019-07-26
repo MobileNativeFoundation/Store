@@ -20,7 +20,7 @@ internal class InflightStore<V, K>(
 
     override suspend fun get(key: K): V {
         return try {
-            inFlightRequests.get(key)
+            inFlightRequests.get(key, key)
         } finally {
             inFlightRequests.invalidate(key)
         }
@@ -28,7 +28,7 @@ internal class InflightStore<V, K>(
 
     override suspend fun fresh(key: K): V {
         return try {
-            inFlightRequests.fresh(key)
+            inFlightRequests.fresh(key, key)
         } finally {
             inFlightRequests.invalidate(key)
         }

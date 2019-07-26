@@ -19,31 +19,30 @@ class StoreRecordTest {
     @Test
     fun precomputed() = testScope.runBlockingTest {
         val record = StoreRecord(
-                key = "foo",
-                loader = { TODO() },
+                loader = { _: String -> TODO() },
                 precomputedValue = "bar")
         assertThat(record.cachedValue()).isEqualTo("bar")
-        assertThat(record.value()).isEqualTo("bar")
+        assertThat(record.value("foo")).isEqualTo("bar")
     }
 
     @Test
     fun fetched() = testScope.runBlockingTest {
-        val record = StoreRecord("foo") { key ->
-            assertThat(key).isEqualTo("foo")
+        val record = StoreRecord { request: String ->
+            assertThat(request).isEqualTo("foo")
             "bar"
         }
-        assertThat(record.value()).isEqualTo("bar")
+        assertThat(record.value("foo")).isEqualTo("bar")
     }
 
     @Test
     fun fetched_multipleValueGet() = testScope.runBlockingTest {
         var runCount = 0
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             runCount++
             "bar"
         }
-        assertThat(record.value()).isEqualTo("bar")
-        assertThat(record.value()).isEqualTo("bar")
+        assertThat(record.value("foo")).isEqualTo("bar")
+        assertThat(record.value("foo")).isEqualTo("bar")
         assertThat(runCount).isEqualTo(1)
     }
 
@@ -51,7 +50,7 @@ class StoreRecordTest {
     fun fetched_multipleValueGet_firstError() = testScope.runBlockingTest {
         var runCount = 0
         val errorMsg = "i'd like to fail"
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             runCount++
             if (runCount == 1) {
 
@@ -61,11 +60,11 @@ class StoreRecordTest {
             }
         }
         val first = runCatching {
-            record.value()
+            record.value("foo")
         }
         assertThat(first.isFailure).isTrue()
         assertThat(first.exceptionOrNull()?.localizedMessage).isEqualTo(errorMsg)
-        assertThat(record.value()).isEqualTo("bar")
+        assertThat(record.value("foo")).isEqualTo("bar")
         assertThat(runCount).isEqualTo(2)
     }
 
@@ -75,7 +74,7 @@ class StoreRecordTest {
         val firstResponse = CompletableDeferred<String>()
         val secondResponse = CompletableDeferred<String>()
         val errorMsg = "i'd like to fail"
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             runCount++
             if (runCount == 1) {
                 return@StoreRecord firstResponse.await()
@@ -84,10 +83,10 @@ class StoreRecordTest {
             }
         }
         val first = async {
-            record.value()
+            record.value("foo")
         }
         val second = async {
-            record.value()
+            record.value("foo")
         }
         testScope.advanceUntilIdle()
         assertThat(first.isCompleted).isFalse()
@@ -111,22 +110,22 @@ class StoreRecordTest {
                 "bar",
                 "bar2"
         )
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             val index = runCount
             runCount++
             return@StoreRecord responses[index]
         }
-        assertThat(record.value()).isEqualTo("bar")
-        assertThat(record.freshValue()).isEqualTo("bar2")
-        assertThat(record.value()).isEqualTo("bar2")
+        assertThat(record.value("foo")).isEqualTo("bar")
+        assertThat(record.freshValue("foo")).isEqualTo("bar2")
+        assertThat(record.value("foo")).isEqualTo("bar2")
     }
 
     @Test
     fun freshSimple_notCached() = testScope.runBlockingTest {
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             "bar"
         }
-        assertThat(record.freshValue()).isEqualTo("bar")
+        assertThat(record.freshValue("foo")).isEqualTo("bar")
     }
 
     @Test
@@ -136,16 +135,16 @@ class StoreRecordTest {
                 CompletableDeferred()
         )
         var runCount = 0
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             val index = runCount
             runCount++
             responses[index].await()
         }
         val first = async {
-            record.freshValue()
+            record.freshValue("foo")
         }
         val second = async {
-            record.freshValue()
+            record.freshValue("foo")
         }
         assertThat(first.isActive).isTrue()
         assertThat(second.isActive).isTrue()
@@ -164,16 +163,16 @@ class StoreRecordTest {
                 CompletableDeferred()
         )
         var runCount = 0
-        val record = StoreRecord("foo") {
+        val record = StoreRecord { _: String ->
             val index = runCount
             runCount++
             responses[index].await()
         }
         val first = async {
-            record.freshValue()
+            record.freshValue("foo")
         }
         val second = async {
-            record.freshValue()
+            record.freshValue("foo")
         }
         val errorMsg = "i'd like to fail"
         assertThat(first.isActive).isTrue()

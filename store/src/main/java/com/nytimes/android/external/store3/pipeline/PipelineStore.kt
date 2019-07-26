@@ -4,6 +4,9 @@ import com.nytimes.android.external.store3.base.impl.Store
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 
 // taken from
 // https://github.com/Kotlin/kotlinx.coroutines/blob/7699a20982c83d652150391b39567de4833d4253/kotlinx-coroutines-core/js/src/flow/internal/FlowExceptions.kt
@@ -18,22 +21,13 @@ interface PipelineStore<Key, Output> {
     /**
      * Return a flow for the given key
      */
-    fun stream(key: Key): Flow<Output>
-
-    /**
-     * Return a flow for the given key and skip all cache
-     */
-    fun streamFresh(key: Key): Flow<Output>
+    fun stream(request: StoreRequest<Key>): Flow<Output>
 
     /**
      * Return a single value for the given key.
      */
-    suspend fun get(key: Key): Output?
-
-    /**
-     * Return a single value for the given key.
-     */
-    suspend fun fresh(key: Key): Output?
+    // DO NOT auto delegate to stream, implementation for get and stream differ significantly
+    suspend fun get(request: StoreRequest<Key>): Output?
 
     /**
      * Clear the memory cache of all entries
@@ -51,9 +45,13 @@ interface PipelineStore<Key, Output> {
 fun <Key, Output> PipelineStore<Key, Output>.open(): Store<Output, Key> {
     val self = this
     return object : Store<Output, Key> {
-        override suspend fun get(key: Key) = self.get(key)!!
+        override suspend fun get(key: Key) = self.get(
+            StoreRequest.cached(key, refresh = false)
+        )!!
 
-        override suspend fun fresh(key: Key) = self.fresh(key)!!
+        override suspend fun fresh(key: Key) = self.get(
+            StoreRequest.fresh(key)
+        )!!
 
         // We could technically implement this based on other calls but it does have a cost,
         // implementation is tricky and yigit is not sure what the use case is ¯\_(ツ)_/¯
@@ -61,7 +59,18 @@ fun <Key, Output> PipelineStore<Key, Output>.open(): Store<Output, Key> {
         override fun stream(): Flow<Pair<Key, Output>> = TODO("not supported")
 
         @FlowPreview
-        override fun stream(key: Key) = self.stream(key)
+        override fun stream(key: Key) = flow {
+            // mapNotNull does not make compiler happy because Output : Any is not defined, hence,
+            // hand rolled map not null :/
+            self.stream(
+                StoreRequest.skipMemory(key, true)
+            )
+                .collect {
+                    it?.let {
+                        emit(it)
+                    }
+                }
+        }
 
         override suspend fun clearMemory() {
             self.clearMemory()
