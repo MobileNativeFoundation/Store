@@ -5,11 +5,11 @@ import com.nytimes.android.external.cache3.CacheLoader
 import com.nytimes.android.external.cache3.Ticker
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 
-internal class RealStoreCache<K, V>(
-        private val loader: suspend (K) -> V,
+internal class RealStoreCache<K, V, Request>(
+        private val loader: suspend (Request) -> V,
         private val memoryPolicy: MemoryPolicy,
         ticker: Ticker = Ticker.systemTicker()
-) : StoreCache<K, V> {
+) : StoreCache<K, V, Request> {
     private val realCache = CacheBuilder.newBuilder()
             .ticker(ticker)
             .also {
@@ -23,25 +23,23 @@ internal class RealStoreCache<K, V>(
                     it.maximumSize(memoryPolicy.maxSize)
                 }
             }
-            .build(object : CacheLoader<K, StoreRecord<K, V>>() {
-                override fun load(key: K): StoreRecord<K, V>? {
+            .build(object : CacheLoader<K, StoreRecord<V, Request>>() {
+                override fun load(key: K): StoreRecord<V, Request>? {
                     return StoreRecord(
-                            key = key,
                             loader = loader)
                 }
             })
 
-    override suspend fun fresh(key: K): V {
-        return realCache.get(key)!!.freshValue()
+    override suspend fun fresh(key: K, request: Request): V {
+        return realCache.get(key)!!.freshValue(request)
     }
 
-    override suspend fun get(key: K): V {
-        return realCache.get(key)!!.value()
+    override suspend fun get(key: K, request: Request): V {
+        return realCache.get(key)!!.value(request)
     }
 
     override suspend fun put(key: K, value: V) {
         realCache.put(key, StoreRecord(
-                key = key,
                 loader = loader,
                 precomputedValue = value))
     }

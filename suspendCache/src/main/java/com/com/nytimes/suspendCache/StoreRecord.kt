@@ -10,10 +10,9 @@ import kotlinx.coroutines.sync.withLock
  *  * maybe fresh?
  *  * deduplication
  */
-internal class StoreRecord<K, V>(
-        private val key: K,
+internal class StoreRecord<V, Request>(
         precomputedValue : V? = null,
-        private val loader: Loader<K, V>
+        private val loader: Loader<Request, V>
 ) {
     private var inFlight = Mutex(false)
     @Volatile
@@ -21,26 +20,26 @@ internal class StoreRecord<K, V>(
 
     fun cachedValue(): V? = _value
 
-    suspend fun freshValue(): V {
+    suspend fun freshValue(request: Request): V {
         // first try to lock inflight request so that we can avoid get() from making a call
         // but if we failed to lock, just request w/o a lock.
         // we want fresh to be really fresh and we don't want it to wait for another request
         if (inFlight.tryLock()) {
             try {
-                return internalDoLoadAndCache()
+                return internalDoLoadAndCache(request)
             } finally {
                 inFlight.unlock()
             }
         } else {
             return inFlight.withLock {
-                return internalDoLoadAndCache()
+                return internalDoLoadAndCache(request)
             }
         }
     }
 
-    private inline suspend fun internalDoLoadAndCache(): V {
+    private inline suspend fun internalDoLoadAndCache(request: Request): V {
         return runCatching {
-            loader(key)
+            loader(request)
         }.also {
             it.getOrNull()?.let {
                 _value = it
@@ -48,7 +47,7 @@ internal class StoreRecord<K, V>(
         }.getOrThrow()
     }
 
-    suspend fun value(): V {
+    suspend fun value(request: Request): V {
         val cached = _value
         if (cached != null) {
             return cached
@@ -56,7 +55,7 @@ internal class StoreRecord<K, V>(
         return inFlight.withLock {
             _value?.let {
                 return it
-            } ?: internalDoLoadAndCache()
+            } ?: internalDoLoadAndCache(request)
         }
     }
 }

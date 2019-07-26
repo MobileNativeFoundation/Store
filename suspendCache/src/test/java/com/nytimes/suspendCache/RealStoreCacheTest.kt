@@ -137,13 +137,16 @@ class RealStoreCacheTest {
 
     private fun createCache(
             memoryPolicy: MemoryPolicy = MemoryPolicy.builder().build()
-    ): RealStoreCache<String, String> {
+    ): RealStoreCache<String, String, String> {
         return RealStoreCache(
                 loader = loader::invoke,
                 ticker = ticker,
                 memoryPolicy = memoryPolicy
         )
     }
+
+    private suspend fun <K, V> RealStoreCache<K, V, K>.get(key : K) = get(key, key)
+    private suspend fun <K, V> RealStoreCache<K, V, K>.fresh(key : K) = fresh(key, key)
 }
 
 private class TestLoader {
