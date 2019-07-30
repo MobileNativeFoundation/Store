@@ -14,20 +14,15 @@ internal class PipelineCacheStore<Key, Output>(
         memoryPolicy: MemoryPolicy? = null
 ) : PipelineStore<Key, Output> {
     private val memCache = StoreCache.fromRequest<Key, Output?, StoreRequest<Key>>(
-            loader = { request: StoreRequest<Key> ->
-                delegate.get(request)
-            },
             memoryPolicy = memoryPolicy ?: StoreDefaults.memoryPolicy
     )
 
     override fun stream(request: StoreRequest<Key>): Flow<Output> {
         @Suppress("RemoveExplicitTypeArguments")
         return flow<Output> {
-            if (!request.shouldSkipCache(CacheType.MEMORY)) {
+            if (request.shouldLoadFrom(CacheType.MEMORY)) {
                 val cached = memCache.getIfPresent(request.key)
-                cached?.let {
-                    emit(it)
-                }
+                cached?.let { emit(it) }
             }
 
             delegate.stream(request).collect {
@@ -35,18 +30,6 @@ internal class PipelineCacheStore<Key, Output>(
                 emit(it)
             }
         }
-    }
-
-    override suspend fun get(request: StoreRequest<Key>): Output? {
-        if (request.shouldSkipCache(CacheType.MEMORY)) {
-            return memCache.fresh(request.key, request)
-        }
-        return memCache.get(request.key, request)
-    }
-
-    override suspend fun clearMemory() {
-        memCache.clearAll()
-        delegate.clearMemory()
     }
 
     override suspend fun clear(key: Key) {

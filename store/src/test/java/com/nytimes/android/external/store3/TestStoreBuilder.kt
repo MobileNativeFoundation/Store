@@ -20,7 +20,6 @@ data class TestStoreBuilder<Key, Output>(
         private val buildPipelineStore: () -> Store<out Output, Key>
 ) {
     fun build(storeType: TestStoreType): Store<out Output, Key> = when (storeType) {
-        TestStoreType.Store -> buildStore()
         TestStoreType.Pipeline -> buildPipelineStore()
     }
 
@@ -169,7 +168,7 @@ data class TestStoreBuilder<Key, Output>(
                             } else {
                                 it.withNonFlowPersister(
                                         reader = {
-                                            persister.read(it)
+                                            persister.read(it)!!
                                         },
                                         writer = { key, value ->
                                             persister.write(key, value)
@@ -204,7 +203,7 @@ data class TestStoreBuilder<Key, Output>(
     }
 
     // wraps a regular fun to suspend, couldn't figure out how to create suspend fun variables :/
-    private class SuspendWrapper<P0, R>(
+    class SuspendWrapper<P0, R>(
             val f : (P0) -> R
     ) {
         suspend fun apply(input : P0) : R = f(input)
@@ -212,6 +211,5 @@ data class TestStoreBuilder<Key, Output>(
 }
 
 enum class TestStoreType {
-    Store,
     Pipeline
 }

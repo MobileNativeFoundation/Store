@@ -33,7 +33,7 @@ class NoopPersister<Raw, Key> internal constructor(memoryPolicy: MemoryPolicy) :
         }
     }
 
-    override suspend fun read(key: Key): Raw? = networkResponses.getIfPresent(key)?.await()
+    override suspend fun read(key: Key): Raw = networkResponses.getIfPresent(key)!!.await()
 
 
     override suspend fun write(key: Key, raw: Raw): Boolean {

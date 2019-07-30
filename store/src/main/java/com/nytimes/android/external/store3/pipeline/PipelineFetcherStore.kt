@@ -8,16 +8,9 @@ internal class PipelineFetcherStore<Key, Output>(
     private val fetcher: (Key) -> Flow<Output>
 ) : PipelineStore<Key, Output> {
 
-    override suspend fun get(request: StoreRequest<Key>): Output? {
-        return fetcher(request.key).singleOrNull()
-    }
-
     override fun stream(request: StoreRequest<Key>) = fetcher(request.key)
 
-    override suspend fun clearMemory() {
-
-    }
-
     override suspend fun clear(key: Key) {
+        //nothing to clear as a PipelineFetcherStore creates the initial flow
     }
 }

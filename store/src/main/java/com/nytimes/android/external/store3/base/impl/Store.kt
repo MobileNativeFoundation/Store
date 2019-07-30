@@ -36,9 +36,9 @@ interface Store<T, V> {
     /**
      * @return an Observable that emits "fresh" new response from the store that hit the fetcher
      * WARNING: stream is an endless observable, be careful when combining
-     * with operators that expect an OnComplete event
-     */
-    @FlowPreview
+         * with operators that expect an OnComplete event
+         */
+        @FlowPreview
     fun stream(): Flow<Pair<V, T>>
 
     /**

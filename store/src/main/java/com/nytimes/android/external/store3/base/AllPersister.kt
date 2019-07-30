@@ -26,7 +26,7 @@ interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAl
      * throw an exception
      */
     //    @Override
-    override suspend fun read(key: Key): Raw?
+    override suspend fun read(key: Key): Raw
 
     /**
      * @param key to use to store data to persister

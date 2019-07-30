@@ -30,7 +30,7 @@
 //      override suspend fun read(key: BarCode): String? {
 //        when {
 //          counter.get() == 0 -> return null
-//          counter.get() == 1 -> return SmokeTests.DISK
+//          counter.get() == 1 -> return SmokeTests.Persistent
 //          else -> return "WRONG VALUE"
 //        }
 //      }

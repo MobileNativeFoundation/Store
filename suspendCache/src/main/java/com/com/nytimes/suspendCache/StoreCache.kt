@@ -22,20 +22,16 @@ interface StoreCache<K, V, Request> {
                 loader: suspend (K) -> V,
                 memoryPolicy: MemoryPolicy
         ): StoreCache<K, V, K> {
-            return RealStoreCache(
-                    loader = loader,
-                    memoryPolicy = memoryPolicy
+            return RealStoreCache(memoryPolicy = memoryPolicy
             )
         }
 
         // TODO rename to from after cleanup. Has a different name to avoid conflict w/ the old
         //  `from`.
         fun <K, V, Request> fromRequest(
-                loader: suspend (Request) -> V,
                 memoryPolicy: MemoryPolicy
         ): StoreCache<K, V, Request> {
             return RealStoreCache(
-                    loader = loader,
                     memoryPolicy = memoryPolicy
             )
         }

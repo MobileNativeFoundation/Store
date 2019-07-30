@@ -19,7 +19,7 @@ class StoreBuilderTest {
         val store: Store<Date, Int> = Store.from<String, Int> { key ->
             key.toString()
         }.persister(object : Persister<String, Int> {
-            override suspend fun read(key: Int): String? {
+            override suspend fun read(key: Int): String {
                 return key.toString()
             }
 

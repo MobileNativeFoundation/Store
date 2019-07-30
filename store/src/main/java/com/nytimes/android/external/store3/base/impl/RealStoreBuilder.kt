@@ -39,7 +39,7 @@ class RealStoreBuilder<Raw, Parsed, Key> {
     fun persister(diskRead: DiskRead<Raw, Key>,
                   diskWrite: DiskWrite<Raw, Key>): RealStoreBuilder<Raw, Parsed, Key> = apply {
         persister = object : Persister<Raw, Key> {
-            override suspend fun read(key: Key): Raw? =
+            override suspend fun read(key: Key): Raw =
                     diskRead.read(key)
 
             override suspend fun write(key: Key, raw: Raw): Boolean =

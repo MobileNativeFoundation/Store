@@ -66,7 +66,7 @@ fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
 @ExperimentalCoroutinesApi
 @FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withNonFlowPersister(
-    reader: suspend (Key) -> NewOutput?,
+    reader: suspend (Key) -> NewOutput,
     writer: suspend (Key, OldOutput) -> Unit,
     delete: (suspend (Key) -> Unit)? = null
 ): PipelineStore<Key, NewOutput> {

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -25,7 +24,7 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
         val store = StoreBuilder.key<Int, Int>()
                 .fetcher { key -> key * 1000 + counter++ }
                 .memoryPolicy(
-                        MemoryPolicy
+                        com.nytimes.android.external.store3.base.impl.MemoryPolicy
                                 .builder()
                                 .setExpireAfterWrite(10)
                                 .setExpireAfterTimeUnit(TimeUnit.SECONDS)

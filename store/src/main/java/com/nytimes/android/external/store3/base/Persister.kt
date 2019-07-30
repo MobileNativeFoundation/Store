@@ -13,7 +13,7 @@ interface Persister<Raw, Key> : DiskRead<Raw, Key>, DiskWrite<Raw, Key>, BasePer
      * If data is not available implementer needs to
      * either return null or throw an exception
      */
-    override suspend fun read(key: Key): Raw?
+    override suspend fun read(key: Key): Raw
 
     /**
      * @param key to use to store data to persister

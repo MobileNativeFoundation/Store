@@ -48,7 +48,7 @@ class SequentialTes(
     fun cacheWithParser() = runBlocking<Unit> {
         val persister: Persister<String, Int> = object : Persister<String, Int> {
             private val map = mutableMapOf<Int, String>()
-            override suspend fun read(key: Int): String? = map[key]
+            override suspend fun read(key: Int): String = map[key]!!
 
             override suspend fun write(key: Int, raw: String): Boolean {
                 map[key] = raw

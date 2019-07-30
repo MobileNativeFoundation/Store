@@ -22,8 +22,8 @@ import kotlin.coroutines.CoroutineContext
 class PersistingStoreActivity : AppCompatActivity(), CoroutineScope {
     lateinit var job: Job
 
-        override val coroutineContext: CoroutineContext
-            get() = job + Dispatchers.Main
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
 
     lateinit var postAdapter: PostAdapter
     lateinit var persistedStore: Store<RedditData, BarCode>
@@ -59,7 +59,7 @@ class PersistingStoreActivity : AppCompatActivity(), CoroutineScope {
     }
 
     suspend fun Store<RedditData, BarCode>.gett(key: BarCode) =
-        withContext(Dispatchers.IO) { get(key) }
+            withContext(Dispatchers.IO) { get(key) }
 
     private fun showPosts(posts: List<Post>) {
         postAdapter.setPosts(posts)

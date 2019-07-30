@@ -17,15 +17,17 @@ import kotlinx.coroutines.sync.withLock
 @ExperimentalCoroutinesApi
 @FlowPreview
 class SimplePersisterAsFlowable<Key, Input, Output>(
-    private val reader: suspend (Key) -> Output?,
+    private val reader: suspend (Key) -> Output,
     private val writer: suspend (Key, Input) -> Unit,
     private val delete: (suspend (Key) -> Unit)? = null
 ) {
     private val versionTracker = KeyTracker<Key>()
 
-    fun flowReader(key: Key): Flow<Output?> = flow {
-        versionTracker.keyFlow(key).collect {
-            emit(reader(key))
+    fun flowReader(key: Key): Flow<Output> {
+        return flow {
+            versionTracker.keyFlow(key).collect {
+                emit(reader(key))
+            }
         }
     }
 

@@ -10,13 +10,13 @@ data class StoreRequest<Key> private constructor(
      */
     private val skippedCaches: Int,
     /**
-     * If set to with stream requests, Store will always get fresh value from fetcher while also
+     * If set to true Store will always get fresh value from fetcher while also
      * starting the stream from the local data (disk and/or memory cache)
      */
     val refresh: Boolean = false
 ) {
 
-    fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
+    fun shouldLoadFrom(type: CacheType) = skippedCaches.and(type.flag) == 0
 
     companion object {
         private val allCaches = CacheType.values().fold(0) { prev, next ->
@@ -46,5 +46,5 @@ data class StoreRequest<Key> private constructor(
 
 enum class CacheType(internal val flag: Int) {
     MEMORY(0b01),
-    DISK(0b10)
+    Persistent(0b10)
 }

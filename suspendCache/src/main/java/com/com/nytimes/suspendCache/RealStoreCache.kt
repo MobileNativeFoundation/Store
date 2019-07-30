@@ -6,7 +6,6 @@ import com.nytimes.android.external.cache3.Ticker
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 
 internal class RealStoreCache<K, V, Request>(
-        private val loader: suspend (Request) -> V,
         private val memoryPolicy: MemoryPolicy,
         ticker: Ticker = Ticker.systemTicker()
 ) : StoreCache<K, V, Request> {
@@ -25,8 +24,10 @@ internal class RealStoreCache<K, V, Request>(
             }
             .build(object : CacheLoader<K, StoreRecord<V, Request>>() {
                 override fun load(key: K): StoreRecord<V, Request>? {
+                    val loader: suspend (Request) -> V = { TODO() }
                     return StoreRecord(
-                            loader = loader)
+                            loader = loader
+                    )
                 }
             })
 
@@ -39,6 +40,8 @@ internal class RealStoreCache<K, V, Request>(
     }
 
     override suspend fun put(key: K, value: V) {
+        val loader: suspend (Request) -> V = { TODO() }
+
         realCache.put(key, StoreRecord(
                 loader = loader,
                 precomputedValue = value))

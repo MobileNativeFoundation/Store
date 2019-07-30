@@ -54,22 +54,22 @@ class StreamOneKeyTest(
         val streamSubscription = store.stream(barCode)
                 .openChannelSubscription()
         try {
-            if (storeType == TestStoreType.Store) {
-                //stream doesn't invoke get anymore so when we call it the channel is empty
-                assertThat(streamSubscription.isEmpty).isTrue()
-            } else {
+//            if (storeType == TestStoreType.Store) {
+//                //stream doesn't invoke get anymore so when we call it the channel is empty
+//                assertThat(streamSubscription.isEmpty).isTrue()
+//            } else {
                 // for pipeline store, there is no `get` so it is not empty
                 assertThat(streamSubscription.isEmpty).isFalse()
-            }
+//            }
 
 
             store.clearMemory()
 
-            if (storeType == TestStoreType.Store) {
-                //fresh should notify subscribers in Store. In Pipeline, calling stream
-                // will already trigger a get, we don't want another here
-                store.fresh(barCode)
-            }
+//            if (storeType == TestStoreType.Store) {
+//                //fresh should notify subscribers in Store. In Pipeline, calling stream
+//                // will already trigger a get, we don't want another here
+//                store.fresh(barCode)
+//            }
 
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
 

@@ -29,7 +29,7 @@ class SampleApp : Application() {
     lateinit var nonPersistedStore: Store<RedditData, BarCode>
     lateinit var persistedStore: Store<RedditData, BarCode>
     lateinit var persistentPipelineStore: Store<RedditData, BarCode>
-    lateinit var nonPersistentPipielineStore : Store<RedditData, BarCode>
+    lateinit var nonPersistentPipielineStore: Store<RedditData, BarCode>
     val moshi = Moshi.Builder().build()
     lateinit var persister: Persister<BufferedSource, BarCode>
 
@@ -61,7 +61,7 @@ class SampleApp : Application() {
         return StoreBuilder.barcode<RedditData>()
                 .fetcher { key -> provideRetrofit().fetchSubreddit(key.key, "10").await() }
                 .memoryPolicy(
-                        MemoryPolicy
+                        com.nytimes.android.external.store3.base.impl.MemoryPolicy
                                 .builder()
                                 .setExpireAfterWrite(10)
                                 .setExpireAfterTimeUnit(TimeUnit.SECONDS)
@@ -124,11 +124,11 @@ class SampleApp : Application() {
     private fun providePersistedPipelineStore(): Persister<BufferedSource, BarCode> {
         val delegate = newPersister()
         return object : Persister<BufferedSource, BarCode> {
-            override suspend fun read(key: BarCode): BufferedSource? = withContext(Dispatchers.IO){
+            override suspend fun read(key: BarCode): BufferedSource? = withContext(Dispatchers.IO) {
                 return@withContext try {
                     // TODO figure out why FSReader prefers to throw instead of returning null
                     delegate.read(key)
-                } catch (ex : FileNotFoundException) {
+                } catch (ex: FileNotFoundException) {
                     null
                 }
             }
