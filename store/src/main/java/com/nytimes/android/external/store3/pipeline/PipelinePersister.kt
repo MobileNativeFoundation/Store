@@ -1,9 +1,9 @@
 package com.nytimes.android.external.store3.pipeline
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+
 @FlowPreview
 class PipelinePersister<Key, Input, Output>(
         private val fetcher: PipelineStore<Key, Input>,
@@ -12,9 +12,28 @@ class PipelinePersister<Key, Input, Output>(
         private val delete: (suspend (Key) -> Unit)? = null
 ) : PipelineStore<Key, Output> {
 
+    @ExperimentalCoroutinesApi
     override fun stream(request: StoreRequest<Key>): Flow<Output> {
         return if (request.shouldLoadFrom(CacheType.Persistent)) {
-            reader(request.key)
+            return if (request.refresh) {
+                //we need to refresh let's emit the current value and then concat the fetcher/disk flow
+                reader(request.key).take(1).filter { it == null }.concatUpstreamFlow(request)
+            } else {
+                //load the first value from disk
+                reader(request.key).take(1).flatMapConcat { firstValue ->
+                    //when the first value is null we should fall through to fetcher, write the value then read again
+                    if (firstValue == null) {
+                        fetcher.stream(request).flatMapConcat {
+                            writer(request.key, it)
+                            reader(request.key)
+                        }
+                    } else {
+                        //the first value was not null, lets emit it plus a connection to the db
+                        //TODO MIKE: we are reading from the db again which is not good, ideally this should be more like a refcount/passthrough
+                        flow { emit(firstValue) }.onCompletion { reader(request.key).drop(1) }
+                    }
+                }
+            }
         } else {
             fetcher.stream(request)
                     .flatMapConcat {
@@ -24,6 +43,15 @@ class PipelinePersister<Key, Input, Output>(
         }
     }
 
+    private fun Flow<Output>.concatUpstreamFlow(request: StoreRequest<Key>): Flow<Output> {
+        return fetcher.stream(request)
+                .flatMapConcat {
+                    writer(request.key, it)
+                    reader(request.key)
+                }
+                .startWith2(this)
+    }
+
     override suspend fun clear(key: Key) {
         delete?.invoke(key)
         fetcher.clear(key)
@@ -31,34 +59,8 @@ class PipelinePersister<Key, Input, Output>(
 }
 
 
-// TODO figure out why filterNotNull does not make compiler happy
-@FlowPreview
-@Suppress("UNCHECKED_CAST")
-private fun <T1, T2> Flow<T1>.castNonNull(): Flow<T2> {
-    val self = this
-    return flow {
-        self.collect {
-            if (it != null) {
-                emit(it as T2)
-            }
-        }
-    }
+private fun <T> Flow<T>.startWith2(networkFlow: Flow<T>): Flow<T> = flow {
+    this.emitAll(networkFlow)
+    emitAll(this@startWith2)
 }
 
-
-@FlowPreview
-private fun <T, R> Flow<T>.sideCollect(
-    other: Flow<R>,
-    otherCollect: suspend (R) -> Unit
-) = flow {
-    coroutineScope {
-        launch {
-            other.collect {
-                otherCollect(it)
-            }
-        }
-        this@sideCollect.collect {
-            emit(it)
-        }
-    }
-}

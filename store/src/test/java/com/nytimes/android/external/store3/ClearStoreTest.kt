@@ -58,40 +58,41 @@ class ClearStoreTest(
         assertThat(networkCalls.toInt()).isEqualTo(2)
     }
 
-//    @Test
-//    fun testClearAllBarCodes() = runBlocking<Unit> {
-//        val barcode1 = BarCode("type1", "key1")
-//        val barcode2 = BarCode("type2", "key2")
-//
-//        whenever(persister.read(barcode1))
-//                .thenReturn(null) //read from disk
-//                .thenReturn(1) //read from disk after fetching from network
-//                .thenReturn(null) //read from disk after clearing disk cache
-//                .thenReturn(1) //read from disk after making additional network call
-//        whenever(persister.write(barcode1, 1)).thenReturn(true)
-//        whenever(persister.write(barcode1, 2)).thenReturn(true)
-//
-//        whenever(persister.read(barcode2))
-//                .thenReturn(null) //read from disk
-//                .thenReturn(1) //read from disk after fetching from network
-//                .thenReturn(null) //read from disk after clearing disk cache
-//                .thenReturn(1) //read from disk after making additional network call
-//
-//        whenever(persister.write(barcode2, 1)).thenReturn(true)
-//        whenever(persister.write(barcode2, 2)).thenReturn(true)
-//
-//        // each request should produce one call
-//        store.get(barcode1)
-//        store.get(barcode2)
-//        assertThat(networkCalls.toInt()).isEqualTo(2)
-//
-//        store.clearMemory()
-//
-//        // after everything is cleared each request should produce another 2 calls
-//        store.get(barcode1)
-//        store.get(barcode2)
-//        assertThat(networkCalls.toInt()).isEqualTo(4)
-//    }
+    @Test
+    fun testClearAllBarCodes() = runBlocking<Unit> {
+        val barcode1 = BarCode("type1", "key1")
+        val barcode2 = BarCode("type2", "key2")
+
+        whenever(persister.read(barcode1))
+                .thenReturn(null) //read from disk
+                .thenReturn(1) //read from disk after fetching from network
+                .thenReturn(null) //read from disk after clearing disk cache
+                .thenReturn(1) //read from disk after making additional network call
+        whenever(persister.write(barcode1, 1)).thenReturn(true)
+        whenever(persister.write(barcode1, 2)).thenReturn(true)
+
+        whenever(persister.read(barcode2))
+                .thenReturn(null) //read from disk
+                .thenReturn(1) //read from disk after fetching from network
+                .thenReturn(null) //read from disk after clearing disk cache
+                .thenReturn(1) //read from disk after making additional network call
+
+        whenever(persister.write(barcode2, 1)).thenReturn(true)
+        whenever(persister.write(barcode2, 2)).thenReturn(true)
+
+        // each request should produce one call
+        store.get(barcode1)
+        store.get(barcode2)
+        assertThat(networkCalls.toInt()).isEqualTo(2)
+
+        store.clear(barcode1)
+        store.clear(barcode2)
+
+        // after everything is cleared each request should produce another 2 calls
+        store.get(barcode1)
+        store.get(barcode2)
+        assertThat(networkCalls.toInt()).isEqualTo(4)
+    }
 
     @FlowPreview
     companion object {
