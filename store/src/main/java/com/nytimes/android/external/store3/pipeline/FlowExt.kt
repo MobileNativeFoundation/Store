@@ -1,8 +1,9 @@
 package com.nytimes.android.external.store3.pipeline
 
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 
 private object NotReceived
 
@@ -23,5 +24,24 @@ internal suspend fun <T> Flow<T>.singleOrNull(): T? {
     } else {
         @Suppress("UNCHECKED_CAST")
         value as? T
+    }
+}
+
+@FlowPreview
+internal fun <T, R> Flow<T>.sideCollect(
+        other: Flow<R>,
+        otherCollect: suspend (R) -> Unit
+) = flow {
+    coroutineScope {
+        val sideJob = launch {
+            other.collect {
+                otherCollect(it)
+            }
+        }
+        this@sideCollect.collect {
+            emit(it)
+        }
+        // when main flow ends, cancel the side channel.
+        sideJob.cancelAndJoin()
     }
 }

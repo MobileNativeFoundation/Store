@@ -1,12 +1,10 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.switchMap
-import kotlinx.coroutines.launch
 
 @FlowPreview
 class PipelinePersister<Key, Input, Output>(
@@ -77,24 +75,6 @@ private fun <T1, T2> Flow<T1>.castNonNull(): Flow<T2> {
             if (it != null) {
                 emit(it as T2)
             }
-        }
-    }
-}
-
-
-@FlowPreview
-private fun <T, R> Flow<T>.sideCollect(
-    other: Flow<R>,
-    otherCollect: suspend (R) -> Unit
-) = flow {
-    coroutineScope {
-        launch {
-            other.collect {
-                otherCollect(it)
-            }
-        }
-        this@sideCollect.collect {
-            emit(it)
         }
     }
 }
