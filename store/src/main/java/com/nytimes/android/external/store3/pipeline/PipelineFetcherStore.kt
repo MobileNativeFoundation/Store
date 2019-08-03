@@ -9,9 +9,7 @@ internal class PipelineFetcherStore<Key, Output>(
 ) : PipelineStore<Key, Output> {
     override fun stream(request: StoreRequest<Key>) = fetcher(request.key)
 
-    override suspend fun clearMemory() {
 
-    }
 
     override suspend fun clear(key: Key) {
     }

@@ -37,11 +37,6 @@ internal class InflightStore<V, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
-    override suspend fun clearMemory() {
-        inFlightRequests.clearAll()
-        wrappedStore.clearMemory()
-    }
-
     override suspend fun clear(key: K) {
         inFlightRequests.invalidate(key)
         wrappedStore.clear(key)

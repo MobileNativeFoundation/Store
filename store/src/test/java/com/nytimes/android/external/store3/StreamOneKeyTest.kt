@@ -72,7 +72,7 @@ class StreamOneKeyTest(
             }
 
 
-            store.clearMemory()
+            store.clear(barCode)
 
             if (storeType == TestStoreType.Store) {
                 //fresh should notify subscribers in Store. In Pipeline, calling stream

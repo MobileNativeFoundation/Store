@@ -95,7 +95,7 @@ class StoreTest(
                 persister = persister
         ).build(storeType)
 
-        simpleStore.clearMemory()
+        simpleStore.clear(barCode)
 
         whenever(fetcher.fetch(barCode))
                 .thenReturn(NETWORK)
@@ -105,7 +105,7 @@ class StoreTest(
                 .thenReturn(DISK)
         whenever(persister.write(barCode, NETWORK)).thenReturn(true)
 
-        var value = simpleStore.get(barCode)
+            var value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)

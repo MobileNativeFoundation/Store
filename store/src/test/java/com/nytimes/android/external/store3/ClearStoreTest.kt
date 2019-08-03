@@ -77,8 +77,8 @@ class ClearStoreTest(
         store.get(barcode2)
         assertThat(networkCalls.toInt()).isEqualTo(2)
 
-        store.clearMemory()
-
+        store.clear(barcode1)
+        store.clear(barcode2)
         // after everything is cleared each request should produce another 2 calls
         store.get(barcode1)
         store.get(barcode2)
