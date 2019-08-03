@@ -7,9 +7,11 @@ import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.StalePolicy
 import com.nytimes.android.external.store3.util.NoopPersister
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Test
@@ -18,18 +20,20 @@ import org.junit.runners.Parameterized
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 @RunWith(Parameterized::class)
 class StoreTest(
         private val storeType: TestStoreType
 ) {
+    private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
     private val fetcher: Fetcher<String, BarCode> = mock()
     private var persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
 
     @Test
-    fun testSimple() = runBlocking<Unit> {
+    fun testSimple() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
                 fetcher = fetcher,
                 persister = persister
@@ -54,7 +58,7 @@ class StoreTest(
     }
 
     @Test
-    fun testDoubleTap() = runBlocking<Unit> {
+    fun testDoubleTap() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
                 fetcher = fetcher,
                 persister = persister
@@ -84,7 +88,7 @@ class StoreTest(
     }
 
     @Test
-    fun testSubclass() = runBlocking<Unit> {
+    fun testSubclass() = testScope.runBlockingTest {
 
         val simpleStore = TestStoreBuilder.from(
                 fetcher = fetcher,
@@ -109,7 +113,7 @@ class StoreTest(
     }
 
     @Test
-    fun testNoopAndDefault() = runBlocking<Unit> {
+    fun testNoopAndDefault() = testScope.runBlockingTest {
         val persister = spy(NoopPersister.create<String, BarCode>())
         val simpleStore = TestStoreBuilder.from(
                 fetcher = fetcher,
@@ -136,7 +140,7 @@ class StoreTest(
     }
 
     @Test
-    fun testEquivalence() = runBlocking<Unit> {
+    fun testEquivalence() = testScope.runBlockingTest {
         val cache = CacheBuilder.newBuilder()
                 .maximumSize(1)
                 .expireAfterAccess(java.lang.Long.MAX_VALUE, TimeUnit.SECONDS)
@@ -151,7 +155,7 @@ class StoreTest(
     }
 
     @Test
-    fun testFreshUsesOnlyNetwork() = runBlocking<Unit> {
+    fun testFreshUsesOnlyNetwork() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
                 fetcher = fetcher,
                 persister = persister,

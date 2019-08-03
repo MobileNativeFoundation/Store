@@ -139,6 +139,9 @@ class PipelineStoreTest {
         )
     }
 
+    suspend fun PipelineStore<Int, String>.get(request : StoreRequest<Int>) =
+            this.stream(request).take(1).toList().first()
+
     suspend fun PipelineStore<Int, String>.get(key: Int) = get(
         StoreRequest.cached(
             key = key,
