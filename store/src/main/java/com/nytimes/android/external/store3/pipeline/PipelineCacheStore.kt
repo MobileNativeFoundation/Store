@@ -14,8 +14,11 @@ internal class PipelineCacheStore<Key, Output>(
         memoryPolicy: MemoryPolicy? = null
 ) : PipelineStore<Key, Output> {
     private val memCache = StoreCache.fromRequest<Key, Output?, StoreRequest<Key>>(
-            loader = { request: StoreRequest<Key> ->
-                delegate.get(request)
+            loader = {
+                TODO("""
+                    This should've never been called. We don't need this anymore, should remove
+                    loader after we clean old Store ?
+                """.trimIndent())
             },
             memoryPolicy = memoryPolicy ?: StoreDefaults.memoryPolicy
     )
@@ -35,13 +38,6 @@ internal class PipelineCacheStore<Key, Output>(
                 emit(it)
             }
         }
-    }
-
-    override suspend fun get(request: StoreRequest<Key>): Output? {
-        if (request.shouldSkipCache(CacheType.MEMORY)) {
-            return memCache.fresh(request.key, request)
-        }
-        return memCache.get(request.key, request)
     }
 
     override suspend fun clearMemory() {

@@ -13,45 +13,44 @@ class PipelinePersister<Key, Input, Output>(
         private val writer: suspend (Key, Input) -> Unit,
         private val delete: (suspend (Key) -> Unit)? = null
 ) : PipelineStore<Key, Output> {
-    override suspend fun get(request: StoreRequest<Key>): Output? {
-        val value: Output? = if (request.shouldSkipCache(CacheType.DISK)) {
-            null
-        } else {
-            reader(request.key).singleOrNull()
-        }
-        value?.let {
-            return it
-        }
-        // skipped cache or cache is null
-        val fetcherValue = fetcher.get(request)
-        fetcherValue?.let {
-            writer(request.key, it)
-        }
-        return reader(request.key).singleOrNull()
-    }
-
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreRequest<Key>): Flow<Output> {
-        if (request.shouldSkipCache(CacheType.DISK)) {
-            return fetcher.stream(request)
-                .switchMap {
-                    writer(request.key, it)
-                    reader(request.key)
-                }.castNonNull()
-        } else {
-            return reader(request.key).let {
-                    if (request.refresh) {
-                        // also request from backend
-                        it.sideCollect(fetcher.stream(request)) { response: Input ->
-                            response?.let { data: Input ->
-                                writer(request.key, data)
-                            }
+        return when {
+            // skipping cache, just delegate to the fetcher but update disk w/ any new data from
+            // fetcher
+            request.shouldSkipCache(CacheType.DISK) -> fetcher.stream(request)
+                    .switchMap {
+                        writer(request.key, it)
+                        reader(request.key)
+                    }.castNonNull()
+            // we want to stream from disk but also want to refresh. Immediately start fetcher
+            // when flow starts.
+            request.refresh -> reader(request.key)
+                    .sideCollect(fetcher.stream(request)) { response: Input? ->
+                        response?.let { data: Input ->
+                            writer(request.key, data)
                         }
-                    } else {
-                        it
-                    }
-                }
-                .castNonNull()
+                    }.castNonNull()
+            // we want to return from disk but also fetch from server if there is nothing in disk.
+            // to do that, we need to see the first disk value and then decide to fetch or not.
+            // in any case, we always return the Flow from reader.
+            else -> reader(request.key)
+                    .sideCollectMaybe(
+                            otherProducer = {
+                                if (it == null) {
+                                    // disk returned null, create a new flow from fetcher
+                                    fetcher.stream(request)
+                                } else {
+                                    // disk had cached value, don't trigger fetcher
+                                    null
+                                }
+                            },
+                            otherCollect = { response: Input ->
+                                response?.let { data: Input ->
+                                    writer(request.key, data)
+                                }
+                            }
+                    ).castNonNull()
         }
     }
 

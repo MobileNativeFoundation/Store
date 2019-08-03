@@ -6,8 +6,11 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,11 +18,13 @@ import org.junit.runners.Parameterized
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 @RunWith(Parameterized::class)
 class StoreWithParserTest(
         private val storeType: TestStoreType
 ) {
+    private val testScope = TestCoroutineScope()
     private val fetcher: Fetcher<String, BarCode> = mock()
     private val persister: Persister<String, BarCode> = mock()
     private val parser: Parser<String, String> = mock()
@@ -27,7 +32,7 @@ class StoreWithParserTest(
     private val barCode = BarCode("key", "value")
 
     @Test
-    fun testSimple() = runBlocking<Unit> {
+    fun testSimple() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.fromPostParser(
                 fetcher = fetcher,
                 persister = persister,
@@ -54,7 +59,7 @@ class StoreWithParserTest(
     }
 
     @Test
-    fun testSubclass() = runBlocking<Unit> {
+    fun testSubclass() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.fromPostParser(
                 fetcher = fetcher,
                 persister = persister,
