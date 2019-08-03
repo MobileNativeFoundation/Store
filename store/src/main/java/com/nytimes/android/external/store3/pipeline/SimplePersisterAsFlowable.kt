@@ -58,10 +58,15 @@ private class KeyTracker<Key> {
 
     @ObsoleteCoroutinesApi
     suspend fun keyFlow(key: Key): Flow<Unit> = flow {
-        emit(Unit)
-        invalidations.openSubscription().drop(1).consumeEach {
-            if (it != null && it.first == key) {
-                emit(it.second)
+        var first = true
+        invalidations.openSubscription().consumeEach {
+            // It is important to emit the first value after we open the subscription. If we emit
+            // initial value before starting the flow, we might lose a value in between.
+            if (first) {
+                first = false
+                emit(Unit)
+            } else if (it != null && it.first == key) {
+                emit(Unit)
             }
         }
     }

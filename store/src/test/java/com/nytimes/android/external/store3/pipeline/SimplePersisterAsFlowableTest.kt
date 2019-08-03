@@ -6,9 +6,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.lang.AssertionError
 
+@ObsoleteCoroutinesApi
 @FlowPreview
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowableTest {
@@ -22,7 +24,6 @@ class SimplePersisterAsFlowableTest {
         Assertions.assertThat(read).isEqualTo(listOf("a"))
     }
 
-    @UseExperimental(FlowPreview::class)
     @Test
     fun writeInvalidation() = testScope.runBlockingTest {
         val (flowable , written)= create("a", "b")
@@ -46,7 +47,20 @@ class SimplePersisterAsFlowableTest {
         flowable.flowWriter(barcode, "x")
         testScope.advanceUntilIdle()
         otherScope.advanceUntilIdle()
-        Assertions.assertThat(collectedValues.await()).isEqualTo(listOf("a", "b"))
+        assertThat(collectedValues.await()).isEqualTo(listOf("a", "b"))
+        assertThat(written).isEqualTo(listOf("dsa", "x"))
+    }
+
+    /**
+     * invalidating inside the read should call itself again. This test fails if it cannot take 2
+     * (in other words, writing inside the read failed to notify)
+     */
+    @Test
+    fun nestedInvalidation() = testScope.runBlockingTest {
+        val (flowable, written) = create("a", "b")
+        flowable.flowReader(barcode).take(2).collect {
+            flowable.flowWriter(barcode, "x")
+        }
     }
 
     private fun create(

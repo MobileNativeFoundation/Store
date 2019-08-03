@@ -39,6 +39,15 @@ class StreamOneKeyTest(
                 .thenReturn(TEST_ITEM2)
 
         whenever(persister.read(barCode))
+                .let {
+                    // the backport stream method of Pipeline to Store does not skip disk so we
+                    // make sure disk returns empty value first
+                    if (storeType == TestStoreType.Pipeline) {
+                        it.thenReturn(null)
+                    } else {
+                        it
+                    }
+                }
                 .thenReturn(TEST_ITEM)
                 .thenReturn(TEST_ITEM2)
 
@@ -72,7 +81,6 @@ class StreamOneKeyTest(
             }
 
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
-
             //get for another barcode should not trigger a stream for barcode1
             whenever(fetcher.fetch(barCode2))
                     .thenReturn(TEST_ITEM)
