@@ -5,18 +5,13 @@ import com.nytimes.android.external.cache3.CacheBuilder
 import com.nytimes.android.external.store3.base.Clearable
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import java.util.concurrent.TimeUnit
 
 /**
  * Pass-through diskdao for stores that don't want to use persister
  */
 class NoopPersister<Raw, Key> internal constructor(memoryPolicy: MemoryPolicy) : Persister<Raw, Key>, Clearable<Key> {
-    val networkResponses: Cache<Key, Deferred<Raw>>
-    private val memoryScope = CoroutineScope(SupervisorJob())
+    val networkResponses: Cache<Key, Raw>
 
     init {
         if (memoryPolicy.hasAccessPolicy()) {
@@ -33,11 +28,11 @@ class NoopPersister<Raw, Key> internal constructor(memoryPolicy: MemoryPolicy) :
         }
     }
 
-    override suspend fun read(key: Key): Raw? = networkResponses.getIfPresent(key)?.await()
+    override suspend fun read(key: Key): Raw? = networkResponses.getIfPresent(key)
 
 
     override suspend fun write(key: Key, raw: Raw): Boolean {
-        networkResponses.put(key, memoryScope.async { raw })
+        networkResponses.put(key, raw)
         return true
     }
 
@@ -48,7 +43,7 @@ class NoopPersister<Raw, Key> internal constructor(memoryPolicy: MemoryPolicy) :
     companion object {
 
         fun <Raw, Key> create(): NoopPersister<Raw, Key> {
-            return NoopPersister.create(null)
+            return create(null)
         }
 
         fun <Raw, Key> create(memoryPolicy: MemoryPolicy?): NoopPersister<Raw, Key> {
