@@ -1,25 +1,29 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 @RunWith(Parameterized::class)
 class ClearStoreMemoryTest(
         storeType : TestStoreType
 ) {
+    private val testScope = TestCoroutineScope()
     private var networkCalls = 0
     private val store = TestStoreBuilder.from<BarCode, Int> {
         networkCalls ++
     }.build(storeType)
 
     @Test
-    fun testClearSingleBarCode() = runBlocking<Unit> {
+    fun testClearSingleBarCode() = testScope.runBlockingTest {
         //one request should produce one call
         val barcode = BarCode("type", "key")
         store.get(barcode)
@@ -32,7 +36,7 @@ class ClearStoreMemoryTest(
     }
 
     @Test
-    fun testClearAllBarCodes() = runBlocking<Unit> {
+    fun testClearAllBarCodes() = testScope.runBlockingTest {
         val b1 = BarCode("type1", "key1")
         val b2 = BarCode("type2", "key2")
 
