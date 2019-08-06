@@ -9,6 +9,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.AssumptionViolatedException
 import org.junit.Before
@@ -23,7 +25,7 @@ import org.junit.runners.Parameterized
 class StreamTest(
         private val storeType: TestStoreType
 ) {
-
+    private val testScope = TestCoroutineScope()
     private val fetcher: Fetcher<String, BarCode> = mock()
     private val persister: Persister<String, BarCode> = mock()
 
@@ -35,7 +37,7 @@ class StreamTest(
     ).build(storeType)
 
     @Before
-    fun setUp() = runBlocking<Unit> {
+    fun setUp() = testScope.runBlockingTest {
         whenever(fetcher.fetch(barCode)).thenReturn(TEST_ITEM)
 
         whenever(persister.read(barCode))
@@ -48,7 +50,7 @@ class StreamTest(
 
     @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
-    fun testStream() = runBlocking<Unit> {
+    fun testStream() = testScope.runBlockingTest {
         if (storeType == TestStoreType.Pipeline) {
             throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
         }
@@ -64,7 +66,7 @@ class StreamTest(
 
     @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
-    fun testStreamEmitsOnlyFreshData() = runBlocking<Unit> {
+    fun testStreamEmitsOnlyFreshData() = testScope.runBlockingTest {
         if (storeType == TestStoreType.Pipeline) {
             throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
         }
