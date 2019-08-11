@@ -59,10 +59,7 @@ internal class PersisterStore<V, K>(
 
 
     override suspend fun clear(key: K) {
-        // TODO we should somehow receive it or not make this suspend
-       withContext(Dispatchers.IO) {
-            StoreUtil.clearPersister<Any, K>(persister, key)
-        }
+        StoreUtil.clearPersister<Any, K>(persister, key)
         wrappedStore.clear(key)
     }
 }
