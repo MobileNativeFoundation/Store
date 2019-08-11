@@ -1,10 +1,8 @@
 package com.nytimes.android.external.store3.pipeline
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.switchMap
+import kotlinx.coroutines.flow.*
 
 @FlowPreview
 class PipelinePersister<Key, Input, Output>(
@@ -13,13 +11,14 @@ class PipelinePersister<Key, Input, Output>(
         private val writer: suspend (Key, Input) -> Unit,
         private val delete: (suspend (Key) -> Unit)? = null
 ) : PipelineStore<Key, Output> {
+    @ExperimentalCoroutinesApi
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreRequest<Key>): Flow<Output> {
         return when {
             // skipping cache, just delegate to the fetcher but update disk w/ any new data from
             // fetcher
             request.shouldSkipCache(CacheType.DISK) -> fetcher.stream(request)
-                    .switchMap {
+                    .flatMapLatest {
                         writer(request.key, it)
                         reader(request.key)
                     }.castNonNull()
@@ -65,15 +64,11 @@ class PipelinePersister<Key, Input, Output>(
 }
 
 // TODO figure out why filterNotNull does not make compiler happy
+@ExperimentalCoroutinesApi
 @FlowPreview
 @Suppress("UNCHECKED_CAST")
-private fun <T1, T2> Flow<T1>.castNonNull(): Flow<T2> {
-    val self = this
-    return flow {
-        self.collect {
-            if (it != null) {
-                emit(it as T2)
-            }
-        }
+private fun <T1, T2> Flow<T1>.castNonNull() = this.transform {
+    (it as? T2)?.let {
+        emit(it)
     }
 }
