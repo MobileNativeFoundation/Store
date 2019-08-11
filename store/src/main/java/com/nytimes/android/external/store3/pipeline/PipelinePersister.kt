@@ -53,9 +53,6 @@ class PipelinePersister<Key, Input, Output>(
         }
     }
 
-    override suspend fun clearMemory() {
-        fetcher.clearMemory()
-    }
 
     override suspend fun clear(key: Key) {
         fetcher.clear(key)
