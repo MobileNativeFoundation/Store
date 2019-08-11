@@ -1,7 +1,9 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 
@@ -33,23 +35,21 @@ internal suspend fun <T> Flow<T>.singleOrNull(): T? {
  *
  * @see [sideCollectMaybe]
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 internal fun <T, R> Flow<T>.sideCollect(
         other: Flow<R>,
         otherCollect: suspend (R) -> Unit
-) = flow {
-    coroutineScope {
-        val sideJob = launch {
-            other.collect {
-                otherCollect(it)
-            }
+) = channelFlow {
+    val sideJob = launch {
+        other.collect {
+            otherCollect(it)
         }
-        this@sideCollect.collect {
-            emit(it)
-        }
-        // when main flow ends, cancel the side channel.
-        sideJob.cancelAndJoin()
     }
+    this@sideCollect.collect {
+        send(it)
+    }
+    sideJob.cancelAndJoin()
 }
 
 /**
@@ -57,26 +57,25 @@ internal fun <T, R> Flow<T>.sideCollect(
  * If [otherProducer] returns a Flow, it starts collecting from it and calls [otherCollect] with
  * each value.
  */
+@ExperimentalCoroutinesApi
 @FlowPreview
 internal fun <T, R> Flow<T>.sideCollectMaybe(
         otherProducer: suspend (T?) -> Flow<R>?,
         otherCollect: suspend (R) -> Unit
-) = flow {
-    coroutineScope {
-        val deferredFlow = CompletableDeferred<Flow<R>?>()
-        val sideJob = launch {
-            deferredFlow.await()?.collect {
-                otherCollect(it)
-            }
+) = channelFlow {
+    val deferredFlow = CompletableDeferred<Flow<R>?>()
+    val sideJob = launch {
+        deferredFlow.await()?.collect {
+            otherCollect(it)
         }
-        this@sideCollectMaybe.collect {
-            if (deferredFlow.isActive) {
-                // first item
-                deferredFlow.complete(otherProducer(it))
-            }
-            emit(it)
-        }
-        // when main flow ends, cancel the side channel.
-        sideJob.cancelAndJoin()
     }
+    this@sideCollectMaybe.collect {
+        if (deferredFlow.isActive) {
+            // first item
+            deferredFlow.complete(otherProducer(it))
+        }
+        send(it)
+    }
+    // when main flow ends, cancel the side channel.
+    sideJob.cancelAndJoin()
 }
