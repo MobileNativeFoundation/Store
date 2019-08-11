@@ -9,6 +9,8 @@ import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +21,7 @@ import kotlin.random.Random
 @RunWith(Parameterized::class)
 class SequentialTes(
         storeType: TestStoreType) {
+    private val testScope = TestCoroutineScope()
 
     var networkCalls = 0
     private val store = TestStoreBuilder.from<BarCode, Int>(cached = true) {
@@ -26,7 +29,7 @@ class SequentialTes(
     }.build(storeType)
 
     @Test
-    fun sequentially() = runBlocking<Unit> {
+    fun sequentially() = testScope.runBlockingTest {
         val b = BarCode("one", "two")
         store.get(b)
         store.get(b)
@@ -35,7 +38,7 @@ class SequentialTes(
     }
 
     @Test
-    fun parallel() = runBlocking<Unit> {
+    fun parallel() = testScope.runBlockingTest {
         val b = BarCode("one", "two")
         val deferred = async { store.get(b) }
         store.get(b)
@@ -45,7 +48,7 @@ class SequentialTes(
     }
 
     @Test
-    fun cacheWithParser() = runBlocking<Unit> {
+    fun cacheWithParser() = testScope.runBlockingTest {
         val persister: Persister<String, Int> = object : Persister<String, Int> {
             private val map = mutableMapOf<Int, String>()
             override suspend fun read(key: Int): String? = map[key]

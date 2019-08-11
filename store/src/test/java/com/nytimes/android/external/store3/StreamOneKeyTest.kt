@@ -7,7 +7,8 @@ import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -23,7 +24,6 @@ class StreamOneKeyTest(
 
     val fetcher: Fetcher<String, BarCode> = mock()
     val persister: Persister<String, BarCode> = mock()
-
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")
 
@@ -31,9 +31,10 @@ class StreamOneKeyTest(
             fetcher = fetcher,
             persister = persister
     ).build(storeType)
+    private val testScope = TestCoroutineScope()
 
     @Before
-    fun setUp() = runBlocking<Unit> {
+    fun setUp() = runBlockingTest {
         whenever(fetcher.fetch(barCode))
                 .thenReturn(TEST_ITEM)
                 .thenReturn(TEST_ITEM2)
@@ -59,7 +60,7 @@ class StreamOneKeyTest(
 
     @Suppress("UsePropertyAccessSyntax") // for assert isTrue() isFalse()
     @Test
-    fun testStream() = runBlocking<Unit> {
+    fun testStream() = runBlockingTest {
         val streamSubscription = store.stream(barCode)
                 .openChannelSubscription()
         try {
