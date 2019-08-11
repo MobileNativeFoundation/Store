@@ -1,15 +1,12 @@
 package com.nytimes.android.external.store3
 
-import com.nhaarman.mockitokotlin2.*
-import com.nytimes.android.external.cache3.CacheBuilder
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.StalePolicy
-import com.nytimes.android.external.store3.util.NoopPersister
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +14,6 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalCoroutinesApi
@@ -41,14 +37,12 @@ class StoreThrowOnNoItems(
         whenever(fetcher.fetch(barCode))
                 .thenThrow(NoSuchElementException())
 
-       try {
-           simpleStore.get(barCode)
-           fail("exception not thrown when no items emitted from fetcher")
-
-       }
-       catch(e:NoSuchElementException){
-           assertThat(e).isInstanceOf(NoSuchElementException::class.java)
-       }
+        try {
+            simpleStore.get(barCode)
+            fail("exception not thrown when no items emitted from fetcher")
+        } catch (e: NoSuchElementException) {
+            assertThat(e).isInstanceOf(NoSuchElementException::class.java)
+        }
     }
 
     companion object {
