@@ -9,7 +9,6 @@ import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import com.nytimes.android.external.store3.middleware.GsonParserFactory
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import okio.BufferedSource

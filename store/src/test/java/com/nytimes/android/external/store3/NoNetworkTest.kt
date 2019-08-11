@@ -4,6 +4,8 @@ import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Test
@@ -18,9 +20,10 @@ class NoNetworkTest(
     private val store: Store<out Any, BarCode> = TestStoreBuilder.from<BarCode, Any> {
         throw EXCEPTION
     }.build(storeType)
+    private val testScope = TestCoroutineScope()
 
     @Test
-    fun testNoNetwork() = runBlocking<Unit> {
+    fun testNoNetwork() = testScope.runBlockingTest {
         try {
             store.get(BarCode("test", "test"))
             fail("Exception not thrown")
