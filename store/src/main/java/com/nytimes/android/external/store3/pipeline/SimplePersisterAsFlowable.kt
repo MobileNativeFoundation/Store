@@ -5,10 +5,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.drop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -17,9 +16,9 @@ import kotlinx.coroutines.sync.withLock
 @ExperimentalCoroutinesApi
 @FlowPreview
 class SimplePersisterAsFlowable<Key, Input, Output>(
-    private val reader: suspend (Key) -> Output?,
-    private val writer: suspend (Key, Input) -> Unit,
-    private val delete: (suspend (Key) -> Unit)? = null
+        private val reader: suspend (Key) -> Output?,
+        private val writer: suspend (Key, Input) -> Unit,
+        private val delete: (suspend (Key) -> Unit)? = null
 ) {
     private val versionTracker = KeyTracker<Key>()
 
@@ -42,31 +41,78 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
     }
 }
 
-@FlowPreview
+/**
+ * helper class which provides Flows for Keys that can be tracked.
+ */
 @ExperimentalCoroutinesApi
-private class KeyTracker<Key> {
-    private val mutex = Mutex()
-    private val invalidations = BroadcastChannel<Pair<Key, Unit>?>(Channel.CONFLATED).apply {
-        //a conflated channel always maintains the last element, the stream method ignore this element.
-        //Here we add an empty element that will be ignored later
-        offer(null)
+internal class KeyTracker<Key> {
+    private val lock = Mutex()
+    // list of open key channels
+    private val channels = mutableMapOf<Key, KeyChannel>()
+
+    // for testing
+    internal fun activeKeyCount() = channels.size
+
+    /**
+     * invalidates the given key. If there are flows returned from [keyFlow] for the given [key],
+     * they'll receive a new emission
+     */
+    suspend fun invalidate(key: Key) {
+        lock.withLock {
+            channels[key]
+        }?.channel?.send(Unit)
     }
 
-    suspend fun invalidate(key: Key) = mutex.withLock {
-        invalidations.send(key to Unit)
+    /**
+     * Returns a Flow that emits once and then every time the given [key] is invalidated via
+     * [invalidate]
+     */
+    @FlowPreview
+    suspend fun keyFlow(key: Key): Flow<Unit> {
+        // it is important to allocate KeyChannel lazily (ony when the returned flow is collected
+        // from). Otherwise, we might just create many of them that are never observed hence never
+        // cleaned up
+        return flow<Unit> {
+            val keyChannel = lock.withLock {
+                channels.getOrPut(key) {
+                    KeyChannel(
+                            channel = BroadcastChannel<Unit>(Channel.CONFLATED).apply {
+                                // start w/ an initial value.
+                                offer(Unit)
+                            }
+                    )
+                }.also {
+                    it.acquire() // refcount
+                }
+            }
+            try {
+                emitAll(keyChannel.channel.openSubscription())
+            } finally {
+                lock.withLock {
+                    keyChannel.release()
+                    if (keyChannel.channel.isClosedForSend) {
+                        channels.remove(key)
+                    }
+                }
+            }
+        }
     }
 
-    @ObsoleteCoroutinesApi
-    suspend fun keyFlow(key: Key): Flow<Unit> = flow {
-        var first = true
-        invalidations.openSubscription().consumeEach {
-            // It is important to emit the first value after we open the subscription. If we emit
-            // initial value before starting the flow, we might lose a value in between.
-            if (first) {
-                first = false
-                emit(Unit)
-            } else if (it != null && it.first == key) {
-                emit(Unit)
+    /**
+     * A data structure to count how many active flows we have on this channel
+     */
+    private data class KeyChannel(
+            val channel: BroadcastChannel<Unit>,
+            var collectors: Int = 0
+    ) {
+        fun acquire() {
+            collectors++
+        }
+
+        fun release() {
+            collectors--
+            if (collectors == 0) {
+                channel.close()
             }
         }
     }
