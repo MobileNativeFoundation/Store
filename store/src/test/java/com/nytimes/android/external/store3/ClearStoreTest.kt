@@ -5,6 +5,8 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.impl.BarCode
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger
 class ClearStoreTest(
         storeType: TestStoreType
 ) {
+    private val testScope = TestCoroutineScope()
+
     private val persister: ClearingPersister = mock()
     private val networkCalls = AtomicInteger(0)
 
@@ -28,7 +32,7 @@ class ClearStoreTest(
     ).build(storeType)
 
     @Test
-    fun testClearSingleBarCode() = runBlocking<Unit> {
+    fun testClearSingleBarCode() = testScope.runBlockingTest {
         // one request should produce one call
         val barcode = BarCode("type", "key")
 
@@ -51,7 +55,7 @@ class ClearStoreTest(
     }
 
     @Test
-    fun testClearAllBarCodes() = runBlocking<Unit> {
+    fun testClearAllBarCodes() = testScope.runBlockingTest {
         val barcode1 = BarCode("type1", "key1")
         val barcode2 = BarCode("type2", "key2")
 
@@ -77,8 +81,8 @@ class ClearStoreTest(
         store.get(barcode2)
         assertThat(networkCalls.toInt()).isEqualTo(2)
 
-        store.clearMemory()
-
+        store.clear(barcode1)
+        store.clear(barcode2)
         // after everything is cleared each request should produce another 2 calls
         store.get(barcode1)
         store.get(barcode2)

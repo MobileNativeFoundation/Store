@@ -30,11 +30,6 @@ internal class MemoryCacheStore<V, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
-    override suspend fun clearMemory() {
-        memCache.clearAll()
-        wrappedStore.clearMemory()
-    }
-
     override suspend fun clear(key: K) {
         memCache.invalidate(key)
         wrappedStore.clear(key)

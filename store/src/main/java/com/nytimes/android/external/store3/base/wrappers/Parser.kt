@@ -30,10 +30,6 @@ internal class ParserStore<V1, V2, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V2>> = wrappedStore.stream().map { (key, value) -> key to parser.apply(key, value) }
 
-    override suspend fun clearMemory() {
-        wrappedStore.clearMemory()
-    }
-
     override suspend fun clear(key: K) {
         wrappedStore.clear(key)
     }

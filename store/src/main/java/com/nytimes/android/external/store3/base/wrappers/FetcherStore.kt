@@ -34,9 +34,6 @@ internal class FetcherStore<Raw, Key>(
                     .drop(1)
                     .map { it!! }
 
-    override suspend fun clearMemory() {
-    }
-
     override suspend fun clear(key: Key) {
     }
 }

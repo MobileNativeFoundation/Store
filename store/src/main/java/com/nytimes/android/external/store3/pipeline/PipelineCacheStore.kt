@@ -40,11 +40,6 @@ internal class PipelineCacheStore<Key, Output>(
         }
     }
 
-    override suspend fun clearMemory() {
-        memCache.clearAll()
-        delegate.clearMemory()
-    }
-
     override suspend fun clear(key: Key) {
         memCache.invalidate(key)
         delegate.clear(key)

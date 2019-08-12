@@ -3,6 +3,8 @@ package com.nytimes.android.external.store3
 import com.nytimes.android.external.store3.util.KeyParser
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,6 +15,8 @@ import org.junit.runners.Parameterized
 class KeyParserTest(
         storeType: TestStoreType
 ) {
+    private val testScope = TestCoroutineScope()
+
     private val store = TestStoreBuilder.from(
             fetcher = {
                 NETWORK
@@ -25,7 +29,7 @@ class KeyParserTest(
     ).build(storeType)
 
     @Test
-    fun testStoreWithKeyParserFuncNoPersister() = runBlocking<Unit> {
+    fun testStoreWithKeyParserFuncNoPersister() = testScope.runBlockingTest {
         assertThat(store.get(KEY)).isEqualTo(NETWORK + KEY)
     }
 

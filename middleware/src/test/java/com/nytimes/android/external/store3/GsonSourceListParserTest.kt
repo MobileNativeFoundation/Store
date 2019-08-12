@@ -10,6 +10,8 @@ import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import com.nytimes.android.external.store3.middleware.GsonParserFactory
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import okio.BufferedSource
 import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
@@ -23,9 +25,10 @@ class GsonSourceListParserTest {
     private val fetcher: Fetcher<BufferedSource, BarCode> = mock()
     private val persister: Persister<BufferedSource, BarCode> = mock()
     private val barCode = BarCode("value", KEY)
+    private val testScope = TestCoroutineScope()
 
     @Test
-    fun testSimple() = runBlocking<Unit> {
+    fun testSimple() = runBlockingTest {
         val parser = GsonParserFactory.createSourceParser<List<Foo>>(Gson())
 
 

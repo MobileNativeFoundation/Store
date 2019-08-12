@@ -53,11 +53,6 @@ interface Store<T, V> {
             stream().filter { it.first == key }.map { (_, value) -> value }
 
     /**
-     * Clear the memory cache of all entries
-     */
-    suspend fun clearMemory()
-
-    /**
      * Purge a particular entry from memory and disk cache.
      * Persister will only be cleared if they implements Clearable
      */
