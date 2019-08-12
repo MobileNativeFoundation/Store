@@ -23,11 +23,7 @@ class PipelineConverterStore<Key, OldOutput, NewOutput>(
         }
     }
 
-    override suspend fun clearMemory() {
-        delegate.clearMemory()
-    }
-
     override suspend fun clear(key: Key) {
-        delegate.clearMemory()
+        delegate.clear(key)
     }
 }

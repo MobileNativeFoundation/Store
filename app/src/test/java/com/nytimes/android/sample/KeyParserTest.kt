@@ -4,7 +4,8 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -13,31 +14,31 @@ import org.mockito.runners.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class KeyParserTest {
-  lateinit var store: Store<String, Int>
+    lateinit var store: Store<String, Int>
+    private val testScope = TestCoroutineScope()
 
-  @Before
-  @Throws(Exception::class)
-  fun setUp() {
-    store = StoreBuilder.parsedWithKey<Int, String, String>()
-        .parser(object : Parser<String, String> {
-          override suspend fun apply(raw: String): String = raw + KEY
-        })
-        .fetcher(object : Fetcher<String, Int> {
-          override suspend fun fetch(key: Int): String = NETWORK
-        })
-        .open()
-  }
-
-  @Test
-  fun testStoreWithKeyParserFuncNoPersister() {
-    runBlocking {
-      assertThat(store.get(KEY)).isEqualTo(NETWORK + KEY)
+    @Before
+    @Throws(Exception::class)
+    fun setUp() {
+        store = StoreBuilder.parsedWithKey<Int, String, String>()
+                .parser(object : Parser<String, String> {
+                    override suspend fun apply(raw: String): String = raw + KEY
+                })
+                .fetcher(object : Fetcher<String, Int> {
+                    override suspend fun fetch(key: Int): String = NETWORK
+                })
+                .open()
     }
-  }
 
-  companion object {
+    @Test
+    fun testStoreWithKeyParserFuncNoPersister() = testScope.runBlockingTest {
+        assertThat(store.get(KEY)).isEqualTo(NETWORK + KEY)
+    }
 
-    val NETWORK = "Network"
-    val KEY = 5
-  }
+
+    companion object {
+
+        val NETWORK = "Network"
+        val KEY = 5
+    }
 }

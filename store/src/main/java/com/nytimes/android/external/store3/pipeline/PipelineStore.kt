@@ -21,11 +21,6 @@ interface PipelineStore<Key, Output> {
     fun stream(request: StoreRequest<Key>): Flow<Output>
 
     /**
-     * Clear the memory cache of all entries
-     */
-    suspend fun clearMemory()
-
-    /**
      * Purge a particular entry from memory and disk cache.
      * Persister will only be cleared if they implements Clearable
      */
@@ -38,11 +33,11 @@ fun <Key, Output> PipelineStore<Key, Output>.open(): Store<Output, Key> {
     return object : Store<Output, Key> {
         override suspend fun get(key: Key) = self.stream(
                 StoreRequest.cached(key, refresh = false)
-        ).take(1).toList().first()
+        ).first()
 
         override suspend fun fresh(key: Key) = self.stream(
                 StoreRequest.fresh(key)
-        ).take(1).toList().first()
+        ).first()
 
         // We could technically implement this based on other calls but it does have a cost,
         // implementation is tricky and yigit is not sure what the use case is ¯\_(ツ)_/¯
@@ -63,9 +58,7 @@ fun <Key, Output> PipelineStore<Key, Output>.open(): Store<Output, Key> {
                 }
         }
 
-        override suspend fun clearMemory() {
-            self.clearMemory()
-        }
+
 
         override suspend fun clear(key: Key) = self.clear(key)
 

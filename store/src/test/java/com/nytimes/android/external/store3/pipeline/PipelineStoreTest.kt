@@ -2,6 +2,7 @@ package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -140,7 +141,7 @@ class PipelineStoreTest {
     }
 
     suspend fun PipelineStore<Int, String>.get(request : StoreRequest<Int>) =
-            this.stream(request).take(1).toList().first()
+            this.stream(request).first()
 
     suspend fun PipelineStore<Int, String>.get(key: Int) = get(
         StoreRequest.cached(

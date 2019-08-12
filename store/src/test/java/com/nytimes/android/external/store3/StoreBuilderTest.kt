@@ -7,14 +7,17 @@ import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.wrappers.parser
 import com.nytimes.android.external.store3.base.wrappers.persister
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.util.*
 
 class StoreBuilderTest {
+    private val testScope = TestCoroutineScope()
 
     @Test
-    fun testBuildersBuildWithCorrectTypes() = runBlocking<Unit> {
+    fun testBuildersBuildWithCorrectTypes() = testScope.runBlockingTest {
         //test  is checking whether types are correct in builders
         val store: Store<Date, Int> = Store.from<String, Int> { key ->
             key.toString()

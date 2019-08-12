@@ -57,14 +57,9 @@ internal class PersisterStore<V, K>(
     @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
-    override suspend fun clearMemory() {
-        wrappedStore.clearMemory()
-    }
 
     override suspend fun clear(key: K) {
-        // TODO we should somehow receive it or not make this suspend
-        withContext(Dispatchers.IO) {
-            StoreUtil.clearPersister<Any, K>(persister, key)
-        }
+        StoreUtil.clearPersister<Any, K>(persister, key)
+        wrappedStore.clear(key)
     }
 }
