@@ -6,6 +6,7 @@ import android.widget.Toast
 import android.widget.Toast.makeText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
@@ -16,22 +17,18 @@ import com.nytimes.android.sample.reddit.PostAdapter
 import com.squareup.moshi.Moshi
 import kotlinx.android.synthetic.main.activity_store.*
 import kotlinx.coroutines.*
+import java.io.IOException
+import java.lang.Exception
 import kotlin.coroutines.CoroutineContext
 
 
-class PersistingStoreActivity : AppCompatActivity(), CoroutineScope {
-    lateinit var job: Job
-
-        override val coroutineContext: CoroutineContext
-            get() = job + Dispatchers.Main
-
+class PersistingStoreActivity : AppCompatActivity() {
     lateinit var postAdapter: PostAdapter
     lateinit var persistedStore: Store<RedditData, BarCode>
     lateinit var moshi: Moshi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        job = Job()
 
         setContentView(R.layout.activity_store)
         setSupportActionBar(findViewById<View>(R.id.toolbar) as Toolbar)
@@ -43,26 +40,33 @@ class PersistingStoreActivity : AppCompatActivity(), CoroutineScope {
         postRecyclerView.adapter = postAdapter
         persistedStore = (applicationContext as SampleApp).nonPersistentPipielineStore
         moshi = (applicationContext as SampleApp).moshi
+        loadPosts()
     }
 
     fun loadPosts() {
-        val awwRequest = BarCode(RedditData::class.java.simpleName, "aww")
-
-        /*
-        First call to get(awwRequest) will use the network, then save response in the in-memory
-        cache. Subsequent calls will retrieve the cached version of the data.
-         */
-        launch {
-            showPosts(sanitizeData(persistedStore.get(awwRequest)))
+        lifecycleScope.launchWhenStarted {
+            val awwRequest = BarCode(RedditData::class.java.simpleName, "aww")
+            /*
+            First call to get(awwRequest) will use the network, then save response in the in-memory
+            cache. Subsequent calls will retrieve the cached version of the data.
+             */
+            val redditData = try {
+                persistedStore.get(awwRequest)
+            } catch (ioError : Throwable) {
+                if (isActive) {
+                    makeText(this@PersistingStoreActivity,
+                            "Failed to load reddit posts: ${ioError.message}",
+                            Toast.LENGTH_SHORT)
+                            .show()
+                }
+                null
+            } ?: return@launchWhenStarted
+            showPosts(sanitizeData(redditData))
         }
-
     }
 
-    suspend fun Store<RedditData, BarCode>.gett(key: BarCode) =
-        withContext(Dispatchers.IO) { get(key) }
-
     private fun showPosts(posts: List<Post>) {
-        postAdapter.setPosts(posts)
+        postAdapter.submitList(posts)
         makeText(this@PersistingStoreActivity,
                 "Loaded ${posts.size} posts",
                 Toast.LENGTH_SHORT)
@@ -71,14 +75,4 @@ class PersistingStoreActivity : AppCompatActivity(), CoroutineScope {
 
     fun sanitizeData(redditData: RedditData): List<Post> =
             redditData.data.children.map(Children::data)
-
-    override fun onResume() {
-        super.onResume()
-        loadPosts()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel() // all children coroutines gets destroyed automatically
-    }
 }
