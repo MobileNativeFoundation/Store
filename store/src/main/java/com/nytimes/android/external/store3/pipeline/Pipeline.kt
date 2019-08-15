@@ -51,7 +51,7 @@ fun <Key, Output> PipelineStore<Key, Output>.withCache(
 
 @FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
-    reader: (Key) -> Flow<NewOutput>,
+    reader: (Key) -> Flow<NewOutput?>,
     writer: suspend (Key, OldOutput) -> Unit,
     delete: (suspend (Key) -> Unit)? = null
 ): PipelineStore<Key, NewOutput> {
