@@ -2,15 +2,13 @@ package com.nytimes.android.sample.reddit
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.nytimes.android.sample.R
 import com.nytimes.android.sample.data.model.Post
 
-
-class PostAdapter : RecyclerView.Adapter<PostViewHolder>() {
-
-    private val articles = ArrayList<Post>()
-
+class PostAdapter : ListAdapter<Post, PostViewHolder>(PostDiffCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val itemView = LayoutInflater.from(
                 parent.context).inflate(R.layout.article_item, parent, false)
@@ -18,16 +16,16 @@ class PostAdapter : RecyclerView.Adapter<PostViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.onBind(articles[position])
+        holder.onBind(getItem(position))
+    }
+}
+
+private object PostDiffCallback : DiffUtil.ItemCallback<Post>() {
+    override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
+        return oldItem.url == newItem.url
     }
 
-    override fun getItemCount(): Int {
-        return articles.size
-    }
-
-    fun setPosts(articlesToAdd: List<Post>) {
-        articles.clear()
-        articles.addAll(articlesToAdd)
-        notifyDataSetChanged()
+    override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
+        return oldItem == newItem
     }
 }
