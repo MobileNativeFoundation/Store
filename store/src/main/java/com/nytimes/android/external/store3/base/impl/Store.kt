@@ -4,7 +4,6 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.wrappers.FetcherStore
 import com.nytimes.android.external.store3.base.wrappers.InflightStore
 import com.nytimes.android.external.store3.base.wrappers.Store4Builder
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -38,7 +37,6 @@ interface Store<T, V> {
      * WARNING: stream is an endless observable, be careful when combining
      * with operators that expect an OnComplete event
      */
-    @FlowPreview
     fun stream(): Flow<Pair<V, T>>
 
     /**
@@ -48,7 +46,6 @@ interface Store<T, V> {
      * Errors will be dropped
      *
      */
-    @FlowPreview
     fun stream(key: V): Flow<T> =
             stream().filter { it.first == key }.map { (_, value) -> value }
 

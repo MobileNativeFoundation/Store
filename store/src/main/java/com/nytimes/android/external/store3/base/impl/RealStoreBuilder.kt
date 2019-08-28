@@ -1,11 +1,17 @@
 package com.nytimes.android.external.store3.base.impl
 
 
-import com.nytimes.android.external.store3.base.*
-import com.nytimes.android.external.store3.base.wrappers.*
+import com.nytimes.android.external.store3.base.DiskRead
+import com.nytimes.android.external.store3.base.DiskWrite
+import com.nytimes.android.external.store3.base.Fetcher
+import com.nytimes.android.external.store3.base.Parser
+import com.nytimes.android.external.store3.base.Persister
+import com.nytimes.android.external.store3.base.wrappers.cache
+import com.nytimes.android.external.store3.base.wrappers.parser
+import com.nytimes.android.external.store3.base.wrappers.persister
 import com.nytimes.android.external.store3.util.KeyParser
 import com.nytimes.android.external.store3.util.NoKeyParser
-import java.util.*
+import java.util.ArrayList
 
 
 /**

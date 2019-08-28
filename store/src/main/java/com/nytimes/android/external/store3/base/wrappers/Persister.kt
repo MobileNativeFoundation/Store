@@ -2,11 +2,15 @@ package com.nytimes.android.external.store3.base.wrappers
 
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.StalePolicy
-import com.nytimes.android.external.store3.base.impl.StalePolicy.*
+import com.nytimes.android.external.store3.base.impl.StalePolicy.NETWORK_BEFORE_STALE
+import com.nytimes.android.external.store3.base.impl.StalePolicy.REFRESH_ON_STALE
+import com.nytimes.android.external.store3.base.impl.StalePolicy.UNSPECIFIED
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreUtil
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 fun <V, K> Store4Builder<V, K>.persister(
         persister: Persister<V, K>,
@@ -54,9 +58,7 @@ internal class PersisterStore<V, K>(
         return persister.read(key)!!
     }
 
-    @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
-
 
     override suspend fun clear(key: K) {
         StoreUtil.clearPersister<Any, K>(persister, key)

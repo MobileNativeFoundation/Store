@@ -7,7 +7,6 @@ import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -18,7 +17,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 @RunWith(Parameterized::class)
 class ParsingFetcherTest(
         private val storeType: TestStoreType

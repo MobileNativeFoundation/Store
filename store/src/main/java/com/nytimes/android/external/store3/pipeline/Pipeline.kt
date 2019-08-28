@@ -2,11 +2,9 @@ package com.nytimes.android.external.store3.pipeline
 
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-@FlowPreview
 fun <Key, Output> beginPipeline(
     fetcher: (Key) -> Flow<Output>
 ): PipelineStore<Key, Output> {
@@ -14,7 +12,6 @@ fun <Key, Output> beginPipeline(
 }
 
 // this really needs a better name :/
-@FlowPreview
 fun <Key, Output> beginNonFlowingPipeline(
     fetcher: suspend (Key) -> Output
 ): PipelineStore<Key, Output> {
@@ -26,7 +23,6 @@ fun <Key, Output> beginNonFlowingPipeline(
 }
 
 
-@FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withConverter(
     converter: suspend (OldOutput) -> NewOutput
 ): PipelineStore<Key, NewOutput> {
@@ -35,21 +31,18 @@ fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withConverter(
     }
 }
 
-@FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withKeyConverter(
     converter: suspend (Key, OldOutput) -> NewOutput
 ): PipelineStore<Key, NewOutput> {
     return PipelineConverterStore(this, converter)
 }
 
-@FlowPreview
 fun <Key, Output> PipelineStore<Key, Output>.withCache(
     memoryPolicy: MemoryPolicy? = null
 ): PipelineStore<Key, Output> {
     return PipelineCacheStore(this, memoryPolicy)
 }
 
-@FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
     reader: (Key) -> Flow<NewOutput?>,
     writer: suspend (Key, OldOutput) -> Unit,
@@ -64,7 +57,6 @@ fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withPersister(
 }
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <Key, OldOutput, NewOutput> PipelineStore<Key, OldOutput>.withNonFlowPersister(
     reader: suspend (Key) -> NewOutput?,
     writer: suspend (Key, OldOutput) -> Unit,

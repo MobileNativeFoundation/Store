@@ -1,6 +1,5 @@
 package com.nytimes.android.external.store3.pipeline
 
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -11,7 +10,6 @@ private fun <Key, In, Out> castConverter(): suspend (Key, In) -> Out {
     }
 }
 
-@FlowPreview
 class PipelineConverterStore<Key, OldOutput, NewOutput>(
         private val delegate: PipelineStore<Key, OldOutput>,
         private val converter: (suspend (Key, OldOutput) -> NewOutput) = castConverter()

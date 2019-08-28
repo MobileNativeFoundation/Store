@@ -2,8 +2,6 @@ package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
 import com.nytimes.android.external.store3.base.impl.Store
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -12,7 +10,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@FlowPreview
 @RunWith(Parameterized::class)
 class NoNetworkTest(
         storeType: TestStoreType
@@ -32,7 +29,6 @@ class NoNetworkTest(
         }
     }
 
-    @FlowPreview
     companion object {
         private val EXCEPTION = RuntimeException("abc")
 

@@ -2,14 +2,11 @@ package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.impl.BarCode
 import junit.framework.Assert.fail
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-
-@FlowPreview
 @RunWith(Parameterized::class)
 class DontCacheErrorsTest(
         storeType: TestStoreType
@@ -41,7 +38,6 @@ class DontCacheErrorsTest(
         store.get(barcode)
     }
 
-    @FlowPreview
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

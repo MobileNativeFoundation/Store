@@ -6,7 +6,6 @@ import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +16,6 @@ import org.junit.runners.Parameterized
 import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 @RunWith(Parameterized::class)
 class StoreThrowOnNoItems(
         private val storeType: TestStoreType

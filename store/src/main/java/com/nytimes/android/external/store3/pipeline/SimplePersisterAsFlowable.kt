@@ -1,7 +1,6 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -14,7 +13,6 @@ import kotlinx.coroutines.sync.withLock
 
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-@FlowPreview
 class SimplePersisterAsFlowable<Key, Input, Output>(
         private val reader: suspend (Key) -> Output?,
         private val writer: suspend (Key, Input) -> Unit,
@@ -67,7 +65,6 @@ internal class KeyTracker<Key> {
      * Returns a Flow that emits once and then every time the given [key] is invalidated via
      * [invalidate]
      */
-    @FlowPreview
     suspend fun keyFlow(key: Key): Flow<Unit> {
         // it is important to allocate KeyChannel lazily (ony when the returned flow is collected
         // from). Otherwise, we might just create many of them that are never observed hence never
