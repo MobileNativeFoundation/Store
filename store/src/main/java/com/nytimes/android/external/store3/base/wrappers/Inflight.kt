@@ -4,7 +4,6 @@ import com.com.nytimes.suspendCache.StoreCache
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreDefaults
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 
 internal class InflightStore<V, K>(
@@ -34,7 +33,6 @@ internal class InflightStore<V, K>(
         }
     }
 
-    @FlowPreview
     override fun stream(): Flow<Pair<K, V>> = wrappedStore.stream()
 
     override suspend fun clear(key: K) {

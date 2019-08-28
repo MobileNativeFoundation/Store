@@ -1,10 +1,10 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.transform
 
-@FlowPreview
 class PipelinePersister<Key, Input, Output>(
         private val fetcher: PipelineStore<Key, Input>,
         private val reader: (Key) -> Flow<Output?>,
@@ -62,7 +62,6 @@ class PipelinePersister<Key, Input, Output>(
 
 // TODO figure out why filterNotNull does not make compiler happy
 @ExperimentalCoroutinesApi
-@FlowPreview
 @Suppress("UNCHECKED_CAST")
 private fun <T1, T2> Flow<T1>.castNonNull() = this.transform {
     (it as? T2)?.let {

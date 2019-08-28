@@ -3,7 +3,6 @@ package com.nytimes.android.external.store3.base.wrappers
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.util.KeyParser
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -27,7 +26,6 @@ internal class ParserStore<V1, V2, K>(
 
     override suspend fun fresh(key: K): V2 = parser.apply(key, wrappedStore.fresh(key))
 
-    @FlowPreview
     override fun stream(): Flow<Pair<K, V2>> = wrappedStore.stream().map { (key, value) -> key to parser.apply(key, value) }
 
     override suspend fun clear(key: K) {

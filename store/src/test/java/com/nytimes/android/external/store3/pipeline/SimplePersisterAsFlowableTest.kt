@@ -1,17 +1,22 @@
 package com.nytimes.android.external.store3.pipeline
 
 import com.nytimes.android.external.store3.base.impl.BarCode
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.lang.AssertionError
 
 @ObsoleteCoroutinesApi
-@FlowPreview
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowableTest {
     private val testScope = TestCoroutineScope()

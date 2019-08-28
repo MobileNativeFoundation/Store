@@ -3,8 +3,6 @@ package com.nytimes.android.external.store3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.impl.BarCode
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -14,7 +12,6 @@ import org.junit.runners.Parameterized
 import org.mockito.Mockito.verify
 import java.util.concurrent.atomic.AtomicInteger
 
-@FlowPreview
 @RunWith(Parameterized::class)
 class ClearStoreTest(
         storeType: TestStoreType
@@ -89,7 +86,6 @@ class ClearStoreTest(
         assertThat(networkCalls.toInt()).isEqualTo(4)
     }
 
-    @FlowPreview
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

@@ -10,9 +10,12 @@ import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.wrappers.cache
 import com.nytimes.android.external.store3.base.wrappers.parser
 import com.nytimes.android.external.store3.base.wrappers.persister
-import com.nytimes.android.external.store3.pipeline.*
+import com.nytimes.android.external.store3.pipeline.beginPipeline
+import com.nytimes.android.external.store3.pipeline.open
+import com.nytimes.android.external.store3.pipeline.withCache
+import com.nytimes.android.external.store3.pipeline.withKeyConverter
+import com.nytimes.android.external.store3.pipeline.withNonFlowPersister
 import com.nytimes.android.external.store3.util.KeyParser
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
 
 data class TestStoreBuilder<Key, Output>(
@@ -25,7 +28,6 @@ data class TestStoreBuilder<Key, Output>(
     }
 
     companion object {
-        @FlowPreview
         fun <Key, Output> from(
                 inflight: Boolean = true,
                 fetcher: suspend (Key) -> Output
@@ -36,7 +38,6 @@ data class TestStoreBuilder<Key, Output>(
                 fetcher = fetcher
         )
 
-        @FlowPreview
         fun <Key, Output> from(
                 inflight: Boolean = true,
                 fetcher: suspend (Key) -> Output,
@@ -48,7 +49,6 @@ data class TestStoreBuilder<Key, Output>(
                 fetcher = fetcher
         )
 
-        @FlowPreview
         fun <Key, Output> from(
                 inflight: Boolean = true,
                 fetcher: Fetcher<Output, Key>,
@@ -65,7 +65,6 @@ data class TestStoreBuilder<Key, Output>(
                 fetcher = fetcher
         )
 
-        @FlowPreview
         fun <Key, Output> fromPostParser(
                 inflight: Boolean = true,
                 fetcher: Fetcher<Output, Key>,
@@ -83,7 +82,6 @@ data class TestStoreBuilder<Key, Output>(
         )
 
         @Suppress("UNCHECKED_CAST")
-        @FlowPreview
         fun <Key, Output> from(
                 inflight: Boolean = true,
                 cached : Boolean = false,
@@ -104,7 +102,6 @@ data class TestStoreBuilder<Key, Output>(
                 }
         )
         @Suppress("UNCHECKED_CAST")
-        @FlowPreview
         fun <Key, Output> from(
                 inflight: Boolean = true,
                 cached : Boolean = false,

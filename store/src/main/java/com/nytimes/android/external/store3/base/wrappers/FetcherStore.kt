@@ -2,7 +2,6 @@ package com.nytimes.android.external.store3.base.wrappers
 
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.impl.Store
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel.Factory.CONFLATED
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +26,6 @@ internal class FetcherStore<Raw, Key>(
                 subject.send(key to fetchedValue)
             }
 
-    @FlowPreview
     override fun stream(): Flow<Pair<Key, Raw>> =
             subject.asFlow()
                     //ignore first element so only new elements are returned

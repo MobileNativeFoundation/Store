@@ -6,9 +6,7 @@ import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.wrappers.cache
 import com.nytimes.android.external.store3.base.wrappers.parser
 import com.nytimes.android.external.store3.base.wrappers.persister
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +15,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.random.Random
 
-@FlowPreview
 @RunWith(Parameterized::class)
 class SequentialTes(
         storeType: TestStoreType) {
@@ -70,7 +67,6 @@ class SequentialTes(
         assertThat(v1).isEqualTo(v2)
     }
 
-    @FlowPreview
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

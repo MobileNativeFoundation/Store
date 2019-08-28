@@ -5,10 +5,14 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.BarCode
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -20,7 +24,6 @@ import org.junit.runners.Parameterized
 
 @ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
-@FlowPreview
 @RunWith(Parameterized::class)
 class StreamTest(
         private val storeType: TestStoreType
@@ -89,6 +92,5 @@ class StreamTest(
 }
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 fun <T> Flow<T>.openChannelSubscription() =
         broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()

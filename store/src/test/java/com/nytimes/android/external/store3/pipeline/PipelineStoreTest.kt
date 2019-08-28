@@ -1,7 +1,6 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -14,7 +13,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @ExperimentalCoroutinesApi
-@FlowPreview
 @RunWith(JUnit4::class)
 class PipelineStoreTest {
     private val testScope = TestCoroutineScope()
