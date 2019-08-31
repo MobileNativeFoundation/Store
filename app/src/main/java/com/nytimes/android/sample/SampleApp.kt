@@ -2,6 +2,7 @@ package com.nytimes.android.sample
 
 import android.app.Application
 import android.content.Context
+import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.nytimes.android.external.fs3.SourcePersisterFactory
 import com.nytimes.android.external.store3.base.Persister
@@ -10,12 +11,25 @@ import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.base.impl.Store
 import com.nytimes.android.external.store3.base.impl.StoreBuilder
 import com.nytimes.android.external.store3.middleware.moshi.MoshiParserFactory
-import com.nytimes.android.external.store3.pipeline.*
+import com.nytimes.android.external.store3.pipeline.PipelineStore
+import com.nytimes.android.external.store3.pipeline.beginNonFlowingPipeline
+import com.nytimes.android.external.store3.pipeline.beginPipeline
+import com.nytimes.android.external.store3.pipeline.open
+import com.nytimes.android.external.store3.pipeline.withCache
+import com.nytimes.android.external.store3.pipeline.withConverter
+import com.nytimes.android.external.store3.pipeline.withNonFlowPersister
+import com.nytimes.android.external.store3.pipeline.withPersister
+import com.nytimes.android.sample.data.model.Post
 import com.nytimes.android.sample.data.model.RedditData
+import com.nytimes.android.sample.data.model.RedditDb
 import com.nytimes.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import retrofit2.Retrofit
@@ -30,6 +44,8 @@ class SampleApp : Application() {
     lateinit var persistedStore: Store<RedditData, BarCode>
     lateinit var persistentPipelineStore: Store<RedditData, BarCode>
     lateinit var nonPersistentPipielineStore : Store<RedditData, BarCode>
+    lateinit var roomPipeline: PipelineStore<String, List<Post>>
+
     val moshi = Moshi.Builder().build()
     lateinit var persister: Persister<BufferedSource, BarCode>
 
@@ -43,6 +59,7 @@ class SampleApp : Application() {
         persistedStore = providePersistedRedditStore();
         persistentPipelineStore = providePersistentPipelineStore()
         nonPersistentPipielineStore = provideMemoryCachedPipelineStore()
+        roomPipeline = provideRoomPipeline()
     }
 
     private fun initPersister() {
@@ -115,6 +132,26 @@ class SampleApp : Application() {
                 .setExpireAfterTimeUnit(TimeUnit.SECONDS)
                 .build())
         return pipeline.open()
+    }
+
+    private fun provideRoomPipeline(): PipelineStore<String, List<Post>> {
+        val db = provideRoom()
+        return beginNonFlowingPipeline<String, RedditData> {
+            provideRetrofit().fetchSubreddit(it, "10").await()
+        }.withConverter {
+            it.data.children.map {
+                it.data
+            }
+        }.withPersister(
+            reader = db.postDao()::loadPosts,
+            writer = db.postDao()::insertPosts,
+            delete = db.postDao()::clearFeed
+        )
+    }
+
+    private fun provideRoom(): RedditDb {
+        return Room.inMemoryDatabaseBuilder(this, RedditDb::class.java)
+            .build()
     }
 
     /**

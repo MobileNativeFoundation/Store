@@ -20,6 +20,7 @@ data class Data (
 
 @JsonClass(generateAdapter = true)
 data class Post (
+        val id: String,
         val preview: Preview?,
         val title: String,
         val url: String,
