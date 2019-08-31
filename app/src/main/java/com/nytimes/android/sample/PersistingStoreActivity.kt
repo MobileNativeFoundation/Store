@@ -34,9 +34,6 @@ class PersistingStoreActivity : AppCompatActivity() {
         setSupportActionBar(findViewById<View>(R.id.toolbar) as Toolbar)
 
         postAdapter = PostAdapter()
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.orientation = LinearLayoutManager.VERTICAL
-        postRecyclerView.layoutManager = layoutManager
         postRecyclerView.adapter = postAdapter
         persistedStore = (applicationContext as SampleApp).nonPersistentPipielineStore
         moshi = (applicationContext as SampleApp).moshi

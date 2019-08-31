@@ -40,6 +40,7 @@ ext.versions = [
         javaWriter           : '2.5.1',
         commonsLang3         : '3.0',
         javax                : '1',
+        room                 : '2.2.0-beta01',
 
         // Debugging & Inspecting.
         slf4j                : '1.7.19',
@@ -90,6 +91,8 @@ ext.libraries = [
         javax                   : "javax.inject:javax.inject:$versions.javax",
         kotlinStdLib            : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin",
         commonsLang3            : "org.apache.commons:commons-lang3:$versions.commonsLang3",
+        roomCompiler            : "androidx.room:room-compiler:$versions.room",
+        roomRuntime            : "androidx.room:room-ktx:$versions.room",
         // Debugging & Inspecting.
         slf4jNoOp               : "org.slf4j:slf4j-api:$versions.slf4j",
         slf4jTesting            : "org.slf4j:slf4j-simple:$versions.slf4j",
