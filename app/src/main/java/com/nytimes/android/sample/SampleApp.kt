@@ -2,6 +2,7 @@ package com.nytimes.android.sample
 
 import android.app.Application
 import android.content.Context
+import android.text.Html
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.nytimes.android.external.fs3.SourcePersisterFactory
@@ -140,7 +141,22 @@ class SampleApp : Application() {
             provideRetrofit().fetchSubreddit(it, "10").await()
         }.withConverter {
             it.data.children.map {
-                it.data
+                // ¯\_(ツ)_/¯
+                it.data.copy(
+                    preview = it.data.preview?.let {
+                        it.copy(
+                            images = it.images.map {
+                                @Suppress("DEPRECATION")
+                                it.copy(
+                                    source = it.source.copy(
+                                        // preview urls are html encoded, need to escape
+                                        url = Html.fromHtml(it.source.url).toString()
+                                    )
+                                )
+                            }
+                        )
+                    }
+                )
             }
         }.withPersister(
             reader = db.postDao()::loadPosts,
