@@ -47,6 +47,7 @@ dependencies {
     testCompileOnly libraries.jsr305
     implementation libraries.supportRecyclerView
     implementation libraries.supportAppCompat
+    implementation libraries.supportFragments
     implementation libraries.supportLifecycle
     implementation libraries.supportCardView
     implementation libraries.supportDesign

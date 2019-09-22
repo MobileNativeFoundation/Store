@@ -1,7 +1,6 @@
 package com.nytimes.android.external.store3.pipeline
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowable<Key, Input, Output>(
         private val reader: suspend (Key) -> Output?,
