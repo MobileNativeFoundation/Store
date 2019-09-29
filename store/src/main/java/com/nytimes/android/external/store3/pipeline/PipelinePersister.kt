@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 
-//lazy create a channelflow & start collecting disk
-//
-//return channelflow
+
 
 
 class PipelinePersister<Key, Input, Output>(
@@ -71,14 +69,13 @@ class PipelinePersister<Key, Input, Output>(
             scope: CoroutineScope,
             sink: ConflatedBroadcastChannel<StoreResponse<Output>>
     ): Channel<FetcherCommand> {
+        // used fetcherCommandsto control the network flow so that we can decide if we want to start it
         val fetcherCommands = Channel<FetcherCommand>(capacity = Channel.RENDEZVOUS)
+        val diskCommands = Channel<DiskCommand>(capacity = Channel.RENDEZVOUS)
 
         scope.launch {
             channelFlow {
                 // used to control the disk flow so that we can stop/start it.
-                val diskCommands = Channel<DiskCommand>(capacity = Channel.RENDEZVOUS)
-                // used fetcherCommandsto control the network flow so that we can decide if we want to start it
-                val fetcherCommands = Channel<FetcherCommand>(capacity = Channel.RENDEZVOUS)
 
 
                 launch {
