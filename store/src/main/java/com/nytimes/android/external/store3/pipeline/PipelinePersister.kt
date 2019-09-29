@@ -4,13 +4,9 @@ import com.nytimes.android.external.cache3.CacheBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-
-
-
+import kotlinx.coroutines.channels.actor
 
 
 class PipelinePersister<Key, Input, Output>(
@@ -21,12 +17,11 @@ class PipelinePersister<Key, Input, Output>(
 ) : PipelineStore<Key, Output> {
     private val responseFlows = CacheBuilder
             .newBuilder()
-            .build<StoreRequest<Key>, Pair<ConflatedBroadcastChannel<StoreResponse<Output>>, Channel<FetcherCommand>>>()
-
+            .build<StoreRequest<Key>, Pair<SendChannel<StoreResponse<Output>>, SendChannel<Command>>>()
 
     /**
      * when a new request comes in we
-     * 1. lazily create a channel for that key & make a call to disk and network TODO change to disk and/or network
+     * 1. lazily create a channel for that key & make a call to disk and network
      * 2. retain a handle to the fetcher commander allowing us to request new fetches later
      * 3. if user wants refresh then we trigger a fetcher command
      */
@@ -35,113 +30,111 @@ class PipelinePersister<Key, Input, Output>(
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> = channelFlow {
         val response = responseFlows
                 .get(request) {
-                    val sink = ConflatedBroadcastChannel<StoreResponse<Output>>()
-                    val fetcherCommander = getData(request, this, sink)
+                    val sink  = actor<StoreResponse<Output>>(capacity = Channel.UNLIMITED) {
+                        consumeEach { response ->
+                            try {
+                                when (response) {
+                                    is StoreResponse.Loading -> send(response)
+                                    is StoreResponse.Data -> send(response)
+                                    is StoreResponse.Error -> send(response)
+                                }
+                            }
+                            catch (t: Throwable) {
+                                send(StoreResponse.Error<Output>(t, ResponseOrigin.Persister) as StoreResponse<Output>)
+                            }
+                        }
+                    }
+                    val fetcherCommander: SendChannel<Command> = fetchData(request, this, sink)
                     sink to fetcherCommander
                 }
 
         if (request.refresh) {
-            response.second.offer(FetcherCommand.Fetch)
+            response.second.offer(Command.Fetch)
         }
-
-        response.first.asFlow().collect { offer(it) }
     }.share()
 
 
-    /**
-     * We want to stream from disk but also want to refresh. If requested or necessary.
-     *
-     * To do that, we need to see the first disk value and then decide to fetch or not.
-     * in any case, we always return the Flow from reader.
-     *
-     * How it works:
-     * We start by reading the disk. If first response from disk is `null` OR `request.refresh`
-     * is set to `true`, we start fetcher flow.
-     *
-     * When fetcher emits data, if it is [StoreResponse.Error] or [StoreResponse.Loading], it
-     * directly goes to the downstream.
-     * If it is [StoreResponse.Data], we first stop the disk flow, write the new data to disk and
-     * restart the disk flow. On restart, disk-flow sets the first emissions `origin` to the
-     * `origin` set by the fetcher. subsequent reads use origin [ResponseOrigin.Persister].
-     */
-    private fun getData(
-            request: StoreRequest<Key>,
-            scope: CoroutineScope,
-            sink: ConflatedBroadcastChannel<StoreResponse<Output>>
-    ): Channel<FetcherCommand> {
-        // used fetcherCommands to control the network flow so that we can decide if we want to start it
-        val fetcherCommands = Channel<FetcherCommand>(capacity = Channel.RENDEZVOUS)
-        val diskCommands = Channel<DiskCommand>(capacity = Channel.RENDEZVOUS)
-        scope.launch {
-                    if (request.shouldSkipCache(CacheType.DISK)) {
-                        fetcherCommands.send(FetcherCommand.Fetch)
-                    } else {
-                        diskCommands.send(DiskCommand.ReadFirst)
-                    }
-                    fetcherCommands.consumeAsFlow().collectLatest {
-                        fetcher.stream(request).collect {
-                            val data = it.dataOrNull()
-                            if (data != null) {
-                                try {
-                                    // stop disk first
-                                    val ack = CompletableDeferred<Unit>()
-                                    diskCommands.send(DiskCommand.Stop(ack))
-                                    ack.await()
-                                    writer(request.key, data)
-                                } finally {
-                                    diskCommands.send(DiskCommand.Read(it.origin))
-                                }
-                            } else {
-                               sink.offer(it.swapType<Output>())
-                            }
-                        }
-                    }
 
-                diskCommands.consumeAsFlow().collectLatest { command ->
+  private fun fetchData(
+          request: StoreRequest<Key>,
+          scope: CoroutineScope,
+          sink: SendChannel<StoreResponse<Output>>): SendChannel<Command> {
+         val actor: SendChannel<Command> = scope.actor(capacity = Channel.UNLIMITED) {
+            consumeEach { command ->
+                try {
                     when (command) {
-                        is DiskCommand.Stop -> {
-                            command.ack.complete(Unit)
-                        }
-                        is DiskCommand.ReadFirst -> {
-                            reader(request.key).collectIndexed { index, diskData ->
-                                diskData?.let {
-                                    sink.offer(
-                                            StoreResponse.Data(
-                                                    value = diskData,
-                                                    origin = ResponseOrigin.Persister
-                                            )
-                                    )
-                                }
-
-                                if (index == 0 && (diskData == null || request.refresh)) {
-                                    fetcherCommands.send(
-                                            FetcherCommand.Fetch
-                                    )
-                                }
-                            }
-                        }
-                        is DiskCommand.Read -> {
-                            var fetcherOrigin: ResponseOrigin? = command.origin
-                            reader(request.key).collect { diskData ->
-                                if (diskData != null) {
-                                    val origin = fetcherOrigin?.let {
-                                        fetcherOrigin = null
-                                        it
-                                    } ?: ResponseOrigin.Persister
-                                    sink.offer(
-                                            StoreResponse.Data(
-                                                    value = diskData,
-                                                    origin = origin
-                                            )
-                                    )
-                                }
-                            }
-                        }
+                        Command.ReadFirst -> readFirst(request, sink)
+                        is Command.Read -> read(command, request, sink)
+                        is Command.Stop -> command.ack.complete(Unit)
+                        Command.Fetch -> fetch(request, sink)
                     }
-                }
 
+                } catch (t: Throwable) {
+                    sink.send(StoreResponse.Error(t, ResponseOrigin.Persister))
+                }
+            }
         }
-        return fetcherCommands
+
+        if (request.shouldSkipCache(CacheType.DISK)) {
+            actor.offer(Command.Fetch)
+        } else {
+            actor.offer(Command.ReadFirst)
+        }
+        return actor
+    }
+
+    private suspend fun ActorScope<Command>.fetch(request: StoreRequest<Key>, sink: SendChannel<StoreResponse<Output>>) {
+        fetcher.stream(request).collect {
+            val data = it.dataOrNull()
+            if (data != null) {
+                try {
+                    // stop disk first
+                    val ack = CompletableDeferred<Unit>()
+                    channel.send(Command.Stop(ack))
+                    ack.await()
+                    writer(request.key, data)
+                } finally {
+                    channel.send(Command.Read(it.origin))
+                }
+            } else {
+                sink.offer(it.swapType<Output>())
+            }
+        }
+    }
+
+    private suspend fun read(command: Command.Read, request: StoreRequest<Key>, sink: SendChannel<StoreResponse<Output>>) {
+        var fetcherOrigin: ResponseOrigin? = command.origin
+        reader(request.key).collect { diskData ->
+            if (diskData != null) {
+                val origin = fetcherOrigin?.let {
+                    fetcherOrigin = null
+                    it
+                } ?: ResponseOrigin.Persister
+                sink.offer(
+                        StoreResponse.Data(
+                                value = diskData,
+                                origin = origin
+                        )
+                )
+            }
+        }
+    }
+
+    private suspend fun ActorScope<Command>.readFirst(request: StoreRequest<Key>, sink: SendChannel<StoreResponse<Output>>) {
+        reader(request.key).collectIndexed { index, diskData ->
+            diskData?.let {
+                sink.offer(
+                        StoreResponse.Data(
+                                value = diskData,
+                                origin = ResponseOrigin.Persister
+                        )
+                )
+            }
+
+            if (index == 0 && (diskData == null || request.refresh)) {
+                channel.send(Command.Fetch)
+            }
+        }
     }
 
     override suspend fun clear(key: Key) {
@@ -150,14 +143,11 @@ class PipelinePersister<Key, Input, Output>(
     }
 
     // used to control the disk flow when combined with network
-    internal sealed class DiskCommand {
-        object ReadFirst : DiskCommand()
-        class Read(val origin: ResponseOrigin) : DiskCommand()
-        class Stop(val ack: CompletableDeferred<Unit>) : DiskCommand()
+    internal sealed class Command {
+        object ReadFirst : Command()
+        class Read(val origin: ResponseOrigin) : Command()
+        class Stop(val ack: CompletableDeferred<Unit>) : Command()
+        object Fetch : Command()
     }
 
-    // used to control the disk flow when combined with network
-    internal sealed class FetcherCommand {
-        object Fetch : FetcherCommand()
-    }
 }
