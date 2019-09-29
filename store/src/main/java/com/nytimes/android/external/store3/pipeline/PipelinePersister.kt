@@ -44,7 +44,7 @@ class PipelinePersister<Key, Input, Output>(
             response.second.offer(FetcherCommand.Fetch)
         }
 
-        response.first.asFlow().collect { send(it) }
+        response.first.asFlow().collect { offer(it) }
     }.share()
 
 
@@ -69,16 +69,10 @@ class PipelinePersister<Key, Input, Output>(
             scope: CoroutineScope,
             sink: ConflatedBroadcastChannel<StoreResponse<Output>>
     ): Channel<FetcherCommand> {
-        // used fetcherCommandsto control the network flow so that we can decide if we want to start it
+        // used fetcherCommands to control the network flow so that we can decide if we want to start it
         val fetcherCommands = Channel<FetcherCommand>(capacity = Channel.RENDEZVOUS)
         val diskCommands = Channel<DiskCommand>(capacity = Channel.RENDEZVOUS)
-
         scope.launch {
-            channelFlow {
-                // used to control the disk flow so that we can stop/start it.
-
-
-                launch {
                     if (request.shouldSkipCache(CacheType.DISK)) {
                         fetcherCommands.send(FetcherCommand.Fetch)
                     } else {
@@ -98,11 +92,11 @@ class PipelinePersister<Key, Input, Output>(
                                     diskCommands.send(DiskCommand.Read(it.origin))
                                 }
                             } else {
-                                send(it.swapType<Output>())
+                               sink.offer(it.swapType<Output>())
                             }
                         }
                     }
-                }
+
                 diskCommands.consumeAsFlow().collectLatest { command ->
                     when (command) {
                         is DiskCommand.Stop -> {
@@ -111,7 +105,7 @@ class PipelinePersister<Key, Input, Output>(
                         is DiskCommand.ReadFirst -> {
                             reader(request.key).collectIndexed { index, diskData ->
                                 diskData?.let {
-                                    send(
+                                    sink.offer(
                                             StoreResponse.Data(
                                                     value = diskData,
                                                     origin = ResponseOrigin.Persister
@@ -134,7 +128,7 @@ class PipelinePersister<Key, Input, Output>(
                                         fetcherOrigin = null
                                         it
                                     } ?: ResponseOrigin.Persister
-                                    send(
+                                    sink.offer(
                                             StoreResponse.Data(
                                                     value = diskData,
                                                     origin = origin
@@ -145,7 +139,7 @@ class PipelinePersister<Key, Input, Output>(
                         }
                     }
                 }
-            }.collect { sink.send(it) }
+
         }
         return fetcherCommands
     }
