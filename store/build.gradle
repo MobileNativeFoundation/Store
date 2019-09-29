@@ -26,6 +26,7 @@ dependencies {
     implementation project(path: ':cache')
     implementation project(path: ':suspendCache')
     implementation libraries.coroutinesCore
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
 
     compileOnly libraries.jsr305

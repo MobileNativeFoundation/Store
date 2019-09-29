@@ -63,7 +63,7 @@ internal class KeyTracker<Key> {
      * Returns a Flow that emits once and then every time the given [key] is invalidated via
      * [invalidate]
      */
-    suspend fun keyFlow(key: Key): Flow<Unit> {
+    fun keyFlow(key: Key): Flow<Unit> {
         // it is important to allocate KeyChannel lazily (ony when the returned flow is collected
         // from). Otherwise, we might just create many of them that are never observed hence never
         // cleaned up
