@@ -30,7 +30,7 @@ class PipelinePersister<Key, Input, Output>(
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> = channelFlow {
         val response = responseFlows
                 .get(request) {
-                    val sink  = actor<StoreResponse<Output>>(capacity = Channel.UNLIMITED) {
+                    val sink  = actor<StoreResponse<Output>>(capacity = Channel.RENDEZVOUS) {
                         consumeEach { response ->
                             try {
                                 when (response) {
@@ -51,7 +51,7 @@ class PipelinePersister<Key, Input, Output>(
         if (request.refresh) {
             response.second.offer(Command.Fetch)
         }
-    }.share()
+    }
 
 
 

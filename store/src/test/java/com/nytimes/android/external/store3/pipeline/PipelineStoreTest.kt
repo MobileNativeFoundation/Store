@@ -6,13 +6,9 @@ import com.nytimes.android.external.store3.pipeline.ResponseOrigin.Persister
 import com.nytimes.android.external.store3.pipeline.StoreResponse.Data
 import com.nytimes.android.external.store3.pipeline.StoreResponse.Loading
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -27,256 +23,279 @@ import org.junit.runners.JUnit4
 class PipelineStoreTest {
     private val testScope = TestCoroutineScope()
 
+
     @Test
-    fun getAndFresh() = testScope.runBlockingTest {
-        val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
-        )
-        val pipeline = beginNonFlowingPipeline(fetcher::fetch)
-            .withCache()
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertCompleteStream(
-                Loading(
-                    origin = Fetcher
-                ), Data(
-                    value = "three-1",
-                    origin = Fetcher
-                )
-            )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertCompleteStream(
-                Data(
-                    value = "three-1",
-                    origin = Cache
-                )
-            )
-        pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
-                )
-            )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                Data(
-                    value = "three-2",
-                    origin = Cache
-                )
-            )
+    fun sampleTest() = testScope.runBlockingTest{
+        val resultChannel = ConflatedBroadcastChannel<StoreResponse<String>>(StoreResponse.Data("", Fetcher))
+        val actor = actor<StoreResponse<String>>(capacity = Channel.UNLIMITED) {
+                for (msg in channel) {
+                     try {
+                       resultChannel.offer(msg)
+                    } catch (t: Throwable) {
+                         resultChannel.offer(StoreResponse.Error<String>(t, ResponseOrigin.Persister) as StoreResponse<String>)
+                    }
+                }
+            }
+
+        val expected = StoreResponse.Data("", Fetcher)
+        actor.send(expected)
+
+      resultChannel.openSubscription().consume {
+
+      }
+        actor.close()
     }
 
     @Test
-    fun getAndFresh_withPersister() = runBlocking<Unit> {
+    fun getAndFresh() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
+                3 to "three-1",
+                3 to "three-2"
+        )
+        val pipeline = beginNonFlowingPipeline(fetcher::fetch)
+                .withCache()
+        pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .assertCompleteStream(
+                        Loading(
+                                origin = Fetcher
+                        ), Data(
+                        value = "three-1",
+                        origin = Fetcher
+                )
+                )
+        pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .assertCompleteStream(
+                        Data(
+                                value = "three-1",
+                                origin = Cache
+                        )
+                )
+        pipeline.stream(StoreRequest.fresh(3))
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
+                )
+        pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .assertItems(
+                        Data(
+                                value = "three-2",
+                                origin = Cache
+                        )
+                )
+    }
+
+    @Test
+    fun getAndFresh_withPersister() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+                3 to "three-1",
+                3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
         val pipeline = beginNonFlowingPipeline(fetcher::fetch)
-            .withNonFlowPersister(
-                reader = persister::read,
-                writer = persister::write
-            )
-            .withCache()
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
+                .withNonFlowPersister(
+                        reader = persister::read,
+                        writer = persister::write
                 )
-            )
+                .withCache()
         pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                Data(
-                    value = "three-1",
-                    origin = Cache
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        )
                 )
-            )
+        pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .assertItems(
+                        Data(
+                                value = "three-1",
+                                origin = Cache
+                        )
+                )
         pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
                 )
-            )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                Data(
-                    value = "three-2",
-                    origin = Cache
+                .assertItems(
+                        Data(
+                                value = "three-2",
+                                origin = Cache
+                        )
                 )
-            )
     }
 
     @Test
     fun streamAndFresh_withPersister() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
+                3 to "three-1",
+                3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
 
         val pipeline = beginNonFlowingPipeline(fetcher::fetch)
-            .withNonFlowPersister(
-                reader = persister::read,
-                writer = persister::write
-            )
-            .withCache()
+                .withNonFlowPersister(
+                        reader = persister::read,
+                        writer = persister::write
+                )
+                .withCache()
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        )
                 )
-            )
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                Data(
-                    value = "three-1",
-                    origin = Cache
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Persister
-                ),
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .assertItems(
+                        Data(
+                                value = "three-1",
+                                origin = Cache
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Persister
+                        ),
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
                 )
-            )
     }
 
     @Test
     fun streamAndFresh() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
+                3 to "three-1",
+                3 to "three-2"
         )
         val pipeline = beginNonFlowingPipeline(fetcher::fetch)
-            .withCache()
+                .withCache()
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertCompleteStream(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
+                .assertCompleteStream(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        )
                 )
-            )
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertCompleteStream(
-                Data(
-                    value = "three-1",
-                    origin = Cache
-                ),
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .assertCompleteStream(
+                        Data(
+                                value = "three-1",
+                                origin = Cache
+                        ),
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
                 )
-            )
     }
 
     @Test
     fun skipCache() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
+                3 to "three-1",
+                3 to "three-2"
         )
         val pipeline = beginNonFlowingPipeline(fetcher::fetch)
-            .withCache()
+                .withCache()
 
         pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
-            .assertCompleteStream(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
+                .assertCompleteStream(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        )
                 )
-            )
 
         pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
-            .assertCompleteStream(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .assertCompleteStream(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
                 )
-            )
     }
 
     @Test
     fun flowingFetcher() = testScope.runBlockingTest {
         val fetcher = FlowingFakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
+                3 to "three-1",
+                3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
 
         val pipeline = beginPipeline(fetcher::createFlow)
-            .withNonFlowPersister(
-                reader = persister::read,
-                writer = persister::write
-            )
-        pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .withNonFlowPersister(
+                        reader = persister::read,
+                        writer = persister::write
                 )
-            )
+        pipeline.stream(StoreRequest.fresh(3))
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
+                )
 
         pipeline.stream(StoreRequest.cached(3, refresh = true)).assertItems(
-            Data(
-                value = "three-2",
-                origin = Persister
-            ),
-            Loading(
-                origin = Fetcher
-            ),
-            Data(
-                value = "three-1",
-                origin = Fetcher
-            ),
-            Data(
-                value = "three-2",
-                origin = Fetcher
-            )
+                Data(
+                        value = "three-2",
+                        origin = Persister
+                ),
+                Loading(
+                        origin = Fetcher
+                ),
+                Data(
+                        value = "three-1",
+                        origin = Fetcher
+                ),
+                Data(
+                        value = "three-2",
+                        origin = Fetcher
+                )
         )
     }
 
@@ -288,24 +307,24 @@ class PipelineStoreTest {
                 // never emit
             }
         }.withPersister(
-            reader = persister::flowReader,
-            writer = persister::flowWriter
+                reader = persister::flowReader,
+                writer = persister::flowWriter
         )
         launch {
             delay(10)
             persister.flowWriter(3, "local-1")
         }
         pipeline
-            .stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "local-1",
-                    origin = Persister
+                .stream(StoreRequest.cached(3, refresh = true))
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "local-1",
+                                origin = Persister
+                        )
                 )
-            )
     }
 
     @Test
@@ -319,8 +338,8 @@ class PipelineStoreTest {
                 emit("three-2")
             }
         }.withPersister(
-            reader = persister::flowReader,
-            writer = persister::flowWriter
+                reader = persister::flowReader,
+                writer = persister::flowWriter
         )
         launch {
             delay(5)
@@ -329,28 +348,28 @@ class PipelineStoreTest {
             persister.flowWriter(3, "local-2")
         }
         pipeline
-            .stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "local-1",
-                    origin = Persister
-                ),
-                Data(
-                    value = "three-1",
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "local-2",
-                    origin = Persister
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Fetcher
+                .stream(StoreRequest.cached(3, refresh = true))
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "local-1",
+                                origin = Persister
+                        ),
+                        Data(
+                                value = "three-1",
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "local-2",
+                                origin = Persister
+                        ),
+                        Data(
+                                value = "three-2",
+                                origin = Fetcher
+                        )
                 )
-            )
     }
 
     @Test
@@ -360,61 +379,61 @@ class PipelineStoreTest {
         val pipeline = beginNonFlowingPipeline<Int, String> { key: Int ->
             throw exception
         }.withPersister(
-            reader = persister::flowReader,
-            writer = persister::flowWriter
+                reader = persister::flowReader,
+                writer = persister::flowWriter
         )
         launch {
             delay(10)
             persister.flowWriter(3, "local-1")
         }
         pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
-            .assertItems(
-                Loading(
-                    origin = Fetcher
-                ),
-                StoreResponse.Error(
-                    error = exception,
-                    origin = Fetcher
-                ),
-                Data(
-                    value = "local-1",
-                    origin = Persister
+                .assertItems(
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        StoreResponse.Error(
+                                error = exception,
+                                origin = Fetcher
+                        ),
+                        Data(
+                                value = "local-1",
+                                origin = Persister
+                        )
                 )
-            )
         pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
-            .assertItems(
-                Data(
-                    value = "local-1",
-                    origin = Persister
-                ),
-                Loading(
-                    origin = Fetcher
-                ),
-                StoreResponse.Error(
-                    error = exception,
-                    origin = Fetcher
+                .assertItems(
+                        Data(
+                                value = "local-1",
+                                origin = Persister
+                        ),
+                        Loading(
+                                origin = Fetcher
+                        ),
+                        StoreResponse.Error(
+                                error = exception,
+                                origin = Fetcher
+                        )
                 )
-            )
     }
 
     suspend fun PipelineStore<Int, String>.get(request: StoreRequest<Int>) =
-        this.stream(request).filter { it.dataOrNull() != null }.first()
+            this.stream(request).filter { it.dataOrNull() != null }.first()
 
     suspend fun PipelineStore<Int, String>.get(key: Int) = get(
-        StoreRequest.cached(
-            key = key,
-            refresh = false
-        )
+            StoreRequest.cached(
+                    key = key,
+                    refresh = false
+            )
     )
 
     suspend fun PipelineStore<Int, String>.fresh(key: Int) = get(
-        StoreRequest.fresh(
-            key = key
-        )
+            StoreRequest.fresh(
+                    key = key
+            )
     )
 
     private class FlowingFakeFetcher<Key, Output>(
-        vararg val responses: Pair<Key, Output>
+            vararg val responses: Pair<Key, Output>
     ) {
         fun createFlow(key: Key) = flow {
             responses.filter {
@@ -427,7 +446,7 @@ class PipelineStoreTest {
     }
 
     private class FakeFetcher<Key, Output>(
-        vararg val responses: Pair<Key, Output>
+            vararg val responses: Pair<Key, Output>
     ) {
         private var index = 0
         @Suppress("RedundantSuspendModifier") // needed for function reference
@@ -453,8 +472,8 @@ class PipelineStoreTest {
         }
 
         suspend fun asObservable() = SimplePersisterAsFlowable(
-            reader = this::read,
-            writer = this::write
+                reader = this::read,
+                writer = this::write
         )
     }
 
@@ -465,7 +484,7 @@ class PipelineStoreTest {
      */
     private suspend fun <T> Flow<T>.assertItems(vararg expected: T) {
         assertThat(this.take(expected.size).toList())
-            .isEqualTo(expected.toList())
+                .isEqualTo(expected.toList())
     }
 
     /**
@@ -474,6 +493,7 @@ class PipelineStoreTest {
      */
     private suspend fun <T> Flow<T>.assertCompleteStream(vararg expected: T) {
         assertThat(this.toList())
-            .isEqualTo(expected.toList())
+                .isEqualTo(expected.toList())
     }
 }
+
