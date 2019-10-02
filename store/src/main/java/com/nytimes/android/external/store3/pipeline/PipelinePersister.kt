@@ -9,10 +9,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class PipelinePersister<Key, Input, Output>(
@@ -24,47 +21,7 @@ class PipelinePersister<Key, Input, Output>(
     @ExperimentalCoroutinesApi
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
-        return when {
-            request.shouldSkipCache(CacheType.DISK) -> fetchSkippingCache(request)
-            else -> diskNetworkCombined(request)
-        }
-    }
-
-    /**
-     * skipping cache, just delegate to the fetcher but update disk w/ any new data from fetcher
-     */
-    private fun fetchSkippingCache(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
-        return fetcher.stream(request)
-            .flatMapLatest { response: StoreResponse<Input> ->
-                // explicit type is necessary for type resolution
-                flow<StoreResponse<Output>> {
-                    val data = response.dataOrNull()
-                    if (data != null) {
-                        // save into database first
-                        writer(request.key, response.requireData())
-                        // continue database data
-                        var first = true
-                        val readerFlow: Flow<StoreResponse<Output>> =
-                            reader(request.key).mapNotNull {
-                                it?.let {
-                                    val origin = if (first) {
-                                        first = false
-                                        response.origin
-                                    } else {
-                                        ResponseOrigin.Persister
-                                    }
-                                    StoreResponse.Data(
-                                        value = it,
-                                        origin = origin
-                                    )
-                                }
-                            }
-                        emitAll(readerFlow)
-                    } else {
-                        emit(response.swapType())
-                    }
-                }
-            }
+        return diskNetworkCombined(request)
     }
 
     /**
@@ -91,9 +48,17 @@ class PipelinePersister<Key, Input, Output>(
         // used to control the network flow so that we can decide if we want to start it
         val fetcherCommands = Channel<FetcherCommand>(capacity = Channel.RENDEZVOUS)
         launch {
-            // trigger first load
-            diskCommands.send(DiskCommand.ReadFirst)
-            fetcherCommands.consumeAsFlow().collectLatest {
+            // trigger first load if disk is NOT skipped
+            if (!request.shouldSkipCache(CacheType.DISK)) {
+                diskCommands.send(DiskCommand.ReadFirst)
+            }
+
+            fetcherCommands.consumeAsFlow().onStart {
+                // if skipping cache, start with a network load
+                if (request.shouldSkipCache(CacheType.DISK)) {
+                    emit(FetcherCommand.Fetch)
+                }
+            }.collectLatest {
                 fetcher.stream(request).collect {
                     val data = it.dataOrNull()
                     if (data != null) {
