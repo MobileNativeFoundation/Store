@@ -1,6 +1,6 @@
 package com.nytimes.android.external.store4.legacy
 
-import com.nytimes.android.external.store3.base.Persister
+import com.nytimes.android.external.store4.Persister
 import java.io.Serializable
 
 /**

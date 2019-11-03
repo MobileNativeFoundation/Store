@@ -1,7 +1,7 @@
 package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
-import com.nytimes.android.external.store3.base.DiskWrite
+import com.nytimes.android.external.store4.DiskWrite
 import okio.BufferedSource
 
 /**

@@ -1,6 +1,6 @@
 package com.nytimes.android.external.fs3.filesystem
 
-import com.nytimes.android.external.store3.base.RecordState
+import com.nytimes.android.external.fs3.RecordState
 import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException

@@ -2,9 +2,11 @@ package com.nytimes.android.external.store3.pipeline
 
 import com.nytimes.android.external.store3.TestStoreType
 import com.nytimes.android.external.store4.*
-import com.nytimes.android.external.store4.ResponseOrigin.*
+import com.nytimes.android.external.store4.ResponseOrigin.Cache
+import com.nytimes.android.external.store4.ResponseOrigin.Fetcher
 import com.nytimes.android.external.store4.StoreResponse.Data
 import com.nytimes.android.external.store4.StoreResponse.Loading
+import com.nytimes.android.external.store4.impl.SimplePersisterAsFlowable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -151,7 +153,7 @@ class FlowStoreTest(
                 ),
                 Data(
                     value = "three-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
                     origin = Fetcher
@@ -268,7 +270,7 @@ class FlowStoreTest(
             .assertItems(
                 Data(
                     value = "three-2",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
                     origin = Fetcher
@@ -310,7 +312,7 @@ class FlowStoreTest(
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
     }
@@ -345,7 +347,7 @@ class FlowStoreTest(
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Data(
                     value = "three-1",
@@ -353,7 +355,7 @@ class FlowStoreTest(
                 ),
                 Data(
                     value = "local-2",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Data(
                     value = "three-2",
@@ -389,14 +391,14 @@ class FlowStoreTest(
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
         pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
             .assertItems(
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
                     origin = Fetcher
@@ -408,17 +410,17 @@ class FlowStoreTest(
             )
     }
 
-    suspend fun FlowStore<Int, String>.get(request: StoreRequest<Int>) =
+    suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
-    suspend fun FlowStore<Int, String>.get(key: Int) = get(
+    suspend fun Store<Int, String>.get(key: Int) = get(
         StoreRequest.cached(
             key = key,
             refresh = false
         )
     )
 
-    suspend fun FlowStore<Int, String>.fresh(key: Int) = get(
+    suspend fun Store<Int, String>.fresh(key: Int) = get(
         StoreRequest.fresh(
             key = key
         )
@@ -490,7 +492,7 @@ class FlowStoreTest(
         persisterWriter: (suspend (Key, Input) -> Unit)? = null,
         persisterDelete: (suspend (Key) -> Unit)? = null,
         enableCache: Boolean
-    ): FlowStore<Key, Output> {
+    ): Store<Key, Output> {
         check(nonFlowingFetcher != null || flowingFetcher != null) {
             "need to provide a fetcher"
         }
@@ -502,11 +504,11 @@ class FlowStoreTest(
         }
 
             return if (nonFlowingFetcher != null) {
-                RealFlowStore.fromNonFlow(
+                FlowStoreBuilder.fromNonFlow(
                     nonFlowingFetcher
                 )
             } else {
-                RealFlowStore.from<Key, Input, Output>(
+                FlowStoreBuilder.from<Key, Input, Output>(
                     flowingFetcher!!
                 )
             }.let {

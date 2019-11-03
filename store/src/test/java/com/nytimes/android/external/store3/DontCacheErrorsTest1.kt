@@ -1,5 +1,6 @@
 package com.nytimes.android.external.store3
 
+import com.nytimes.android.external.store4.get
 import com.nytimes.android.external.store4.legacy.BarCode
 import junit.framework.Assert.fail
 import kotlinx.coroutines.test.TestCoroutineScope

@@ -2,7 +2,7 @@ package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
-import com.nytimes.android.external.store3.base.Persister
+import com.nytimes.android.external.store4.Persister
 import com.nytimes.android.external.store4.legacy.BarCode
 
 import java.io.File
