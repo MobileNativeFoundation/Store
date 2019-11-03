@@ -10,19 +10,20 @@ import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class KeyParserTest(
-        storeType: TestStoreType
+    storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
 
     private val store = TestStoreBuilder.from(
-            fetcher = {
-                NETWORK
-            },
-            fetchParser = object : KeyParser<Int, String, String> {
-                override suspend fun apply(key: Int, raw: String): String {
-                    return raw + key
-                }
+        scope = testScope,
+        fetcher = {
+            NETWORK
+        },
+        fetchParser = object : KeyParser<Int, String, String> {
+            override suspend fun apply(key: Int, raw: String): String {
+                return raw + key
             }
+        }
     ).build(storeType)
 
     @Test

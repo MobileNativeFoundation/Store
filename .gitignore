@@ -40,6 +40,9 @@ captures/
 # Intellij
 *.iml
 .idea/
+.classpath
+.project
+.settings
 
 # Keystore files
 *.jks

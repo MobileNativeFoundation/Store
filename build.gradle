@@ -21,7 +21,7 @@ buildscript {
     ]
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.0-alpha11'
+        classpath 'com.android.tools.build:gradle:3.6.0-beta01'
         classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.5.6'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.ext.versions.kotlin"
         classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.17'
@@ -32,7 +32,6 @@ allprojects {
     buildscript {}
 
     repositories {
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
         mavenCentral()
         jcenter()
     }

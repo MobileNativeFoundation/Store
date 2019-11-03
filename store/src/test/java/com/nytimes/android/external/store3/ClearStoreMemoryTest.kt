@@ -12,12 +12,12 @@ import org.junit.runners.Parameterized
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class ClearStoreMemoryTest(
-        storeType : TestStoreType
+    storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private var networkCalls = 0
-    private val store = TestStoreBuilder.from<BarCode, Int> {
-        networkCalls ++
+    private val store = TestStoreBuilder.from<BarCode, Int>(testScope) {
+        networkCalls++
     }.build(storeType)
 
     @Test

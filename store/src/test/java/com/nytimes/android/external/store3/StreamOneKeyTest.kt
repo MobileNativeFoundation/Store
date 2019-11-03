@@ -17,50 +17,52 @@ import org.junit.runners.Parameterized
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamOneKeyTest(
-        private val storeType: TestStoreType
+    private val storeType: TestStoreType
 ) {
 
     val fetcher: Fetcher<String, BarCode> = mock()
     val persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")
+    private val testScope = TestCoroutineScope()
 
     private val store = TestStoreBuilder.from(
-            fetcher = fetcher,
-            persister = persister
+        scope = testScope,
+        fetcher = fetcher,
+        persister = persister
     ).build(storeType)
-    private val testScope = TestCoroutineScope()
+
 
     @Before
     fun setUp() = runBlockingTest {
         whenever(fetcher.fetch(barCode))
-                .thenReturn(TEST_ITEM)
-                .thenReturn(TEST_ITEM2)
+            .thenReturn(TEST_ITEM)
+            .thenReturn(TEST_ITEM2)
 
         whenever(persister.read(barCode))
-                .let {
-                    // the backport stream method of Pipeline to Store does not skip disk so we
-                    // make sure disk returns empty value first
-                    if (storeType == TestStoreType.Pipeline) {
-                        it.thenReturn(null)
-                    } else {
-                        it
-                    }
+            .let {
+                // the backport stream method of Pipeline to Store does not skip disk so we
+                // make sure disk returns empty value first
+                if (storeType != TestStoreType.Store) {
+                    it.thenReturn(null)
+                } else {
+                    it
                 }
-                .thenReturn(TEST_ITEM)
-                .thenReturn(TEST_ITEM2)
+            }
+            .thenReturn(TEST_ITEM)
+            .thenReturn(TEST_ITEM2)
 
         whenever(persister.write(barCode, TEST_ITEM))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(persister.write(barCode, TEST_ITEM2))
-                .thenReturn(true)
+            .thenReturn(true)
     }
 
     @Suppress("UsePropertyAccessSyntax") // for assert isTrue() isFalse()
     @Test
-    fun testStream() = runBlockingTest {
+    fun testStream() = testScope.runBlockingTest {
         val streamSubscription = store.stream(barCode)
-                .openChannelSubscription()
+            .openChannelSubscription()
         try {
             if (storeType == TestStoreType.Store) {
                 //stream doesn't invoke get anymore so when we call it the channel is empty
@@ -82,11 +84,11 @@ class StreamOneKeyTest(
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
             //get for another barcode should not trigger a stream for barcode1
             whenever(fetcher.fetch(barCode2))
-                    .thenReturn(TEST_ITEM)
+                .thenReturn(TEST_ITEM)
             whenever(persister.read(barCode2))
-                    .thenReturn(TEST_ITEM)
+                .thenReturn(TEST_ITEM)
             whenever(persister.write(barCode2, TEST_ITEM))
-                    .thenReturn(true)
+                .thenReturn(true)
             store.get(barCode2)
             assertThat(streamSubscription.isEmpty).isTrue()
 

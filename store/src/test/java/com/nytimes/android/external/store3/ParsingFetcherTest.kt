@@ -19,7 +19,7 @@ import org.mockito.Mockito.verify
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class ParsingFetcherTest(
-        private val storeType: TestStoreType
+    private val storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private val fetcher: Fetcher<String, BarCode> = mock()
@@ -30,22 +30,23 @@ class ParsingFetcherTest(
     @Test
     fun testPersistFetcher() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                fetchParser = parser,
-                persister = persister
+            scope = testScope,
+            fetcher = fetcher,
+            fetchParser = parser,
+            persister = persister
         ).build(storeType)
 
         whenever(fetcher.fetch(barCode))
-                .thenReturn(RAW_DATA)
+            .thenReturn(RAW_DATA)
 
         whenever(parser.apply(RAW_DATA))
-                .thenReturn(PARSED)
+            .thenReturn(PARSED)
 
         whenever(persister.read(barCode))
-                .thenReturn(PARSED)
+            .thenReturn(PARSED)
 
         whenever(persister.write(barCode, PARSED))
-                .thenReturn(true)
+            .thenReturn(true)
 
         val value = simpleStore.fresh(barCode)
 
