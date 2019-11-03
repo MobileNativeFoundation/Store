@@ -4,8 +4,13 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +22,7 @@ import org.junit.runners.Parameterized
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamOneKeyTest(
-    private val storeType: TestStoreType
+        private val storeType: TestStoreType
 ) {
 
     val fetcher: Fetcher<String, BarCode> = mock()
@@ -27,68 +32,57 @@ class StreamOneKeyTest(
     private val testScope = TestCoroutineScope()
 
     private val store = TestStoreBuilder.from(
-        scope = testScope,
-        fetcher = fetcher,
-        persister = persister
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
     ).build(storeType)
 
 
     @Before
     fun setUp() = runBlockingTest {
-        whenever(fetcher.fetch(barCode))
-            .thenReturn(TEST_ITEM)
-            .thenReturn(TEST_ITEM2)
+        whenever(fetcher.invoke(barCode))
+                .thenReturn(TEST_ITEM)
+                .thenReturn(TEST_ITEM2)
 
         whenever(persister.read(barCode))
-            .let {
-                // the backport stream method of Pipeline to Store does not skip disk so we
-                // make sure disk returns empty value first
-                if (storeType != TestStoreType.Store) {
+                .let {
+                    // the backport stream method of Pipeline to Store does not skip disk so we
+                    // make sure disk returns empty value first
+
                     it.thenReturn(null)
-                } else {
-                    it
+
                 }
-            }
-            .thenReturn(TEST_ITEM)
-            .thenReturn(TEST_ITEM2)
+                .thenReturn(TEST_ITEM)
+                .thenReturn(TEST_ITEM2)
 
         whenever(persister.write(barCode, TEST_ITEM))
-            .thenReturn(true)
+                .thenReturn(true)
         whenever(persister.write(barCode, TEST_ITEM2))
-            .thenReturn(true)
+                .thenReturn(true)
     }
 
     @Suppress("UsePropertyAccessSyntax") // for assert isTrue() isFalse()
     @Test
     fun testStream() = testScope.runBlockingTest {
         val streamSubscription = store.stream(barCode)
-            .openChannelSubscription()
+                .openChannelSubscription()
         try {
-            if (storeType == TestStoreType.Store) {
-                //stream doesn't invoke get anymore so when we call it the channel is empty
-                assertThat(streamSubscription.isEmpty).isTrue()
-            } else {
-                // for pipeline store, there is no `get` so it is not empty
+
                 assertThat(streamSubscription.isEmpty).isFalse()
-            }
+
 
 
             store.clear(barCode)
 
-            if (storeType == TestStoreType.Store) {
-                //fresh should notify subscribers in Store. In Pipeline, calling stream
-                // will already trigger a get, we don't want another here
-                store.fresh(barCode)
-            }
 
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
             //get for another barcode should not trigger a stream for barcode1
-            whenever(fetcher.fetch(barCode2))
-                .thenReturn(TEST_ITEM)
+            whenever(fetcher.invoke(barCode2))
+                    .thenReturn(TEST_ITEM)
             whenever(persister.read(barCode2))
-                .thenReturn(TEST_ITEM)
+                    .thenReturn(TEST_ITEM)
             whenever(persister.write(barCode2, TEST_ITEM))
-                .thenReturn(true)
+                    .thenReturn(true)
             store.get(barCode2)
             assertThat(streamSubscription.isEmpty).isTrue()
 
@@ -109,3 +103,7 @@ class StreamOneKeyTest(
         fun params() = TestStoreType.values()
     }
 }
+
+@ExperimentalCoroutinesApi
+fun <T> Flow<T>.openChannelSubscription() =
+        broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()

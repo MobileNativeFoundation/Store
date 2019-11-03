@@ -2,7 +2,7 @@ package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.base.Clearable
 import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
 
 open class ClearingPersister : Persister<Int, BarCode>, Clearable<BarCode> {
     override suspend fun read(key: BarCode): Int? {

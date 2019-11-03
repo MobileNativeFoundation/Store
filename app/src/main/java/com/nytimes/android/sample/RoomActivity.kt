@@ -6,10 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.nytimes.android.external.store3.pipeline.PipelineStore
-import com.nytimes.android.external.store3.pipeline.ResponseOrigin
-import com.nytimes.android.external.store3.pipeline.StoreRequest
-import com.nytimes.android.external.store3.pipeline.StoreResponse
+import com.nytimes.android.external.store4.FlowStore
+import com.nytimes.android.external.store4.ResponseOrigin
+import com.nytimes.android.external.store4.StoreRequest
+import com.nytimes.android.external.store4.StoreResponse
 import com.nytimes.android.sample.reddit.PostAdapter
 import kotlinx.android.synthetic.main.activity_room_store.*
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
@@ -17,11 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @FlowPreview
@@ -45,7 +41,7 @@ class RoomActivity : AppCompatActivity() {
                 postRecyclerView.adapter = adapter
             }
         }
-        val storeState = StoreState((application as SampleApp).roomPipeline)
+        val storeState = StoreState((application as SampleApp).roomFlowStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {
                 launch {
@@ -91,7 +87,7 @@ class RoomActivity : AppCompatActivity() {
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
 internal class StoreState<Key, Output>(
-    private val store : PipelineStore<Key, Output>
+    private val store : FlowStore<Key, Output>
 ) {
     private val keyFlow = Channel<Key>(capacity = Channel.CONFLATED)
     private val _errors = Channel<String>(capacity = Channel.CONFLATED)

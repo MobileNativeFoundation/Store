@@ -1,16 +1,12 @@
 package com.nytimes.android.external.store3
 
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
 import junit.framework.Assert.fail
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.coroutines.EmptyCoroutineContext
 
 @RunWith(Parameterized::class)
 class DontCacheErrorsTest(
