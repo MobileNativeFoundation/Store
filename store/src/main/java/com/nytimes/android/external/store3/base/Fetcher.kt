@@ -12,5 +12,5 @@ interface Fetcher<Raw, Key> {
      * @param key Container with Key and Type used as a request param
      * @return Observable that emits [Raw] data
      */
-    suspend fun fetch(key: Key): Raw
+    suspend fun invoke(key: Key): Raw
 }

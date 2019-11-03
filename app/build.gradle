@@ -62,8 +62,6 @@ dependencies {
     kapt(libraries.roomCompiler)
     implementation project(':store')
     implementation project(':cache')
-    implementation project(':middleware')
-    implementation project(':middleware-moshi')
     implementation project(':filesystem')
     implementation project(':suspendCache')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"

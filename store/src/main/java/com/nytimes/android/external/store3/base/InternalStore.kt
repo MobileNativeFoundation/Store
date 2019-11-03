@@ -1,6 +1,6 @@
 package com.nytimes.android.external.store3.base
 
-import com.nytimes.android.external.store3.base.impl.Store
+import com.nytimes.android.external.store4.legacy.Store
 
 /**
  * 2 * this interface allows us to mark a [Store] as "internal", exposing methods for retrieving data

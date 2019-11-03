@@ -1,6 +1,7 @@
 package com.nytimes.android.external.store3.pipeline
 
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
+import com.nytimes.android.external.store4.SimplePersisterAsFlowable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -80,7 +81,7 @@ class SimplePersisterAsFlowableTest {
                     }
                     values[readIndex++]
                 },
-                writer = { key : BarCode, value : String ->
+                writer = { key: BarCode, value: String ->
                     written.add(value)
                 },
                 delete = {
