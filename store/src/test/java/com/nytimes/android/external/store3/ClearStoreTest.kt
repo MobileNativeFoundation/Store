@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(Parameterized::class)
 class ClearStoreTest(
-        storeType: TestStoreType
+    storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
 
@@ -22,10 +22,11 @@ class ClearStoreTest(
     private val networkCalls = AtomicInteger(0)
 
     private val store = TestStoreBuilder.from(
-            fetcher = {
-                networkCalls.incrementAndGet()
-            },
-            persister = persister
+        scope = testScope,
+        fetcher = {
+            networkCalls.incrementAndGet()
+        },
+        persister = persister
     ).build(storeType)
 
     @Test
@@ -34,10 +35,10 @@ class ClearStoreTest(
         val barcode = BarCode("type", "key")
 
         whenever(persister.read(barcode))
-                .thenReturn(null) //read from disk on get
-                .thenReturn(1) //read from disk after fetching from network
-                .thenReturn(null) //read from disk after clearing
-                .thenReturn(1) //read from disk after making additional network call
+            .thenReturn(null) //read from disk on get
+            .thenReturn(1) //read from disk after fetching from network
+            .thenReturn(null) //read from disk after clearing
+            .thenReturn(1) //read from disk after making additional network call
         whenever(persister.write(barcode, 1)).thenReturn(true)
         whenever(persister.write(barcode, 2)).thenReturn(true)
 
@@ -57,18 +58,18 @@ class ClearStoreTest(
         val barcode2 = BarCode("type2", "key2")
 
         whenever(persister.read(barcode1))
-                .thenReturn(null) //read from disk
-                .thenReturn(1) //read from disk after fetching from network
-                .thenReturn(null) //read from disk after clearing disk cache
-                .thenReturn(1) //read from disk after making additional network call
+            .thenReturn(null) //read from disk
+            .thenReturn(1) //read from disk after fetching from network
+            .thenReturn(null) //read from disk after clearing disk cache
+            .thenReturn(1) //read from disk after making additional network call
         whenever(persister.write(barcode1, 1)).thenReturn(true)
         whenever(persister.write(barcode1, 2)).thenReturn(true)
 
         whenever(persister.read(barcode2))
-                .thenReturn(null) //read from disk
-                .thenReturn(1) //read from disk after fetching from network
-                .thenReturn(null) //read from disk after clearing disk cache
-                .thenReturn(1) //read from disk after making additional network call
+            .thenReturn(null) //read from disk
+            .thenReturn(1) //read from disk after fetching from network
+            .thenReturn(null) //read from disk after clearing disk cache
+            .thenReturn(1) //read from disk after making additional network call
 
         whenever(persister.write(barcode2, 1)).thenReturn(true)
         whenever(persister.write(barcode2, 2)).thenReturn(true)

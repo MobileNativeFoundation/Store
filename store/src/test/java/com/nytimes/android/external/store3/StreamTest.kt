@@ -26,7 +26,7 @@ import org.junit.runners.Parameterized
 @ObsoleteCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamTest(
-        private val storeType: TestStoreType
+    private val storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private val fetcher: Fetcher<String, BarCode> = mock()
@@ -35,8 +35,9 @@ class StreamTest(
     private val barCode = BarCode("key", "value")
 
     private val store = TestStoreBuilder.from(
-            fetcher = fetcher,
-            persister = persister
+        scope = testScope,
+        fetcher = fetcher,
+        persister = persister
     ).build(storeType)
 
     @Before
@@ -44,17 +45,17 @@ class StreamTest(
         whenever(fetcher.fetch(barCode)).thenReturn(TEST_ITEM)
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(TEST_ITEM)
+            .thenReturn(null)
+            .thenReturn(TEST_ITEM)
 
         whenever(persister.write(barCode, TEST_ITEM))
-                .thenReturn(true)
+            .thenReturn(true)
     }
 
     @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
     fun testStream() = testScope.runBlockingTest {
-        if (storeType == TestStoreType.Pipeline) {
+        if (storeType != TestStoreType.Store) {
             throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
         }
         val streamSubscription = store.stream().openChannelSubscription()
@@ -70,7 +71,7 @@ class StreamTest(
     @Suppress("UsePropertyAccessSyntax")// for isTrue() / isFalse()
     @Test
     fun testStreamEmitsOnlyFreshData() = testScope.runBlockingTest {
-        if (storeType == TestStoreType.Pipeline) {
+        if (storeType != TestStoreType.Store) {
             throw AssumptionViolatedException("Pipeline store does not support stream() no arg")
         }
         store.get(barCode)
@@ -93,4 +94,4 @@ class StreamTest(
 
 @ExperimentalCoroutinesApi
 fun <T> Flow<T>.openChannelSubscription() =
-        broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()
+    broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()

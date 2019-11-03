@@ -54,7 +54,7 @@ ext.versions = [
         supportTestRunner    : '0.4.1',
         espresso             : '2.2.1',
         compileTesting       : '0.8',
-        coroutines           : '1.3.0',
+        coroutines           : '1.3.2',
 ]
 
 ext.libraries = [

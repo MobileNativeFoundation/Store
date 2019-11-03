@@ -19,7 +19,7 @@ import org.mockito.Mockito.verify
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreWithParserTest(
-        private val storeType: TestStoreType
+    private val storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private val fetcher: Fetcher<String, BarCode> = mock()
@@ -31,20 +31,21 @@ class StoreWithParserTest(
     @Test
     fun testSimple() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.fromPostParser(
-                fetcher = fetcher,
-                persister = persister,
-                postParser = parser
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister,
+            postParser = parser
         ).build(storeType)
 
         whenever(fetcher.fetch(barCode))
-                .thenReturn(NETWORK)
+            .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(DISK)
+            .thenReturn(null)
+            .thenReturn(DISK)
 
         whenever(persister.write(barCode, NETWORK))
-                .thenReturn(true)
+            .thenReturn(true)
 
         whenever(parser.apply(DISK)).thenReturn(barCode.key)
 
@@ -58,19 +59,20 @@ class StoreWithParserTest(
     @Test
     fun testSubclass() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.fromPostParser(
-                fetcher = fetcher,
-                persister = persister,
-                postParser = parser
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister,
+            postParser = parser
         ).build(storeType)
         whenever(fetcher.fetch(barCode))
-                .thenReturn(NETWORK)
+            .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(DISK)
+            .thenReturn(null)
+            .thenReturn(DISK)
 
         whenever(persister.write(barCode, NETWORK))
-                .thenReturn(true)
+            .thenReturn(true)
 
         whenever(parser.apply(DISK)).thenReturn(barCode.key)
 

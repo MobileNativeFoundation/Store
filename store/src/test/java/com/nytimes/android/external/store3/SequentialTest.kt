@@ -17,12 +17,16 @@ import kotlin.random.Random
 
 @RunWith(Parameterized::class)
 class SequentialTes(
-        storeType: TestStoreType) {
+    storeType: TestStoreType
+) {
     private val testScope = TestCoroutineScope()
 
     var networkCalls = 0
-    private val store = TestStoreBuilder.from<BarCode, Int>(cached = true) {
-        networkCalls ++
+    private val store = TestStoreBuilder.from<BarCode, Int>(
+        scope = testScope,
+        cached = true
+    ) {
+        networkCalls++
     }.build(storeType)
 
     @Test
@@ -58,8 +62,8 @@ class SequentialTes(
 
         val store: Store<String, Int> = Store.from<Int, Int> { it + Random.nextInt() } with {
             parser { it.toString() }
-                    .persister(persister)
-                    .cache()
+                .persister(persister)
+                .cache()
         }
 
         val v1 = store.get(4)

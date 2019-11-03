@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreTest(
-        private val storeType: TestStoreType
+    private val storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
@@ -41,19 +41,20 @@ class StoreTest(
     @Test
     fun testSimple() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                persister = persister
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
         ).build(storeType)
 
         whenever(fetcher.fetch(barCode))
-                .thenReturn(NETWORK)
+            .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(DISK)
+            .thenReturn(null)
+            .thenReturn(DISK)
 
         whenever(persister.write(barCode, NETWORK))
-                .thenReturn(true)
+            .thenReturn(true)
 
         var value = simpleStore.get(barCode)
 
@@ -66,24 +67,25 @@ class StoreTest(
     @Test
     fun testDoubleTap() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                persister = persister
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
         ).build(storeType)
         whenever(fetcher.fetch(barCode))
-                .thenAnswer {
-                    if (counter.incrementAndGet() == 1) {
-                        NETWORK
-                    } else {
-                        throw RuntimeException("Yo Dawg your inflight is broken")
-                    }
+            .thenAnswer {
+                if (counter.incrementAndGet() == 1) {
+                    NETWORK
+                } else {
+                    throw RuntimeException("Yo Dawg your inflight is broken")
                 }
+            }
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(DISK)
+            .thenReturn(null)
+            .thenReturn(DISK)
 
         whenever(persister.write(barCode, NETWORK))
-                .thenReturn(true)
+            .thenReturn(true)
 
 
         val deferred = async { simpleStore.get(barCode) }
@@ -97,21 +99,22 @@ class StoreTest(
     fun testSubclass() = testScope.runBlockingTest {
 
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                persister = persister
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
         ).build(storeType)
 
         simpleStore.clear(barCode)
 
         whenever(fetcher.fetch(barCode))
-                .thenReturn(NETWORK)
+            .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
-                .thenReturn(null)
-                .thenReturn(DISK)
+            .thenReturn(null)
+            .thenReturn(DISK)
         whenever(persister.write(barCode, NETWORK)).thenReturn(true)
 
-            var value = simpleStore.get(barCode)
+        var value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
@@ -122,13 +125,14 @@ class StoreTest(
     fun testNoopAndDefault() = testScope.runBlockingTest {
         val persister = spy(NoopPersister.create<String, BarCode>())
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                persister = persister,
-                cached = true
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister,
+            cached = true
         ).build(storeType)
 
         whenever(fetcher.fetch(barCode))
-                .thenReturn(NETWORK)
+            .thenReturn(NETWORK)
 
         var value = simpleStore.get(barCode)
         verify(fetcher, times(1)).fetch(barCode)
@@ -148,9 +152,9 @@ class StoreTest(
     @Test
     fun testEquivalence() = testScope.runBlockingTest {
         val cache = CacheBuilder.newBuilder()
-                .maximumSize(1)
-                .expireAfterAccess(java.lang.Long.MAX_VALUE, TimeUnit.SECONDS)
-                .build<BarCode, String>()
+            .maximumSize(1)
+            .expireAfterAccess(java.lang.Long.MAX_VALUE, TimeUnit.SECONDS)
+            .build<BarCode, String>()
 
         cache.put(barCode, MEMORY)
         var value = cache.getIfPresent(barCode)
@@ -163,9 +167,10 @@ class StoreTest(
     @Test
     fun testFreshUsesOnlyNetwork() = testScope.runBlockingTest {
         val simpleStore = TestStoreBuilder.from(
-                fetcher = fetcher,
-                persister = persister,
-                persisterStalePolicy = StalePolicy.NETWORK_BEFORE_STALE
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister,
+            persisterStalePolicy = StalePolicy.NETWORK_BEFORE_STALE
         ).build(storeType)
 
         whenever(fetcher.fetch(barCode)) doThrow RuntimeException(ERROR)

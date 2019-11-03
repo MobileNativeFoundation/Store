@@ -74,10 +74,11 @@ sealed class StoreResponse<T>(
         else -> null
     }
 
+    @Suppress("UNCHECKED_CAST")
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> Error(error, origin)
         is Loading -> Loading(origin)
-        else -> throw IllegalStateException("cannot swap type for $this")
+        is Data-> Data(value = value as R, origin = origin)
     }
 }
 
