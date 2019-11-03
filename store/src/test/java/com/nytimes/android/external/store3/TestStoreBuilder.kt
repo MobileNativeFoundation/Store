@@ -1,101 +1,50 @@
 package com.nytimes.android.external.store3
 
-import com.nytimes.android.external.store3.base.Fetcher
-import com.nytimes.android.external.store3.base.Parser
-import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
-import com.nytimes.android.external.store4.legacy.Store
 import com.nytimes.android.external.store3.util.KeyParser
-import com.nytimes.android.external.store4.RealFlowStore
-import com.nytimes.android.external.store4.SourceOfTruth
+import com.nytimes.android.external.store4.Fetcher
+import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.FlowStoreBuilder
+import com.nytimes.android.external.store4.Persister
+import com.nytimes.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 
 data class TestStoreBuilder<Key, Output>(
-    private val buildFlowStore: () -> Store<Output, Key>
+    private val buildStore: () -> Store<Key, Output>
 ) {
-    fun build(storeType: TestStoreType): Store<out Output, Key> = when (storeType) {
-        TestStoreType.FlowStore -> buildFlowStore()
+    fun build(storeType: TestStoreType):Store<Key, out Output> = when (storeType) {
+        TestStoreType.FlowStore -> buildStore()
     }
 
     companion object {
-        fun <Key, Output> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            fetcher: suspend (Key) -> Output
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            persister = null,
-            fetchParser = null,
-            fetcher = fetcher
-        )
 
         fun <Key, Output> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            fetcher: suspend (Key) -> Output,
-            fetchParser: KeyParser<Key, Output, Output>
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            persister = null,
-            fetchParser = fetchParser,
-            fetcher = fetcher
-        )
-
-        fun <Key, Output> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            fetcher: Fetcher<Output, Key>,
-            fetchParser: Parser<Output, Output>,
-            persister: Persister<Output, Key>
-        ): TestStoreBuilder<Key, Output> = from(
+                scope: CoroutineScope,
+                fetcher: Fetcher<Output, Key>,
+                persister: Persister<Output, Key>?=null,
+                inflight: Boolean = true
+                ): TestStoreBuilder<Key, Output> = from(
             scope = scope,
             inflight = inflight,
             persister = persister,
-            fetchParser = object : KeyParser<Key, Output, Output> {
-                override suspend fun apply(key: Key, raw: Output): Output {
-                    return fetchParser.apply(raw)
-                }
-            },
-            fetcher = fetcher
-        )
-
-        fun <Key, Output> fromPostParser(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            fetcher: Fetcher<Output, Key>,
-            postParser: Parser<Output, Output>,
-            persister: Persister<Output, Key>
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            persister = persister,
-            postParser = object : KeyParser<Key, Output, Output> {
-                override suspend fun apply(key: Key, raw: Output): Output {
-                    return postParser.apply(raw)
-                }
-            },
-            fetcher = fetcher
+            fetcher = {fetcher.invoke(it)}
         )
 
         @Suppress("UNCHECKED_CAST")
         fun <Key, Output> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
-            persister: Persister<Output, Key>? = null,
-            fetchParser: KeyParser<Key, Output, Output>? = null,
-            fetcher: suspend (Key) -> Output
+                scope: CoroutineScope,
+                inflight: Boolean = true,
+                cached: Boolean = false,
+                cacheMemoryPolicy: MemoryPolicy? = null,
+                persister: Persister<Output, Key>? = null,
+                fetcher: suspend (Key) -> Output
         ): TestStoreBuilder<Key, Output> = from(
             scope = scope,
             inflight = inflight,
             cached = cached,
             cacheMemoryPolicy = cacheMemoryPolicy,
             persister = persister,
-            fetchParser = fetchParser,
             fetcher = object : Fetcher<Output, Key> {
                 override suspend fun invoke(key: Key): Output = fetcher(key)
             }
@@ -103,20 +52,20 @@ data class TestStoreBuilder<Key, Output>(
 
         @Suppress("UNCHECKED_CAST")
         fun <Key, Output> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
-            persister: Persister<Output, Key>? = null,
+                scope: CoroutineScope,
+                inflight: Boolean = true,
+                cached: Boolean = false,
+                cacheMemoryPolicy: MemoryPolicy? = null,
+                persister: Persister<Output, Key>? = null,
             // parser that runs after fetch
-            fetchParser: KeyParser<Key, Output, Output>? = null,
+                fetchParser: KeyParser<Key, Output, Output>? = null,
             // parser that runs after get from db
-            postParser: KeyParser<Key, Output, Output>? = null,
-            fetcher: Fetcher<Output, Key>
+                postParser: KeyParser<Key, Output, Output>? = null,
+                fetcher: Fetcher<Output, Key>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
-                buildFlowStore = {
-                    RealFlowStore
+                buildStore = {
+                    FlowStoreBuilder
                         .from <Key, Output, Output> { key: Key ->
                             flow {
                                 val value = fetcher.invoke(key = key)
@@ -142,7 +91,7 @@ data class TestStoreBuilder<Key, Output>(
                                 it.disableCache()
                             }
                         }
-                        .build().asLegacyStore()
+                        .build()
                 }
             )
         }

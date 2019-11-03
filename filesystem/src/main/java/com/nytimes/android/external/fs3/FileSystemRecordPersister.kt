@@ -1,9 +1,7 @@
 package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
-import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.base.RecordProvider
-import com.nytimes.android.external.store3.base.RecordState
+import com.nytimes.android.external.store4.Persister
 import okio.BufferedSource
 import java.util.concurrent.TimeUnit
 

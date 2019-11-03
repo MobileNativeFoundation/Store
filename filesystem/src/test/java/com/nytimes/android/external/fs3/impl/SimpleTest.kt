@@ -5,7 +5,7 @@ import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
-import com.nytimes.android.external.store3.base.RecordState
+import com.nytimes.android.external.fs3.RecordState
 import okio.BufferedSource
 import okio.Okio
 import org.assertj.core.api.Assertions.assertThat

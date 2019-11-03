@@ -3,7 +3,6 @@ package com.nytimes.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.fs3.filesystem.FileSystem
-import com.nytimes.android.external.store3.base.RecordState
 import com.nytimes.android.external.store4.legacy.BarCode
 import junit.framework.Assert.fail
 import kotlinx.coroutines.runBlocking

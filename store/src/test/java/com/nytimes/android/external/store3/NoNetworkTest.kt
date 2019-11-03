@@ -1,7 +1,8 @@
 package com.nytimes.android.external.store3
 
+import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.get
 import com.nytimes.android.external.store4.legacy.BarCode
-import com.nytimes.android.external.store4.legacy.Store
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -15,7 +16,7 @@ class NoNetworkTest(
         storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
-    private val store: Store<out Any, BarCode> = TestStoreBuilder.from<BarCode, Any>(testScope) {
+    private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(testScope) {
         throw EXCEPTION
     }.build(storeType)
 
