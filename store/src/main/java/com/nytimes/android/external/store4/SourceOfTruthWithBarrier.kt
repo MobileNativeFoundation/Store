@@ -1,6 +1,5 @@
 package com.nytimes.android.external.store4
 
-import com.nytimes.android.external.store3.pipeline.ResponseOrigin
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -117,6 +116,6 @@ private inline fun <T, R> Flow<T>.mapIndexed(crossinline block: (Int, T) -> R) =
 }
 
 internal data class DataWithOrigin<T>(
-    val origin: ResponseOrigin,
-    val value: T?
+        val origin: ResponseOrigin,
+        val value: T?
 )

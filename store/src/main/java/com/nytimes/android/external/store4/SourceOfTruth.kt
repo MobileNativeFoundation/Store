@@ -2,7 +2,6 @@ package com.nytimes.android.external.store4
 
 import com.nytimes.android.external.store3.base.Clearable
 import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.pipeline.ResponseOrigin
 import com.nytimes.android.external.store3.util.KeyParser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -10,10 +9,10 @@ import kotlinx.coroutines.flow.flow
 /**
  * Source of truth takes care of making any source (no matter if it has flowing reads or not) into
  * a common flowing API. Used w/ a [SourceOfTruthWithBarrier] in front of it in the
- * [RealInternalCoroutineStore] implementation to avoid dispatching values to downstream while
+ * [RealFlowStore] implementation to avoid dispatching values to downstream while
  * a write is in progress.
  */
-internal interface SourceOfTruth<Key, Input, Output> {
+ interface SourceOfTruth<Key, Input, Output> {
     val defaultOrigin: ResponseOrigin
     fun reader(key: Key): Flow<Output?>
     suspend fun write(key: Key, value: Input)

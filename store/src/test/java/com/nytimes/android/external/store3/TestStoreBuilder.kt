@@ -1,35 +1,21 @@
 package com.nytimes.android.external.store3
 
-import com.nytimes.android.external.store3.base.Clearable
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
 import com.nytimes.android.external.store3.base.impl.MemoryPolicy
-import com.nytimes.android.external.store3.base.impl.StalePolicy
-import com.nytimes.android.external.store3.base.impl.Store
-import com.nytimes.android.external.store3.base.wrappers.cache
-import com.nytimes.android.external.store3.base.wrappers.parser
-import com.nytimes.android.external.store3.base.wrappers.persister
-import com.nytimes.android.external.store3.pipeline.beginPipeline
-import com.nytimes.android.external.store3.pipeline.open
-import com.nytimes.android.external.store3.pipeline.withCache
-import com.nytimes.android.external.store3.pipeline.withKeyConverter
-import com.nytimes.android.external.store3.pipeline.withNonFlowPersister
+import com.nytimes.android.external.store4.legacy.Store
 import com.nytimes.android.external.store3.util.KeyParser
-import com.nytimes.android.external.store4.RealInternalCoroutineStore
+import com.nytimes.android.external.store4.RealFlowStore
 import com.nytimes.android.external.store4.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 
 data class TestStoreBuilder<Key, Output>(
-    private val buildStore: () -> Store<Output, Key>,
-    private val buildPipelineStore: () -> Store<out Output, Key>,
-    private val builRealInternalCoroutineStore: () -> Store<Output, Key>
+    private val buildFlowStore: () -> Store<Output, Key>
 ) {
     fun build(storeType: TestStoreType): Store<out Output, Key> = when (storeType) {
-        TestStoreType.Store -> buildStore()
-        TestStoreType.Pipeline -> buildPipelineStore()
-        TestStoreType.CoroutineInternal -> builRealInternalCoroutineStore()
+        TestStoreType.FlowStore -> buildFlowStore()
     }
 
     companion object {
@@ -101,7 +87,6 @@ data class TestStoreBuilder<Key, Output>(
             cached: Boolean = false,
             cacheMemoryPolicy: MemoryPolicy? = null,
             persister: Persister<Output, Key>? = null,
-            persisterStalePolicy: StalePolicy = StalePolicy.UNSPECIFIED,
             fetchParser: KeyParser<Key, Output, Output>? = null,
             fetcher: suspend (Key) -> Output
         ): TestStoreBuilder<Key, Output> = from(
@@ -110,10 +95,9 @@ data class TestStoreBuilder<Key, Output>(
             cached = cached,
             cacheMemoryPolicy = cacheMemoryPolicy,
             persister = persister,
-            persisterStalePolicy = persisterStalePolicy,
             fetchParser = fetchParser,
             fetcher = object : Fetcher<Output, Key> {
-                override suspend fun fetch(key: Key): Output = fetcher(key)
+                override suspend fun invoke(key: Key): Output = fetcher(key)
             }
         )
 
@@ -124,7 +108,6 @@ data class TestStoreBuilder<Key, Output>(
             cached: Boolean = false,
             cacheMemoryPolicy: MemoryPolicy? = null,
             persister: Persister<Output, Key>? = null,
-            persisterStalePolicy: StalePolicy = StalePolicy.UNSPECIFIED,
             // parser that runs after fetch
             fetchParser: KeyParser<Key, Output, Output>? = null,
             // parser that runs after get from db
@@ -132,92 +115,11 @@ data class TestStoreBuilder<Key, Output>(
             fetcher: Fetcher<Output, Key>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
-                buildStore = {
-                    Store.from(
-                        inflight = inflight,
-                        f = fetcher
-                    ).let {
-                        if (fetchParser == null) {
-                            it
-                        } else {
-                            it.parser(fetchParser)
-                        }
-                    }.let {
-                        if (persister == null) {
-                            it
-                        } else {
-                            it.persister(persister, persisterStalePolicy)
-                        }
-                    }.let {
-                        if (postParser == null) {
-                            it
-                        } else {
-                            it.parser(postParser)
-                        }
-                    }.let {
-                        if (cached) {
-                            it.cache(cacheMemoryPolicy)
-                        } else {
-                            it
-                        }
-                    }.open()
-                },
-                buildPipelineStore = {
-                    beginPipeline<Key, Output>(
-                        fetcher = {
+                buildFlowStore = {
+                    RealFlowStore
+                        .from <Key, Output, Output> { key: Key ->
                             flow {
-                                emit(fetcher.fetch(it))
-                            }
-                        }
-                    ).let {
-                        if (fetchParser == null) {
-                            it
-                        } else {
-                            it.withKeyConverter { key, oldOutput ->
-                                fetchParser.apply(key, oldOutput)
-                            }
-                        }
-                    }.let {
-                        if (persister == null) {
-                            it
-                        } else {
-                            it.withNonFlowPersister(
-                                reader = {
-                                    persister.read(it)
-                                },
-                                writer = { key, value ->
-                                    persister.write(key, value)
-                                },
-                                delete = if (persister is Clearable<*>) {
-                                    SuspendWrapper(
-                                        (persister as Clearable<Key>)::clear
-                                    )::apply
-                                } else {
-                                    null
-                                }
-                            )
-                        }
-                    }.let {
-                        if (cached) {
-                            it.withCache(cacheMemoryPolicy)
-                        } else {
-                            it
-                        }
-                    }.let {
-                        if (postParser == null) {
-                            it
-                        } else {
-                            it.withKeyConverter { key, oldOutput ->
-                                postParser.apply(key, oldOutput)
-                            }
-                        }
-                    }.open()
-                },
-                builRealInternalCoroutineStore = {
-                    RealInternalCoroutineStore
-                        .beginWithFlowingFetcher<Key, Output, Output> { key: Key ->
-                            flow {
-                                val value = fetcher.fetch(key = key)
+                                val value = fetcher.invoke(key = key)
                                 if (fetchParser != null) {
                                     emit(fetchParser.apply(key, value))
                                 } else {
@@ -235,7 +137,7 @@ data class TestStoreBuilder<Key, Output>(
                         }
                         .let {
                             if (cached) {
-                                it
+                                cacheMemoryPolicy?.let { cacheMemoryPolicy->  it.cachePolicy(cacheMemoryPolicy) }?:it
                             } else {
                                 it.disableCache()
                             }
@@ -255,7 +157,5 @@ data class TestStoreBuilder<Key, Output>(
 }
 
 enum class TestStoreType {
-    Store,
-    Pipeline,
-    CoroutineInternal
+    FlowStore
 }

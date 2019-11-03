@@ -1,6 +1,6 @@
 package com.nytimes.android.external.store3
 
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest

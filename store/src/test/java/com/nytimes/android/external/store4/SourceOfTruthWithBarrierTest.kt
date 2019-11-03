@@ -1,7 +1,6 @@
 package com.nytimes.android.external.store4
 
-import com.nytimes.android.external.store3.pipeline.PipelineStoreTest
-import com.nytimes.android.external.store3.pipeline.ResponseOrigin
+import com.nytimes.android.external.store3.pipeline.FlowStoreTest
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -18,7 +17,7 @@ import org.junit.Test
 @ExperimentalCoroutinesApi
 class SourceOfTruthWithBarrierTest {
     private val testScope = TestCoroutineScope()
-    private val persister = PipelineStoreTest.InMemoryPersister<Int, String>()
+    private val persister = FlowStoreTest.InMemoryPersister<Int, String>()
     private val delegate: SourceOfTruth<Int, String, String> =
         PersistentSourceOfTruth(
             realReader = { key ->

@@ -5,7 +5,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Parser
 import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.base.impl.BarCode
+import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -37,7 +37,7 @@ class StoreWithParserTest(
             postParser = parser
         ).build(storeType)
 
-        whenever(fetcher.fetch(barCode))
+        whenever(fetcher.invoke(barCode))
             .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
@@ -53,7 +53,7 @@ class StoreWithParserTest(
         assertThat(value).isEqualTo(barCode.key)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(barCode.key)
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
     }
 
     @Test
@@ -64,7 +64,7 @@ class StoreWithParserTest(
             persister = persister,
             postParser = parser
         ).build(storeType)
-        whenever(fetcher.fetch(barCode))
+        whenever(fetcher.invoke(barCode))
             .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
@@ -80,7 +80,7 @@ class StoreWithParserTest(
         assertThat(value).isEqualTo(barCode.key)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(barCode.key)
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
     }
 
     companion object {

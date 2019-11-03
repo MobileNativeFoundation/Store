@@ -1,20 +1,10 @@
 package com.nytimes.android.external.store3
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.doThrow
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.spy
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import com.nytimes.android.external.cache3.CacheBuilder
 import com.nytimes.android.external.store3.base.Fetcher
 import com.nytimes.android.external.store3.base.Persister
-import com.nytimes.android.external.store3.base.impl.BarCode
-import com.nytimes.android.external.store3.base.impl.StalePolicy
-import com.nytimes.android.external.store3.util.NoopPersister
+import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -46,7 +36,7 @@ class StoreTest(
             persister = persister
         ).build(storeType)
 
-        whenever(fetcher.fetch(barCode))
+        whenever(fetcher.invoke(barCode))
             .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
@@ -61,7 +51,7 @@ class StoreTest(
         assertThat(value).isEqualTo(DISK)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
     }
 
     @Test
@@ -71,7 +61,7 @@ class StoreTest(
             fetcher = fetcher,
             persister = persister
         ).build(storeType)
-        whenever(fetcher.fetch(barCode))
+        whenever(fetcher.invoke(barCode))
             .thenAnswer {
                 if (counter.incrementAndGet() == 1) {
                     NETWORK
@@ -92,7 +82,7 @@ class StoreTest(
         simpleStore.get(barCode)
         deferred.await()
 
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
     }
 
     @Test
@@ -106,7 +96,7 @@ class StoreTest(
 
         simpleStore.clear(barCode)
 
-        whenever(fetcher.fetch(barCode))
+        whenever(fetcher.invoke(barCode))
             .thenReturn(NETWORK)
 
         whenever(persister.read(barCode))
@@ -118,36 +108,9 @@ class StoreTest(
         assertThat(value).isEqualTo(DISK)
         value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
     }
 
-    @Test
-    fun testNoopAndDefault() = testScope.runBlockingTest {
-        val persister = spy(NoopPersister.create<String, BarCode>())
-        val simpleStore = TestStoreBuilder.from(
-            scope = testScope,
-            fetcher = fetcher,
-            persister = persister,
-            cached = true
-        ).build(storeType)
-
-        whenever(fetcher.fetch(barCode))
-            .thenReturn(NETWORK)
-
-        var value = simpleStore.get(barCode)
-        verify(fetcher, times(1)).fetch(barCode)
-        verify(persister, times(1)).write(barCode, NETWORK)
-        verify(persister, times(2)).read(barCode)
-        assertThat(value).isEqualTo(NETWORK)
-
-
-        value = simpleStore.get(barCode)
-        verify(persister, times(2)).read(barCode)
-        verify(persister, times(1)).write(barCode, NETWORK)
-        verify(fetcher, times(1)).fetch(barCode)
-
-        assertThat(value).isEqualTo(NETWORK)
-    }
 
     @Test
     fun testEquivalence() = testScope.runBlockingTest {
@@ -169,11 +132,10 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister,
-            persisterStalePolicy = StalePolicy.NETWORK_BEFORE_STALE
+            persister = persister
         ).build(storeType)
 
-        whenever(fetcher.fetch(barCode)) doThrow RuntimeException(ERROR)
+        whenever(fetcher.invoke(barCode)) doThrow RuntimeException(ERROR)
 
         whenever(persister.read(barCode)) doReturn DISK
 
@@ -184,7 +146,7 @@ class StoreTest(
             assertThat(e.message).isEqualTo(ERROR)
         }
 
-        verify(fetcher, times(1)).fetch(barCode)
+        verify(fetcher, times(1)).invoke(barCode)
         verify(persister, never()).read(any())
     }
 
