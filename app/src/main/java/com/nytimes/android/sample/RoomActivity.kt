@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.nytimes.android.external.store4.FlowStore
+import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.ResponseOrigin
 import com.nytimes.android.external.store4.StoreRequest
 import com.nytimes.android.external.store4.StoreResponse
@@ -41,7 +41,7 @@ class RoomActivity : AppCompatActivity() {
                 postRecyclerView.adapter = adapter
             }
         }
-        val storeState = StoreState((application as SampleApp).roomFlowStore)
+        val storeState = StoreState((application as SampleApp).roomStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {
                 launch {
@@ -87,7 +87,7 @@ class RoomActivity : AppCompatActivity() {
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
 internal class StoreState<Key, Output>(
-    private val store : FlowStore<Key, Output>
+    private val store : Store<Key, Output>
 ) {
     private val keyFlow = Channel<Key>(capacity = Channel.CONFLATED)
     private val _errors = Channel<String>(capacity = Channel.CONFLATED)

@@ -4,7 +4,7 @@ import com.nytimes.android.external.cache3.CacheBuilder.newBuilder
 import com.nytimes.android.external.cache3.CacheLoader
 import com.nytimes.android.external.cache3.LoadingCache
 import com.nytimes.android.external.fs3.Util
-import com.nytimes.android.external.store3.base.RecordState
+import com.nytimes.android.external.fs3.RecordState
 import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException

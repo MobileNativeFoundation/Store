@@ -2,7 +2,6 @@ package com.nytimes.android.external.fs3
 
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
-import com.nytimes.android.external.store3.base.DiskErase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.BufferedSource

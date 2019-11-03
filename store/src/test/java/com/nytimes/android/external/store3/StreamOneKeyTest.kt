@@ -2,14 +2,14 @@ package com.nytimes.android.external.store3
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import com.nytimes.android.external.store3.base.Fetcher
-import com.nytimes.android.external.store3.base.Persister
+import com.nytimes.android.external.store4.*
 import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -64,7 +64,14 @@ class StreamOneKeyTest(
     @Suppress("UsePropertyAccessSyntax") // for assert isTrue() isFalse()
     @Test
     fun testStream() = testScope.runBlockingTest {
-        val streamSubscription = store.stream(barCode)
+        val streamSubscription = store.stream(StoreRequest.skipMemory(
+                key = barCode,
+                refresh = true
+        )).transform {
+            it.throwIfError()
+            it.dataOrNull()?.let {
+                emit(it)
+            }}
                 .openChannelSubscription()
         try {
 
