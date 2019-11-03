@@ -1,8 +1,6 @@
 package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
-import com.nytimes.android.external.store3.base.RecordProvider
-import com.nytimes.android.external.store3.base.RecordState
 import com.nytimes.android.external.store4.legacy.BarCode
 
 import java.util.concurrent.TimeUnit

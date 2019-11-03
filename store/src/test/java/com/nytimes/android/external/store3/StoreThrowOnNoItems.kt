@@ -2,8 +2,9 @@ package com.nytimes.android.external.store3
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import com.nytimes.android.external.store3.base.Fetcher
-import com.nytimes.android.external.store3.base.Persister
+import com.nytimes.android.external.store4.Fetcher
+import com.nytimes.android.external.store4.Persister
+import com.nytimes.android.external.store4.get
 import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineScope

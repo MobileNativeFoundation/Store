@@ -2,6 +2,7 @@ package com.nytimes.android.external.store3
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import com.nytimes.android.external.store4.get
 import com.nytimes.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
