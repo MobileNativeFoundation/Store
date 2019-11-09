@@ -14,7 +14,7 @@ import kotlinx.coroutines.channels.actor
 abstract class StoreRealActor<T>(
     scope: CoroutineScope
 ) {
-    val inboundChannel: SendChannel<T>
+    private val inboundChannel: SendChannel<T>
 
     init {
         inboundChannel = scope.actor(
