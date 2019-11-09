@@ -22,8 +22,10 @@ class FileSystemPersister<T> private constructor(fileSystem: FileSystem, pathRes
 
     companion object {
 
-        fun <T> create(fileSystem: FileSystem,
-                       pathResolver: PathResolver<T>): Persister<BufferedSource, T> =
+        fun <T> create(
+            fileSystem: FileSystem,
+            pathResolver: PathResolver<T>
+        ): Persister<BufferedSource, T> =
                 FileSystemPersister(fileSystem, pathResolver)
     }
 }

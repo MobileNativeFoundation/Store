@@ -1,20 +1,19 @@
 package com.nytimes.android.external.fs3.impl
 
-
 import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
+import com.nytimes.android.external.fs3.RecordState
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
-import com.nytimes.android.external.fs3.RecordState
+import java.io.ByteArrayInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import okio.BufferedSource
 import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import java.io.ByteArrayInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 class SimpleTest {
 

@@ -1,11 +1,9 @@
 package com.nytimes.android.external.fs3
 
-
 import com.nytimes.android.external.store4.Persister
+import java.io.FileNotFoundException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
-import java.io.FileNotFoundException
-
 
 interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAllErase {
     /**
@@ -31,7 +29,7 @@ interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAl
 
     /**
      * @param key to use to store data to persister
-     * @param raw     raw string to be stored
+     * @param raw raw string to be stored
      */
     override suspend fun write(key: Key, raw: Raw): Boolean
 }

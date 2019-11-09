@@ -1,9 +1,9 @@
 package com.nytimes.android.external.fs3.filesystem
 
+import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import java.io.File
 
 class BreadthFirstFileTreeIteratorTest {
 

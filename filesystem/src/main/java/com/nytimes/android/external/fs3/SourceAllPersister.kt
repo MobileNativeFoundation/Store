@@ -1,13 +1,12 @@
 package com.nytimes.android.external.fs3
 
-
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.store4.legacy.BarCode
+import java.io.FileNotFoundException
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import okio.BufferedSource
-import java.io.FileNotFoundException
-import javax.inject.Inject
 
 class SourceAllPersister @Inject
 constructor(fileSystem: FileSystem) : AllPersister<BufferedSource, BarCode> {

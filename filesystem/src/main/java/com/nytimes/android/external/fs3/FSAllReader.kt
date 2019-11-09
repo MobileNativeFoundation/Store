@@ -1,11 +1,11 @@
 package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
+import java.io.FileNotFoundException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import okio.BufferedSource
-import java.io.FileNotFoundException
 
 /**
  * FSReader is used when persisting from file system

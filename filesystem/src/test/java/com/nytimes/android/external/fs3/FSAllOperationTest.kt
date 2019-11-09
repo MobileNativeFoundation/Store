@@ -1,15 +1,14 @@
 package com.nytimes.android.external.fs3
 
-
 import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
+import java.io.ByteArrayInputStream
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.io.ByteArrayInputStream
 
 class FSAllOperationTest {
 
@@ -18,11 +17,11 @@ class FSAllOperationTest {
         val tempDir = createTempDir()
         val fileSystem = FileSystemFactory.create(tempDir)
 
-        //write different data to File System for each barcode
+        // write different data to File System for each barcode
         fileSystem.write("$FOLDER/key.txt", source(CHALLAH))
         fileSystem.write("$FOLDER/$INNER_FOLDER/key2.txt", source(CHALLAH_CHALLAH))
         val reader = FSAllReader(fileSystem)
-        //read back all values for the FOLDER
+        // read back all values for the FOLDER
         val observable = with(reader) { readAll(FOLDER) }
         assertThat(observable.receive().readUtf8()).isEqualTo(CHALLAH)
         assertThat(observable.receive().readUtf8()).isEqualTo(CHALLAH_CHALLAH)
@@ -32,7 +31,7 @@ class FSAllOperationTest {
     fun deleteAll() = runBlocking<Unit> {
         val tempDir = createTempDir()
         val fileSystem = FileSystemFactory.create(tempDir)
-        //write different data to File System for each barcode
+        // write different data to File System for each barcode
         fileSystem.write("$FOLDER/key.txt", source(CHALLAH))
         fileSystem.write("$FOLDER/$INNER_FOLDER/key2.txt", source(CHALLAH_CHALLAH))
 
@@ -47,10 +46,8 @@ class FSAllOperationTest {
         val CHALLAH = "Challah"
         val CHALLAH_CHALLAH = "Challah_CHALLAH"
 
-
         private fun source(data: String): BufferedSource {
             return Okio.buffer(Okio.source(ByteArrayInputStream(data.toByteArray(UTF_8))))
         }
     }
-
 }

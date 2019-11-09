@@ -6,8 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.ResponseOrigin
+import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.StoreRequest
 import com.nytimes.android.external.store4.StoreResponse
 import com.nytimes.android.sample.reddit.PostAdapter
@@ -17,7 +17,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 @FlowPreview
@@ -41,6 +45,7 @@ class RoomActivity : AppCompatActivity() {
                 postRecyclerView.adapter = adapter
             }
         }
+
         val storeState = StoreState((application as SampleApp).roomStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {
@@ -61,7 +66,7 @@ class RoomActivity : AppCompatActivity() {
                 storeState.errors.collect {
                     if (it != "") {
                         Snackbar.make(root, it, Snackbar.LENGTH_INDEFINITE).setAction(
-                            "refresh"
+                                "refresh"
                         ) {
                             refresh()
                         }.show()
@@ -87,7 +92,7 @@ class RoomActivity : AppCompatActivity() {
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
 internal class StoreState<Key, Output>(
-    private val store : Store<Key, Output>
+    private val store: Store<Key, Output>
 ) {
     private val keyFlow = Channel<Key>(capacity = Channel.CONFLATED)
     private val _errors = Channel<String>(capacity = Channel.CONFLATED)
@@ -97,7 +102,7 @@ internal class StoreState<Key, Output>(
     val loading
         get() = _loading.consumeAsFlow()
 
-    suspend fun setKey(key : Key) {
+    suspend fun setKey(key: Key) {
         _errors.send("")
         _loading.send(true)
         keyFlow.send(key)
@@ -105,14 +110,14 @@ internal class StoreState<Key, Output>(
 
     val data = keyFlow.consumeAsFlow().flatMapLatest { key ->
         store.stream(
-            StoreRequest.cached(
-                key = key,
-                refresh = true
-            )
+                StoreRequest.cached(
+                        key = key,
+                        refresh = true
+                )
         ).onEach {
             if (it.origin == ResponseOrigin.Fetcher) {
                 _loading.send(
-                    it is StoreResponse.Loading
+                        it is StoreResponse.Loading
                 )
             }
             if (it is StoreResponse.Error) {

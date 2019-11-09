@@ -7,7 +7,6 @@ import com.nytimes.android.sample.data.model.Post
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.article_item.view.*
 
-
 class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun onBind(article: Post) {

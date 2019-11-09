@@ -4,11 +4,9 @@ import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
 import com.nytimes.android.external.store4.Persister
 import com.nytimes.android.external.store4.legacy.BarCode
-
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-
 import okio.BufferedSource
 
 /**
@@ -17,7 +15,6 @@ import okio.BufferedSource
 
 object SourcePersisterFactory {
 
-
     /**
      * Returns a new [BufferedSource] persister with the provided file as the root of the
      * persistence [FileSystem].
@@ -25,9 +22,11 @@ object SourcePersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun create(root: File,
-               expirationDuration: Long,
-               expirationUnit: TimeUnit): Persister<BufferedSource, BarCode> {
+    fun create(
+        root: File,
+        expirationDuration: Long,
+        expirationUnit: TimeUnit
+    ): Persister<BufferedSource, BarCode> {
         if (root == null) {
             throw IllegalArgumentException("root file cannot be null.")
         }
@@ -38,9 +37,11 @@ object SourcePersisterFactory {
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
-    fun create(fileSystem: FileSystem,
-               expirationDuration: Long,
-               expirationUnit: TimeUnit): Persister<BufferedSource, BarCode> {
+    fun create(
+        fileSystem: FileSystem,
+        expirationDuration: Long,
+        expirationUnit: TimeUnit
+    ): Persister<BufferedSource, BarCode> {
         if (fileSystem == null) {
             throw IllegalArgumentException("fileSystem cannot be null.")
         }

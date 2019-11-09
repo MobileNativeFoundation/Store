@@ -4,23 +4,23 @@ import android.text.Html
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.nytimes.android.external.fs3.SourcePersisterFactory
-import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.FlowStoreBuilder
 import com.nytimes.android.external.store4.Persister
+import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.legacy.BarCode
 import com.nytimes.android.sample.data.model.Children
 import com.nytimes.android.sample.data.model.Post
 import com.nytimes.android.sample.data.model.RedditDb
 import com.nytimes.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
+import java.io.File
+import java.io.IOException
 import okio.BufferedSource
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.io.File
-import java.io.IOException
 
 object Graph {
-     fun provideRoomPipeline(context: SampleApp): Store<String, List<Post>> {
+    fun provideRoomPipeline(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
         return FlowStoreBuilder
                 .fromNonFlow<String, List<Post>, List<Post>> {
@@ -38,12 +38,11 @@ object Graph {
                 .build()
     }
 
-
     /**
      * Returns a new Persister with the cache as the root.
      */
     @Throws(IOException::class)
-     fun newPersister(cacheDir: File): Persister<BufferedSource, BarCode> {
+    fun newPersister(cacheDir: File): Persister<BufferedSource, BarCode> {
         return SourcePersisterFactory.create(cacheDir)
     }
 
