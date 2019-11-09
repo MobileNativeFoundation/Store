@@ -5,16 +5,15 @@ import com.nytimes.android.external.store4.Persister
 import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.legacy.BarCode
 import com.nytimes.android.sample.data.model.Post
+import java.io.IOException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import okio.BufferedSource
-import java.io.IOException
 
 @FlowPreview
 @ExperimentalCoroutinesApi
 class SampleApp : Application() {
     lateinit var roomStore: Store<String, List<Post>>
-
 
     lateinit var persister: Persister<BufferedSource, BarCode>
 
@@ -22,7 +21,7 @@ class SampleApp : Application() {
     @ExperimentalCoroutinesApi
     override fun onCreate() {
         super.onCreate()
-        initPersister();
+        initPersister()
         roomStore = Graph.provideRoomPipeline(this)
     }
 
@@ -33,10 +32,4 @@ class SampleApp : Application() {
             throw RuntimeException(exception)
         }
     }
-
-
-
-
-
-
 }

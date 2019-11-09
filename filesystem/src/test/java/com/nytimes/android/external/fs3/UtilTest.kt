@@ -2,12 +2,12 @@ package com.nytimes.android.external.fs3
 
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.whenever
+import java.io.File
+import java.io.IOException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import java.io.File
-import java.io.IOException
 
 class UtilTest {
 

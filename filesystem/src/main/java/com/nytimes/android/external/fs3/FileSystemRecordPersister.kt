@@ -2,8 +2,8 @@ package com.nytimes.android.external.fs3
 
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.store4.Persister
-import okio.BufferedSource
 import java.util.concurrent.TimeUnit
+import okio.BufferedSource
 
 /**
  * FileSystemRecordPersister is used when persisting to/from file system while being stale aware
@@ -12,9 +12,12 @@ import java.util.concurrent.TimeUnit
  *
  * @param <Key> key type
 </Key> */
-class FileSystemRecordPersister<Key> private constructor(private val fileSystem: FileSystem, private val pathResolver: PathResolver<Key>,
-                                                         private val expirationDuration: Long,
-                                                         private val expirationUnit: TimeUnit) : Persister<BufferedSource, Key>, RecordProvider<Key> {
+class FileSystemRecordPersister<Key> private constructor(
+    private val fileSystem: FileSystem,
+    private val pathResolver: PathResolver<Key>,
+    private val expirationDuration: Long,
+    private val expirationUnit: TimeUnit
+) : Persister<BufferedSource, Key>, RecordProvider<Key> {
     private val fileReader: FSReader<Key> = FSReader(fileSystem, pathResolver)
     private val fileWriter: FSWriter<Key> = FSWriter(fileSystem, pathResolver)
 
@@ -29,10 +32,12 @@ class FileSystemRecordPersister<Key> private constructor(private val fileSystem:
 
     companion object {
 
-        fun <T> create(fileSystem: FileSystem,
-                       pathResolver: PathResolver<T>,
-                       expirationDuration: Long,
-                       expirationUnit: TimeUnit): FileSystemRecordPersister<T> =
+        fun <T> create(
+            fileSystem: FileSystem,
+            pathResolver: PathResolver<T>,
+            expirationDuration: Long,
+            expirationUnit: TimeUnit
+        ): FileSystemRecordPersister<T> =
                 FileSystemRecordPersister(fileSystem, pathResolver,
                         expirationDuration, expirationUnit)
     }

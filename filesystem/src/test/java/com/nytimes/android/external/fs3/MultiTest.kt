@@ -4,12 +4,12 @@ import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
 import com.nytimes.android.external.fs3.filesystem.FileSystem
 import com.nytimes.android.external.fs3.filesystem.FileSystemFactory
+import java.io.ByteArrayInputStream
+import java.io.IOException
 import okio.BufferedSource
 import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.io.ByteArrayInputStream
-import java.io.IOException
 
 class MultiTest {
 

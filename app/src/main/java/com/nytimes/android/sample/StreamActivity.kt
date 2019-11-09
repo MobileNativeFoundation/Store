@@ -9,7 +9,8 @@ import com.nytimes.android.external.store4.FlowStoreBuilder
 import com.nytimes.android.external.store4.StoreRequest
 import com.nytimes.android.external.store4.fresh
 import com.nytimes.android.external.store4.get
-import com.nytimes.android.sample.R
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -21,8 +22,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 
 class StreamActivity : AppCompatActivity(), CoroutineScope {
 
@@ -75,7 +74,7 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
         }
         launch {
             flowOf(store.stream(StoreRequest.cached(1, refresh = false)),
-                store.stream(StoreRequest.cached(2,  refresh = false)))
+                store.stream(StoreRequest.cached(2, refresh = false)))
                 .flattenMerge()
                 .collect {
                     findViewById<TextView>(R.id.stream).text = "Stream $it"
