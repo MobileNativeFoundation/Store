@@ -29,7 +29,11 @@ class MultiplexTest {
     private val testScope = TestCoroutineScope()
 
     private fun <T> createMultiplexer(f: () -> Flow<T>): Multiplexer<T> {
-        return Multiplexer(testScope, 0, f, {})
+        return Multiplexer(
+            scope = testScope,
+            bufferSize = 0,
+            source = f,
+            onEach = {})
     }
 
     @Test

@@ -33,6 +33,13 @@ internal class Multiplexer<T>(
     // TODO does this have to be a method or just a flow ? Will decide when actual implementation
     //  happens
     private val source: () -> Flow<T>,
+
+    /**
+     * If true, downstream is never closed by the multiplexer unless upstream throws an error.
+     * Instead, it is kept open and if a new downstream shows up that causes us to restart the flow,
+     * it will receive values as well.
+     */
+    private val piggybackingDownstream: Boolean = false,
     /**
      * Called when upstream dispatches a value.
      */
@@ -50,6 +57,7 @@ internal class Multiplexer<T>(
                     channelManager = it
                 )
             },
+            piggybackingDownstream = piggybackingDownstream,
             onEach = onEach
         )
     }
@@ -61,7 +69,8 @@ internal class Multiplexer<T>(
                 channelManager.send(
                     ChannelManager.Message.AddChannel(
                         channel
-                    ))
+                    )
+                )
             }
             .transform {
                 emit(it.value)

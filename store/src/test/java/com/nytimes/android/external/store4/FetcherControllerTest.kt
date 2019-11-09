@@ -1,5 +1,7 @@
 package com.nytimes.android.external.store4
 
+import com.nytimes.android.external.store4.ResponseOrigin.Fetcher
+import com.nytimes.android.external.store4.StoreResponse.Data
 import com.nytimes.android.external.store4.impl.FetcherController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -36,7 +38,12 @@ class FetcherControllerTest {
         val received = fetcher.onEach {
             assertThat(fetcherController.fetcherSize()).isEqualTo(1)
         }.first()
-        assertThat(received).isEqualTo(9)
+        assertThat(received).isEqualTo(
+                Data(
+                        value = 9,
+                        origin = Fetcher
+                )
+        )
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
     }
 
@@ -58,15 +65,21 @@ class FetcherControllerTest {
         val fetcherCount = 20
         fun createFetcher() = async {
             fetcherController.getFetcher(3)
-                .onEach {
-                    assertThat(fetcherController.fetcherSize()).isEqualTo(1)
-                }.first()
+                    .onEach {
+                        assertThat(fetcherController.fetcherSize()).isEqualTo(1)
+                    }.first()
         }
+
         val fetchers = (0 until fetcherCount).map {
             createFetcher()
         }
         fetchers.forEach {
-            assertThat(it.await()).isEqualTo(9)
+            assertThat(it.await()).isEqualTo(
+                    Data(
+                            value = 9,
+                            origin = Fetcher
+                    )
+            )
         }
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
         assertThat(createdCnt).isEqualTo(1)

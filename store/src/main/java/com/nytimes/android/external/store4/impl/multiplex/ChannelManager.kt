@@ -22,6 +22,15 @@ class ChannelManager<T>(
      * The buffer size that is used while the upstream is active
      */
     bufferSize: Int,
+    /**
+     * If true, downstream is never closed by the ChannelManager unless upstream throws an error.
+     * Instead, it is kept open and if a new downstream shows up that causes us to restart the flow,
+     * it will receive values as well.
+     */
+    private val piggybackingDownstream: Boolean = false,
+    /**
+     * Called when a value is dispatched
+     */
     private val onEach: suspend (T) -> Unit,
     /**
      * Called when the channel manager is active (e.g. it has downstream collectors and needs a
@@ -48,7 +57,6 @@ class ChannelManager<T>(
 
     override suspend fun handle(msg: Message<T>) {
         when (msg) {
-            is Message.AddLeftovers -> doAddLefovers(msg.leftovers)
             is Message.AddChannel -> doAdd(msg)
             is Message.RemoveChannel -> doRemove(msg.channel)
             is Message.DispatchValue -> doDispatchValue(msg)
@@ -65,27 +73,46 @@ class ChannelManager<T>(
         if (this.producer !== producer) {
             return
         }
+        val piggyBacked = mutableListOf<ChannelEntry<T>>()
         val leftovers = mutableListOf<ChannelEntry<T>>()
         channels.forEach {
             when {
-                it.receivedValue -> it.close()
+                it.receivedValue -> {
+                    if (!piggybackingDownstream) {
+                        it.close()
+                    } else {
+                        piggyBacked.add(it)
+                    }
+                }
                 dispatchedValue ->
                     // we dispatched a value but this channel didn't receive so put it into
                     // leftovers
                     leftovers.add(it)
-                else -> // upstream didn't dispatch
-                    it.close()
+                else -> { // upstream didn't dispatch
+                    if (!piggybackingDownstream) {
+                        it.close()
+                    } else {
+                        piggyBacked.add(it)
+                    }
+                }
+
             }
         }
         channels.clear() // empty references
         channels.addAll(leftovers)
+        channels.addAll(piggyBacked)
         this.producer = null
+        // we only reactivate if leftovers is not empty
         if (leftovers.isNotEmpty()) {
-            activateIfNecessary(true)
+            activateIfNecessary()
         }
     }
 
     override fun onClosed() {
+        channels.forEach {
+            it.close()
+        }
+        channels.clear()
         producer?.cancel()
     }
 
@@ -128,34 +155,19 @@ class ChannelManager<T>(
     }
 
     /**
-     * We've received some leftovers from the previous [ChannelManager]. Add them to our list.
-     */
-    private suspend fun doAddLefovers(leftovers: List<ChannelEntry<T>>) {
-        val wasEmpty = channels.isEmpty()
-        leftovers.forEach { channelEntry ->
-            addEntry(
-                entry = channelEntry.copy(_receivedValue = false)
-            )
-        }
-        activateIfNecessary(wasEmpty)
-    }
-
-    /**
      * Add a new downstream collector
      */
     private suspend fun doAdd(msg: Message.AddChannel<T>) {
-        val wasEmpty = channels.isEmpty()
-
         addEntry(
             entry = ChannelEntry(
                 channel = msg.channel
             )
         )
-        activateIfNecessary(wasEmpty)
+        activateIfNecessary()
     }
 
-    private fun activateIfNecessary(wasEmpty: Boolean) {
-        if (producer == null && wasEmpty) {
+    private fun activateIfNecessary() {
+        if (producer == null) {
             producer = onActive(this)
             dispatchedValue = false
             producer!!.start()
@@ -229,13 +241,6 @@ class ChannelManager<T>(
         class AddChannel<T>(
             val channel: Channel<DispatchValue<T>>
         ) : Message<T>()
-
-        /**
-         * Add multiple channels. Happens when we are carrying over leftovers from a previous
-         * manager
-         */
-        internal class AddLeftovers<T>(val leftovers: List<ChannelEntry<T>>) :
-            Message<T>()
 
         /**
          * Remove a downstream subscriber, that means it completed
