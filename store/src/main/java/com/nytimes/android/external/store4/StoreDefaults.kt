@@ -1,6 +1,5 @@
 package com.nytimes.android.external.store4
 
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import java.util.concurrent.TimeUnit
 
 internal object StoreDefaults {

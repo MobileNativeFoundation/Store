@@ -1,5 +1,7 @@
 package com.nytimes.android.external.store3.base.impl;
 
+import com.nytimes.android.external.store4.MemoryPolicy;
+
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;

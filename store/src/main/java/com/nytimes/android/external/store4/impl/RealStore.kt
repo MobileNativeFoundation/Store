@@ -1,15 +1,24 @@
 package com.nytimes.android.external.store4.impl
 
-import com.com.nytimes.suspendCache.StoreCache
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
-import com.nytimes.android.external.store4.*
+import com.nytimes.android.external.cache3.CacheBuilder
+import com.nytimes.android.external.store4.CacheType
+import com.nytimes.android.external.store4.MemoryPolicy
+import com.nytimes.android.external.store4.ResponseOrigin
+import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.StoreRequest
+import com.nytimes.android.external.store4.StoreResponse
 import com.nytimes.android.external.store4.impl.operators.Either
 import com.nytimes.android.external.store4.impl.operators.merge
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.withIndex
 
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -31,18 +40,20 @@ class RealStore<Key, Input, Output>(
                 SourceOfTruthWithBarrier(it)
             }
     private val memCache = memoryPolicy?.let {
-        StoreCache.fromRequest<Key, Output?, StoreRequest<Key>>(
-                loader = {
-                    TODO(
-                            """
-                    This should've never been called. We don't need this anymore, should remove
-                    loader after we clean old Store ?
-                """.trimIndent()
-                    )
-                },
-                memoryPolicy = memoryPolicy
-        )
+        CacheBuilder.newBuilder()
+                .also {
+                    if (memoryPolicy.hasAccessPolicy()) {
+                        it.expireAfterAccess(memoryPolicy.expireAfterAccess, memoryPolicy.expireAfterTimeUnit)
+                    }
+                    if (memoryPolicy.hasWritePolicy()) {
+                        it.expireAfterWrite(memoryPolicy.expireAfterWrite, memoryPolicy.expireAfterTimeUnit)
+                    }
+                    if (memoryPolicy.hasMaxSize()) {
+                        it.maximumSize(memoryPolicy.maxSize)
+                    }
+                }.build<Key, Output>()
     }
+
     /**
      * Fetcher controller maintains 1 and only 1 `Multiplexer` for a given key to ensure network
      * requests are shared.
