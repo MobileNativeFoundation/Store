@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store4.FlowStoreBuilder
+import com.nytimes.android.external.store4.MemoryPolicy
 import com.nytimes.android.external.store4.StoreRequest
 import com.nytimes.android.external.store4.fresh
 import com.nytimes.android.external.store4.get

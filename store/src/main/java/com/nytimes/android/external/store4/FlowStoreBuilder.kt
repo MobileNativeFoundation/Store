@@ -1,11 +1,11 @@
 package com.nytimes.android.external.store4
 
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store4.impl.PersistentNonFlowingSourceOfTruth
 import com.nytimes.android.external.store4.impl.PersistentSourceOfTruth
 import com.nytimes.android.external.store4.impl.RealStore
 import com.nytimes.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -79,6 +79,7 @@ class Builder<Key, Input, Output>(
         return this
     }
 
+    @ExperimentalCoroutinesApi
     fun build(): Store<Key, Output> {
         @Suppress("UNCHECKED_CAST")
         return RealStore(

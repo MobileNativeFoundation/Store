@@ -1,1 +1,1 @@
-include ':app', ':store', ':cache', ':filesystem', ':suspendCache'
+include ':app', ':store', ':cache', ':filesystem'

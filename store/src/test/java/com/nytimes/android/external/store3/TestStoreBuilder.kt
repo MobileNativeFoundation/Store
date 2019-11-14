@@ -1,11 +1,11 @@
 package com.nytimes.android.external.store3
 
-import com.nytimes.android.external.store3.base.impl.MemoryPolicy
 import com.nytimes.android.external.store3.util.KeyParser
 import com.nytimes.android.external.store4.Fetcher
-import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.FlowStoreBuilder
+import com.nytimes.android.external.store4.MemoryPolicy
 import com.nytimes.android.external.store4.Persister
+import com.nytimes.android.external.store4.Store
 import com.nytimes.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
