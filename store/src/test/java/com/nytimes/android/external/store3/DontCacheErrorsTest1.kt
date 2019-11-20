@@ -33,8 +33,8 @@ class DontCacheErrorsTest(
         try {
             store.get(barcode)
             fail()
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
+        } catch (_: RuntimeException) {
+            // expected
         }
 
         shouldThrow = false

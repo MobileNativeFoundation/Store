@@ -39,7 +39,7 @@ internal class FetcherController<Key, Input, Output>(
          */
         private val enablePiggyback: Boolean = sourceOfTruth == null
 ) {
-    private val fetchers = RefCountedResource<Key, Multiplexer<StoreResponse<Input>>>(
+    private val fetchers = RefCountedResource(
             create = { key: Key ->
                 Multiplexer(
                         scope = scope,

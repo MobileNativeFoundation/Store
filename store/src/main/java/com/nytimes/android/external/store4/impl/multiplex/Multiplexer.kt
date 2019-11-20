@@ -84,7 +84,7 @@ internal class Multiplexer<T>(
             }
     }
 
-    fun close() {
+    suspend fun close() {
         channelManager.close()
     }
 }
