@@ -1,11 +1,10 @@
-package com.nytimes.android.external.store3.pipeline
+package com.nytimes.android.external.store4.impl
 
 import com.nytimes.android.external.store4.*
 import com.nytimes.android.external.store4.ResponseOrigin.Cache
 import com.nytimes.android.external.store4.ResponseOrigin.Fetcher
 import com.nytimes.android.external.store4.StoreResponse.Data
 import com.nytimes.android.external.store4.StoreResponse.Loading
-import com.nytimes.android.external.store4.impl.SimplePersisterAsFlowable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

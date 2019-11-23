@@ -55,9 +55,9 @@ internal class FetcherController<Key, Input, Output>(
                             }
                         },
                         piggybackingDownstream = enablePiggyback,
-                        onEach = {
-                            it.dataOrNull()?.let {
-                                sourceOfTruth?.write(key, it)
+                        onEach = { response ->
+                            response.dataOrNull()?.let { input ->
+                                sourceOfTruth?.write(key, input)
                             }
                         }
                 )

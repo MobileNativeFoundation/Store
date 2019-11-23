@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store3.pipeline
+package com.nytimes.android.external.store4.impl
 
 import com.nytimes.android.external.store4.FlowStoreBuilder
 import com.nytimes.android.external.store4.ResponseOrigin

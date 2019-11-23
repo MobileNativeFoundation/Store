@@ -47,7 +47,7 @@ internal class Multiplexer<T>(
 ) {
 
     private val channelManager by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        ChannelManager<T>(
+        ChannelManager(
             scope = scope,
             bufferSize = bufferSize,
             onActive = {

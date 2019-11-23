@@ -7,8 +7,7 @@ package com.nytimes.android.external.store4
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreResponse<T>(
-) {
+sealed class StoreResponse<T> {
     /**
      * Represents the source of the Response.
      */
@@ -22,18 +21,13 @@ sealed class StoreResponse<T>(
     /**
      * Data dispatched by a pipeline
      */
-    data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>() {
-        fun <R> swapData(newData: R) = Data(
-                value = newData,
-                origin = origin
-        )
-    }
+    data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
      * Error dispatched by a pipeline
      */
     data class Error<T>(val error: Throwable, override val origin: ResponseOrigin) :
-        StoreResponse<T>()
+            StoreResponse<T>()
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.

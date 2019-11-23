@@ -1,6 +1,6 @@
 package com.nytimes.android.external.store4
 
-import com.nytimes.android.external.store3.pipeline.FlowStoreTest
+import com.nytimes.android.external.store4.impl.FlowStoreTest
 import com.nytimes.android.external.store4.impl.DataWithOrigin
 import com.nytimes.android.external.store4.impl.PersistentSourceOfTruth
 import com.nytimes.android.external.store4.impl.SourceOfTruth

@@ -1,7 +1,6 @@
-package com.nytimes.android.external.store3.pipeline
+package com.nytimes.android.external.store4.impl
 
 import com.nytimes.android.external.store4.legacy.BarCode
-import com.nytimes.android.external.store4.impl.SimplePersisterAsFlowable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi

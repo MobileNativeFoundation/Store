@@ -45,12 +45,12 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                         when (it) {
                             is BarrierMsg.Open -> delegate.reader(key).mapIndexed { index, output ->
                                 if (index == 0 && messageArrivedAfterMe) {
-                                    DataWithOrigin<Output>(
+                                    DataWithOrigin(
                                             origin = ResponseOrigin.Fetcher,
                                             value = output
                                     )
                                 } else {
-                                    DataWithOrigin<Output>(
+                                    DataWithOrigin(
                                             origin = delegate.defaultOrigin,
                                             value = output
                                     )

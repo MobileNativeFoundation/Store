@@ -48,15 +48,15 @@ class MemoryPolicy internal constructor(
         private var maxSize: Long = -1
 
         fun setExpireAfterWrite(expireAfterWrite: Long): MemoryPolicyBuilder = apply {
-            if (expireAfterAccess != DEFAULT_POLICY) {
-                throw IllegalStateException("Cannot set expireAfterWrite with expireAfterAccess already set")
+            check(expireAfterAccess == DEFAULT_POLICY) {
+                "Cannot set expireAfterWrite with expireAfterAccess already set"
             }
             this.expireAfterWrite = expireAfterWrite
         }
 
         fun setExpireAfterAccess(expireAfterAccess: Long): MemoryPolicyBuilder = apply {
-            if (expireAfterWrite != DEFAULT_POLICY) {
-                throw IllegalStateException("Cannot set expireAfterAccess with expireAfterWrite already set")
+            check(expireAfterWrite == DEFAULT_POLICY) {
+                "Cannot set expireAfterAccess with expireAfterWrite already set"
             }
             this.expireAfterAccess = expireAfterAccess
         }
@@ -74,7 +74,7 @@ class MemoryPolicy internal constructor(
 
     companion object {
 
-        val DEFAULT_POLICY: Long = -1
+        const val DEFAULT_POLICY: Long = -1
 
         fun builder(): MemoryPolicyBuilder {
             return MemoryPolicyBuilder()
