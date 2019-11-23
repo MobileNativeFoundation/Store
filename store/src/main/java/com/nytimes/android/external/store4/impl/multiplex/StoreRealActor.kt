@@ -3,11 +3,8 @@ package com.nytimes.android.external.store4.impl.multiplex
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -22,6 +19,7 @@ abstract class StoreRealActor<T>(
     private val inboundChannel: SendChannel<Any?>
     private val closeCompleted = CompletableDeferred<Unit>()
     private val didClose = AtomicBoolean(false)
+
     init {
         inboundChannel = scope.actor(
                 capacity = 0

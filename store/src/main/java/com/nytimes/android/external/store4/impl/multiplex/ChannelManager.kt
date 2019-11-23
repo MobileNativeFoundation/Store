@@ -69,7 +69,7 @@ class ChannelManager<T>(
      * We are closing. Do a cleanup on existing channels where we'll close them and also decide
      * on the list of leftovers.
      */
-    fun doHandleUpstreamClose(producer: SharedFlowProducer<T>?) {
+    private fun doHandleUpstreamClose(producer: SharedFlowProducer<T>?) {
         if (this.producer !== producer) {
             return
         }
@@ -304,6 +304,7 @@ class ChannelManager<T>(
     /**
      * Create a new buffer insteance based on the provided limit.
      */
+    @Suppress("FunctionName")
     private fun <T> Buffer(limit: Int): Buffer<T> = if (limit > 0) {
         BufferImpl(limit)
     } else {

@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store3.pipeline
+package com.nytimes.android.external.store4.impl
 
 import org.assertj.core.api.Assertions
 

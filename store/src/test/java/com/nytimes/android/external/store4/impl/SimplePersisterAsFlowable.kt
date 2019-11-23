@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+/**
+ * Only used in FlowStoreTest. We should get rid of it eventually.
+ */
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowable<Key, Input, Output>(
         private val reader: suspend (Key) -> Output?,
@@ -67,7 +70,7 @@ internal class KeyTracker<Key> {
         // it is important to allocate KeyChannel lazily (ony when the returned flow is collected
         // from). Otherwise, we might just create many of them that are never observed hence never
         // cleaned up
-        return flow<Unit> {
+        return flow {
             val keyChannel = lock.withLock {
                 channels.getOrPut(key) {
                     KeyChannel(
