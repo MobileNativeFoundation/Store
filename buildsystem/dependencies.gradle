@@ -1,14 +1,3 @@
-allprojects {
-    repositories {
-        mavenLocal()
-        maven {
-            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-        }
-        google()
-        jcenter()
-    }
-}
-
 ext.versions = [
         minSdk               : 16,
         targetSdk            : 28,
@@ -116,5 +105,4 @@ ext.libraries = [
         coroutinesCore          : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines",
         coroutinesAndroid       : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines",
         coroutinesTest          : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines"
-
 ]
