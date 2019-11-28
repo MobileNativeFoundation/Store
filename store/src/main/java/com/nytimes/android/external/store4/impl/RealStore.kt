@@ -55,7 +55,7 @@ class RealStore<Key, Input, Output>(
     }
 
     /**
-     * Fetcher controller maintains 1 and only 1 `Multiplexer` for a given key to ensure network
+     * Fetcher controller maintains 1 and only 1 `Multicaster` for a given key to ensure network
      * requests are shared.
      */
     private val fetcherController = FetcherController(

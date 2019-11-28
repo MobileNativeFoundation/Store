@@ -2,7 +2,7 @@ package com.nytimes.android.external.store4.impl
 
 import com.nytimes.android.external.store4.ResponseOrigin
 import com.nytimes.android.external.store4.StoreResponse
-import com.nytimes.android.external.store4.impl.multiplex.Multiplexer
+import com.nytimes.android.external.store4.impl.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,7 +41,7 @@ internal class FetcherController<Key, Input, Output>(
 ) {
     private val fetchers = RefCountedResource(
             create = { key: Key ->
-                Multiplexer(
+                Multicaster(
                         scope = scope,
                         bufferSize = 0,
                         source = {
@@ -62,8 +62,8 @@ internal class FetcherController<Key, Input, Output>(
                         }
                 )
             },
-            onRelease = { key: Key, multiplexer: Multiplexer<StoreResponse<Input>> ->
-                multiplexer.close()
+            onRelease = { key: Key, multicaster: Multicaster<StoreResponse<Input>> ->
+                multicaster.close()
             }
     )
 

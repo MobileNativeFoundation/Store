@@ -1,8 +1,8 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.AddChannel
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.DispatchValue
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.RemoveChannel
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.AddChannel
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.DispatchValue
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.RemoveChannel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

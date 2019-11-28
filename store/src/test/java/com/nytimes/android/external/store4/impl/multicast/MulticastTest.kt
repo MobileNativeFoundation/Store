@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,11 +25,11 @@ import org.junit.runners.JUnit4
 @FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
-class MultiplexTest {
+class MulticastTest {
     private val testScope = TestCoroutineScope()
 
-    private fun <T> createMultiplexer(f: () -> Flow<T>): Multiplexer<T> {
-        return Multiplexer(
+    private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
+        return Multicaster(
             scope = testScope,
             bufferSize = 0,
             source = f,
@@ -39,7 +39,7 @@ class MultiplexTest {
     @Test
     fun serialial_notShared() = testScope.runBlockingTest {
         var createCnt = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             createCnt++
             when (createCnt) {
                 1 -> flowOf("a", "b", "c")
@@ -55,7 +55,7 @@ class MultiplexTest {
 
     @Test
     fun slowFastCollector() = testScope.runBlockingTest {
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flowOf("a", "b", "c").onStart {
                 // make sure both registers on time so that no one drops a value
                 delay(100)
@@ -79,7 +79,7 @@ class MultiplexTest {
 
     @Test
     fun slowDispatcher() = testScope.runBlockingTest {
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flowOf("a", "b", "c").onEach {
                 delay(100)
             }
@@ -96,7 +96,7 @@ class MultiplexTest {
 
     @Test
     fun lateToTheParty_arrivesAfterUpstreamClosed() = testScope.runBlockingTest {
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flowOf("a", "b", "c").onStart {
                 delay(100)
             }
@@ -116,7 +116,7 @@ class MultiplexTest {
     @Test
     fun lateToTheParty_arrivesBeforeUpstreamClosed() = testScope.runBlockingTest {
         var generationCounter = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flow {
                 val gen = generationCounter++
                 check(gen < 2) {
@@ -154,7 +154,7 @@ class MultiplexTest {
     fun upstreamError() = testScope.runBlockingTest {
         val exception =
             MyCustomException("hey")
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flow {
                 emit("a")
                 throw exception
@@ -185,7 +185,7 @@ class MultiplexTest {
             MyCustomException("hey")
         val dispatchedFirstValue = CompletableDeferred<Unit>()
         val registeredSecondCollector = CompletableDeferred<Unit>()
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flow {
                 emit("a")
                 dispatchedFirstValue.complete(Unit)
@@ -225,7 +225,7 @@ class MultiplexTest {
     fun lateArrival_unregistersFromTheCorrectManager() = testScope.runBlockingTest {
         var createdCount = 0
         var didntFinish = false
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             flow {
                 check(createdCount < 2) {
                     "created 1 too many"
@@ -257,7 +257,7 @@ class MultiplexTest {
     @Test
     fun lateArrival_buffered() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = Multiplexer(
+        val activeFlow = Multicaster(
             scope = testScope,
             bufferSize = 2,
             source = {

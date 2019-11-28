@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -19,19 +19,19 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 /**
- * Multiplexer tests where downstream is not closed even when upstream is closed.
+ * Multicaster tests where downstream is not closed even when upstream is closed.
  * It basically waits until there is another reason to enable upstream and will receive those
  * values as well.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
-class InfiniteMultiplexTest {
+class InfiniteMulticastTest {
     private val testScope = TestCoroutineScope()
     private val dispatchLog = mutableListOf<String>()
 
-    private fun <T> createMultiplexer(f: () -> Flow<T>): Multiplexer<T> {
-        return Multiplexer(
+    private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
+        return Multicaster(
             scope = testScope,
             bufferSize = 0,
             source = f,
@@ -44,7 +44,7 @@ class InfiniteMultiplexTest {
     @Test
     fun piggyback() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             val id = createdCount++
             flowOf("a$id", "b$id", "c$id").onStart {
                 // make sure both registers on time so that no one drops a value
@@ -77,7 +77,7 @@ class InfiniteMultiplexTest {
     @Test
     fun piggyback_newStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             val id = createdCount++
             flowOf("a$id", "b$id", "c$id").onStart {
                 // make sure both registers on time so that no one drops a value
@@ -110,7 +110,7 @@ class InfiniteMultiplexTest {
     @Test
     fun piggyback_oldStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             val id = createdCount++
             flowOf("a$id", "b$id", "c$id").onStart {
                 // make sure both registers on time so that no one drops a value
@@ -143,7 +143,7 @@ class InfiniteMultiplexTest {
     @Test
     fun piggyback_allStreamsCloseSearch() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMultiplexer {
+        val activeFlow = createMulticaster {
             val id = createdCount++
             flowOf("a$id", "b$id", "c$id").transform {
                 // really slow to test early termination
