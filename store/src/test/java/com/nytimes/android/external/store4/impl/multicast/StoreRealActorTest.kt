@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

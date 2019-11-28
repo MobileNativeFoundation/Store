@@ -1,4 +1,4 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.transform
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class Multiplexer<T>(
+internal class Multicaster<T>(
     /**
      * The [CoroutineScope] to use for upstream subscription
      */
@@ -35,7 +35,7 @@ internal class Multiplexer<T>(
     private val source: () -> Flow<T>,
 
     /**
-     * If true, downstream is never closed by the multiplexer unless upstream throws an error.
+     * If true, downstream is never closed by the multicaster unless upstream throws an error.
      * Instead, it is kept open and if a new downstream shows up that causes us to restart the flow,
      * it will receive values as well.
      */

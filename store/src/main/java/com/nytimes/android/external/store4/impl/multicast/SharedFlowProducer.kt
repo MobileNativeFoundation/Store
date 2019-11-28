@@ -1,8 +1,8 @@
-package com.nytimes.android.external.store4.impl.multiplex
+package com.nytimes.android.external.store4.impl.multicast
 
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.DispatchError
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.DispatchValue
-import com.nytimes.android.external.store4.impl.multiplex.ChannelManager.Message.UpstreamFinished
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.DispatchError
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.DispatchValue
+import com.nytimes.android.external.store4.impl.multicast.ChannelManager.Message.UpstreamFinished
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
