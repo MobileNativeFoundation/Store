@@ -1,11 +1,7 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.util.KeyParser
-import com.nytimes.android.external.store4.Fetcher
-import com.nytimes.android.external.store4.FlowStoreBuilder
-import com.nytimes.android.external.store4.MemoryPolicy
-import com.nytimes.android.external.store4.Persister
-import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.*
 import com.nytimes.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
@@ -65,8 +61,8 @@ data class TestStoreBuilder<Key, Output>(
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
-                    FlowStoreBuilder
-                        .from <Key, Output, Output> { key: Key ->
+                    StoreBuilder
+                        .from { key: Key ->
                             flow {
                                 val value = fetcher.invoke(key = key)
                                 if (fetchParser != null) {
@@ -78,20 +74,19 @@ data class TestStoreBuilder<Key, Output>(
                         }
                         .scope(scope)
                         .let {
-                            if (persister == null) {
-                                it
-                            } else {
-                                it.sourceOfTruth(SourceOfTruth.fromLegacy(persister, postParser))
-                            }
-                        }
-                        .let {
                             if (cached) {
                                 cacheMemoryPolicy?.let { cacheMemoryPolicy->  it.cachePolicy(cacheMemoryPolicy) }?:it
                             } else {
                                 it.disableCache()
                             }
                         }
-                        .build()
+                        .let {
+                            if (persister == null) {
+                                it
+                            } else {
+                                it.sourceOfTruth(SourceOfTruth.fromLegacy(persister, postParser))
+                            }
+                        }.build()
                 }
             )
         }

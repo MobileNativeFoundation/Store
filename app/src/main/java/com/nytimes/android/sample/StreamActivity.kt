@@ -4,11 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.nytimes.android.external.store4.FlowStoreBuilder
-import com.nytimes.android.external.store4.MemoryPolicy
-import com.nytimes.android.external.store4.StoreRequest
-import com.nytimes.android.external.store4.fresh
-import com.nytimes.android.external.store4.get
+import com.nytimes.android.external.store4.*
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -35,8 +31,8 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
 
         var counter = 0
 
-        val store = FlowStoreBuilder
-            .fromNonFlow<Int, Int, Int> { key -> (key * 1000 + counter++).also { delay(1_000) } }
+        val store = StoreBuilder
+            .fromNonFlow { key:Int -> (key * 1000 + counter++).also { delay(1_000) } }
             .cachePolicy(
                 MemoryPolicy
                     .builder()

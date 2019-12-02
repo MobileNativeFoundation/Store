@@ -4,9 +4,9 @@ import android.text.Html
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.nytimes.android.external.fs3.SourcePersisterFactory
-import com.nytimes.android.external.store4.FlowStoreBuilder
 import com.nytimes.android.external.store4.Persister
 import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.StoreBuilder
 import com.nytimes.android.external.store4.legacy.BarCode
 import com.nytimes.android.sample.data.model.Children
 import com.nytimes.android.sample.data.model.Post
@@ -20,11 +20,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 object Graph {
-    fun provideRoomPipeline(context: SampleApp): Store<String, List<Post>> {
+    fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
-        return FlowStoreBuilder
-                .fromNonFlow<String, List<Post>, List<Post>> {
-                    provideRetrofit().fetchSubreddit(it, "10")
+        return StoreBuilder
+                .fromNonFlow { key: String ->
+                    provideRetrofit().fetchSubreddit(key, "10")
                             .await().data.children.map(::toPosts)
                 }
                 .persister(reader = db.postDao()::loadPosts,

@@ -1,7 +1,7 @@
 package com.nytimes.android.external.store4.impl
 
-import com.nytimes.android.external.store4.FlowStoreBuilder
 import com.nytimes.android.external.store4.ResponseOrigin
+import com.nytimes.android.external.store4.StoreBuilder
 import com.nytimes.android.external.store4.StoreRequest
 import com.nytimes.android.external.store4.StoreResponse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +29,7 @@ class StreamWithoutSourceOfTruthTest(
                 3 to "three-1",
                 3 to "three-2"
         )
-        val pipeline = FlowStoreBuilder.fromNonFlow<Int, String, String>(fetcher::fetch)
+        val pipeline = StoreBuilder.fromNonFlow(fetcher::fetch)
                 .scope(testScope)
                 .let {
                     if (enableCache) {

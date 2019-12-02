@@ -17,11 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @FlowPreview
@@ -45,7 +41,6 @@ class RoomActivity : AppCompatActivity() {
                 postRecyclerView.adapter = adapter
             }
         }
-
         val storeState = StoreState((application as SampleApp).roomStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {

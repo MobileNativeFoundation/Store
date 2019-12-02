@@ -22,7 +22,7 @@ class SampleApp : Application() {
     override fun onCreate() {
         super.onCreate()
         initPersister()
-        roomStore = Graph.provideRoomPipeline(this)
+        roomStore = Graph.provideRoomStore(this)
     }
 
     private fun initPersister() {
