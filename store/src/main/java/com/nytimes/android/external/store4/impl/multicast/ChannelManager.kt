@@ -13,7 +13,7 @@ import java.util.Collections
  * completed so that the sender can continue for the next item.
  */
 @ExperimentalCoroutinesApi
-class ChannelManager<T>(
+internal class ChannelManager<T>(
     /**
      * The scope in which ChannelManager actor runs
      */

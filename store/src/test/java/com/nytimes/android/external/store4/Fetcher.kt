@@ -6,6 +6,7 @@ package com.nytimes.android.external.store4
  *
  * @param <Raw> data type before parsing
 </Raw> */
+@Deprecated("used in tests")
 interface Fetcher<Raw, Key> {
 
     /**

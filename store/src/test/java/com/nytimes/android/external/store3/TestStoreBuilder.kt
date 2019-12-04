@@ -1,7 +1,13 @@
 package com.nytimes.android.external.store3
 
 import com.nytimes.android.external.store3.util.KeyParser
-import com.nytimes.android.external.store4.*
+import com.nytimes.android.external.store4.Clearable
+import com.nytimes.android.external.store4.Fetcher
+import com.nytimes.android.external.store4.MemoryPolicy
+import com.nytimes.android.external.store4.Persister
+import com.nytimes.android.external.store4.Store
+import com.nytimes.android.external.store4.StoreBuilder
+import com.nytimes.android.external.store4.impl.PersistentSourceOfTruth
 import com.nytimes.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
@@ -84,14 +90,40 @@ data class TestStoreBuilder<Key, Output>(
                             if (persister == null) {
                                 it
                             } else {
-                                it.sourceOfTruth(SourceOfTruth.fromLegacy(persister, postParser))
+                                it.sourceOfTruth(sourceOfTruthFromLegacy(persister, postParser))
                             }
                         }.build()
                 }
             )
         }
-    }
 
+        internal fun <Key, Output>sourceOfTruthFromLegacy(
+                persister: Persister<Output, Key>,
+                // parser that runs after get from db
+                postParser: KeyParser<Key, Output, Output>? = null
+        ): SourceOfTruth<Key, Output, Output> {
+            return PersistentSourceOfTruth(
+                    realReader = { key ->
+                        flow {
+                            if (postParser == null) {
+                                emit(persister.read(key))
+                            } else {
+                                persister.read(key)?.let {
+                                    val postParsed = postParser.apply(key, it)
+                                    emit(postParsed)
+                                } ?: emit(null)
+                            }
+                        }
+                    },
+                    realWriter = { key, value ->
+                        persister.write(key, value)
+                    },
+                    realDelete = { key ->
+                        (persister as? Clearable<Key>)?.clear(key)
+                    }
+            )
+        }
+    }
     // wraps a regular fun to suspend, couldn't figure out how to create suspend fun variables :/
     private class SuspendWrapper<P0, R>(
         val f: (P0) -> R

@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.withIndex
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class RealStore<Key, Input, Output>(
+internal class RealStore<Key, Input, Output>(
         scope: CoroutineScope,
         fetcher: (Key) -> Flow<Input>,
         sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,

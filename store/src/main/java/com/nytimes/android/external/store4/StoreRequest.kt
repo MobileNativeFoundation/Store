@@ -16,7 +16,7 @@ data class StoreRequest<Key> private constructor(
     val refresh: Boolean = false
 ) {
 
-    fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
+    internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
 
     companion object {
         private val allCaches = CacheType.values().fold(0) { prev, next ->
@@ -44,7 +44,7 @@ data class StoreRequest<Key> private constructor(
     }
 }
 
-enum class CacheType(internal val flag: Int) {
+internal enum class CacheType(internal val flag: Int) {
     MEMORY(0b01),
     DISK(0b10)
 }

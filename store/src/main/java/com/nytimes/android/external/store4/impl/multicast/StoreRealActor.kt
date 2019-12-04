@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
 @ExperimentalCoroutinesApi
-abstract class StoreRealActor<T>(
+internal abstract class StoreRealActor<T>(
         scope: CoroutineScope
 ) {
     private val inboundChannel: SendChannel<Any?>
