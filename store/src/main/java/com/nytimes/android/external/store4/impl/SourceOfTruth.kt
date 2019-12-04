@@ -1,8 +1,5 @@
 package com.nytimes.android.external.store4.impl
 
-import com.nytimes.android.external.store3.util.KeyParser
-import com.nytimes.android.external.store4.Clearable
-import com.nytimes.android.external.store4.Persister
 import com.nytimes.android.external.store4.ResponseOrigin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,42 +10,13 @@ import kotlinx.coroutines.flow.flow
  * [RealStore] implementation to avoid dispatching values to downstream while
  * a write is in progress.
  */
- interface SourceOfTruth<Key, Input, Output> {
+ internal interface SourceOfTruth<Key, Input, Output> {
     val defaultOrigin: ResponseOrigin
     fun reader(key: Key): Flow<Output?>
     suspend fun write(key: Key, value: Input)
     suspend fun delete(key: Key)
     // for testing
     suspend fun getSize(): Int
-
-    companion object {
-        fun <Key, Output> fromLegacy(
-                persister: Persister<Output, Key>,
-            // parser that runs after get from db
-                postParser: KeyParser<Key, Output, Output>? = null
-        ): SourceOfTruth<Key, Output, Output> {
-            return PersistentSourceOfTruth(
-                    realReader = { key ->
-                        flow {
-                            if (postParser == null) {
-                                emit(persister.read(key))
-                            } else {
-                                persister.read(key)?.let {
-                                    val postParsed = postParser.apply(key, it)
-                                    emit(postParsed)
-                                } ?: emit(null)
-                            }
-                        }
-                    },
-                    realWriter = { key, value ->
-                        persister.write(key, value)
-                    },
-                    realDelete = { key ->
-                        (persister as? Clearable<Key>)?.clear(key)
-                    }
-            )
-        }
-    }
 }
 
 internal class PersistentSourceOfTruth<Key, Input, Output>(

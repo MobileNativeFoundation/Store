@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * or the [ChannelManager] (e.g. all active collectors complete).
  */
 @ExperimentalCoroutinesApi
-class SharedFlowProducer<T>(
+internal class SharedFlowProducer<T>(
     private val scope: CoroutineScope,
     private val src: Flow<T>,
     private val channelManager: ChannelManager<T>

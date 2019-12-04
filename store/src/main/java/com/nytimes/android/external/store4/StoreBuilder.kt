@@ -90,7 +90,7 @@ class Builder<Key, Output>(
         )
     }
 
-    fun <NewOutput> sourceOfTruth(
+    internal fun <NewOutput> sourceOfTruth(
             sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth<NewOutput>().sourceOfTruth(sourceOfTruth)
@@ -139,7 +139,7 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
         return this
     }
 
-    fun sourceOfTruth(
+    internal fun sourceOfTruth(
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
     ): BuilderWithSourceOfTruth<Key, Input, Output> {
         this.sourceOfTruth = sourceOfTruth
