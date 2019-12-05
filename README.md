@@ -24,7 +24,7 @@ Store leverages multiple request throttling to prevent excessive calls to the ne
 ###### Include gradle dependency
 
 ```
-implementation 'com.nytimes.android:store3:3.1.0'
+implementation 'com.dropbox.android:store3:3.1.0'
 ```
 
 ###### Set the source & target compatibilities to `1.8`

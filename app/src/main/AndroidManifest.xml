@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nytimes.android.sample">
+    package="com.dropbox.android.sample">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -8,10 +8,10 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:name=".SampleApp"
+        android:name="com.dropbox.android.sample.SampleApp"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".RoomActivity">
+            android:name="com.dropbox.android.sample.RoomActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -21,7 +21,7 @@
         </activity>
 
         <activity
-            android:name=".StreamActivity">
+            android:name="com.dropbox.android.sample.StreamActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
