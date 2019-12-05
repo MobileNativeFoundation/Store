@@ -15,20 +15,19 @@ Store provides a level of abstraction between UI elements and data operations.
 
 ### Overview
 
-A Store is responsible for managing a particular data request. When you create an implementation of a Store, you provide it with a `Fetcher`, a function that defines how data will be fetched over network. You can also define how your Store will cache data in-memory and on-disk, as well as how to parse it. Since Store returns your data as an `Observable`, threading is a breeze! Once a Store is built, it handles the logic around data flow, allowing your views to use the best data source and ensuring that the newest data is always available for later offline use. Stores can be customized to work with your own implementations or use our included middleware.
+A Store is responsible for managing a particular data request. When you create an implementation of a Store, you provide it with a `Fetcher`, a function that defines how data will be fetched over network. You can also define how your Store will cache data in-memory and on-disk, as well as how to parse it. Since Store returns your data as an `Flow`, threading is a breeze! Once a Store is built, it handles the logic around data flow, allowing your views to use the best data source and ensuring that the newest data is always available for later offline use.
 
-Store leverages multiple request throttling to prevent excessive calls to the network and disk cache. By utilizing Store, you eliminate the possibility of flooding your network with the same request while adding two layers of caching (memory and disk).
+Store leverages multiple request throttling to prevent excessive calls to the network and disk cache. By utilizing Store, you eliminate the possibility of flooding your network with the same request while adding two layers of caching (memory and disk) as well as ability to add disk as a source of truth where you can modify the disk directly without going through Store (works best with databases that can provide observables sources like [Jetpack Room](https://developer.android.com/jetpack/androidx/releases/room), [SQLDelight](https://github.com/cashapp/sqldelight) or [Realm](https://realm.io/products/realm-database/).
 
 ### How to include in your project
 
 ###### Include gradle dependency
 
 ```
-implementation 'com.dropbox.android:store3:3.1.0'
+implementation 'com.dropbox.android:store:4.0.0-SNAPSHOT'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
-Starting with Store 3.0, `retrolambda` is no longer used. Therefore to allow support for lambdas the Java `sourceCompatibility` and `targetCompatibility` need to be set to `1.8`
 
 ```
 android {
@@ -44,8 +43,8 @@ android {
 Let's start by looking at what a fully configured Store looks like. We will then walk through simpler examples showing each piece:
 
 ```kotlin
-FlowStoreBuilder
-                .fromNonFlow<String, List<Post>, List<Post>> {
+StoreBuilder
+                .fromNonFlow {
                     api.fetchSubreddit(it, "10").data.children.map(::toPosts)
                 }
                 .persister(reader = db.postDao()::loadPosts,
@@ -57,57 +56,84 @@ FlowStoreBuilder
 With the above setup you have:
 + In-memory caching for rotation
 + Disk caching for when users are offline
-+ Throttling of 
++ Throttling of API calls when parallel requests are made for the same resource
 + Rich API to ask for data whether you want cached, new or a stream of future data updates.
 
 And now for the details:
 
 ### Creating a Store
 
-You create a Store using a builder. The only requirement is to include a `Fetcher<ReturnType, KeyType>` that returns a `Flow<ReturnType>` and has a single method `fetch(key)`
+You create a Store using a builder. The only requirement is to include a function that returns a `Flow<ReturnType>` or a `suspend` function that returns a `ReturnType`.
 
 
 ```kotlin
-val store = FlowStoreBuilder<Article, Integer> 
+val store = StoreBuilder 
         .from{articleId -> api.getArticle(articleId)} // api returns Flow<Article>
-        .open();
+        .build()
 ```
 
 Stores use generic keys as identifiers for data. A key can be any value object that properly implements `toString()`, `equals()` and `hashCode()`. When your `Fetcher` function is called, it will be passed a particular Key value. Similarly, the key will be used as a primary identifier within caches (Make sure to have a proper `hashCode()`!!).
 
-### Our Key implementation - Barcodes
-For convenience, we included our own key implementation called a `BarCode`. `Barcode` has two fields `String key` and `String type`
+Note: We highly recommend using built in types that implement `equals` and `hashcode` or Kotlin `data` classes for complex keys.
+
+### Public Interface - Stream
+
+The primary function provided by a `Store` instance is the `stream` function which has the following signature:
 
 ```kotlin
-val barcode =  BarCode("Article", "42")
+fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>>
+```
+Each `stream` call receives a `StoreRequest` object, which defines which key to fetch and which caches to utilize.
+The response is a `Flow` of `StoreResponse`. `StoreResponse` is a Kotlin sealed class that can be either
+a `Loading`, `Data` or `Error` instance.
+Each `StoreResponse` includes an `origin` field which specifies where the event is coming from.
+
+* The `Loading` class only has an `origin` field. This can provide you information like "network is fetching data", which can be a good signal to activate the loading spinner in your UI.
+* The `Data` class has a `value` field which includes an instance of the type returned by `Store`.
+* The `Error`class includes an `error` field that containts the exception thrown by the given `origin`.
+
+When an error happens, `Store` does not throw an exception, instead, it wraps it in a `StoreResponse.Error` type which allows `Flow` to continue so that it can still receive updates that might be trigger by either changes in your data source or subsequent fetch operations. 
+
+```kotlin
+lifecycleScope.launchWhenStarted {
+  store.stream(StoreRequest.cached(key = key, refresh=true)).collect { response ->
+    when(response) {
+        is StoreResponse.Loading -> showLoadingSpinner()
+        is StoreResponse.Data -> {
+            if (response.origin == ResponseOrigin.Fetcher) hideLoadingSpinner()
+            updateUI(response.value)
+        }
+        is StoreResponse.Error -> {
+            if (response.origin == ResponseOrigin.Fetcher) hideLoadingSpinner()
+            showError(response.error)
+        }
+    }
+  }
+}
 ```
 
+For convenience, there are `Store.get(key)`, `Store.stream(key)` and `Store.fetch(key)` extension functions. 
 
-### Public Interface - Get, Fetch, Stream, GetRefreshing
+* `Store.get(key):Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister.
+* `Store.fresh(key):Value`: This method returns a single value for the given key that is obtained by querying the fetcher.
+* `Store.stream(key):Flow<Value>`: This method returns a `Flow` of the values for the given `key`.
 
 ```kotlin
  lifecycleScope.launchWhenStarted {
-  val article = store.get(barCode);
+  val article = store.get(key)
+  updateUI(article)
  }
 ```
 
-The first time you call to `suspend store.get(barCode)`, the response will be stored in an in-memory cache. All subsequent calls to `store.get(barCode)` with the same Key will retrieve the cached version of the data, minimizing unnecessary data calls. This prevents your app from fetching fresh data over the network (or from another external data source) in situations when doing so would unnecessarily waste bandwidth and battery. A great use case is any time your views are recreated after a rotation, they will be able to request the cached data from your Store. Having this data available can help you avoid the need to retain this in the view layer.
-
-
-So far our Store’s data flow looks like this:
-![Simple Store Flow](https://github.com/nytm/Store/blob/feature/rx2/Images/store-1.jpg)
-
+The first time you call to `suspend store.get(key)`, the response will be stored in an in-memory cache and in the persister, if provided.
+All subsequent calls to `store.get(key)` with the same `Key` will retrieve the cached version of the data, minimizing unnecessary data calls. This prevents your app from fetching fresh data over the network (or from another external data source) in situations when doing so would unnecessarily waste bandwidth and battery. A great use case is any time your views are recreated after a rotation, they will be able to request the cached data from your Store. Having this data available can help you avoid the need to retain this in the view layer.
 
 By default, 100 items will be cached in memory for 24 hours. You may pass in your own memory policy to override the default policy.
 
 
 ### Busting through the cache
 
-Alternatively you can call `store.fetch(barCode)` to get an `suspended result` that skips the memory (and optional disk cache).
-
-
-Fresh data call will look like: `store.fetch()`
-![Simple Store Flow](https://github.com/nytm/Store/blob/feature/rx2/Images/store-2.jpg)
+Alternatively you can call `store.fetch(key)` to get an `suspended result` that skips the memory (and optional disk cache).
 
 
 A good use case is overnight background updates use `fetch()` to make sure that calls to `store.get()` will not have to hit the network during normal usage. Another good use case for `fetch()` is when a user wants to pull to refresh.
@@ -121,10 +147,10 @@ For real-time updates, you may also call `store.stream()` which returns an `Flow
 example calls:
 ```kotlin
 lifecycleScope.launchWhenStarted {
-        pipeline.stream(StoreRequest.cached(3, refresh = false)) //will get cached value followed by any fresh values, refresh will also trigger network call
+        store.stream(StoreRequest.cached(3, refresh = false)) //will get cached value followed by any fresh values, refresh will also trigger network call if set to `true` even if the data is available in cache or disk.
         .collect{  }
          
-         pipeline.stream(StoreRequest.fresh(3) //skip cache do not pass go, go directly to fetcjer
+         pipeline.stream(StoreRequest.fresh(3) //skip cache, go directly to fetcher
         .collect{  }
 }
 ```
@@ -133,16 +159,11 @@ lifecycleScope.launchWhenStarted {
 
 To prevent duplicate requests for the same data, Store offers an inflight debouncer. If the same request is made as a previous identical request that has not completed, the same response will be returned. This is useful for situations when your app needs to make many async calls for the same data at startup or when users are obsessively pulling to refresh. As an example, The New York Times news app asynchronously calls `ConfigStore.get()` from 12 different places on startup. The first call blocks while all others wait for the data to arrive. We have seen a dramatic decrease in the app's data usage after implementing this inflight logic.
 
-
-//TODO UPDATE THE REST :-)
-
-
-
 ### Disk Caching
 
 Stores can enable disk caching by passing a `Persister` into the builder. Whenever a new network request is made, the Store will first write to the disk cache and then read from the disk cache.
 
-
+Providing `persister` whose `read` function can return a `Flow<Value>` allows you to make Store treat your disk as source of truth. Any changes made on disk, even if it is not made by Store, will update the active `Store` streams.
 
 
 
