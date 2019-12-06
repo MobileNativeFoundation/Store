@@ -201,4 +201,4 @@ The above builder is how we recommend working with data on Android. With the abo
 
 ### Artifacts Coming Soon
 
-**CurrentVersion = 4.0.0Alpha**
+**CurrentVersion = 4.0.0-SNAPSHOT**
