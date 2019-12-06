@@ -21,7 +21,9 @@ Store leverages multiple request throttling to prevent excessive calls to the ne
 
 ### How to include in your project
 
-###### Include gradle dependency
+Maven central artifacts coming soon. For now please build from source or run gradlew install to add to your local m2 repo
+
+###### Include gradle dependency (COMING SOON) 
 
 ```
 implementation 'com.dropbox.android:store:4.0.0-SNAPSHOT'
