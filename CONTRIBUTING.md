@@ -6,7 +6,7 @@ bugfixes, and features.
 
 DOs and DON'Ts
 --------------
-* Do sign our CLA
+* Do sign our CLA: https://opensource.dropbox.com/cla/
 * DO follow our coding style (as described below)
 * DO give priority to the current style of the project or file you're changing even if it diverges from the general guidelines.
 * DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
