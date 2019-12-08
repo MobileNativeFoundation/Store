@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl.multicast
+package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -47,13 +47,13 @@ class InfiniteMulticastTest {
 
     private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
         return Multicaster(
-            scope = testScope,
-            bufferSize = 0,
-            source = f,
-            piggybackingDownstream = true,
-            onEach = {
-                dispatchLog.add(it.toString())
-            })
+                scope = testScope,
+                bufferSize = 0,
+                source = f,
+                piggybackingDownstream = true,
+                onEach = {
+                    dispatchLog.add(it.toString())
+                })
     }
 
     @Test
