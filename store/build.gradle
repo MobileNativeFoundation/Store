@@ -26,6 +26,7 @@ version = VERSION_NAME
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation project(path: ':cache')
+    implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 
 

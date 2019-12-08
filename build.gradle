@@ -70,10 +70,6 @@ project.ext.preDexLibs = !project.hasProperty('disablePreDex')
 
 subprojects {
     apply plugin: 'com.diffplug.gradle.spotless'
-    if (project.path == ":store") {
-        apply plugin: 'org.jetbrains.dokka'
-    }
-
     spotless {
         kotlin {
             target 'src/**/*.kt'

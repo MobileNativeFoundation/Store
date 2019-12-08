@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl.multicast
+package com.dropbox.flow.multicast
 
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.AddChannel
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.DispatchValue
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.RemoveChannel
+import com.dropbox.flow.multicast.ChannelManager.Message.AddChannel
+import com.dropbox.flow.multicast.ChannelManager.Message.DispatchValue
+import com.dropbox.flow.multicast.ChannelManager.Message.RemoveChannel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,18 +41,18 @@ import org.junit.runners.JUnit4
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()
     private val manager = ChannelManager<String>(
-        scope,
-        0,
-        onEach = {}
+            scope,
+            0,
+            onEach = {}
     ) {
         SharedFlowProducer(
-            scope, src =
-            flow {
-                suspendCancellableCoroutine<String> {
-                    // never end
-                }
-            },
-            channelManager = it
+                scope, src =
+        flow {
+            suspendCancellableCoroutine<String> {
+                // never end
+            }
+        },
+                channelManager = it
         )
     }
 
