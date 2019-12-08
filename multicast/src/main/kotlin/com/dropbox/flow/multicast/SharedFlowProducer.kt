@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl.multicast
+package com.dropbox.flow.multicast
 
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.DispatchError
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.DispatchValue
-import com.dropbox.android.external.store4.impl.multicast.ChannelManager.Message.UpstreamFinished
+import com.dropbox.flow.multicast.ChannelManager.Message.DispatchError
+import com.dropbox.flow.multicast.ChannelManager.Message.DispatchValue
+import com.dropbox.flow.multicast.ChannelManager.Message.UpstreamFinished
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi

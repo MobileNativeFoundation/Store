@@ -17,7 +17,7 @@ package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.android.external.store4.impl.multicast.Multicaster
+import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

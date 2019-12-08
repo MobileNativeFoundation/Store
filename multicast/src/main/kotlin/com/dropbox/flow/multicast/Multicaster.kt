@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dropbox.android.external.store4.impl.multicast
+package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.transform
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class Multicaster<T>(
+class Multicaster<T>(
     /**
      * The [CoroutineScope] to use for upstream subscription
      */
@@ -64,17 +64,17 @@ internal class Multicaster<T>(
 
     private val channelManager by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         ChannelManager(
-            scope = scope,
-            bufferSize = bufferSize,
-            onActive = {
-                SharedFlowProducer(
-                    scope = scope,
-                    src = source(),
-                    channelManager = it
-                )
-            },
-            piggybackingDownstream = piggybackingDownstream,
-            onEach = onEach
+                scope = scope,
+                bufferSize = bufferSize,
+                onActive = {
+                    SharedFlowProducer(
+                            scope = scope,
+                            src = source(),
+                            channelManager = it
+                    )
+                },
+                piggybackingDownstream = piggybackingDownstream,
+                onEach = onEach
         )
     }
 
