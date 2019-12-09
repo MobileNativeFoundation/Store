@@ -21,7 +21,11 @@ import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 /**
  * This class maintains one and only 1 fetcher for a given [Key].
@@ -34,52 +38,52 @@ import kotlinx.coroutines.flow.*
 @FlowPreview
 @ExperimentalCoroutinesApi
 internal class FetcherController<Key, Input, Output>(
-        /**
-         * The [CoroutineScope] to use when collecting from the fetcher
-         */
-        private val scope: CoroutineScope,
-        /**
-         * The function that provides the actualy fetcher flow when needed
-         */
-        private val realFetcher: (Key) -> Flow<Input>,
-        /**
-         * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
-         * no [SourceOfTruth] is available.
-         */
-        private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>?,
-        /**
-         * When enabled, downstream collectors are never closed, instead, they are kept active to
-         * receive values dispatched by fetchers created after them. This makes [FetcherController]
-         * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
-         */
-        private val enablePiggyback: Boolean = sourceOfTruth == null
+    /**
+     * The [CoroutineScope] to use when collecting from the fetcher
+     */
+    private val scope: CoroutineScope,
+    /**
+     * The function that provides the actualy fetcher flow when needed
+     */
+    private val realFetcher: (Key) -> Flow<Input>,
+    /**
+     * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
+     * no [SourceOfTruth] is available.
+     */
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>?,
+    /**
+     * When enabled, downstream collectors are never closed, instead, they are kept active to
+     * receive values dispatched by fetchers created after them. This makes [FetcherController]
+     * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
+     */
+    private val enablePiggyback: Boolean = sourceOfTruth == null
 ) {
     private val fetchers = RefCountedResource(
-            create = { key: Key ->
-                Multicaster(
-                        scope = scope,
-                        bufferSize = 0,
-                        source = {
-                            realFetcher(key).map {
-                                StoreResponse.Data(
-                                        it,
-                                        origin = ResponseOrigin.Fetcher
-                                ) as StoreResponse<Input>
-                            }.catch {
-                                emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
-                            }
-                        },
-                        piggybackingDownstream = enablePiggyback,
-                        onEach = { response ->
-                            response.dataOrNull()?.let { input ->
-                                sourceOfTruth?.write(key, input)
-                            }
-                        }
-                )
-            },
-            onRelease = { key: Key, multicaster: Multicaster<StoreResponse<Input>> ->
-                multicaster.close()
-            }
+        create = { key: Key ->
+            Multicaster(
+                scope = scope,
+                bufferSize = 0,
+                source = {
+                    realFetcher(key).map {
+                        StoreResponse.Data(
+                            it,
+                            origin = ResponseOrigin.Fetcher
+                        ) as StoreResponse<Input>
+                    }.catch {
+                        emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
+                    }
+                },
+                piggybackingDownstream = enablePiggyback,
+                onEach = { response ->
+                    response.dataOrNull()?.let { input ->
+                        sourceOfTruth?.write(key, input)
+                    }
+                }
+            )
+        },
+        onRelease = { key: Key, multicaster: Multicaster<StoreResponse<Input>> ->
+            multicaster.close()
+        }
     )
 
     fun getFetcher(key: Key): Flow<StoreResponse<Input>> {

@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.assertj.core.api.Assertions
 
-
 /**
  * Asserts only the [expected] items by just taking that many from the stream
  *

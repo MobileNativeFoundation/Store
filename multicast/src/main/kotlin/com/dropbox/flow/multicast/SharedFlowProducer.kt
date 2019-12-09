@@ -85,7 +85,7 @@ internal class SharedFlowProducer<T>(
                 // closed already and leftovers can be moved to a new producer if necessary.
                 try {
                     channelManager.send(UpstreamFinished(this@SharedFlowProducer))
-                } catch (closed : ClosedSendChannelException) {
+                } catch (closed: ClosedSendChannelException) {
                     // it might close before us, its fine.
                 }
             }

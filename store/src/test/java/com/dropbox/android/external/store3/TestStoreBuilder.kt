@@ -30,32 +30,32 @@ import kotlinx.coroutines.flow.flow
 data class TestStoreBuilder<Key, Output>(
     private val buildStore: () -> Store<Key, Output>
 ) {
-    fun build(storeType: TestStoreType):Store<Key, out Output> = when (storeType) {
+    fun build(storeType: TestStoreType): Store<Key, out Output> = when (storeType) {
         TestStoreType.FlowStore -> buildStore()
     }
 
     companion object {
 
         fun <Key, Output> from(
-                scope: CoroutineScope,
-                fetcher: Fetcher<Output, Key>,
-                persister: Persister<Output, Key>?=null,
-                inflight: Boolean = true
-                ): TestStoreBuilder<Key, Output> = from(
+            scope: CoroutineScope,
+            fetcher: Fetcher<Output, Key>,
+            persister: Persister<Output, Key>? = null,
+            inflight: Boolean = true
+        ): TestStoreBuilder<Key, Output> = from(
             scope = scope,
             inflight = inflight,
             persister = persister,
-            fetcher = {fetcher.invoke(it)}
+            fetcher = { fetcher.invoke(it) }
         )
 
         @Suppress("UNCHECKED_CAST")
         fun <Key, Output> from(
-                scope: CoroutineScope,
-                inflight: Boolean = true,
-                cached: Boolean = false,
-                cacheMemoryPolicy: MemoryPolicy? = null,
-                persister: Persister<Output, Key>? = null,
-                fetcher: suspend (Key) -> Output
+            scope: CoroutineScope,
+            inflight: Boolean = true,
+            cached: Boolean = false,
+            cacheMemoryPolicy: MemoryPolicy? = null,
+            persister: Persister<Output, Key>? = null,
+            fetcher: suspend (Key) -> Output
         ): TestStoreBuilder<Key, Output> = from(
             scope = scope,
             inflight = inflight,
@@ -69,16 +69,16 @@ data class TestStoreBuilder<Key, Output>(
 
         @Suppress("UNCHECKED_CAST")
         fun <Key, Output> from(
-                scope: CoroutineScope,
-                inflight: Boolean = true,
-                cached: Boolean = false,
-                cacheMemoryPolicy: MemoryPolicy? = null,
-                persister: Persister<Output, Key>? = null,
+            scope: CoroutineScope,
+            inflight: Boolean = true,
+            cached: Boolean = false,
+            cacheMemoryPolicy: MemoryPolicy? = null,
+            persister: Persister<Output, Key>? = null,
             // parser that runs after fetch
-                fetchParser: KeyParser<Key, Output, Output>? = null,
+            fetchParser: KeyParser<Key, Output, Output>? = null,
             // parser that runs after get from db
-                postParser: KeyParser<Key, Output, Output>? = null,
-                fetcher: Fetcher<Output, Key>
+            postParser: KeyParser<Key, Output, Output>? = null,
+            fetcher: Fetcher<Output, Key>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
@@ -96,7 +96,7 @@ data class TestStoreBuilder<Key, Output>(
                         .scope(scope)
                         .let {
                             if (cached) {
-                                cacheMemoryPolicy?.let { cacheMemoryPolicy->  it.cachePolicy(cacheMemoryPolicy) }?:it
+                                cacheMemoryPolicy?.let { cacheMemoryPolicy -> it.cachePolicy(cacheMemoryPolicy) } ?: it
                             } else {
                                 it.disableCache()
                             }
@@ -112,10 +112,10 @@ data class TestStoreBuilder<Key, Output>(
             )
         }
 
-        internal fun <Key, Output>sourceOfTruthFromLegacy(
-                persister: Persister<Output, Key>,
+        internal fun <Key, Output> sourceOfTruthFromLegacy(
+            persister: Persister<Output, Key>,
                 // parser that runs after get from db
-                postParser: KeyParser<Key, Output, Output>? = null
+            postParser: KeyParser<Key, Output, Output>? = null
         ): SourceOfTruth<Key, Output, Output> {
             return PersistentSourceOfTruth(
                     realReader = { key ->

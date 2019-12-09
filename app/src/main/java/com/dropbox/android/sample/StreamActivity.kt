@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.dropbox.android.external.store4.*
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
+import com.dropbox.android.external.store4.MemoryPolicy
+import com.dropbox.android.external.store4.StoreBuilder
+import com.dropbox.android.external.store4.StoreRequest
+import com.dropbox.android.external.store4.fresh
+import com.dropbox.android.external.store4.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 
 class StreamActivity : AppCompatActivity(), CoroutineScope {
 
@@ -32,7 +36,7 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
         var counter = 0
 
         val store = StoreBuilder
-            .fromNonFlow { key:Int -> (key * 1000 + counter++).also { delay(1_000) } }
+            .fromNonFlow { key: Int -> (key * 1000 + counter++).also { delay(1_000) } }
             .cachePolicy(
                 MemoryPolicy
                     .builder()

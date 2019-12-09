@@ -11,8 +11,8 @@ import okio.BufferedSource
  * @param <T> key type
 </T> */
 open class FSWriter<T>(
-        internal val fileSystem: FileSystem,
-        internal val pathResolver: PathResolver<T>
+    internal val fileSystem: FileSystem,
+    internal val pathResolver: PathResolver<T>
 ) : DiskWrite<BufferedSource, T> {
     override suspend fun write(key: T, data: BufferedSource): Boolean {
         fileSystem.write(pathResolver.resolve(key), data)

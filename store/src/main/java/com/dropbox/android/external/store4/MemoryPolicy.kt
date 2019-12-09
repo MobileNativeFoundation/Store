@@ -1,6 +1,5 @@
 package com.dropbox.android.external.store4
 
-
 import java.util.concurrent.TimeUnit
 
 /**
@@ -18,10 +17,10 @@ import java.util.concurrent.TimeUnit
  * to define a basic caching mechanism.
  */
 class MemoryPolicy internal constructor(
-        val expireAfterWrite: Long,
-        val expireAfterAccess: Long,
-        val expireAfterTimeUnit: TimeUnit,
-        private val maxSizeNotDefault: Long
+    val expireAfterWrite: Long,
+    val expireAfterAccess: Long,
+    val expireAfterTimeUnit: TimeUnit,
+    private val maxSizeNotDefault: Long
 ) {
 
     val isDefaultWritePolicy: Boolean

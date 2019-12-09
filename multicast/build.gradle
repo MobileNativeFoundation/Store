@@ -2,7 +2,7 @@ apply plugin: 'kotlin'
 apply plugin: 'org.jetbrains.dokka'
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest

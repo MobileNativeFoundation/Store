@@ -5,19 +5,23 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.sample.reddit.PostAdapter
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_room_store.*
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 @FlowPreview
@@ -41,6 +45,7 @@ class RoomActivity : AppCompatActivity() {
                 postRecyclerView.adapter = adapter
             }
         }
+
         val storeState = StoreState((application as SampleApp).roomStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {
@@ -61,7 +66,7 @@ class RoomActivity : AppCompatActivity() {
                 storeState.errors.collect {
                     if (it != "") {
                         Snackbar.make(root, it, Snackbar.LENGTH_INDEFINITE).setAction(
-                                "refresh"
+                            "refresh"
                         ) {
                             refresh()
                         }.show()
@@ -105,14 +110,14 @@ internal class StoreState<Key, Output>(
 
     val data = keyFlow.consumeAsFlow().flatMapLatest { key ->
         store.stream(
-                StoreRequest.cached(
-                        key = key,
-                        refresh = true
-                )
+            StoreRequest.cached(
+                key = key,
+                refresh = true
+            )
         ).onEach {
             if (it.origin == ResponseOrigin.Fetcher) {
                 _loading.send(
-                        it is StoreResponse.Loading
+                    it is StoreResponse.Loading
                 )
             }
             if (it is StoreResponse.Error) {

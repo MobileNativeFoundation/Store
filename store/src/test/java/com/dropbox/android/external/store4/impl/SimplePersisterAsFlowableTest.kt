@@ -39,14 +39,14 @@ class SimplePersisterAsFlowableTest {
     private val barcode = BarCode("a", "b")
     @Test
     fun testSimple() = testScope.runBlockingTest {
-        val (flowable , written)= create("a", "b")
+        val (flowable, written) = create("a", "b")
         val read = flowable.flowReader(barcode).take(1).toCollection(mutableListOf())
         Assertions.assertThat(read).isEqualTo(listOf("a"))
     }
 
     @Test
     fun writeInvalidation() = testScope.runBlockingTest {
-        val (flowable , written)= create("a", "b")
+        val (flowable, written) = create("a", "b")
         flowable.flowWriter(BarCode("another", "value"), "dsa")
         val collectedFirst = CompletableDeferred<Unit>()
         var collectedValues = CompletableDeferred<List<String?>>()
@@ -60,8 +60,6 @@ class SimplePersisterAsFlowableTest {
                     }
                     .take(2)
                     .toList())
-
-
         }
         collectedFirst.await()
         flowable.flowWriter(barcode, "x")
@@ -84,8 +82,8 @@ class SimplePersisterAsFlowableTest {
     }
 
     private fun create(
-            vararg values : String
-    ) : Pair<SimplePersisterAsFlowable<BarCode, String, String>, List<String>> {
+        vararg values: String
+    ): Pair<SimplePersisterAsFlowable<BarCode, String, String>, List<String>> {
         var readIndex = 0
         val written = mutableListOf<String>()
         return SimplePersisterAsFlowable<BarCode, String, String>(

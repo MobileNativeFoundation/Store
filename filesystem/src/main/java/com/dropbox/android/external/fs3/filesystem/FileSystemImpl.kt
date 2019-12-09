@@ -3,14 +3,14 @@ package com.dropbox.android.external.fs3.filesystem
 import com.dropbox.android.external.cache3.CacheBuilder.newBuilder
 import com.dropbox.android.external.cache3.CacheLoader
 import com.dropbox.android.external.cache3.LoadingCache
-import com.dropbox.android.external.fs3.Util
 import com.dropbox.android.external.fs3.RecordState
+import com.dropbox.android.external.fs3.Util
 import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.String.format
-import java.util.*
+import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 
 /**
@@ -25,11 +25,11 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
 
     init {
         this.files = newBuilder().maximumSize(20)
-                .build(object : CacheLoader<String, FSFile>() {
-                    override fun load(path: String): FSFile {
-                        return FSFile(root, path)
-                    }
-                })
+            .build(object : CacheLoader<String, FSFile>() {
+                override fun load(path: String): FSFile {
+                    return FSFile(root, path)
+                }
+            })
 
         Util.createParentDirs(root)
     }
@@ -90,7 +90,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
     }
 
     private fun cleanPath(dirty: String): String =
-            Util.simplifyPath(dirty)
+        Util.simplifyPath(dirty)
 
     @Throws(FileNotFoundException::class)
     private fun findFiles(path: String): Collection<FSFile> {
@@ -104,7 +104,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         while (iterator.hasNext()) {
             val file = iterator.next() as File?
             foundFiles.add(files.getUnchecked(Util.simplifyPath(file!!.path
-                    .replaceFirst(root.path.toRegex(), "")))!!)
+                .replaceFirst(root.path.toRegex(), "")))!!)
         }
         return foundFiles
     }

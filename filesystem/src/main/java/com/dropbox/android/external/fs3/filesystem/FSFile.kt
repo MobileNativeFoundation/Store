@@ -1,6 +1,5 @@
 package com.dropbox.android.external.fs3.filesystem
 
-
 import com.dropbox.android.external.fs3.Util
 import okio.BufferedSink
 import okio.BufferedSource
@@ -48,14 +47,12 @@ internal class FSFile(root: File, private val pathValue: String) {
             }
         } catch (e: Exception) {
             throw IOException("unable to write to file", e)
-
         } finally {
             tmpFile.delete()
             sink?.close()
             source.close()
         }
     }
-
 
     @Throws(FileNotFoundException::class)
     fun source(): BufferedSource {
@@ -67,4 +64,3 @@ internal class FSFile(root: File, private val pathValue: String) {
 
     fun lastModified(): Long = file.lastModified()
 }
-

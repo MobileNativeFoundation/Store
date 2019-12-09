@@ -25,7 +25,7 @@ open class FSReader<T>(internal val fileSystem: FileSystem, internal val pathRes
             } catch (e: FileNotFoundException) {
                 throw e
             } finally {
-                //TODO MIKE: figure out why this was here
+                // TODO MIKE: figure out why this was here
 //                if (bufferedSource != null) {
 //                    try {
 //                        bufferedSource.close()

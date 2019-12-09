@@ -45,10 +45,10 @@ class MulticastTest {
 
     private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
         return Multicaster(
-                scope = testScope,
-                bufferSize = 0,
-                source = f,
-                onEach = {})
+            scope = testScope,
+            bufferSize = 0,
+            source = f,
+            onEach = {})
     }
 
     @Test
@@ -168,7 +168,7 @@ class MulticastTest {
     @Test
     fun upstreamError() = testScope.runBlockingTest {
         val exception =
-                MyCustomException("hey")
+            MyCustomException("hey")
         val activeFlow = createMulticaster {
             flow {
                 emit("a")
@@ -197,7 +197,7 @@ class MulticastTest {
     @Test
     fun upstreamError_secondJustGetsError() = testScope.runBlockingTest {
         val exception =
-                MyCustomException("hey")
+            MyCustomException("hey")
         val dispatchedFirstValue = CompletableDeferred<Unit>()
         val registeredSecondCollector = CompletableDeferred<Unit>()
         val activeFlow = createMulticaster {
@@ -205,14 +205,12 @@ class MulticastTest {
                 emit("a")
                 dispatchedFirstValue.complete(Unit)
                 registeredSecondCollector.await()
-                yield() //yield to allow second collector to register
+                yield() // yield to allow second collector to register
                 throw exception
             }
         }
         launch {
-            activeFlow.create().catch {
-
-            }.toList()
+            activeFlow.create().catch {}.toList()
         }
         // wait until the above collector registers and receives first value
         dispatchedFirstValue.await()
@@ -273,28 +271,28 @@ class MulticastTest {
     fun lateArrival_buffered() = testScope.runBlockingTest {
         var createdCount = 0
         val activeFlow = Multicaster(
-                scope = testScope,
-                bufferSize = 2,
-                source = {
-                    createdCount++
-                    flow {
-                        emit("a")
-                        delay(5)
-                        emit("b")
-                        emit("c")
-                        emit("d")
-                        delay(100)
-                        emit("e")
-                        // dont finish to see the buffer behavior
-                        delay(2000)
-                    }
-                },
-                onEach = {}
+            scope = testScope,
+            bufferSize = 2,
+            source = {
+                createdCount++
+                flow {
+                    emit("a")
+                    delay(5)
+                    emit("b")
+                    emit("c")
+                    emit("d")
+                    delay(100)
+                    emit("e")
+                    // dont finish to see the buffer behavior
+                    delay(2000)
+                }
+            },
+            onEach = {}
         )
         val c1 = async {
             activeFlow.create().toList()
         }
-        delay(4)// c2 misses first value
+        delay(4) // c2 misses first value
         val c2 = async {
             activeFlow.create().toList()
         }

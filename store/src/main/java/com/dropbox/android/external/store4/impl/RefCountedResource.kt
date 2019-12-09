@@ -23,12 +23,12 @@ import kotlinx.coroutines.sync.withLock
  */
 internal class RefCountedResource<Key, T>(
     private val create: suspend (Key) -> T,
-    private val onRelease : (suspend (Key, T) -> Unit)? = null
+    private val onRelease: (suspend (Key, T) -> Unit)? = null
 ) {
     private val items = mutableMapOf<Key, Item>()
     private val lock = Mutex()
 
-    suspend fun acquire(key: Key) : T = lock.withLock {
+    suspend fun acquire(key: Key): T = lock.withLock {
         items.getOrPut(key) {
             Item(create(key))
         }.also {
@@ -36,7 +36,7 @@ internal class RefCountedResource<Key, T>(
         }.value
     }
 
-    suspend fun release(key: Key, value : T) = lock.withLock {
+    suspend fun release(key: Key, value: T) = lock.withLock {
         val existing = items[key]
         check(existing != null && existing.value === value) {
             "inconsistent release, seems like $value was leaked or never acquired"

@@ -22,17 +22,21 @@ object RecordPersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun create(root: File,
-               expirationDuration: Long,
-               expirationUnit: TimeUnit): Persister<BufferedSource, BarCode> =
+    fun create(
+        root: File,
+        expirationDuration: Long,
+        expirationUnit: TimeUnit
+    ): Persister<BufferedSource, BarCode> =
             RecordPersister(FileSystemFactory.create(root), expirationDuration, expirationUnit)
 
     /**
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
-    fun create(fileSystem: FileSystem,
-               expirationDuration: Long,
-               expirationUnit: TimeUnit): Persister<BufferedSource, BarCode> =
+    fun create(
+        fileSystem: FileSystem,
+        expirationDuration: Long,
+        expirationUnit: TimeUnit
+    ): Persister<BufferedSource, BarCode> =
             RecordPersister(fileSystem, expirationDuration, expirationUnit)
 }

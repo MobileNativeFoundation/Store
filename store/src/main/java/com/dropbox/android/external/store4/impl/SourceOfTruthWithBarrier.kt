@@ -21,7 +21,12 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -36,9 +41,9 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      * Each key has a barrier so that we can block reads while writing.
      */
     private val barriers = RefCountedResource<Key, ConflatedBroadcastChannel<BarrierMsg>>(
-            create = { key ->
-                ConflatedBroadcastChannel(BarrierMsg.Open.INITIAL)
-            }
+        create = { key ->
+            ConflatedBroadcastChannel(BarrierMsg.Open.INITIAL)
+        }
     )
     /**
      * Each message gets dispatched with a version. This ensures we won't accidentally turn on the
@@ -46,7 +51,6 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      * that write should be considered as a disk read for that flow, not fetcher.
      */
     private val versionCounter = AtomicLong(0)
-
 
     fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<DataWithOrigin<Output>> {
         return flow {
@@ -61,13 +65,13 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                             is BarrierMsg.Open -> delegate.reader(key).mapIndexed { index, output ->
                                 if (index == 0 && messageArrivedAfterMe) {
                                     DataWithOrigin(
-                                            origin = ResponseOrigin.Fetcher,
-                                            value = output
+                                        origin = ResponseOrigin.Fetcher,
+                                        value = output
                                     )
                                 } else {
                                     DataWithOrigin(
-                                            origin = delegate.defaultOrigin,
-                                            value = output
+                                        origin = delegate.defaultOrigin,
+                                        value = output
                                     )
                                 }
                             }
@@ -81,7 +85,6 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                 // possibility where flow gets cancelled right before `emitAll`.
                 barriers.release(key, barrier)
             }
-
         }
     }
 
@@ -119,9 +122,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
     }
 }
 
-
-
 internal data class DataWithOrigin<T>(
-        val origin: ResponseOrigin,
-        val value: T?
+    val origin: ResponseOrigin,
+    val value: T?
 )

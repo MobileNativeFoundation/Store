@@ -33,7 +33,7 @@ interface StoreBuilder<Key, Output> {
 
     companion object {
         fun <Key, Output> fromNonFlow(
-                fetcher: suspend (key: Key) -> Output
+            fetcher: suspend (key: Key) -> Output
         ) = Builder { key: Key ->
             flow {
                 emit(fetcher(key))
@@ -41,13 +41,13 @@ interface StoreBuilder<Key, Output> {
         }
 
         fun <Key, Output> from(
-                fetcher: (key: Key) -> Flow<Output>
+            fetcher: (key: Key) -> Flow<Output>
         ) = Builder(fetcher)
     }
 }
 
 class Builder<Key, Output>(
-        private val fetcher: (key: Key) -> Flow<Output>
+    private val fetcher: (key: Key) -> Flow<Output>
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
@@ -82,9 +82,9 @@ class Builder<Key, Output>(
     }
 
     fun <NewOutput> nonFlowingPersister(
-            reader: suspend (Key) -> NewOutput?,
-            writer: suspend (Key, Output) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null
+        reader: suspend (Key) -> NewOutput?,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth<NewOutput>().nonFlowingPersister(
                 reader = reader,
@@ -94,9 +94,9 @@ class Builder<Key, Output>(
     }
 
     fun <NewOutput> persister(
-            reader: (Key) -> Flow<NewOutput?>,
-            writer: suspend (Key, Output) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null
+        reader: (Key) -> Flow<NewOutput?>,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth<NewOutput>().persister(
                 reader = reader,
@@ -106,7 +106,7 @@ class Builder<Key, Output>(
     }
 
     internal fun <NewOutput> sourceOfTruth(
-            sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>
+        sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth<NewOutput>().sourceOfTruth(sourceOfTruth)
     }
@@ -117,7 +117,7 @@ class Builder<Key, Output>(
 }
 
 class BuilderWithSourceOfTruth<Key, Input, Output>(
-        private val fetcher: (key: Key) -> Flow<Input>
+    private val fetcher: (key: Key) -> Flow<Input>
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
@@ -129,9 +129,9 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
     }
 
     fun nonFlowingPersister(
-            reader: suspend (Key) -> Output?,
-            writer: suspend (Key, Input) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null
+        reader: suspend (Key) -> Output?,
+        writer: suspend (Key, Input) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
     ): BuilderWithSourceOfTruth<Key, Input, Output> {
         sourceOfTruth = PersistentNonFlowingSourceOfTruth(
                 realReader = reader,
@@ -142,9 +142,9 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
     }
 
     fun persister(
-            reader: (Key) -> Flow<Output?>,
-            writer: suspend (Key, Input) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null
+        reader: (Key) -> Flow<Output?>,
+        writer: suspend (Key, Input) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
     ): BuilderWithSourceOfTruth<Key, Input, Output> {
         sourceOfTruth = PersistentSourceOfTruth(
                 realReader = reader,
@@ -155,7 +155,7 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
     }
 
     internal fun sourceOfTruth(
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>
+        sourceOfTruth: SourceOfTruth<Key, Input, Output>
     ): BuilderWithSourceOfTruth<Key, Input, Output> {
         this.sourceOfTruth = sourceOfTruth
         return this
