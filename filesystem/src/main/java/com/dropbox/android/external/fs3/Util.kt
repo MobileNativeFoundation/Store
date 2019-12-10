@@ -1,9 +1,8 @@
 package com.dropbox.android.external.fs3
 
-
 import java.io.File
 import java.io.IOException
-import java.util.*
+import java.util.Stack
 
 object Util {
 
@@ -52,19 +51,18 @@ object Util {
     }
 
     private fun ifInvalidPATH(path: String?): Boolean =
-            path == null || path.isEmpty()
+        path == null || path.isEmpty()
 
     @Throws(IOException::class)
     fun createParentDirs(file: File) {
-        val parent = file.canonicalFile.parentFile
-                ?: /*
+        val parent = file.canonicalFile.parentFile /*
        * The given directory is a filesystem root. All zero of its ancestors
        * exist. This doesn't mean that the root itself exists -- consider x:\ on
        * a Windows machine without such a drive -- or even that the caller can
        * create it, but this method makes no such guarantees even for non-root
        * files.
        */
-                return
+            ?: return
         parent.mkdirs()
         if (!parent.isDirectory) {
             throw IOException("Unable to create parent directories of $file")

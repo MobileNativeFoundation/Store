@@ -23,7 +23,10 @@ Coding Style
 ------------
 
 The coding style employed here is fairly conventional Java - indentations are four spaces, class
-names are PascalCased, identifiers and methods are camelCased.    
+names are PascalCased, identifiers and methods are camelCased.
+
+We use [ktlint](https://github.com/pinterest/ktlint) with the [ktlint gradle plugin](https://github.com/JLLeitschuh/ktlint-gradle) for Kotlin code formatting.
+To make sure the IDE agrees with rules we use, please run `./gradlew ktlintApplyToIdea` to generate IntelliJ IDEA / Android Studio Kotlin style files in the project .idea/ folder.    
 
 Workflow
 --------

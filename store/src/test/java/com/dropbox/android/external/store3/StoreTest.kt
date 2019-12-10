@@ -1,12 +1,19 @@
 package com.dropbox.android.external.store3
 
-import com.nhaarman.mockitokotlin2.*
 import com.dropbox.android.external.cache3.CacheBuilder
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.doThrow
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -79,7 +86,6 @@ class StoreTest(
         whenever(persister.write(barCode, NETWORK))
             .thenReturn(true)
 
-
         val deferred = async { simpleStore.get(barCode) }
         simpleStore.get(barCode)
         deferred.await()
@@ -112,7 +118,6 @@ class StoreTest(
         assertThat(value).isEqualTo(DISK)
         verify(fetcher, times(1)).invoke(barCode)
     }
-
 
     @Test
     fun testEquivalence() = testScope.runBlockingTest {

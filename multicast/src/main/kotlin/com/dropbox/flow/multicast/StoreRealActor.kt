@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Suppress("EXPERIMENTAL_API_USAGE")
 @ExperimentalCoroutinesApi
 internal abstract class StoreRealActor<T>(
-        scope: CoroutineScope
+    scope: CoroutineScope
 ) {
     private val inboundChannel: SendChannel<Any?>
     private val closeCompleted = CompletableDeferred<Unit>()
@@ -37,7 +37,7 @@ internal abstract class StoreRealActor<T>(
 
     init {
         inboundChannel = scope.actor(
-                capacity = 0
+            capacity = 0
         ) {
             try {
                 for (msg in channel) {
@@ -66,9 +66,7 @@ internal abstract class StoreRealActor<T>(
         }
     }
 
-    open fun onClosed() {
-
-    }
+    open fun onClosed() = Unit
 
     abstract suspend fun handle(msg: T)
 

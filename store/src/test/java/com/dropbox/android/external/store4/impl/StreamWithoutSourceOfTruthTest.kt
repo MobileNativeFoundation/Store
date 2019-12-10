@@ -34,7 +34,7 @@ import org.junit.runners.Parameterized
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamWithoutSourceOfTruthTest(
-        private val enableCache: Boolean
+    private val enableCache: Boolean
 ) {
     private val testScope = TestCoroutineScope()
 

@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class DontCacheErrorsTest(
-        storeType: TestStoreType
+    storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private var shouldThrow: Boolean = false

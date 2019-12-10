@@ -17,11 +17,11 @@ package com.dropbox.android.external.fs3.filesystem
  *
  */
 
-//package org.jpublish.util;
-
+// package org.jpublish.util;
 
 import java.io.File
-import java.util.*
+import java.util.NoSuchElementException
+import java.util.Stack
 
 /**
  * Breadth first iterator which iterates through all files which are decendents
@@ -59,7 +59,7 @@ internal class BreadthFirstFileTreeIterator
      * @return True if the iteration has more elements
      */
     override fun hasNext(): Boolean =
-            !endOfTree && getNextFile() != null
+        !endOfTree && getNextFile() != null
 
     /**
      * Returns the next element in the iteration.
@@ -123,5 +123,4 @@ internal class BreadthFirstFileTreeIterator
 
         return null
     }
-
 }

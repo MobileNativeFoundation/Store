@@ -32,7 +32,6 @@ internal fun <T, R> Flow<T>.merge(other: Flow<R>): Flow<Either<T, R>> {
         launch {
             this@merge.collect {
                 send(Either.Left(it))
-
             }
         }
         launch {

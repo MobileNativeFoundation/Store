@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.flow
  * [RealStore] implementation to avoid dispatching values to downstream while
  * a write is in progress.
  */
- internal interface SourceOfTruth<Key, Input, Output> {
+internal interface SourceOfTruth<Key, Input, Output> {
     val defaultOrigin: ResponseOrigin
     fun reader(key: Key): Flow<Output?>
     suspend fun write(key: Key, value: Input)
@@ -61,6 +61,7 @@ internal class PersistentNonFlowingSourceOfTruth<Key, Input, Output>(
     override fun reader(key: Key): Flow<Output?> = flow {
         emit(realReader(key))
     }
+
     override suspend fun write(key: Key, value: Input) = realWriter(key, value)
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)

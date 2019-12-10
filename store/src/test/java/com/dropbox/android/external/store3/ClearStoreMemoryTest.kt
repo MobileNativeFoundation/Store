@@ -23,7 +23,7 @@ class ClearStoreMemoryTest(
 
     @Test
     fun testClearSingleBarCode() = testScope.runBlockingTest {
-        //one request should produce one call
+        // one request should produce one call
         val barcode = BarCode("type", "key")
         store.get(barcode)
         assertThat(networkCalls).isEqualTo(1)
@@ -39,7 +39,7 @@ class ClearStoreMemoryTest(
         val b1 = BarCode("type1", "key1")
         val b2 = BarCode("type2", "key2")
 
-        //each request should produce one call
+        // each request should produce one call
         store.get(b1)
         store.get(b2)
         assertThat(networkCalls).isEqualTo(2)
@@ -47,7 +47,7 @@ class ClearStoreMemoryTest(
         store.clear(b1)
         store.clear(b2)
 
-        //after everything is cleared each request should produce another 2 calls
+        // after everything is cleared each request should produce another 2 calls
         store.get(b1)
         store.get(b2)
         assertThat(networkCalls).isEqualTo(4)
