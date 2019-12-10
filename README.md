@@ -23,7 +23,7 @@ Store leverages multiple request throttling to prevent excessive calls to the ne
 
 Maven central artifacts coming soon. For now please build from source or run gradlew install to add to your local m2 repo
 
-###### Include gradle dependency (COMING SOON) 
+###### Include gradle dependency (as well as MavenCentral Snapshot repo)
 
 ```
 implementation 'com.dropbox.mobile.store:store:4.0.0-SNAPSHOT'
@@ -201,6 +201,6 @@ The above builder is how we recommend working with data on Android. With the abo
 + Structured Concurrency through apis build on Coroutines and Kotlin Flow
 
 
-### Artifacts Coming Soon
+### Artifacts
 
 **CurrentVersion = 4.0.0-SNAPSHOT**
