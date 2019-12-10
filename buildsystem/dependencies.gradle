@@ -14,7 +14,7 @@ ext.versions = [
         retrofit             : '2.6.2',
         jsr305               : '3.0.2',
         okHttp               : '4.2.2',
-        okio                 : '1.16.0',
+        okio                 : '2.4.1',
         gson                 : '2.8.6',
         moshi                : '1.9.2',
         guava                : '28.1-jre',

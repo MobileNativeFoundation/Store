@@ -1,19 +1,20 @@
 package com.dropbox.android.external.fs3.impl
 
-import com.google.common.base.Charsets.UTF_8
-import com.google.common.io.Files.createTempDir
 import com.dropbox.android.external.fs3.RecordState
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.google.common.base.Charsets.UTF_8
+import com.google.common.io.Files.createTempDir
+import okio.BufferedSource
+import okio.buffer
+import okio.source
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import okio.BufferedSource
-import okio.Okio
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
 
 class SimpleTest {
 
@@ -127,6 +128,6 @@ class SimpleTest {
         private const val testString1 = "aszfbW#$%#$^&*5 r7ytjdfbv!@#R$\n@!#$%2354 wtyebfsdv\n"
         private const val testString2 = "#%^sdfvb#W%EtsdfbSER@#$%dsfb\nASRG \n #dsfvb \n"
 
-        private fun source(data: String): BufferedSource = Okio.buffer(Okio.source(ByteArrayInputStream(data.toByteArray(UTF_8))))
+        private fun source(data: String): BufferedSource = ByteArrayInputStream(data.toByteArray(UTF_8)).source().buffer()
     }
 }
