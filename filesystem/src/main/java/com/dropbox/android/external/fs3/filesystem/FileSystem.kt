@@ -58,7 +58,7 @@ interface FileSystem {
      * write a new version of a file. No readers will "see" this version until it has successfully been completely
      * written to and closed. In case of error, the version is deleted from disk.
      *
-     * @param path   what to write to
+     * @param path what to write to
      * @param source a [BufferedSource] containing the content to be written to disk. Caller must close it!
      * @throws IOException
      */
@@ -102,7 +102,9 @@ interface FileSystem {
      * compares age of file with given expiration time and returns
      * appropriate recordState
      */
-    fun getRecordState(expirationUnit: TimeUnit,
-                       expirationDuration: Long,
-                       path: String): RecordState
+    fun getRecordState(
+        expirationUnit: TimeUnit,
+        expirationDuration: Long,
+        path: String
+    ): RecordState
 }

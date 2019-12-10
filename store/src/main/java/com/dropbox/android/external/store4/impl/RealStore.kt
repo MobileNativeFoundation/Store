@@ -38,10 +38,10 @@ import kotlinx.coroutines.flow.withIndex
 @ExperimentalCoroutinesApi
 @FlowPreview
 internal class RealStore<Key, Input, Output>(
-        scope: CoroutineScope,
-        fetcher: (Key) -> Flow<Input>,
-        sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
-        private val memoryPolicy: MemoryPolicy?
+    scope: CoroutineScope,
+    fetcher: (Key) -> Flow<Input>,
+    sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
+    private val memoryPolicy: MemoryPolicy?
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -134,8 +134,8 @@ internal class RealStore<Key, Input, Output>(
      * This ensures we first get the value from disk and then load from server if necessary.
      */
     private fun diskNetworkCombined(
-            request: StoreRequest<Key>,
-            sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>
+        request: StoreRequest<Key>,
+        sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>
     ): Flow<StoreResponse<Output>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
@@ -181,8 +181,8 @@ internal class RealStore<Key, Input, Output>(
     }
 
     private fun createNetworkFlow(
-            request: StoreRequest<Key>,
-            networkLock: CompletableDeferred<Unit>?
+        request: StoreRequest<Key>,
+        networkLock: CompletableDeferred<Unit>?
     ): Flow<StoreResponse<Output>> {
         return fetcherController
                 .getFetcher(request.key)
@@ -200,6 +200,4 @@ internal class RealStore<Key, Input, Output>(
                     it.swapType<Output>()
                 }
     }
-
-
 }

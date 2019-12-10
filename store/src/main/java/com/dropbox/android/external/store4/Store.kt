@@ -46,4 +46,3 @@ suspend fun <Key, Output> Store<Key, Output>.fresh(key: Key) = stream(
 ).filterNot {
     it is StoreResponse.Loading
 }.first().requireData()
-

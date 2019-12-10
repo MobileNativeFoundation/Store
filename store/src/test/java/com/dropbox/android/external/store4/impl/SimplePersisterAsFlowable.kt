@@ -30,9 +30,9 @@ import kotlinx.coroutines.sync.withLock
  */
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowable<Key, Input, Output>(
-        private val reader: suspend (Key) -> Output?,
-        private val writer: suspend (Key, Input) -> Unit,
-        private val delete: (suspend (Key) -> Unit)? = null
+    private val reader: suspend (Key) -> Output?,
+    private val writer: suspend (Key, Input) -> Unit,
+    private val delete: (suspend (Key) -> Unit)? = null
 ) {
     private val versionTracker = KeyTracker<Key>()
 
@@ -115,8 +115,8 @@ internal class KeyTracker<Key> {
      * A data structure to count how many active flows we have on this channel
      */
     private data class KeyChannel(
-            val channel: BroadcastChannel<Unit>,
-            var collectors: Int = 0
+        val channel: BroadcastChannel<Unit>,
+        var collectors: Int = 0
     ) {
         fun acquire() {
             collectors++

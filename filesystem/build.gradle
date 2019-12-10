@@ -15,7 +15,7 @@ group = GROUP
 version = VERSION_NAME
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation libraries.kotlinStdLib
     implementation libraries.okio
     compileOnly libraries.jsr305
     compileOnly libraries.javax

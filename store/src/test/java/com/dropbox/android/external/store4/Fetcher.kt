@@ -1,6 +1,5 @@
 package com.dropbox.android.external.store4
 
-
 /**
  * Interface for fetching new data for a Store
  *

@@ -13,13 +13,12 @@ import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class NoNetworkTest(
-        storeType: TestStoreType
+    storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
     private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(testScope) {
         throw EXCEPTION
     }.build(storeType)
-
 
     @Test
     fun testNoNetwork() = testScope.runBlockingTest {
