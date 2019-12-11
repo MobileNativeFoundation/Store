@@ -11,7 +11,6 @@ import com.dropbox.android.sample.data.model.Children
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -28,8 +27,7 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .fromNonFlow { key: String ->
-                provideRetrofit().fetchSubreddit(key, "10")
-                    .await().data.children.map(::toPosts)
+                provideRetrofit().fetchSubreddit(key, "10").data.children.map(::toPosts)
             }
             .persister(reader = db.postDao()::loadPosts,
                 writer = db.postDao()::insertPosts,
@@ -54,7 +52,6 @@ object Graph {
         return Retrofit.Builder()
             .baseUrl("https://reddit.com/")
             .addConverterFactory(MoshiConverterFactory.create(provideMoshi()))
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()
             .create(Api::class.java)
     }
