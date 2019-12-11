@@ -1,15 +1,16 @@
 package com.dropbox.android.external.fs3
 
-import com.google.common.base.Charsets.UTF_8
-import com.google.common.io.Files.createTempDir
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
-import java.io.ByteArrayInputStream
-import java.io.IOException
+import com.google.common.base.Charsets.UTF_8
+import com.google.common.io.Files.createTempDir
 import okio.BufferedSource
-import okio.Okio
+import okio.buffer
+import okio.source
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.io.ByteArrayInputStream
+import java.io.IOException
 
 class MultiTest {
 
@@ -56,6 +57,6 @@ class MultiTest {
         private val fileData: Map<String, List<String>> = mapOf("/foo/bar.txt" to listOf("sfvSFv", "AsfgasFgae", "szfvzsfbzdsfb"),
                 "/foo/bar/baz.xyz" to listOf("sasffvSFv", "AsfgsdvzsfbvasFgae", "szfvzsfszfvzsvbzdsfb"))
 
-        private fun source(data: String): BufferedSource = Okio.buffer(Okio.source(ByteArrayInputStream(data.toByteArray(UTF_8))))
+        private fun source(data: String): BufferedSource = ByteArrayInputStream(data.toByteArray(UTF_8)).source().buffer()
     }
 }

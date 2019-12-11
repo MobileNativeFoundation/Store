@@ -3,7 +3,9 @@ package com.dropbox.android.external.fs3.filesystem
 import com.dropbox.android.external.fs3.Util
 import okio.BufferedSink
 import okio.BufferedSource
-import okio.Okio
+import okio.buffer
+import okio.sink
+import okio.source
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -39,8 +41,8 @@ internal class FSFile(root: File, private val pathValue: String) {
         var sink: BufferedSink? = null
         try {
 
-            sink = Okio.buffer(Okio.sink(tmpFile))
-            sink!!.writeAll(source)
+            sink = tmpFile.sink().buffer()
+            sink.writeAll(source)
 
             if (!tmpFile.renameTo(file)) {
                 throw IOException("unable to move tmp file to " + file.path)
@@ -57,7 +59,7 @@ internal class FSFile(root: File, private val pathValue: String) {
     @Throws(FileNotFoundException::class)
     fun source(): BufferedSource {
         if (file.exists()) {
-            return Okio.buffer(Okio.source(file))
+            return file.source().buffer()
         }
         throw FileNotFoundException(pathValue)
     }
