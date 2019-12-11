@@ -25,7 +25,7 @@ Maven central artifacts coming soon. For now please build from source or run gra
 ###### Include gradle dependency (as well as MavenCentral Snapshot repo)
 
 ```
-implementation 'com.dropbox.mobile.store:store:4.0.0-SNAPSHOT'
+implementation 'com.dropbox.mobile.store:store4:4.0.0-SNAPSHOT'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
