@@ -26,6 +26,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * Main entry point for creating a [Store].
+ */
 @FlowPreview
 @ExperimentalCoroutinesApi
 interface StoreBuilder<Key, Output> {
@@ -34,32 +37,78 @@ interface StoreBuilder<Key, Output> {
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
     fun disableCache(): StoreBuilder<Key, Output>
 
+    /**
+     * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
+     * [delete].
+     *
+     * @see persister
+     */
+    fun <NewOutput> nonFlowingPersister(
+        reader: suspend (Key) -> NewOutput?,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
+    ): StoreBuilder<Key, NewOutput>
+
+    /**
+     * Connects a ([Flow]) source of truth that is accessed via [reader], [writer] and [delete].
+     *
+     * For maximal flexibility, [writer]'s record type ([Output]] and [reader]'s record type
+     * ([NewOutput]) are not identical. This allows us to read one type of objects from network and
+     * transform them to another type when placing them in local storage.
+     *
+     * A source of truth is usually back by local storage. It's purpose is to eliminate the need
+     * for waiting on network update before local modifications are available (via [Store.stream]).
+     *
+     *
+     */
+    fun <NewOutput> persister(
+        reader: (Key) -> Flow<NewOutput?>,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)? = null
+    ): StoreBuilder<Key, NewOutput>
+
     companion object {
+        /**
+         * Creates a new [StoreBuilder] from a non-[Flow] fetcher.
+         *
+         * Use when creating a [Store] that fetches objects in an HTTP-like single response per
+         * request protocol.
+         *
+         * @param fetcher a function for fetching network records.
+         */
         fun <Key, Output> fromNonFlow(
             fetcher: suspend (key: Key) -> Output
-        ) = Builder { key: Key ->
+        ): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
             flow {
                 emit(fetcher(key))
             }
         }
 
+        /**
+         * Creates a new [StoreBuilder] from a [Flow] fetcher.
+         *
+         * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
+         * per request protocol.
+         *
+         * @param fetcher a function for fetching a flow of network records.
+         */
         fun <Key, Output> from(
             fetcher: (key: Key) -> Flow<Output>
-        ) = Builder(fetcher)
+        ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
     }
 }
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-class Builder<Key, Output>(
+private class BuilderImpl<Key, Output>(
     private val fetcher: (key: Key) -> Flow<Output>
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
-    private fun <NewOutput> withSourceOfTruth() = BuilderWithSourceOfTruth<Key, Output, NewOutput>(
-            fetcher
-    ).let { builder ->
+    private fun <NewOutput> withSourceOfTruth(
+        sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
+    ) = BuilderWithSourceOfTruth(fetcher, sourceOfTruth).let { builder ->
         if (cachePolicy == null) {
             builder.disableCache()
         } else {
@@ -71,49 +120,47 @@ class Builder<Key, Output>(
         } ?: builder
     }
 
-    override fun scope(scope: CoroutineScope): Builder<Key, Output> {
+    override fun scope(scope: CoroutineScope): BuilderImpl<Key, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy?): Builder<Key, Output> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy?): BuilderImpl<Key, Output> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): Builder<Key, Output> {
+    override fun disableCache(): BuilderImpl<Key, Output> {
         cachePolicy = null
         return this
     }
 
-    fun <NewOutput> nonFlowingPersister(
+    override fun <NewOutput> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
+        delete: (suspend (Key) -> Unit)?
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
-        return withSourceOfTruth<NewOutput>().nonFlowingPersister(
-                reader = reader,
-                writer = writer,
-                delete = delete
+        return withSourceOfTruth(
+            PersistentNonFlowingSourceOfTruth(
+                realReader = reader,
+                realWriter = writer,
+                realDelete = delete
+            )
         )
     }
 
-    fun <NewOutput> persister(
+    override fun <NewOutput> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
+        delete: (suspend (Key) -> Unit)?
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
-        return withSourceOfTruth<NewOutput>().persister(
-                reader = reader,
-                writer = writer,
-                delete = delete
+        return withSourceOfTruth(
+            PersistentSourceOfTruth(
+                realReader = reader,
+                realWriter = writer,
+                realDelete = delete
+            )
         )
-    }
-
-    internal fun <NewOutput> sourceOfTruth(
-        sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>
-    ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
-        return withSourceOfTruth<NewOutput>().sourceOfTruth(sourceOfTruth)
     }
 
     override fun build(): Store<Key, Output> {
@@ -123,48 +170,15 @@ class Builder<Key, Output>(
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-class BuilderWithSourceOfTruth<Key, Input, Output>(
-    private val fetcher: (key: Key) -> Flow<Input>
+private class BuilderWithSourceOfTruth<Key, Input, Output>(
+    private val fetcher: (key: Key) -> Flow<Input>,
+    private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
-    private var sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
     override fun scope(scope: CoroutineScope): BuilderWithSourceOfTruth<Key, Input, Output> {
         this.scope = scope
-        return this
-    }
-
-    fun nonFlowingPersister(
-        reader: suspend (Key) -> Output?,
-        writer: suspend (Key, Input) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
-    ): BuilderWithSourceOfTruth<Key, Input, Output> {
-        sourceOfTruth = PersistentNonFlowingSourceOfTruth(
-                realReader = reader,
-                realWriter = writer,
-                realDelete = delete
-        )
-        return this
-    }
-
-    fun persister(
-        reader: (Key) -> Flow<Output?>,
-        writer: suspend (Key, Input) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
-    ): BuilderWithSourceOfTruth<Key, Input, Output> {
-        sourceOfTruth = PersistentSourceOfTruth(
-                realReader = reader,
-                realWriter = writer,
-                realDelete = delete
-        )
-        return this
-    }
-
-    internal fun sourceOfTruth(
-        sourceOfTruth: SourceOfTruth<Key, Input, Output>
-    ): BuilderWithSourceOfTruth<Key, Input, Output> {
-        this.sourceOfTruth = sourceOfTruth
         return this
     }
 
@@ -178,15 +192,25 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
         return this
     }
 
-    @FlowPreview
-    @ExperimentalCoroutinesApi
     override fun build(): Store<Key, Output> {
         @Suppress("UNCHECKED_CAST")
         return RealStore(
-                scope = scope ?: GlobalScope,
-                sourceOfTruth = sourceOfTruth,
-                fetcher = fetcher,
-                memoryPolicy = cachePolicy
+            scope = scope ?: GlobalScope,
+            sourceOfTruth = sourceOfTruth,
+            fetcher = fetcher,
+            memoryPolicy = cachePolicy
         )
     }
+
+    override fun <NewOutput> persister(
+        reader: (Key) -> Flow<NewOutput?>,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)?
+    ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
+
+    override fun <NewOutput> nonFlowingPersister(
+        reader: suspend (Key) -> NewOutput?,
+        writer: suspend (Key, Output) -> Unit,
+        delete: (suspend (Key) -> Unit)?
+    ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
 }
