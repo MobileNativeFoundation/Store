@@ -1,5 +1,4 @@
-![FriendlyRepo Logo](https://raw.githubusercontent.com/friendlyrobotnyc/FriendlyRepo/feature/coroutines/Images/friendly_robot_icon.png) 
-# Store(4) [![CircleCI](https://circleci.com/gh/friendlyrobotnyc/Core.svg?style=svg)](https://circleci.com/gh/friendlyrobotnyc/Core)
+# Store(4)
 
 Store is a Kotlin library for effortless data loading.
 
@@ -189,8 +188,7 @@ Stores don’t care how you’re storing or retrieving your data from disk. As a
 
 
 
-If using SQLite we recommend working with [Room](https://developer.android.com/topic/libraries/architecture/room). If you are not using Room, a `Flow` can be created with `SimplePersisterAsFlowable`
-
+If using SQLite we recommend working with [Room](https://developer.android.com/topic/libraries/architecture/room) which returns a `Flow` from a query
 
 The above builder is how we recommend working with data on Android. With the above setup you have:
 + Memory caching with with TTL & Size policies
