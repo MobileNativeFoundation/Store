@@ -59,6 +59,10 @@ interface StoreBuilder<Key, Output> {
      * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
      * for waiting on network update before local modifications are available (via [Store.stream]).
      *
+     * @param reader reads records from the source of truth
+     * @param writer writes records **coming in from the fetcher (network)** to the source of truth.
+     * Writing local user updates to the source of truth via [Store] is currently not supported.
+     * @param delete deletes records in the source of truth
      *
      */
     fun <NewOutput> persister(
