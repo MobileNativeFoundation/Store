@@ -2,8 +2,8 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.Persister
-import java.util.concurrent.TimeUnit
 import okio.BufferedSource
+import java.util.concurrent.TimeUnit
 
 /**
  * FileSystemRecordPersister is used when persisting to/from file system while being stale aware
@@ -27,8 +27,8 @@ class FileSystemRecordPersister<Key> private constructor(
     override suspend fun read(key: Key): BufferedSource? =
             fileReader.read(key)
 
-    override suspend fun write(key: Key, bufferedSource: BufferedSource): Boolean =
-            fileWriter.write(key, bufferedSource)
+    override suspend fun write(key: Key, raw: BufferedSource): Boolean =
+            fileWriter.write(key, raw)
 
     companion object {
 

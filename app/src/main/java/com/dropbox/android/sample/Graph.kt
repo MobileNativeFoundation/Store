@@ -13,12 +13,16 @@ import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import okio.BufferedSource
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 import java.io.IOException
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 object Graph {
     fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)

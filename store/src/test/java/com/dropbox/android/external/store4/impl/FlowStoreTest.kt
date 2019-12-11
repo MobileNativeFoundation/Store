@@ -25,6 +25,7 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -38,6 +39,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import kotlin.collections.set
 
+@FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class FlowStoreTest {

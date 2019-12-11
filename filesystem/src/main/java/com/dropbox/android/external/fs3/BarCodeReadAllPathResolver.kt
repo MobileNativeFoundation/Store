@@ -4,6 +4,6 @@ import com.dropbox.android.external.store4.legacy.BarCode
 
 class BarCodeReadAllPathResolver : PathResolver<BarCode> {
 
-    override fun resolve(barCode: BarCode): String =
-            barCode.type + "/" + barCode.key
+    override fun resolve(key: BarCode): String =
+            key.type + "/" + key.key
 }

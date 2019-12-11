@@ -6,7 +6,7 @@ import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
-import junit.framework.Assert.fail
+import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import org.assertj.core.api.Assertions.assertThat

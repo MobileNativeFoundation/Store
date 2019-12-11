@@ -3,6 +3,8 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
@@ -11,6 +13,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class NoNetworkTest(
     storeType: TestStoreType
