@@ -109,7 +109,12 @@ data class TestStoreBuilder<Key, Output>(
                             if (persister == null) {
                                 it
                             } else {
-                                it.sourceOfTruth(sourceOfTruthFromLegacy(persister, postParser))
+                                val sourceOfTruth = sourceOfTruthFromLegacy(persister, postParser)
+                                it.persister(
+                                    sourceOfTruth::reader,
+                                    sourceOfTruth::write,
+                                    sourceOfTruth::delete
+                                )
                             }
                         }.build()
                 }
