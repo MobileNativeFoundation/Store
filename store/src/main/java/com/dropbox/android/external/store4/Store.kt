@@ -18,7 +18,8 @@ interface Store<Key, Output> {
 
     /**
      * Purge a particular entry from memory and disk cache.
-     * Persister will only be cleared if they implements Clearable
+     * Persistant storage will only be cleared if a delete function was passed to
+     * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
      */
     suspend fun clear(key: Key)
 }
