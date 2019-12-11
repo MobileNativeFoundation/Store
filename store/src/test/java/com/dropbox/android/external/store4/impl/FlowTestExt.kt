@@ -15,6 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -25,6 +26,7 @@ import org.assertj.core.api.Assertions
  *
  * Use this when Pipeline has an infinite part (e.g. Persister or a never ending fetcher)
  */
+@ExperimentalCoroutinesApi
 suspend fun <T> Flow<T>.assertItems(vararg expected: T) {
     Assertions.assertThat(this.take(expected.size).toList())
             .isEqualTo(expected.toList())

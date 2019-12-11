@@ -17,8 +17,8 @@ class FileSystemPersister<T> private constructor(fileSystem: FileSystem, pathRes
     override suspend fun read(key: T): BufferedSource? =
             fileReader.read(key)
 
-    override suspend fun write(key: T, data: BufferedSource): Boolean =
-            fileWriter.write(key, data)
+    override suspend fun write(key: T, raw: BufferedSource): Boolean =
+            fileWriter.write(key, raw)
 
     companion object {
 

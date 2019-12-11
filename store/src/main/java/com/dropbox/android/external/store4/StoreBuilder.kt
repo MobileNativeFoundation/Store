@@ -21,10 +21,13 @@ import com.dropbox.android.external.store4.impl.RealStore
 import com.dropbox.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 interface StoreBuilder<Key, Output> {
     fun build(): Store<Key, Output>
     fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
@@ -46,6 +49,8 @@ interface StoreBuilder<Key, Output> {
     }
 }
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class Builder<Key, Output>(
     private val fetcher: (key: Key) -> Flow<Output>
 ) : StoreBuilder<Key, Output> {
@@ -116,6 +121,8 @@ class Builder<Key, Output>(
     }
 }
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class BuilderWithSourceOfTruth<Key, Input, Output>(
     private val fetcher: (key: Key) -> Flow<Input>
 ) : StoreBuilder<Key, Output> {
@@ -171,6 +178,7 @@ class BuilderWithSourceOfTruth<Key, Input, Output>(
         return this
     }
 
+    @FlowPreview
     @ExperimentalCoroutinesApi
     override fun build(): Store<Key, Output> {
         @Suppress("UNCHECKED_CAST")

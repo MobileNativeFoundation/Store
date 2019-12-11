@@ -1,9 +1,9 @@
 package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.store4.Persister
-import java.io.FileNotFoundException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
+import java.io.FileNotFoundException
 
 interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAllErase {
     /**
@@ -12,7 +12,7 @@ interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAl
      * throw an exception
      */
     @Throws(FileNotFoundException::class)
-    override suspend fun CoroutineScope.readAll(path: String): ReceiveChannel<Raw>
+    override fun CoroutineScope.readAll(path: String): ReceiveChannel<Raw>
 
     /**
      * @param path to delete all the data in the the path.

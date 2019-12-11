@@ -18,7 +18,7 @@ open class FSReader<T>(internal val fileSystem: FileSystem, internal val pathRes
         val resolvedKey = pathResolver.resolve(key)
         val exists = fileSystem.exists(resolvedKey)
         if (exists == true) {
-            var bufferedSource: BufferedSource? = null
+            var bufferedSource: BufferedSource?
             try {
                 bufferedSource = fileSystem.read(resolvedKey)
                 return bufferedSource
