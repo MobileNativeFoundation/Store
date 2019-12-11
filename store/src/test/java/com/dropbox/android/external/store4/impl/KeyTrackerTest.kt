@@ -16,7 +16,6 @@
 package com.dropbox.android.external.store4.impl
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.take
@@ -29,7 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class KeyTrackerTest {
@@ -73,7 +71,7 @@ class KeyTrackerTest {
             subject.invalidate(it)
         }
         scope2.advanceUntilIdle()
-        collections.forEach { char, deferred ->
+        collections.forEach { (char, deferred) ->
             assertThat(deferred.isCompleted).`as`("char $char").isTrue()
         }
         assertThat(subject.activeKeyCount()).isEqualTo(0)

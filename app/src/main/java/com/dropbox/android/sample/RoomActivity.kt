@@ -15,7 +15,6 @@ import kotlinx.android.synthetic.main.activity_room_store.*
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -34,7 +33,6 @@ class RoomActivity : AppCompatActivity() {
         initUI()
     }
 
-    @ObsoleteCoroutinesApi
     @ExperimentalCoroutinesApi
     private fun initUI() {
         val adapter = PostAdapter()
@@ -91,6 +89,8 @@ class RoomActivity : AppCompatActivity() {
 /**
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 internal class StoreState<Key, Output>(
     private val store: Store<Key, Output>
 ) {
@@ -121,7 +121,7 @@ internal class StoreState<Key, Output>(
                 )
             }
             if (it is StoreResponse.Error) {
-                _errors.send(it.error.localizedMessage)
+                _errors.send(it.error.localizedMessage!!)
             }
         }.transform {
             if (it is StoreResponse.Data) {

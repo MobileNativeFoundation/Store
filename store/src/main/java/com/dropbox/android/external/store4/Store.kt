@@ -1,5 +1,6 @@
 package com.dropbox.android.external.store4
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,7 @@ interface Store<Key, Output> {
     suspend fun clear(key: Key)
 }
 
+@ExperimentalCoroutinesApi
 @Deprecated("Legacy")
 fun <Key, Output> Store<Key, Output>.stream(key: Key) = stream(
         StoreRequest.skipMemory(

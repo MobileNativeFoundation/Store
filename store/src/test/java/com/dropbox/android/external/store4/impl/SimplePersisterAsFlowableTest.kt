@@ -18,7 +18,6 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
@@ -31,7 +30,6 @@ import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 class SimplePersisterAsFlowableTest {
     private val testScope = TestCoroutineScope()
@@ -49,7 +47,7 @@ class SimplePersisterAsFlowableTest {
         val (flowable, written) = create("a", "b")
         flowable.flowWriter(BarCode("another", "value"), "dsa")
         val collectedFirst = CompletableDeferred<Unit>()
-        var collectedValues = CompletableDeferred<List<String?>>()
+        val collectedValues = CompletableDeferred<List<String?>>()
         otherScope.launch {
             collectedValues.complete(flowable
                     .flowReader(barcode)
@@ -93,7 +91,7 @@ class SimplePersisterAsFlowableTest {
                     }
                     values[readIndex++]
                 },
-                writer = { key: BarCode, value: String ->
+                writer = { _: BarCode, value: String ->
                     written.add(value)
                 },
                 delete = {

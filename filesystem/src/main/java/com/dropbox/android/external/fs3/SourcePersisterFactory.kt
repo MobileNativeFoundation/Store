@@ -4,15 +4,17 @@ import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.legacy.BarCode
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import okio.BufferedSource
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import okio.BufferedSource
 
 /**
  * Factory for [SourcePersister]
  */
 
+@ExperimentalCoroutinesApi
 object SourcePersisterFactory {
 
     /**
@@ -27,9 +29,6 @@ object SourcePersisterFactory {
         expirationDuration: Long,
         expirationUnit: TimeUnit
     ): Persister<BufferedSource, BarCode> {
-        if (root == null) {
-            throw IllegalArgumentException("root file cannot be null.")
-        }
         return RecordPersister.create(FileSystemFactory.create(root), expirationDuration, expirationUnit)
     }
 
@@ -42,9 +41,6 @@ object SourcePersisterFactory {
         expirationDuration: Long,
         expirationUnit: TimeUnit
     ): Persister<BufferedSource, BarCode> {
-        if (fileSystem == null) {
-            throw IllegalArgumentException("fileSystem cannot be null.")
-        }
         return RecordPersister.create(fileSystem, expirationDuration, expirationUnit)
     }
 
@@ -56,9 +52,6 @@ object SourcePersisterFactory {
      */
     @Throws(IOException::class)
     fun create(root: File): Persister<BufferedSource, BarCode> {
-        if (root == null) {
-            throw IllegalArgumentException("root file cannot be null.")
-        }
         return SourcePersister.create(FileSystemFactory.create(root))
     }
 
@@ -67,9 +60,6 @@ object SourcePersisterFactory {
      * persistence [FileSystem].
      */
     fun create(fileSystem: FileSystem): Persister<BufferedSource, BarCode> {
-        if (fileSystem == null) {
-            throw IllegalArgumentException("fileSystem cannot be null.")
-        }
         return SourcePersister.create(fileSystem)
     }
 
@@ -81,9 +71,6 @@ object SourcePersisterFactory {
      */
     @Throws(IOException::class)
     fun createAll(root: File): Persister<BufferedSource, BarCode> {
-        if (root == null) {
-            throw IllegalArgumentException("root file cannot be null.")
-        }
         return SourceAllPersister.create(FileSystemFactory.create(root))
     }
 
@@ -92,9 +79,6 @@ object SourcePersisterFactory {
      * persistence [FileSystem].
      */
     fun createAll(fileSystem: FileSystem): Persister<BufferedSource, BarCode> {
-        if (fileSystem == null) {
-            throw IllegalArgumentException("fileSystem cannot be null.")
-        }
         return SourceAllPersister.create(fileSystem)
     }
 }

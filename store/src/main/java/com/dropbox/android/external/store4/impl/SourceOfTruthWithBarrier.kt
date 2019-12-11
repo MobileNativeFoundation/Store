@@ -41,7 +41,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      * Each key has a barrier so that we can block reads while writing.
      */
     private val barriers = RefCountedResource<Key, ConflatedBroadcastChannel<BarrierMsg>>(
-        create = { key ->
+        create = {
             ConflatedBroadcastChannel(BarrierMsg.Open.INITIAL)
         }
     )

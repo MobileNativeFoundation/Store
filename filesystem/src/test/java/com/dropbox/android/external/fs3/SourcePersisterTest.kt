@@ -1,17 +1,17 @@
 package com.dropbox.android.external.fs3
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.legacy.BarCode
-import java.io.FileNotFoundException
-import junit.framework.Assert.fail
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
+import java.io.FileNotFoundException
 
 class SourcePersisterTest {
 

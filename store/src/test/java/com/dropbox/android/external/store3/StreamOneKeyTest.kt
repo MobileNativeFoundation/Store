@@ -10,6 +10,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.broadcastIn
@@ -23,6 +24,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
+@FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamOneKeyTest(
@@ -111,6 +113,7 @@ class StreamOneKeyTest(
     }
 }
 
+@FlowPreview
 @ExperimentalCoroutinesApi
 fun <T> Flow<T>.openChannelSubscription() =
     broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()

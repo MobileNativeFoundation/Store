@@ -81,7 +81,7 @@ internal class FetcherController<Key, Input, Output>(
                 }
             )
         },
-        onRelease = { key: Key, multicaster: Multicaster<StoreResponse<Input>> ->
+        onRelease = { _: Key, multicaster: Multicaster<StoreResponse<Input>> ->
             multicaster.close()
         }
     )
