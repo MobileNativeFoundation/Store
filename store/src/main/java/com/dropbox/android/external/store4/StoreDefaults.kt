@@ -9,19 +9,16 @@ internal object StoreDefaults {
      *
      * @return memory persister ttl
      */
-    val cacheTTL: Long
-        get() = TimeUnit.HOURS.toSeconds(24)
+    val cacheTTL: Long = TimeUnit.HOURS.toSeconds(24)
 
     /**
      * Default mem persister is 1, can be overridden otherwise
      *
      * @return memory persister size
      */
-    val cacheSize: Long
-        get() = 100
+    val cacheSize: Long = 100
 
-    val cacheTTLTimeUnit: TimeUnit
-        get() = TimeUnit.SECONDS
+    val cacheTTLTimeUnit: TimeUnit = TimeUnit.SECONDS
 
     val memoryPolicy = MemoryPolicy.builder()
             .setMemorySize(cacheSize)
