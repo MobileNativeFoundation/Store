@@ -49,11 +49,10 @@ class ChannelManagerTest {
     @Test
     fun `Given one downstream WHEN two values come in on the upstream THEN two values are consumed`() =
         scope.runBlockingTest {
-            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
-            manager += downstream
-
             val collection = async {
+                val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
                 try {
+                    manager += downstream
                     downstream.consumeAsFlow()
                         .onEach { it.markDelivered() }
                         .take(2)
@@ -66,7 +65,7 @@ class ChannelManagerTest {
             try {
                 upstream.send("a")
                 upstream.send("b")
-                // upstream.close()
+                upstream.close()
             } catch (e: Throwable) {
             }
             assertThat(collection.await()).isEqualTo(listOf("a", "b"))
@@ -126,11 +125,11 @@ class ChannelManagerTest {
         scope.runBlockingTest {
             val downstream1 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
             val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
-            manager += downstream1
-            manager += downstream2
 
             // ack on channel 1
             val collection1 = async {
+                manager += downstream1
+                manager += downstream2
                 try {
                     downstream1.consumeAsFlow()
                         .onEach { it.markDelivered() }
@@ -150,7 +149,7 @@ class ChannelManagerTest {
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager += downstream2
+                    manager -= downstream2
                 }
             }
 
