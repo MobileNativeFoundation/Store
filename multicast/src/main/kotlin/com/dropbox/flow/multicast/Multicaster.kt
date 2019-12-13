@@ -76,13 +76,13 @@ class Multicaster<T>(
         val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
         val subFlow = channel.consumeAsFlow()
                 .onStart {
-                    channelManager += channel
+                    channelManager.addDownstream(channel)
                 }
                 .transform {
                     emit(it.value)
                     it.delivered.complete(Unit)
                 }.onCompletion {
-                    channelManager -= channel
+                channelManager.removeDownstream(channel)
                 }
         emitAll(subFlow)
     }

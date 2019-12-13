@@ -83,10 +83,10 @@ internal class ChannelManager<T>(
         }
     }
 
-    suspend operator fun plusAssign(channel: SendChannel<Message.Dispatch.Value<T>>) =
+    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         send(Message.AddChannel(channel))
 
-    suspend operator fun minusAssign(channel: SendChannel<Message.Dispatch.Value<T>>) =
+    suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         send(Message.RemoveChannel(channel))
 
     /**

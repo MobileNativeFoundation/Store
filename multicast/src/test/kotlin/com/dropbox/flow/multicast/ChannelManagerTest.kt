@@ -52,14 +52,14 @@ class ChannelManagerTest {
             val collection = async {
                 val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
                 try {
-                    manager += downstream
+                    manager.addDownstream(downstream)
                     downstream.consumeAsFlow()
                         .onEach { it.markDelivered() }
                         .take(2)
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager -= downstream
+                    manager.removeDownstream(downstream)
                 }
             }
             try {
@@ -75,7 +75,7 @@ class ChannelManagerTest {
     fun `Given one downstream WHEN upstream errors THEN error is propagated`() =
         scope.runBlockingTest {
             val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
-            manager += downstream
+            manager.addDownstream(downstream)
 
             val collection = async {
                 try {
@@ -85,7 +85,7 @@ class ChannelManagerTest {
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager -= downstream
+                    manager.removeDownstream(downstream)
                 }
             }
             try {
@@ -99,7 +99,7 @@ class ChannelManagerTest {
     fun `Given one downstream WHEN upstream closes THEN downstream is closed`() =
         scope.runBlockingTest {
             val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
-            manager += downstream
+            manager.addDownstream(downstream)
 
             val collection = async {
                 try {
@@ -108,7 +108,7 @@ class ChannelManagerTest {
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager -= downstream
+                    manager.removeDownstream(downstream)
                 }
             }
             try {
@@ -128,8 +128,8 @@ class ChannelManagerTest {
 
             // ack on channel 1
             val collection1 = async {
-                manager += downstream1
-                manager += downstream2
+                manager.addDownstream(downstream1)
+                manager.addDownstream(downstream2)
                 try {
                     downstream1.consumeAsFlow()
                         .onEach { it.markDelivered() }
@@ -137,7 +137,7 @@ class ChannelManagerTest {
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager -= downstream1
+                    manager.removeDownstream(downstream1)
                 }
             }
 
@@ -149,7 +149,7 @@ class ChannelManagerTest {
                         .toList()
                         .map { it.value }
                 } finally {
-                    manager -= downstream2
+                    manager.removeDownstream(downstream2)
                 }
             }
 
