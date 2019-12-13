@@ -22,6 +22,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
@@ -43,7 +44,7 @@ import org.junit.runners.JUnit4
 class MulticastTest {
     private val testScope = TestCoroutineScope()
 
-    private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
+    private fun <T> createMulticaster(f: Flow<T>): Multicaster<T> {
         return Multicaster(
             scope = testScope,
             bufferSize = 0,
@@ -53,15 +54,17 @@ class MulticastTest {
 
     @Test
     fun serialial_notShared() = testScope.runBlockingTest {
-        var createCnt = 0
-        val activeFlow = createMulticaster {
-            createCnt++
-            when (createCnt) {
-                1 -> flowOf("a", "b", "c")
-                2 -> flowOf("d", "e", "f")
-                else -> throw AssertionError("should not create more")
+        var collectedCount = 0
+        val activeFlow = createMulticaster(
+            flow<String> {
+                collectedCount++
+                when (collectedCount) {
+                    1 -> emitAll(flowOf("a", "b", "c"))
+                    2 -> emitAll(flowOf("d", "e", "f"))
+                    else -> throw AssertionError("should not collected more")
+                }
             }
-        }
+        )
         assertThat(activeFlow.flow.toList())
             .isEqualTo(listOf("a", "b", "c"))
         assertThat(activeFlow.flow.toList())
@@ -70,12 +73,12 @@ class MulticastTest {
 
     @Test
     fun slowFastCollector() = testScope.runBlockingTest {
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flowOf("a", "b", "c").onStart {
                 // make sure both registers on time so that no one drops a value
                 delay(100)
             }
-        }
+        )
         val c1 = async {
             activeFlow.flow.onEach {
                 delay(100)
@@ -94,11 +97,11 @@ class MulticastTest {
 
     @Test
     fun slowDispatcher() = testScope.runBlockingTest {
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flowOf("a", "b", "c").onEach {
                 delay(100)
             }
-        }
+        )
         val c1 = async {
             activeFlow.flow.toList()
         }
@@ -111,11 +114,11 @@ class MulticastTest {
 
     @Test
     fun lateToTheParty_arrivesAfterUpstreamClosed() = testScope.runBlockingTest {
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flowOf("a", "b", "c").onStart {
                 delay(100)
             }
-        }
+        )
         val c1 = async {
             activeFlow.flow.toList()
         }
@@ -131,7 +134,7 @@ class MulticastTest {
     @Test
     fun lateToTheParty_arrivesBeforeUpstreamClosed() = testScope.runBlockingTest {
         var generationCounter = 0
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flow {
                 val gen = generationCounter++
                 check(gen < 2) {
@@ -142,7 +145,7 @@ class MulticastTest {
                 emit("b_$gen")
                 delay(100)
             }
-        }
+        )
         val c1 = async {
             activeFlow.flow.onEach {
             }.toList()
@@ -169,12 +172,12 @@ class MulticastTest {
     fun upstreamError() = testScope.runBlockingTest {
         val exception =
             MyCustomException("hey")
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flow {
                 emit("a")
                 throw exception
             }
-        }
+        )
         val receivedValue = CompletableDeferred<String>()
         val receivedError = CompletableDeferred<Throwable>()
         activeFlow.flow
@@ -200,7 +203,7 @@ class MulticastTest {
             MyCustomException("hey")
         val dispatchedFirstValue = CompletableDeferred<Unit>()
         val registeredSecondCollector = CompletableDeferred<Unit>()
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flow {
                 emit("a")
                 dispatchedFirstValue.complete(Unit)
@@ -208,7 +211,7 @@ class MulticastTest {
                 yield() // yield to allow second collector to register
                 throw exception
             }
-        }
+        )
         launch {
             activeFlow.flow.catch {}.toList()
         }
@@ -236,14 +239,14 @@ class MulticastTest {
 
     @Test
     fun lateArrival_unregistersFromTheCorrectManager() = testScope.runBlockingTest {
-        var createdCount = 0
+        var collectedCount = 0
         var didntFinish = false
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(
             flow {
-                check(createdCount < 2) {
+                check(collectedCount < 2) {
                     "created 1 too many"
                 }
-                val index = ++createdCount
+                val index = ++collectedCount
                 emit("a_$index")
                 emit("b_$index")
                 delay(100)
@@ -251,7 +254,7 @@ class MulticastTest {
                     didntFinish = true
                 }
             }
-        }
+        )
         val firstCollector = async {
             activeFlow.flow.onEach { delay(5) }.take(2).toList()
         }
@@ -262,30 +265,28 @@ class MulticastTest {
         }
         assertThat(firstCollector.await()).isEqualTo(listOf("a_1", "b_1"))
         assertThat(secondCollector.await()).isEqualTo(listOf("a_2", "b_2"))
-        assertThat(createdCount).isEqualTo(2)
+        assertThat(collectedCount).isEqualTo(2)
         delay(200)
         assertThat(didntFinish).isEqualTo(false)
     }
 
     @Test
     fun lateArrival_buffered() = testScope.runBlockingTest {
-        var createdCount = 0
+        var collectedCount = 0
         val activeFlow = Multicaster(
             scope = testScope,
             bufferSize = 2,
-            source = {
-                createdCount++
-                flow {
-                    emit("a")
-                    delay(5)
-                    emit("b")
-                    emit("c")
-                    emit("d")
-                    delay(100)
-                    emit("e")
-                    // dont finish to see the buffer behavior
-                    delay(2000)
-                }
+            source = flow {
+                collectedCount++
+                emit("a")
+                delay(5)
+                emit("b")
+                emit("c")
+                emit("d")
+                delay(100)
+                emit("e")
+                // dont finish to see the buffer behavior
+                delay(2000)
             },
             onEach = {}
         )
@@ -308,7 +309,7 @@ class MulticastTest {
         assertThat(c2.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
         assertThat(c3.await()).isEqualTo(listOf("c", "d", "e"))
         assertThat(c4.await()).isEqualTo(listOf("d", "e"))
-        assertThat(createdCount).isEqualTo(1)
+        assertThat(collectedCount).isEqualTo(1)
     }
 
     @Test
@@ -316,9 +317,7 @@ class MulticastTest {
         val activeFlow = Multicaster(
                 scope = testScope,
                 bufferSize = 0,
-                source = {
-                    flowOf(1, 2, 3)
-                },
+                source = flowOf(1, 2, 3),
                 onEach = {}
         )
         assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))

@@ -48,9 +48,7 @@ class Multicaster<T>(
     /**
      * Source function to create a new flow when necessary.
      */
-    // TODO does this have to be a method or just a flow ? Will decide when actual implementation
-    //  happens
-    private val source: () -> Flow<T>,
+    private val source: Flow<T>,
 
     /**
      * If true, downstream is never closed by the multicaster unless upstream throws an error.
@@ -66,39 +64,25 @@ class Multicaster<T>(
 
     private val channelManager by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         ChannelManager(
-                scope = scope,
-                bufferSize = bufferSize,
-                onActive = {
-                    SharedFlowProducer(
-                            scope = scope,
-                            src = source(),
-                            channelManager = it
-                    )
-                },
-                piggybackingDownstream = piggybackingDownstream,
-                onEach = onEach
+            scope = scope,
+            bufferSize = bufferSize,
+            upstream = source,
+            piggybackingDownstream = piggybackingDownstream,
+            onEach = onEach
         )
     }
 
     val flow = flow<T> {
-        val channel = Channel<ChannelManager.Message.DispatchValue<T>>(Channel.UNLIMITED)
+        val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
         val subFlow = channel.consumeAsFlow()
                 .onStart {
-                    channelManager.send(
-                            ChannelManager.Message.AddChannel(
-                                    channel
-                            )
-                    )
+                    channelManager += channel
                 }
                 .transform {
                     emit(it.value)
                     it.delivered.complete(Unit)
                 }.onCompletion {
-                    channelManager.send(
-                            ChannelManager.Message.RemoveChannel(
-                                    channel
-                            )
-                    )
+                    channelManager -= channel
                 }
         emitAll(subFlow)
     }
