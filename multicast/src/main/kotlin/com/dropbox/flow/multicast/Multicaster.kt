@@ -80,28 +80,6 @@ class Multicaster<T>(
         )
     }
 
-    fun create(): Flow<T> {
-        val channel = Channel<ChannelManager.Message.DispatchValue<T>>(Channel.UNLIMITED)
-        return channel.consumeAsFlow()
-            .onStart {
-                channelManager.send(
-                    ChannelManager.Message.AddChannel(
-                        channel
-                    )
-                )
-            }
-            .transform {
-                emit(it.value)
-                it.delivered.complete(Unit)
-            }.onCompletion {
-                channelManager.send(
-                    ChannelManager.Message.RemoveChannel(
-                        channel
-                    )
-                )
-            }
-    }
-
     val flow = flow<T> {
         val channel = Channel<ChannelManager.Message.DispatchValue<T>>(Channel.UNLIMITED)
         val subFlow = channel.consumeAsFlow()
