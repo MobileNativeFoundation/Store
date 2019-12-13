@@ -90,7 +90,7 @@ internal class FetcherController<Key, Input, Output>(
         return flow {
             val fetcher = fetchers.acquire(key)
             try {
-                emitAll(fetcher.create())
+                emitAll(fetcher.flow)
             } finally {
                 fetchers.release(key, fetcher)
             }
