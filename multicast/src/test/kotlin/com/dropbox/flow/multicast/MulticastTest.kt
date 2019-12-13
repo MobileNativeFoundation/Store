@@ -62,9 +62,9 @@ class MulticastTest {
                 else -> throw AssertionError("should not create more")
             }
         }
-        assertThat(activeFlow.create().toList())
+        assertThat(activeFlow.flow.toList())
             .isEqualTo(listOf("a", "b", "c"))
-        assertThat(activeFlow.create().toList())
+        assertThat(activeFlow.flow.toList())
             .isEqualTo(listOf("d", "e", "f"))
     }
 
@@ -77,12 +77,12 @@ class MulticastTest {
             }
         }
         val c1 = async {
-            activeFlow.create().onEach {
+            activeFlow.flow.onEach {
                 delay(100)
             }.toList()
         }
         val c2 = async {
-            activeFlow.create().onEach {
+            activeFlow.flow.onEach {
                 delay(200)
             }.toList()
         }
@@ -100,10 +100,10 @@ class MulticastTest {
             }
         }
         val c1 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         val c2 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         assertThat(c1.await()).isEqualTo(listOf("a", "b", "c"))
         assertThat(c2.await()).isEqualTo(listOf("a", "b", "c"))
@@ -117,10 +117,10 @@ class MulticastTest {
             }
         }
         val c1 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         val c2 = async {
-            activeFlow.create().also {
+            activeFlow.flow.also {
                 delay(110)
             }.toList()
         }
@@ -144,16 +144,16 @@ class MulticastTest {
             }
         }
         val c1 = async {
-            activeFlow.create().onEach {
+            activeFlow.flow.onEach {
             }.toList()
         }
         val c2 = async {
-            activeFlow.create().also {
+            activeFlow.flow.also {
                 delay(3)
             }.toList()
         }
         val c3 = async {
-            activeFlow.create().also {
+            activeFlow.flow.also {
                 delay(20)
             }.toList()
         }
@@ -177,7 +177,7 @@ class MulticastTest {
         }
         val receivedValue = CompletableDeferred<String>()
         val receivedError = CompletableDeferred<Throwable>()
-        activeFlow.create()
+        activeFlow.flow
             .onEach {
                 check(receivedValue.isActive) {
                     "already received value"
@@ -210,13 +210,13 @@ class MulticastTest {
             }
         }
         launch {
-            activeFlow.create().catch {}.toList()
+            activeFlow.flow.catch {}.toList()
         }
         // wait until the above collector registers and receives first value
         dispatchedFirstValue.await()
         val receivedValue = CompletableDeferred<String>()
         val receivedError = CompletableDeferred<Throwable>()
-        activeFlow.create()
+        activeFlow.flow
             .onStart {
                 registeredSecondCollector.complete(Unit)
             }
@@ -253,12 +253,12 @@ class MulticastTest {
             }
         }
         val firstCollector = async {
-            activeFlow.create().onEach { delay(5) }.take(2).toList()
+            activeFlow.flow.onEach { delay(5) }.take(2).toList()
         }
         delay(11) // miss first two values
         val secondCollector = async {
             // this will come in a new channel
-            activeFlow.create().take(2).toList()
+            activeFlow.flow.take(2).toList()
         }
         assertThat(firstCollector.await()).isEqualTo(listOf("a_1", "b_1"))
         assertThat(secondCollector.await()).isEqualTo(listOf("a_2", "b_2"))
@@ -290,25 +290,39 @@ class MulticastTest {
             onEach = {}
         )
         val c1 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         delay(4) // c2 misses first value
         val c2 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         delay(50) // c3 misses first 4 values
         val c3 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         delay(100) // c4 misses all values
         val c4 = async {
-            activeFlow.create().toList()
+            activeFlow.flow.toList()
         }
         assertThat(c1.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
         assertThat(c2.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
         assertThat(c3.await()).isEqualTo(listOf("c", "d", "e"))
         assertThat(c4.await()).isEqualTo(listOf("d", "e"))
         assertThat(createdCount).isEqualTo(1)
+    }
+
+    @Test
+    fun multipleCollections() = testScope.runBlockingTest {
+        val activeFlow = Multicaster(
+                scope = testScope,
+                bufferSize = 0,
+                source = {
+                    flowOf(1, 2, 3)
+                },
+                onEach = {}
+        )
+        assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
+        assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
     }
 
     class MyCustomException(val x: String) : RuntimeException("hello") {
