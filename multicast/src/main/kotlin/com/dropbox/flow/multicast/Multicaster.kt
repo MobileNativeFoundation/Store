@@ -22,6 +22,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
@@ -78,26 +80,27 @@ class Multicaster<T>(
         )
     }
 
-    fun create(): Flow<T> {
+    val flow = flow<T> {
         val channel = Channel<ChannelManager.Message.DispatchValue<T>>(Channel.UNLIMITED)
-        return channel.consumeAsFlow()
-            .onStart {
-                channelManager.send(
-                    ChannelManager.Message.AddChannel(
-                        channel
+        val subFlow = channel.consumeAsFlow()
+                .onStart {
+                    channelManager.send(
+                            ChannelManager.Message.AddChannel(
+                                    channel
+                            )
                     )
-                )
-            }
-            .transform {
-                emit(it.value)
-                it.delivered.complete(Unit)
-            }.onCompletion {
-                channelManager.send(
-                    ChannelManager.Message.RemoveChannel(
-                        channel
+                }
+                .transform {
+                    emit(it.value)
+                    it.delivered.complete(Unit)
+                }.onCompletion {
+                    channelManager.send(
+                            ChannelManager.Message.RemoveChannel(
+                                    channel
+                            )
                     )
-                )
-            }
+                }
+        emitAll(subFlow)
     }
 
     suspend fun close() {
