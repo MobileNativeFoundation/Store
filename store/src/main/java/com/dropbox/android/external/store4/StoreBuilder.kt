@@ -36,6 +36,7 @@ interface StoreBuilder<Key, Output> {
     fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
     fun disableCache(): StoreBuilder<Key, Output>
+    fun keepFetcherAlive(keepFetcherAlive: Boolean)
 
     /**
      * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
@@ -109,6 +110,7 @@ private class BuilderImpl<Key, Output>(
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
+    private var keepFetcherAlive: Boolean = false
 
     private fun <NewOutput> withSourceOfTruth(
         sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
@@ -137,6 +139,10 @@ private class BuilderImpl<Key, Output>(
     override fun disableCache(): BuilderImpl<Key, Output> {
         cachePolicy = null
         return this
+    }
+
+    override fun keepFetcherAlive(keepFetcherAlive: Boolean) {
+        this.keepFetcherAlive = keepFetcherAlive
     }
 
     override fun <NewOutput> nonFlowingPersister(
@@ -180,6 +186,7 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
+    private var keepFetcherAlive: Boolean = false
 
     override fun scope(scope: CoroutineScope): BuilderWithSourceOfTruth<Key, Input, Output> {
         this.scope = scope
@@ -202,8 +209,13 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
             scope = scope ?: GlobalScope,
             sourceOfTruth = sourceOfTruth,
             fetcher = fetcher,
-            memoryPolicy = cachePolicy
+            memoryPolicy = cachePolicy,
+            keepFetcherAlive = keepFetcherAlive
         )
+    }
+
+    override fun keepFetcherAlive(keepFetcherAlive: Boolean) {
+        this.keepFetcherAlive = keepFetcherAlive
     }
 
     override fun <NewOutput> persister(

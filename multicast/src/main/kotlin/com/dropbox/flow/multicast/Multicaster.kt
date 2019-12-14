@@ -57,6 +57,11 @@ class Multicaster<T>(
      */
     private val piggybackingDownstream: Boolean = false,
     /**
+     * If true, an active upstream will stay alive even if all downstreams are closed. A downstream
+     * coming in later will receive a value from the live upstream.
+     */
+    private val keepUpstreamAlive: Boolean = false,
+    /**
      * Called when upstream dispatches a value.
      */
     private val onEach: suspend (T) -> Unit
@@ -68,6 +73,7 @@ class Multicaster<T>(
             bufferSize = bufferSize,
             upstream = source,
             piggybackingDownstream = piggybackingDownstream,
+            keepUpstreamAlive = keepUpstreamAlive,
             onEach = onEach
         )
     }

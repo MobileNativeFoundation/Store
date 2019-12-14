@@ -41,7 +41,13 @@ internal class RealStore<Key, Input, Output>(
     scope: CoroutineScope,
     fetcher: (Key) -> Flow<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
-    private val memoryPolicy: MemoryPolicy?
+    private val memoryPolicy: MemoryPolicy?,
+    /**
+     * If true, an active upstream will stay alive even if all downstreams are closed. A downstream
+     * coming in later will receive a value from the live upstream.
+     */
+    keepFetcherAlive: Boolean = false
+
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -76,7 +82,8 @@ internal class RealStore<Key, Input, Output>(
     private val fetcherController = FetcherController(
             scope = scope,
             realFetcher = fetcher,
-            sourceOfTruth = this.sourceOfTruth
+            sourceOfTruth = this.sourceOfTruth,
+            keepFetchersAlive = keepFetcherAlive
     )
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {

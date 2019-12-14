@@ -56,7 +56,12 @@ internal class FetcherController<Key, Input, Output>(
      * receive values dispatched by fetchers created after them. This makes [FetcherController]
      * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
      */
-    private val enablePiggyback: Boolean = sourceOfTruth == null
+    private val enablePiggyback: Boolean = sourceOfTruth == null,
+    /**
+     * If true, an active fetcher will stay alive even if all fetches are closed. A new fetch
+     * starting later will receive a value from the live fetcher.
+     */
+    private val keepFetchersAlive: Boolean = false
 ) {
     private val fetchers = RefCountedResource(
         create = { key: Key ->
@@ -72,6 +77,7 @@ internal class FetcherController<Key, Input, Output>(
                     emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
                 },
                 piggybackingDownstream = enablePiggyback,
+                keepUpstreamAlive = keepFetchersAlive,
                 onEach = { response ->
                     response.dataOrNull()?.let { input ->
                         sourceOfTruth?.write(key, input)
