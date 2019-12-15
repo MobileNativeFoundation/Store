@@ -77,7 +77,7 @@ class ChannelManagerTest {
                 downstream.consumeAsFlow()
                     .onEach { it.markDelivered() }
                     .take(2)
-                    .onCompletion { manager.removeDownstream(downstream)}
+                    .onCompletion { manager.removeDownstream(downstream) }
                     .toList()
                     .map { it.value }
             }
@@ -95,7 +95,7 @@ class ChannelManagerTest {
             val collection = async {
                 downstream.consumeAsFlow()
                     .onEach { it.markDelivered() }
-                    .onCompletion { manager.removeDownstream(downstream)}
+                    .onCompletion { manager.removeDownstream(downstream) }
                     .toList()
                     .map { it.value }
             }
@@ -120,7 +120,7 @@ class ChannelManagerTest {
                 downstream1.consumeAsFlow()
                     .onEach { it.markDelivered() }
                     .take(2)
-                    .onCompletion { manager.removeDownstream(downstream1)}
+                    .onCompletion { manager.removeDownstream(downstream1) }
                     .toList()
                     .map { it.value }
             }
