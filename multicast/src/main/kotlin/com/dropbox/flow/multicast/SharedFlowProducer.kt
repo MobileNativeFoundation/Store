@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 /**
  * A flow collector that works with a [ChannelManager] to collect values from an upstream flow
- * and dispatch to the [channelManagerInbox] which then dispatches to downstream collectors.
+ * and dispatch to the [sendUpsteamMessage] which then dispatches to downstream collectors.
  *
  * They work in sync such that this producer always expects an ack from the [ChannelManager] after
  * sending an event.
@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 internal class SharedFlowProducer<T>(
     private val scope: CoroutineScope,
     private val src: Flow<T>,
-    private val channelManagerInbox: ChannelManagerInbox<T>
+    private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit
 ) {
     private lateinit var collectionJob: Job
 
@@ -54,10 +54,10 @@ internal class SharedFlowProducer<T>(
                 collectionJob = scope.launch {
                     try {
                         src.catch {
-                            channelManagerInbox(ChannelManager.Message.Dispatch.Error(it))
+                            sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
                         }.collect {
                             val ack = CompletableDeferred<Unit>()
-                            channelManagerInbox(
+                            sendUpsteamMessage(
                                 ChannelManager.Message.Dispatch.Value(
                                     it,
                                     ack
@@ -77,7 +77,7 @@ internal class SharedFlowProducer<T>(
                 // cleanup the channel manager so that downstreams can be closed if they are not
                 // closed already and leftovers can be moved to a new producer if necessary.
                 try {
-                    channelManagerInbox(ChannelManager.Message.Dispatch.UpstreamFinished(this@SharedFlowProducer))
+                    sendUpsteamMessage(ChannelManager.Message.Dispatch.UpstreamFinished(this@SharedFlowProducer))
                 } catch (closed: ClosedSendChannelException) {
                     // it might close before us, its fine.
                 }

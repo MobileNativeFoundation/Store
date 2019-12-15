@@ -24,10 +24,6 @@ import kotlinx.coroutines.flow.Flow
 import java.util.ArrayDeque
 import java.util.Collections
 
-// TODO uncomment when [ExperimentalCoroutinesApi] is fixed to support typealias
-// @ExperimentalCoroutinesApi
-internal typealias ChannelManagerInbox<T> = suspend (ChannelManager.Message.Dispatch<T>) -> Unit
-
 /**
  * This actor helps tracking active channels and is able to dispatch values to each of them
  * in parallel. As soon as one of them receives the value, the ack in the dispatch message is
