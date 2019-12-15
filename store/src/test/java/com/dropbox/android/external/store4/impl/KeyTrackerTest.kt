@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -71,8 +71,9 @@ class KeyTrackerTest {
             subject.invalidate(it)
         }
         scope2.advanceUntilIdle()
-        collections.forEach { (char, deferred) ->
-            assertThat(deferred.isCompleted).`as`("char $char").isTrue()
+
+        collections.forEach { (_, deferred) ->
+            assertThat(deferred.isCompleted).isTrue()
         }
         assertThat(subject.activeKeyCount()).isEqualTo(0)
     }
@@ -93,8 +94,8 @@ class KeyTrackerTest {
         subject.invalidate('b')
         subject.invalidate('c')
         scope2.runCurrent()
-        collections.forEachIndexed { index, collection ->
-            assertThat(collection.isCompleted).`as`("collector $index").isTrue()
+        collections.forEach { collection ->
+            assertThat(collection.isCompleted).isTrue()
         }
         assertThat(subject.activeKeyCount()).isEqualTo(0)
     }

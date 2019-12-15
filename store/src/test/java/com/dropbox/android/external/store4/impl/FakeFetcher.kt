@@ -15,7 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import org.assertj.core.api.Assertions
+import com.google.common.truth.Truth.assertThat
 
 class FakeFetcher<Key, Output>(
     vararg val responses: Pair<Key, Output>
@@ -27,7 +27,7 @@ class FakeFetcher<Key, Output>(
             throw AssertionError("unexpected fetch request")
         }
         val pair = responses[index++]
-        Assertions.assertThat(pair.first).isEqualTo(key)
+        assertThat(pair.first).isEqualTo(key)
         return pair.second
     }
 }
