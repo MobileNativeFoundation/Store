@@ -26,8 +26,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import org.assertj.core.api.Assertions
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
@@ -39,7 +38,7 @@ class SimplePersisterAsFlowableTest {
     fun testSimple() = testScope.runBlockingTest {
         val (flowable, written) = create("a", "b")
         val read = flowable.flowReader(barcode).take(1).toCollection(mutableListOf())
-        Assertions.assertThat(read).isEqualTo(listOf("a"))
+        assertThat(read).contains("a")
     }
 
     @Test

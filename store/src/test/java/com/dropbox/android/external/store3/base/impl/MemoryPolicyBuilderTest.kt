@@ -6,7 +6,7 @@ import org.junit.Test
 
 import java.util.concurrent.TimeUnit
 
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 
 class MemoryPolicyBuilderTest {
 
