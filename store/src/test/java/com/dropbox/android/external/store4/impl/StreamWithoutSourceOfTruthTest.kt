@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -72,7 +72,7 @@ class StreamWithoutSourceOfTruthTest(
         )
         println("!")
         assertThat(twoItemsNoRefresh.await()).containsExactly(
-                StoreResponse.Loading(
+                StoreResponse.Loading<String>(
                         origin = ResponseOrigin.Fetcher
                 ),
                 StoreResponse.Data(

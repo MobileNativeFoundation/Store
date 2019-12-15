@@ -32,7 +32,7 @@ dependencies {
     testImplementation libraries.mockito
     testImplementation libraries.mockitoInline
     testImplementation libraries.mockitoKotlin
-    testImplementation libraries.assertJ
+    testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
     testCompileOnly libraries.jsr305
