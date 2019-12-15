@@ -24,6 +24,7 @@ ext.versions = [
         // Testing.
         junit                : '4.12',
         assertJ              : '1.7.1',
+        truth                : '1.0',
         mockito              : '2.24.0',
         mockitoKotlin        : '2.2.0',
         espresso             : '2.2.1',
@@ -58,6 +59,7 @@ ext.libraries = [
         // Testing.
         junit                   : "junit:junit:$versions.junit",
         assertJ                 : "org.assertj:assertj-core:$versions.assertJ",
+        truth                   : "com.google.truth:truth:$versions.truth",
         mockito                 : "org.mockito:mockito-core:$versions.mockito",
         mockitoInline           : "org.mockito:mockito-inline:$versions.mockito",
         mockitoKotlin           : "com.nhaarman.mockitokotlin2:mockito-kotlin:$versions.mockitoKotlin",
