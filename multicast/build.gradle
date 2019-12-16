@@ -6,7 +6,7 @@ dependencies {
     implementation libraries.coroutinesCore
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
-    testImplementation libraries.assertJ
+    testImplementation libraries.truth
 }
 group = GROUP
 version = VERSION_NAME

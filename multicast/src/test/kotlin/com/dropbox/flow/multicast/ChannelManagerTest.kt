@@ -16,6 +16,7 @@
 package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -28,11 +29,10 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.lang.AssertionError
 import java.lang.Exception
 
 @FlowPreview
@@ -83,7 +83,7 @@ class ChannelManagerTest {
             }
             upstream.close(TestException())
             collection.await()
-            fail("collection should propagate upstream exception.")
+            throw AssertionError("collection should propagate upstream exception.")
         }
 
     @Test
