@@ -25,9 +25,13 @@ import java.util.ArrayDeque
 import java.util.Collections
 
 /**
- * This actor helps tracking active channels and is able to dispatch values to each of them
- * in parallel. As soon as one of them receives the value, the ack in the dispatch message is
- * completed so that the sender can continue for the next item.
+ * Tracks active downstream channels and dispatches incoming upstream values to each of them in
+ * parallel. The upstream is suspended after producing a value until at least one of the downstreams
+ * acknowledges receiving it via [Message.Dispatch.Value.delivered].
+ *
+ * The channel Manager will start the upstream from the given [upstream] [Flow] if there
+ * is no active upstream and there's at least one downstream that has not received a value.
+ *
  */
 @ExperimentalCoroutinesApi
 internal class ChannelManager<T>(
@@ -63,7 +67,11 @@ internal class ChannelManager<T>(
 
     private val actor = Actor()
 
+    /**
+     * Actor that does all the work. Any state and functionality should go here.
+     */
     private inner class Actor : StoreRealActor<Message<T>>(scope) {
+
         private val buffer = Buffer<T>(bufferSize)
         /**
          * The current producer
