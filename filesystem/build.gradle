@@ -25,7 +25,7 @@ dependencies {
     testImplementation libraries.mockito
     testImplementation libraries.mockitoInline
     testImplementation libraries.mockitoKotlin
-    testImplementation libraries.assertJ
+    testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.guava
     testImplementation libraries.gson
