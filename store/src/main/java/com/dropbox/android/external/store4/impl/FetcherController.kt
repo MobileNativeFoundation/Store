@@ -63,15 +63,13 @@ internal class FetcherController<Key, Input, Output>(
             Multicaster(
                 scope = scope,
                 bufferSize = 0,
-                source = {
-                    realFetcher(key).map {
-                        StoreResponse.Data(
-                            it,
-                            origin = ResponseOrigin.Fetcher
-                        ) as StoreResponse<Input>
-                    }.catch {
-                        emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
-                    }
+                source = realFetcher(key).map {
+                    StoreResponse.Data(
+                        it,
+                        origin = ResponseOrigin.Fetcher
+                    ) as StoreResponse<Input>
+                }.catch {
+                    emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
                 },
                 piggybackingDownstream = enablePiggyback,
                 onEach = { response ->

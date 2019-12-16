@@ -20,7 +20,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
@@ -45,27 +45,29 @@ class InfiniteMulticastTest {
     private val testScope = TestCoroutineScope()
     private val dispatchLog = mutableListOf<String>()
 
-    private fun <T> createMulticaster(f: () -> Flow<T>): Multicaster<T> {
+    private fun <T> createMulticaster(f: Flow<T>): Multicaster<T> {
         return Multicaster(
-                scope = testScope,
-                bufferSize = 0,
-                source = f,
-                piggybackingDownstream = true,
-                onEach = {
-                    dispatchLog.add(it.toString())
-                })
+            scope = testScope,
+            bufferSize = 0,
+            source = f,
+            piggybackingDownstream = true,
+            onEach = {
+                dispatchLog.add(it.toString())
+            })
     }
 
     @Test
     fun piggyback() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(flow {
             val id = createdCount++
-            flowOf("a$id", "b$id", "c$id").onStart {
-                // make sure both registers on time so that no one drops a value
-                delay(100)
+            listOf("a", "b", "c").forEach {
+                emit("$it$id")
             }
-        }
+        }.onStart {
+            // make sure both registers on time so that no one drops a value
+            delay(100)
+        })
         val c1 = async {
             activeFlow.flow.onEach {
                 delay(100)
@@ -92,13 +94,15 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_newStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(flow {
             val id = createdCount++
-            flowOf("a$id", "b$id", "c$id").onStart {
-                // make sure both registers on time so that no one drops a value
-                delay(100)
+            listOf("a", "b", "c").forEach {
+                emit("$it$id")
             }
-        }
+        }.onStart {
+            // make sure both registers on time so that no one drops a value
+            delay(100)
+        })
         val c1 = async {
             activeFlow.flow.onEach {
                 delay(100)
@@ -125,13 +129,15 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_oldStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(flow {
             val id = createdCount++
-            flowOf("a$id", "b$id", "c$id").onStart {
-                // make sure both registers on time so that no one drops a value
-                delay(100)
+            listOf("a", "b", "c").forEach {
+                emit("$it$id")
             }
-        }
+        }.onStart {
+            // make sure both registers on time so that no one drops a value
+            delay(100)
+        })
         val c1 = async {
             activeFlow.flow.onEach {
                 delay(100)
@@ -158,14 +164,16 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_allStreamsCloseSearch() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster {
+        val activeFlow = createMulticaster(flow {
             val id = createdCount++
-            flowOf("a$id", "b$id", "c$id").transform {
-                // really slow to test early termination
-                delay(1_000)
-                emit(it)
+            listOf("a", "b", "c").forEach {
+                emit("$it$id")
             }
-        }
+        }.transform {
+            // make sure both registers on time so that no one drops a value
+            delay(1_000)
+            emit(it)
+        })
         val c1 = async {
             activeFlow.flow.onEach {
                 delay(100)
