@@ -41,7 +41,6 @@ dependencies {
 
     testImplementation libraries.junit
     testImplementation libraries.mockito
-    testImplementation libraries.assertJ
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
     testCompileOnly libraries.jsr305
