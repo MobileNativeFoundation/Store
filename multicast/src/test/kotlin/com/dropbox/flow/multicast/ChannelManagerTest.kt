@@ -15,64 +15,132 @@
  */
 package com.dropbox.flow.multicast
 
-import com.dropbox.flow.multicast.ChannelManager.Message.AddChannel
-import com.dropbox.flow.multicast.ChannelManager.Message.DispatchValue
-import com.dropbox.flow.multicast.ChannelManager.Message.RemoveChannel
-import kotlinx.coroutines.CompletableDeferred
+import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.lang.Exception
 
 @FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()
-    private val manager = ChannelManager<String>(
-            scope,
-            0,
-            onEach = {}
-    ) {
-        SharedFlowProducer(
-                scope, src =
-        flow {
-            suspendCancellableCoroutine<String> {
-                // never end
-            }
-        },
-                channelManager = it
-        )
-    }
+    private val upstream: Channel<String> = Channel(Channel.UNLIMITED)
+    private val manager = ChannelManager(
+        scope,
+        0,
+        onEach = {},
+        upstream = upstream.consumeAsFlow()
+    )
 
     @Test
-    fun simple() = scope.runBlockingTest {
-        val collection = async {
-            val channel = Channel<DispatchValue<String>>(Channel.UNLIMITED)
-            try {
-                manager.send(AddChannel(channel))
-                channel.consumeAsFlow().take(2).toList()
+    fun `Given one downstream WHEN two values come in on the upstream THEN two values are consumed`() =
+        scope.runBlockingTest {
+            val collection = async {
+                val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+                manager.addDownstream(downstream)
+                downstream.consumeAsFlow()
+                    .onEach { it.markDelivered() }
+                    .take(2)
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .toList()
                     .map { it.value }
-            } finally {
-                manager.send(RemoveChannel(channel))
             }
+            upstream.send("a")
+            upstream.send("b")
+            upstream.close()
+            assertThat(collection.await()).isEqualTo(listOf("a", "b"))
         }
-        val ack1 = CompletableDeferred<Unit>()
-        manager.send(DispatchValue("a", ack1))
 
-        val ack2 = CompletableDeferred<Unit>()
-        manager.send(DispatchValue("b", ack2))
-        assertThat(collection.await()).isEqualTo(listOf("a", "b"))
-    }
+    @Test(expected = TestException::class)
+    fun `Given one downstream WHEN upstream errors THEN error is propagated`() =
+        scope.runBlockingTest {
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+
+            val collection = async {
+                downstream.consumeAsFlow()
+                    .onEach { it.markDelivered() }
+                    .take(2)
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .toList()
+                    .map { it.value }
+            }
+            upstream.close(TestException())
+            collection.await()
+            fail("collection should propagate upstream exception.")
+        }
+
+    @Test
+    fun `Given one downstream WHEN upstream closes THEN downstream is closed`() =
+        scope.runBlockingTest {
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+
+            val collection = async {
+                downstream.consumeAsFlow()
+                    .onEach { it.markDelivered() }
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .toList()
+                    .map { it.value }
+            }
+            upstream.close()
+            // give the upstream a chance to finish and check that downstream finished.
+            // does not await on downstream to avoid the test hanging in case of a bug.
+            delay(100)
+            assertThat(collection.isCompleted).isTrue()
+            assertThat(collection.getCompleted()).isEmpty()
+        }
+
+    @Test
+    fun `Given two downstreams WHEN two values come in on the upstream THEN two values are consumed`() =
+        scope.runBlockingTest {
+            val downstream1 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+
+            // ack on channel 1
+            val collection1 = async {
+                manager.addDownstream(downstream1)
+                manager.addDownstream(downstream2)
+                downstream1.consumeAsFlow()
+                    .onEach { it.markDelivered() }
+                    .take(2)
+                    .onCompletion { manager.removeDownstream(downstream1) }
+                    .toList()
+                    .map { it.value }
+            }
+
+            // also consume (without ack) on channel 2 to make sure we got everything.
+            val collection2 = async {
+                downstream2.consumeAsFlow()
+                    .take(2)
+                    .onCompletion { manager.removeDownstream(downstream2) }
+                    .toList()
+                    .map { it.value }
+            }
+
+            upstream.send("a")
+            upstream.send("b")
+            upstream.close()
+
+            assertThat(collection1.await()).isEqualTo(listOf("a", "b"))
+            assertThat(collection2.await()).isEqualTo(listOf("a", "b"))
+        }
 }
+
+private class TestException : Exception()
