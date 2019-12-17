@@ -29,7 +29,7 @@ import java.util.Collections
  * parallel. The upstream is suspended after producing a value until at least one of the downstreams
  * acknowledges receiving it via [Message.Dispatch.Value.delivered].
  *
- * The channel Manager will start the upstream from the given [upstream] [Flow] if there
+ * The [ChannelManager] will start the upstream from the given [upstream] [Flow] if there
  * is no active upstream and there's at least one downstream that has not received a value.
  *
  */
