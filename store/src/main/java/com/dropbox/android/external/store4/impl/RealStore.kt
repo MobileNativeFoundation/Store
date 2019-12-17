@@ -57,16 +57,22 @@ internal class RealStore<Key, Input, Output>(
     private val memCache = memoryPolicy?.let {
         CacheBuilder.newBuilder()
                 .apply {
-                    when {
-                        memoryPolicy.hasAccessPolicy -> expireAfterAccess(
+                    if (memoryPolicy.hasAccessPolicy) {
+                        expireAfterAccess(
                             memoryPolicy.expireAfterAccess,
                             memoryPolicy.expireAfterTimeUnit
                         )
-                        memoryPolicy.hasWritePolicy -> expireAfterWrite(
+                    }
+
+                    if (memoryPolicy.hasWritePolicy) {
+                        expireAfterWrite(
                             memoryPolicy.expireAfterWrite,
                             memoryPolicy.expireAfterTimeUnit
                         )
-                        memoryPolicy.hasMaxSize -> maximumSize(memoryPolicy.maxSize)
+                    }
+
+                    if (memoryPolicy.hasMaxSize) {
+                        maximumSize(memoryPolicy.maxSize)
                     }
                 }.build<Key, Output>()
     }
