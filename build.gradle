@@ -1,4 +1,6 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.LibraryPlugin
+
 buildscript {
     repositories {
         mavenCentral()
@@ -10,7 +12,7 @@ buildscript {
     }
 
     ext.versions = [
-            androidGradlePlugin : '3.6.0-beta05',
+            androidGradlePlugin : '3.6.0-rc01',
             dexcountGradlePlugin: '1.0.2',
             kotlin              : '1.3.61',
             dokkaGradlePlugin   : '0.10.0',
@@ -83,16 +85,10 @@ subprojects {
         }
     }
 
-    project.plugins.whenPluginAdded { plugin ->
-        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-        }
+    def preDexClosure = {
+        project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
     }
-}
 
-task gitHooksInit(type: Exec) {
-    workingDir "$projectDir"
-    commandLine './init-git-hooks'
+    project.plugins.withType(AppPlugin).whenPluginAdded(preDexClosure)
+    project.plugins.withType(LibraryPlugin).whenPluginAdded(preDexClosure)
 }
