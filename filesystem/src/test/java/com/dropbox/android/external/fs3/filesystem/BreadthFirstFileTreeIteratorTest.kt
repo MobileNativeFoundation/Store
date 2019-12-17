@@ -1,7 +1,7 @@
 package com.dropbox.android.external.fs3.filesystem
 
 import java.io.File
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 
@@ -46,7 +46,7 @@ class BreadthFirstFileTreeIteratorTest {
     }
 
     private fun createDirWithSubFiles(root: File, fileCount: Int): File {
-        assertThat(root).exists()
+        assertThat(root).isNotNull()
         assertThat(root.isDirectory).isTrue()
 
         val tempDir = createDir(root)

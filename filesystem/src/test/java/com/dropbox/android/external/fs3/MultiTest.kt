@@ -7,7 +7,7 @@ import com.google.common.io.Files.createTempDir
 import okio.BufferedSource
 import okio.buffer
 import okio.source
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -34,7 +34,7 @@ class MultiTest {
     fun testDeleteAll() {
         val fileSystem = createAndPopulateTestFileSystem()
         fileSystem.deleteAll("/")
-        assertThat(fileSystem.list("/").size).isZero()
+        assertThat(fileSystem.list("/").size).isEqualTo(0)
     }
 
     @Test
