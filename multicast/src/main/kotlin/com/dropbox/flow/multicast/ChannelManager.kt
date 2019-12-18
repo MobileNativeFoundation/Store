@@ -259,6 +259,8 @@ internal class ChannelManager<T>(
                 keepAliveBuffer.items.forEach {
                     entry.dispatchValue(it)
                 }
+                // Only the first channel should get the keepAlive content when there's no buffering
+                keepAliveBuffer.clear()
             }
         }
     }
@@ -357,6 +359,7 @@ internal class ChannelManager<T>(
 private interface Buffer<T> {
     fun add(item: ChannelManager.Message.Dispatch.Value<T>)
     val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
+    fun clear()
 }
 
 /**
@@ -369,6 +372,8 @@ private class NoBuffer<T> : Buffer<T> {
 
     // ignore
     override fun add(item: ChannelManager.Message.Dispatch.Value<T>) = Unit
+
+    override fun clear() = Unit
 }
 
 /**
@@ -394,6 +399,10 @@ private class BufferImpl<T>(private val limit: Int) :
             items.pollFirst()
         }
         items.offerLast(item)
+    }
+
+    override fun clear() {
+        items.clear()
     }
 }
 
