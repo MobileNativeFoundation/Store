@@ -22,13 +22,11 @@ class FileSystemRecordPersister<Key> private constructor(
     private val fileWriter: FSWriter<Key> = FSWriter(fileSystem, pathResolver)
 
     override fun getRecordState(key: Key): RecordState =
-            fileSystem.getRecordState(expirationUnit, expirationDuration, pathResolver.resolve(key))
+        fileSystem.getRecordState(expirationUnit, expirationDuration, pathResolver.resolve(key))
 
-    override suspend fun read(key: Key): BufferedSource? =
-            fileReader.read(key)
+    override suspend fun read(key: Key): BufferedSource? = fileReader.read(key)
 
-    override suspend fun write(key: Key, raw: BufferedSource): Boolean =
-            fileWriter.write(key, raw)
+    override suspend fun write(key: Key, raw: BufferedSource): Boolean = fileWriter.write(key, raw)
 
     companion object {
 
@@ -37,8 +35,11 @@ class FileSystemRecordPersister<Key> private constructor(
             pathResolver: PathResolver<T>,
             expirationDuration: Long,
             expirationUnit: TimeUnit
-        ): FileSystemRecordPersister<T> =
-                FileSystemRecordPersister(fileSystem, pathResolver,
-                        expirationDuration, expirationUnit)
+        ): FileSystemRecordPersister<T> = FileSystemRecordPersister(
+            fileSystem = fileSystem,
+            pathResolver = pathResolver,
+            expirationDuration = expirationDuration,
+            expirationUnit = expirationUnit
+        )
     }
 }

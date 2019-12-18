@@ -17,10 +17,10 @@ constructor(fileSystem: FileSystem) : AllPersister<BufferedSource, BarCode> {
     internal val sourceFileAllEraser: FSAllEraser = FSAllEraser(fileSystem)
 
     internal val sourceFileReader: FSReader<BarCode> =
-        FSReader(fileSystem, BarCodeReadAllPathResolver())
+        FSReader(fileSystem, BarCodeReadAllPathResolver)
 
     internal val sourceFileWriter: FSWriter<BarCode> =
-        FSWriter(fileSystem, BarCodeReadAllPathResolver())
+        FSWriter(fileSystem, BarCodeReadAllPathResolver)
 
     @Throws(FileNotFoundException::class)
     override fun CoroutineScope.readAll(path: String): ReceiveChannel<BufferedSource> {
