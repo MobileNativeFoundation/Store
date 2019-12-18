@@ -223,8 +223,6 @@ class ChannelManagerTest {
         return@coroutineScope upstreamCreateCount
     }
 
-
-
     @Test
     fun `GIVEN keepUpstreamAlive AND no buffer WHEN add two non overlapping downstreams AND emit during keepalive THEN second channel receives one value`() =
         scope.runBlockingTest {
@@ -300,7 +298,6 @@ class ChannelManagerTest {
                     .onEach { it.markDelivered() }
                     .toList()
                     .map { it.value }
-
             }
             // send something for the 3rd channel to avoid the restarting the upstream because a
             // downstream did not receive results
@@ -393,7 +390,6 @@ class ChannelManagerTest {
             upstream.close()
             assertThat(collection.await()).isEqualTo(listOf("a", "b", "c"))
         }
-
 
     private suspend fun newManagerInKeepAliveModeWithPendingFetch(
         bufferSize: Int,
