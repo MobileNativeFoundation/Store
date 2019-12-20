@@ -339,6 +339,7 @@ class MulticastTest {
         val c1 = async {
             activeFlow.flow.collect {
                 unlockC1.await()
+                // never ack!
                 throw RuntimeException("done 1")
             }
         }
@@ -346,11 +347,34 @@ class MulticastTest {
             activeFlow.flow.toList()
         }
         testScope.runCurrent()
-        assertThat(c2.isActive).isTrue()
-        unlockC1.complete(Unit)
-        testScope.runCurrent()
         assertThat(c2.isActive).isFalse()
         assertThat(c2.await()).isEqualTo(listOf(2,3))
+        unlockC1.complete(Unit)
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspended_withBuffer() = testScope.runBlockingTest {
+        val activeFlow = Multicaster(
+                scope = testScope,
+                bufferSize = 1,
+                source = flowOf(1, 2, 3),
+                onEach = {}
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                // never ack!
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf(1, 2,3))
+        unlockC1.complete(Unit)
     }
 
     @Test
@@ -376,11 +400,9 @@ class MulticastTest {
             activeFlow.flow.toList()
         }
         testScope.runCurrent()
-        assertThat(c2.isActive).isTrue()
-        unlockC1.complete(Unit)
-        testScope.runCurrent()
         assertThat(c2.isActive).isFalse()
         assertThat(c2.await()).isEqualTo(listOf(1))
+        unlockC1.complete(Unit)
     }
 
     class MyCustomException(val x: String) : RuntimeException("hello") {
