@@ -22,14 +22,17 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.processNextEventInCurrentThread
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
@@ -322,6 +325,62 @@ class MulticastTest {
         )
         assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
         assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspended() = testScope.runBlockingTest {
+        val activeFlow = Multicaster(
+                scope = testScope,
+                bufferSize = 0,
+                source = flowOf(1, 2, 3),
+                onEach = {}
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isTrue()
+        unlockC1.complete(Unit)
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf(2,3))
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspendedGetsNewStream() = testScope.runBlockingTest {
+        var counter = 0
+        val activeFlow = Multicaster(
+                scope = testScope,
+                bufferSize = 0,
+                source = flow<Int>{
+                    val id = counter ++
+                    emitAll(flowOf(id))
+                },
+                onEach = {}
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isTrue()
+        unlockC1.complete(Unit)
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf(1))
     }
 
     class MyCustomException(val x: String) : RuntimeException("hello") {
