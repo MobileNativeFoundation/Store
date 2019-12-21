@@ -15,16 +15,20 @@
  */
 package com.dropbox.flow.multicast
 
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
@@ -33,7 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -315,13 +318,104 @@ class MulticastTest {
     @Test
     fun multipleCollections() = testScope.runBlockingTest {
         val activeFlow = Multicaster(
-                scope = testScope,
-                bufferSize = 0,
-                source = flowOf(1, 2, 3),
-                onEach = {}
+            scope = testScope,
+            bufferSize = 0,
+            source = flowOf(1, 2, 3),
+            onEach = {}
         )
         assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
         assertThat(activeFlow.flow.toList()).isEqualTo(listOf(1, 2, 3))
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspended() = testScope.runBlockingTest {
+        val activeFlow = versionedMulticaster(
+            bufferSize = 0,
+            collectionLimit = 1,
+            values = listOf("a", "b", "c")
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                // never ack!
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf("b_0", "c_0"))
+        unlockC1.complete(Unit)
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspended_withBuffer() = testScope.runBlockingTest {
+        val activeFlow = versionedMulticaster(
+            bufferSize = 1,
+            collectionLimit = 1,
+            values = listOf("a", "b", "c")
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                // never ack!
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf("a_0", "b_0", "c_0"))
+        unlockC1.complete(Unit)
+    }
+
+    @Test
+    fun lateArrival_arrivesWhenSuspendedGetsNewStream() = testScope.runBlockingTest {
+        val activeFlow = versionedMulticaster(
+            bufferSize = 0,
+            collectionLimit = 2,
+            values = listOf("a")
+        )
+        val unlockC1 = CompletableDeferred<Unit>()
+        val c1 = async {
+            activeFlow.flow.collect {
+                unlockC1.await()
+                throw RuntimeException("done 1")
+            }
+        }
+        val c2 = async {
+            activeFlow.flow.toList()
+        }
+        testScope.runCurrent()
+        assertThat(c2.isActive).isFalse()
+        assertThat(c2.await()).isEqualTo(listOf("a_1"))
+        unlockC1.complete(Unit)
+    }
+
+    private fun versionedMulticaster(
+        bufferSize: Int = 0,
+        collectionLimit: Int,
+        values: List<String>
+    ): Multicaster<String> {
+        var counter = 0
+        return Multicaster(
+            scope = testScope,
+            bufferSize = bufferSize,
+            source = flow<String> {
+                val id = counter++
+                assertThat(counter).isAtMost(collectionLimit)
+                emitAll(values.asFlow().map {
+                    "${it}_$id"
+                })
+            },
+            onEach = {}
+        )
     }
 
     class MyCustomException(val x: String) : RuntimeException("hello") {
