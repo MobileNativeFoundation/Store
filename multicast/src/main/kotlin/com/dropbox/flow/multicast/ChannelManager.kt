@@ -85,6 +85,14 @@ internal class ChannelManager<T>(
         private var dispatchedValue: Boolean = false
 
         /**
+         * The ack for the very last message we've delivered.
+         * When a new downstream comes and buffer is 0, we ack this message so that new downstream
+         * can immediately start receiving values instead of waiting for values that it'll never
+         * receive.
+         */
+        private var lastDeliveryAck: CompletableDeferred<Unit>? = null
+
+        /**
          * List of downstream collectors.
          */
         private val channels = mutableListOf<ChannelEntry<T>>()
@@ -162,6 +170,11 @@ internal class ChannelManager<T>(
             onEach(msg.value)
             buffer.add(msg)
             dispatchedValue = true
+            if (buffer.isEmpty()) {
+                // if a new downstream arrives, we need to ack this so that it won't wait for
+                // values that it'll never receive
+                lastDeliveryAck = msg.delivered
+            }
             channels.forEach {
                 it.dispatchValue(msg)
             }
@@ -232,6 +245,9 @@ internal class ChannelManager<T>(
                 buffer.items.forEach {
                     entry.dispatchValue(it)
                 }
+            } else {
+                // unlock upstream since we now have a downstream that needs values
+                lastDeliveryAck?.complete(Unit)
             }
         }
     }
@@ -329,6 +345,7 @@ internal class ChannelManager<T>(
 @ExperimentalCoroutinesApi
 private interface Buffer<T> {
     fun add(item: ChannelManager.Message.Dispatch.Value<T>)
+    fun isEmpty() = items.isEmpty()
     val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
 }
 
