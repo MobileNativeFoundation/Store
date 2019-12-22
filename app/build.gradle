@@ -53,6 +53,8 @@ dependencies {
     implementation libraries.supportDesign
     implementation libraries.retrofit
     implementation libraries.roomRuntime
+    implementation libraries.coreKtx
+    implementation libraries.lifecycleExtensions
 
     implementation libraries.picasso
     implementation libraries.guava
