@@ -9,23 +9,24 @@ import java.util.concurrent.TimeUnit
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.mockito.Mockito.inOrder
 
 class FileSystemRecordPersisterTest {
-
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
-
     private val simple = BarCode("type", "key")
-    private val resolvedPath = BarCodePathResolver().resolve(simple)
-    private val fileSystemPersister = FileSystemRecordPersister.create(fileSystem,
-            BarCodePathResolver(),
-            1, TimeUnit.DAYS)
+    private val resolvedPath = BarCodePathResolver.resolve(simple)
+    private val fileSystemPersister = FileSystemRecordPersister.create(
+        fileSystem = fileSystem,
+        pathResolver = BarCodePathResolver,
+        expirationDuration = 1,
+        expirationUnit = TimeUnit.DAYS
+    )
 
     @Test
-    fun readExists() = runBlocking<Unit> {
+    fun readExists() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
                 .thenReturn(true)
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
@@ -35,7 +36,7 @@ class FileSystemRecordPersisterTest {
     }
 
     @Test
-    fun readDoesNotExist() = runBlocking<Unit> {
+    fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
                 .thenReturn(false)
 
@@ -47,7 +48,7 @@ class FileSystemRecordPersisterTest {
     }
 
     @Test
-    fun writeThenRead() = runBlocking<Unit> {
+    fun writeThenRead() = runBlocking {
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
         whenever(fileSystem.exists(resolvedPath)).thenReturn(true)
         fileSystemPersister.write(simple, bufferedSource)
@@ -61,7 +62,7 @@ class FileSystemRecordPersisterTest {
     }
 
     @Test
-    fun freshTest() = runBlocking<Unit> {
+    fun freshTest() = runBlocking {
         whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, resolvedPath))
                 .thenReturn(RecordState.FRESH)
 
@@ -69,7 +70,7 @@ class FileSystemRecordPersisterTest {
     }
 
     @Test
-    fun staleTest() = runBlocking<Unit> {
+    fun staleTest() = runBlocking {
         whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, resolvedPath))
                 .thenReturn(RecordState.STALE)
 
@@ -77,7 +78,7 @@ class FileSystemRecordPersisterTest {
     }
 
     @Test
-    fun missingTest() = runBlocking<Unit> {
+    fun missingTest() = runBlocking {
         whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, resolvedPath))
                 .thenReturn(RecordState.MISSING)
 

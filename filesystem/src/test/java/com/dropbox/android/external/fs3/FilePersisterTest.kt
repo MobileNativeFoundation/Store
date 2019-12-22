@@ -8,21 +8,19 @@ import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.mockito.Mockito.inOrder
 
 class FilePersisterTest {
-
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
-
     private val simple = BarCode("type", "key")
-    private val resolvedPath = BarCodePathResolver().resolve(simple)
-    private val fileSystemPersister = FileSystemPersister.create(fileSystem, BarCodePathResolver())
+    private val resolvedPath = BarCodePathResolver.resolve(simple)
+    private val fileSystemPersister = FileSystemPersister.create(fileSystem, BarCodePathResolver)
 
     @Test
-    fun readExists() = runBlocking<Unit> {
+    fun readExists() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
                 .thenReturn(true)
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
@@ -32,7 +30,7 @@ class FilePersisterTest {
     }
 
     @Test
-    fun readDoesNotExist() = runBlocking<Unit> {
+    fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
                 .thenReturn(false)
 
@@ -44,7 +42,7 @@ class FilePersisterTest {
     }
 
     @Test
-    fun writeThenRead() = runBlocking<Unit> {
+    fun writeThenRead() = runBlocking {
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
         whenever(fileSystem.exists(resolvedPath)).thenReturn(true)
         fileSystemPersister.write(simple, bufferedSource)

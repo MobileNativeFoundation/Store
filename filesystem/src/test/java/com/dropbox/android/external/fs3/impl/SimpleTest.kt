@@ -8,7 +8,7 @@ import com.google.common.io.Files.createTempDir
 import okio.BufferedSource
 import okio.buffer
 import okio.source
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayInputStream

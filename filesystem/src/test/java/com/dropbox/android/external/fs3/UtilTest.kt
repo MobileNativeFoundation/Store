@@ -4,7 +4,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.whenever
 import java.io.File
 import java.io.IOException
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
