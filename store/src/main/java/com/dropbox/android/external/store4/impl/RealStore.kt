@@ -43,6 +43,10 @@ internal class RealStore<Key, Input, Output>(
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
     private val memoryPolicy: MemoryPolicy?,
     /**
+     * Number of previous fetches that should be buffered for later requests.
+     */
+    fetchBufferSize: Int,
+    /**
      * If true, an active upstream will stay alive even if all downstreams are closed. A downstream
      * coming in later will receive a value from the live upstream.
      */
@@ -88,10 +92,11 @@ internal class RealStore<Key, Input, Output>(
      * requests are shared.
      */
     private val fetcherController = FetcherController(
-            scope = scope,
-            realFetcher = fetcher,
-            sourceOfTruth = this.sourceOfTruth,
-            keepFetchersAlive = keepFetcherAlive
+        scope = scope,
+        realFetcher = fetcher,
+        sourceOfTruth = this.sourceOfTruth,
+        fetchBufferSize = fetchBufferSize,
+        keepFetchersAlive = keepFetcherAlive
     )
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {

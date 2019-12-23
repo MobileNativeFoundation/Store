@@ -62,6 +62,11 @@ internal class ChannelManager<T>(
 
     private val upstream: Flow<T>
 ) {
+    init {
+        require(!keepUpstreamAlive || bufferSize > 0) {
+            "Must set bufferSize > 0 if keepUpstreamAlive is enabled"
+        }
+    }
 
     suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         actor.send(Message.AddChannel(channel))
@@ -354,7 +359,6 @@ private interface Buffer<T> {
     fun add(item: ChannelManager.Message.Dispatch.Value<T>)
     fun isEmpty() = items.isEmpty()
     val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
-    fun clear()
 }
 
 /**
@@ -367,8 +371,6 @@ private class NoBuffer<T> : Buffer<T> {
 
     // ignore
     override fun add(item: ChannelManager.Message.Dispatch.Value<T>) = Unit
-
-    override fun clear() = Unit
 }
 
 /**
@@ -394,10 +396,6 @@ private class BufferImpl<T>(private val limit: Int) :
             items.pollFirst()
         }
         items.offerLast(item)
-    }
-
-    override fun clear() {
-        items.clear()
     }
 }
 

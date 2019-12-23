@@ -57,6 +57,11 @@ internal class FetcherController<Key, Input, Output>(
      * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
      */
     private val enablePiggyback: Boolean = sourceOfTruth == null,
+
+    /**
+     * Number of previous fetches that should be buffered for later requests.
+     */
+    private val fetchBufferSize: Int = 0,
     /**
      * If true, an active fetcher will stay alive even if all fetches are closed. A new fetch
      * starting later will receive a value from the live fetcher.
@@ -67,7 +72,7 @@ internal class FetcherController<Key, Input, Output>(
         create = { key: Key ->
             Multicaster(
                 scope = scope,
-                bufferSize = 0,
+                bufferSize = fetchBufferSize,
                 source = realFetcher(key).map {
                     StoreResponse.Data(
                         it,
