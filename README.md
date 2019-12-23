@@ -5,7 +5,7 @@ Store is a Kotlin library for effortless data loading.
 ### The Problems:
 
 + Modern software needs data representations to be fluid and always available.
-+ Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an application is social, news, or business-to-business, users expect a seamless experience both online and offline.
++ Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an application is social, news or business-to-business, users expect a seamless experience both online and offline.
 + International users expect minimal data downloads as many megabytes of downloaded data can quickly result in astronomical phone bills.
 
 A Store is a class that simplifies fetching, sharing, storage, and retrieval of data in your application. A Store is similar to the [Repository pattern](https://msdn.microsoft.com/en-us/library/ff649690.aspx) while exposing an API built with [Coroutines](https://kotlinlang.org/docs/reference/coroutines-overview.html) that adheres to a unidirectional data flow.
@@ -14,23 +14,23 @@ Store provides a level of abstraction between UI elements and data operations.
 
 ### Overview
 
-A Store is responsible for managing a particular data request. When you create an implementation of a Store, you provide it with a `Fetcher`, a function that defines how data will be fetched over network. You can also define how your Store will cache data in-memory and on-disk. Since Store returns your data as an `Flow`, threading is a breeze! Once a Store is built, it handles the logic around data flow, allowing your views to use the best data source and ensuring that the newest data is always available for later offline use.
+A Store is responsible for managing a particular data request. When you create an implementation of a Store, you provide it with a `Fetcher`, a function that defines how data will be fetched over network. You can also define how your Store will cache data in-memory and on-disk. Since Store returns your data as a `Flow`, threading is a breeze! Once a Store is built, it handles the logic around data flow, allowing your views to use the best data source and ensuring that the newest data is always available for later offline use.
 
 Store leverages multiple request throttling to prevent excessive calls to the network and disk cache. By utilizing Store, you eliminate the possibility of flooding your network with the same request while adding two layers of caching (memory and disk) as well as ability to add disk as a source of truth where you can modify the disk directly without going through Store (works best with databases that can provide observables sources like [Jetpack Room](https://developer.android.com/jetpack/androidx/releases/room), [SQLDelight](https://github.com/cashapp/sqldelight) or [Realm](https://realm.io/products/realm-database/))
 
 ### How to include in your project
 
-Maven central artifacts coming soon. For now please build from source or run gradlew install to add to your local m2 repo
+Maven central artifacts coming soon. For now please build from source or run `./gradlew install` to add to your local m2 repo
 
 ###### Include gradle dependency (as well as MavenCentral Snapshot repo)
 
-```
+```groovy
 implementation 'com.dropbox.mobile.store:store4:4.0.0-SNAPSHOT'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
 
-```
+```groovy
 android {
     compileOptions {
         sourceCompatibility 1.8
@@ -75,7 +75,7 @@ val store = StoreBuilder
 
 Store uses generic keys as identifiers for data. A key can be any value object that properly implements `toString()`, `equals()` and `hashCode()`. When your `Fetcher` function is called, it will be passed a particular `Key` value. Similarly, the key will be used as a primary identifier within caches (Make sure to have a proper `hashCode()`!!).
 
-Note: We highly recommend using built in types that implement `equals` and `hashcode` or Kotlin `data` classes for complex keys.
+Note: We highly recommend using built-in types that implement `equals` and `hashcode` or Kotlin `data` classes for complex keys.
 
 ### Public Interface - Stream
 
@@ -91,7 +91,7 @@ Each `StoreResponse` includes an `origin` field which specifies where the event 
 
 * The `Loading` class only has an `origin` field. This can provide you information like "network is fetching data", which can be a good signal to activate the loading spinner in your UI.
 * The `Data` class has a `value` field which includes an instance of the type returned by `Store`.
-* The `Error`class includes an `error` field that containts the exception thrown by the given `origin`.
+* The `Error` class includes an `error` field that contains the exception thrown by the given `origin`.
 
 When an error happens, `Store` does not throw an exception, instead, it wraps it in a `StoreResponse.Error` type which allows `Flow` to continue so that it can still receive updates that might be triggered by either changes in your data source or subsequent fetch operations. 
 
@@ -134,7 +134,7 @@ By default, 100 items will be cached in memory for 24 hours. You may pass in you
 
 ### Busting through the cache
 
-Alternatively you can call `store.fetch(key)` to get a `suspended result` that skips the memory (and optional disk cache).
+Alternatively, you can call `store.fetch(key)` to get a `suspended result` that skips the memory (and optional disk cache).
 
 
 A good use case is overnight background updates use `fetch()` to make sure that calls to `store.get()` will not have to hit the network during normal usage. Another good use case for `fetch()` is when a user wants to pull to refresh.
@@ -143,7 +143,7 @@ Calls to both `fetch()` and `get()` emit one value or throw an error.
 
 
 ### Stream
-For real-time updates, you may also call `store.stream()` which returns an `Flow<T>` that emits each time a new item is returned from your store. You can think of stream as a way to create reactive streams that update when you db or memory cache updates
+For real-time updates, you may also call `store.stream()` which returns a `Flow<T>` that emits each time a new item is returned from your store. You can think of stream as a way to create reactive streams that update when you db or memory cache updates
 
 example calls:
 ```kotlin
@@ -183,7 +183,7 @@ StoreBuilder
   ).build()        
 ```
 
-Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in memory cache for the “persister” implementation and instead have two levels of in memory caching--one with inflated and one with deflated models, allowing for sharing of the “persister” cache data between stores.
+Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in-memory cache for the “persister” implementation and instead have two levels of in-memory caching--one with inflated and one with deflated models, allowing for sharing of the “persister” cache data between stores.
 
 
 
@@ -191,12 +191,12 @@ Stores don’t care how you’re storing or retrieving your data from disk. As a
 If using SQLite we recommend working with [Room](https://developer.android.com/topic/libraries/architecture/room) which returns a `Flow` from a query
 
 The above builder is how we recommend working with data on Android. With the above setup you have:
-+ Memory caching with with TTL & Size policies
++ Memory caching with TTL & Size policies
 + Disk caching with simple integration with Room
 + In-flight request management
 + Ability to get cached data or bust through your caches (`get()` vs. `fetch()`)
 + Ability to listen for any new emissions from network (stream)
-+ Structured Concurrency through apis build on Coroutines and Kotlin Flow
++ Structured Concurrency through APIs build on Coroutines and Kotlin Flow
 
 
 ### Artifacts

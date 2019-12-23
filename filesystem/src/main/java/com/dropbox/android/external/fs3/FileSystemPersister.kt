@@ -10,22 +10,25 @@ import okio.BufferedSource
  * Make sure to have keys containing same data resolve to same "path"
  * @param <T> key type
 </T> */
-class FileSystemPersister<T> private constructor(fileSystem: FileSystem, pathResolver: PathResolver<T>) : Persister<BufferedSource, T> {
-    private val fileReader: FSReader<T> = FSReader(fileSystem, pathResolver)
-    private val fileWriter: FSWriter<T> = FSWriter(fileSystem, pathResolver)
+class FileSystemPersister<Key> private constructor(
+    fileSystem: FileSystem,
+    pathResolver: PathResolver<Key>
+) : Persister<BufferedSource, Key> {
+    private val fileReader: FSReader<Key> = FSReader(fileSystem, pathResolver)
+    private val fileWriter: FSWriter<Key> = FSWriter(fileSystem, pathResolver)
 
-    override suspend fun read(key: T): BufferedSource? =
-            fileReader.read(key)
+    override suspend fun read(key: Key): BufferedSource? = fileReader.read(key)
 
-    override suspend fun write(key: T, raw: BufferedSource): Boolean =
-            fileWriter.write(key, raw)
+    override suspend fun write(key: Key, raw: BufferedSource): Boolean = fileWriter.write(key, raw)
 
     companion object {
 
-        fun <T> create(
+        fun <Key> create(
             fileSystem: FileSystem,
-            pathResolver: PathResolver<T>
-        ): Persister<BufferedSource, T> =
-                FileSystemPersister(fileSystem, pathResolver)
+            pathResolver: PathResolver<Key>
+        ): Persister<BufferedSource, Key> = FileSystemPersister(
+            fileSystem = fileSystem,
+            pathResolver = pathResolver
+        )
     }
 }

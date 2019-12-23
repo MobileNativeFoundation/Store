@@ -7,8 +7,10 @@ import com.dropbox.android.external.store4.legacy.BarCode
 import java.util.concurrent.TimeUnit
 import okio.BufferedSource
 
-class SourceFileReader @JvmOverloads constructor(fileSystem: FileSystem, pathResolver: PathResolver<BarCode> = BarCodePathResolver()) :
-    FSReader<BarCode>(fileSystem, pathResolver), DiskRead<BufferedSource, BarCode> {
+class SourceFileReader @JvmOverloads constructor(
+    fileSystem: FileSystem,
+    pathResolver: PathResolver<BarCode> = BarCodePathResolver
+) : FSReader<BarCode>(fileSystem, pathResolver), DiskRead<BufferedSource, BarCode> {
 
     fun getRecordState(
         barCode: BarCode,

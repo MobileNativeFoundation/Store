@@ -7,5 +7,5 @@ import okio.BufferedSource
 
 class SourceFileWriter @JvmOverloads constructor(
     fileSystem: FileSystem,
-    pathResolver: PathResolver<BarCode> = BarCodePathResolver()
+    pathResolver: PathResolver<BarCode> = BarCodePathResolver
 ) : FSWriter<BarCode>(fileSystem, pathResolver), DiskWrite<BufferedSource, BarCode>
