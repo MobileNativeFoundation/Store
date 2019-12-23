@@ -80,11 +80,6 @@ internal class ChannelManager<T>(
 
         private val buffer = Buffer<T>(bufferSize)
 
-        private val keepAliveBuffer = when {
-            bufferSize > 0 -> buffer // No need for additional buffering if buffer is enabled.
-            !keepUpstreamAlive -> Buffer(0)
-            else -> Buffer(1)
-        }
         /**
          * The current producer
          */
@@ -172,16 +167,10 @@ internal class ChannelManager<T>(
          */
         private suspend fun doDispatchValue(msg: Message.Dispatch.Value<T>) {
             onEach(msg.value)
+            buffer.add(msg)
             dispatchedValue = true
-            if (channels.isEmpty()) {
-                // upstream value came in with no downstreams, this can only happen if we're in
-                // upstream keepalive mode.
-                keepAliveBuffer.add(msg)
-            } else {
-                buffer.add(msg)
-                channels.forEach {
-                    it.dispatchValue(msg)
-                }
+            channels.forEach {
+                it.dispatchValue(msg)
             }
         }
 
@@ -250,17 +239,6 @@ internal class ChannelManager<T>(
                 buffer.items.forEach {
                     entry.dispatchValue(it)
                 }
-            }
-            if (buffer !== keepAliveBuffer && keepAliveBuffer.items.isNotEmpty()) {
-                // buffer and keepalive buffer are only different if there's no buffer. In this case
-                // keepalive buffer will have 0 or 1 element in it which need to be sent.
-                // Note we will never send an element twice because if the buffer has any elements
-                // in it it means that buffer === keepAliveBuffer.
-                keepAliveBuffer.items.forEach {
-                    entry.dispatchValue(it)
-                }
-                // Only the first channel should get the keepAlive content when there's no buffering
-                keepAliveBuffer.clear()
             }
         }
     }
