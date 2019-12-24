@@ -11,7 +11,7 @@ import com.dropbox.android.sample.utils.Lce
 import kotlinx.coroutines.launch
 
 class RedditViewModel(
-        app: Application
+    app: Application
 ) : AndroidViewModel(app) {
     private val store = (app as SampleApp).storeMultiParam
     private val configStore = (app as SampleApp).configStore
