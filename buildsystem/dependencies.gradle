@@ -20,6 +20,8 @@ ext.versions = [
         guava                : '28.1-jre',
         javax                : '1',
         room                 : '2.2.2',
+        coreKtx              : '1.1.0',
+        lifecycle            : '2.2.0-alpha04',
 
         // Testing.
         junit                : '4.12',
@@ -32,7 +34,8 @@ ext.versions = [
 ext.libraries = [
         // UI libs.
         supportAppCompat        : 'androidx.appcompat:appcompat:1.1.0',
-        supportLifecycle        : 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-alpha04',
+        supportLifecycle        : "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle",
+        lifecycleExtensions     : "androidx.lifecycle:lifecycle-extensions:$versions.lifecycle",
         supportCardView         : 'androidx.cardview:cardview:1.0.0',
         supportDesign           : 'com.google.android.material:material:1.0.0',
         supportRecyclerView     : 'androidx.recyclerview:recyclerview:1.0.0',
@@ -53,7 +56,8 @@ ext.libraries = [
         javax                   : "javax.inject:javax.inject:$versions.javax",
         kotlinStdLib            : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin",
         roomCompiler            : "androidx.room:room-compiler:$versions.room",
-        roomRuntime            : "androidx.room:room-ktx:$versions.room",
+        roomRuntime             : "androidx.room:room-ktx:$versions.room",
+        coreKtx                 : "androidx.core:core-ktx:$versions.coreKtx",
 
         // Testing.
         junit                   : "junit:junit:$versions.junit",
