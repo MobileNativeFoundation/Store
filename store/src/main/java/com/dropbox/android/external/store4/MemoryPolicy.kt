@@ -23,26 +23,19 @@ class MemoryPolicy internal constructor(
     private val maxSizeNotDefault: Long
 ) {
 
-    val isDefaultWritePolicy: Boolean
-        get() = expireAfterWrite == DEFAULT_POLICY
+    val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_POLICY
 
-    val isDefaultAccessPolicy: Boolean
-        get() = expireAfterAccess == DEFAULT_POLICY
+    val isDefaultAccessPolicy: Boolean = expireAfterAccess == DEFAULT_POLICY
 
-    val isDefaultMaxSize: Boolean
-        get() = maxSizeNotDefault == DEFAULT_POLICY
+    val isDefaultMaxSize: Boolean = maxSizeNotDefault == DEFAULT_POLICY
 
-    val maxSize: Long
-        get() = if (isDefaultMaxSize) 1 else maxSizeNotDefault
+    val maxSize: Long = if (isDefaultMaxSize) 1 else maxSizeNotDefault
 
-    val hasWritePolicy: Boolean
-        get() = expireAfterWrite != DEFAULT_POLICY
+    val hasWritePolicy: Boolean = expireAfterWrite != DEFAULT_POLICY
 
-    val hasAccessPolicy: Boolean
-        get() = expireAfterAccess != DEFAULT_POLICY
+    val hasAccessPolicy: Boolean = expireAfterAccess != DEFAULT_POLICY
 
-    val hasMaxSize: Boolean
-        get() = maxSize != DEFAULT_POLICY
+    val hasMaxSize: Boolean = maxSize != DEFAULT_POLICY
 
     class MemoryPolicyBuilder {
         private var expireAfterWrite = DEFAULT_POLICY
