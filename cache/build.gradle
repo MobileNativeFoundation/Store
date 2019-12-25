@@ -20,8 +20,6 @@ group = GROUP
 version = VERSION_NAME
 
 apply from: rootProject.file("gradle/maven-push.gradle")
-apply from: rootProject.file("gradle/checkstyle.gradle")
-apply from: rootProject.file("gradle/pmd.gradle")
 
 
 targetCompatibility = 1.8
