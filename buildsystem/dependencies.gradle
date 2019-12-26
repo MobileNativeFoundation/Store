@@ -17,14 +17,13 @@ ext.versions = [
         okio                 : '2.4.1',
         gson                 : '2.8.6',
         moshi                : '1.9.2',
-        guava                : '28.1-jre',
         javax                : '1',
         room                 : '2.2.2',
         coreKtx              : '1.1.0',
         lifecycle            : '2.2.0-alpha04',
 
         // Testing.
-        junit                : '4.12',
+        junit                : '4.13-rc-2',
         truth                : '1.0',
         mockito              : '2.24.0',
         mockitoKotlin        : '2.2.0',
@@ -52,7 +51,6 @@ ext.libraries = [
         gson                    : "com.google.code.gson:gson:$versions.gson",
         moshi                   : "com.squareup.moshi:moshi:$versions.moshi",
         moshiCodegen            : "com.squareup.moshi:moshi-kotlin-codegen:$versions.moshi",
-        guava                   : "com.google.guava:guava:$versions.guava",
         javax                   : "javax.inject:javax.inject:$versions.javax",
         kotlinStdLib            : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin",
         roomCompiler            : "androidx.room:room-compiler:$versions.room",
