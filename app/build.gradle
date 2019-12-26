@@ -41,7 +41,6 @@ dependencies {
 
     testImplementation libraries.junit
     testImplementation libraries.mockito
-    testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
     testCompileOnly libraries.jsr305
     implementation libraries.supportRecyclerView
@@ -56,7 +55,6 @@ dependencies {
     implementation libraries.lifecycleExtensions
 
     implementation libraries.picasso
-    implementation libraries.guava
     implementation libraries.moshi
     implementation libraries.retrofitMoshiConverter
     kapt(libraries.moshiCodegen)
