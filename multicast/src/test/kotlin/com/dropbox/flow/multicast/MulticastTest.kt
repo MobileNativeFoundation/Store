@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
@@ -396,6 +397,34 @@ class MulticastTest {
         assertThat(c2.isActive).isFalse()
         assertThat(c2.await()).isEqualTo(listOf("a_1"))
         unlockC1.complete(Unit)
+    }
+
+    @Test
+    fun closed() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(flow {
+           collectionCount ++
+            emit(1)
+            // suspend forever
+            suspendCancellableCoroutine<Unit> {}
+        })
+        val collection = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection.isActive).isTrue()
+        multicaster.close()
+        runCurrent()
+        assertThat(collection.isCompleted).isTrue()
+        assertThat(collection.await()).isEqualTo(listOf(1))
+
+        // now add a new subscriber, should just close immediately
+        val collection2 = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection2.isActive).isFalse()
+        assertThat(collection2.await()).isEmpty()
     }
 
     private fun versionedMulticaster(
