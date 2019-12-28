@@ -1,4 +1,4 @@
-package com.dropbox.android.external.store4
+package com.dropbox.android.external.store3
 
 /**
  * Persisters should implement Clearable if they want store.clear(key) to also clear the persister
