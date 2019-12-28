@@ -15,7 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.cache3.CacheBuilder
+import com.dropbox.android.external.cache4.CacheBuilder
 import com.dropbox.android.external.store4.CacheType
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.ResponseOrigin
@@ -54,27 +54,19 @@ internal class RealStore<Key, Input, Output>(
             sourceOfTruth?.let {
                 SourceOfTruthWithBarrier(it)
             }
+
     private val memCache = memoryPolicy?.let {
-        CacheBuilder.newBuilder()
-                .apply {
-                    if (memoryPolicy.hasAccessPolicy) {
-                        expireAfterAccess(
-                            memoryPolicy.expireAfterAccess,
-                            memoryPolicy.expireAfterTimeUnit
-                        )
-                    }
-
-                    if (memoryPolicy.hasWritePolicy) {
-                        expireAfterWrite(
-                            memoryPolicy.expireAfterWrite,
-                            memoryPolicy.expireAfterTimeUnit
-                        )
-                    }
-
-                    if (memoryPolicy.hasMaxSize) {
-                        maximumSize(memoryPolicy.maxSize)
-                    }
-                }.build<Key, Output>()
+        CacheBuilder().apply {
+            if (memoryPolicy.hasAccessPolicy) {
+                expireAfterAccess(memoryPolicy.expireAfterAccess, memoryPolicy.expireAfterTimeUnit)
+            }
+            if (memoryPolicy.hasWritePolicy) {
+                expireAfterWrite(memoryPolicy.expireAfterWrite, memoryPolicy.expireAfterTimeUnit)
+            }
+            if (memoryPolicy.hasMaxSize) {
+                maximumCacheSize(memoryPolicy.maxSize)
+            }
+        }.build<Key, Output>()
     }
 
     /**
@@ -105,7 +97,7 @@ internal class RealStore<Key, Input, Output>(
         }.onStart {
             // if there is anything cached, dispatch it first if requested
             if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                memCache?.getIfPresent(request.key)?.let { cached ->
+                memCache?.get(request.key)?.let { cached ->
                     emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
                 }
             }
