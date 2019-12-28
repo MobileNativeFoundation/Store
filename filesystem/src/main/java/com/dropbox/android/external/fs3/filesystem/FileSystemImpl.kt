@@ -1,8 +1,7 @@
 package com.dropbox.android.external.fs3.filesystem
 
-import com.dropbox.android.external.cache3.CacheBuilder.newBuilder
-import com.dropbox.android.external.cache3.CacheLoader
-import com.dropbox.android.external.cache3.LoadingCache
+import com.dropbox.android.external.cache4.Cache
+import com.dropbox.android.external.cache4.CacheBuilder
 import com.dropbox.android.external.fs3.RecordState
 import com.dropbox.android.external.fs3.Util
 import okio.BufferedSource
@@ -21,16 +20,11 @@ import java.util.concurrent.TimeUnit
  */
 internal class FileSystemImpl(private val root: File) : FileSystem {
 
-    private val files: LoadingCache<String, FSFile>
+    private val files: Cache<String, FSFile> = CacheBuilder()
+        .maximumCacheSize(20)
+        .build()
 
     init {
-        this.files = newBuilder().maximumSize(20)
-            .build(object : CacheLoader<String, FSFile>() {
-                override fun load(path: String): FSFile {
-                    return FSFile(root, path)
-                }
-            })
-
         Util.createParentDirs(root)
     }
 
@@ -71,7 +65,11 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         return getFile(file)!!.exists()
     }
 
-    override fun getRecordState(expirationUnit: TimeUnit, expirationDuration: Long, path: String): RecordState {
+    override fun getRecordState(
+        expirationUnit: TimeUnit,
+        expirationDuration: Long,
+        path: String
+    ): RecordState {
         val file = getFile(path)
         if (!file!!.exists()) {
             return RecordState.MISSING
@@ -86,7 +84,8 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
     }
 
     private fun getFile(path: String): FSFile? {
-        return files.getUnchecked(cleanPath(path))
+        val cleanedPath = cleanPath(path)
+        return files.get(cleanedPath, fallback = FSFile(root, cleanedPath))
     }
 
     private fun cleanPath(dirty: String): String =
@@ -96,16 +95,37 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
     private fun findFiles(path: String): Collection<FSFile> {
         val searchRoot = File(root, Util.simplifyPath(path))
         if (searchRoot.exists() && searchRoot.isFile) {
-            throw FileNotFoundException(format("expecting a directory at %s, instead found a file", path))
+            throw FileNotFoundException(
+                format(
+                    "expecting a directory at %s, instead found a file",
+                    path
+                )
+            )
         }
 
         val foundFiles = ArrayList<FSFile>()
         val iterator = BreadthFirstFileTreeIterator(searchRoot)
         while (iterator.hasNext()) {
             val file = iterator.next() as File?
-            foundFiles.add(files.getUnchecked(Util.simplifyPath(file!!.path
-                .replaceFirst(root.path.toRegex(), "")))!!)
+            val simplifiedPath = Util.simplifyPath(
+                file!!.path.replaceFirst(root.path.toRegex(), "")
+            )
+            foundFiles.add(files.get(simplifiedPath, fallback = FSFile(root, simplifiedPath)))
         }
         return foundFiles
+    }
+}
+
+/**
+ * Cache and return a [fallback] value when no value associated with the [key] exists in the cache,
+ * otherwise return the existing value.
+ */
+private fun <Key, Value> Cache<Key, Value>.get(key: Key, fallback: Value): Value {
+    val value = get(key)
+    return if (value != null) {
+        value
+    } else {
+        put(key, fallback)
+        fallback
     }
 }
