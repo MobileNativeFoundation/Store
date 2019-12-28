@@ -16,7 +16,6 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store3.util.KeyParser
-import com.dropbox.android.external.store4.Clearable
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
