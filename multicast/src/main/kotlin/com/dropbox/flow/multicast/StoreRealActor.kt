@@ -84,7 +84,6 @@ internal abstract class StoreRealActor<T>(
         } catch (closed: ClosedSendChannelException) {
             // already closed, ignore
         }
-
     }
 
     companion object {
