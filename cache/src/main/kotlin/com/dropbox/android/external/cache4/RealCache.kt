@@ -83,8 +83,7 @@ internal class RealCache<in Key, Value>(
 
     override fun get(key: Key): Value? {
         val nowNanos = clock.currentTimeNanos
-        val entry = cacheEntries[key]
-        return entry?.let {
+        return cacheEntries[key]?.let {
             if (it.isExpired(nowNanos)) {
                 // clean up expired entries and return null
                 expireEntries(nowNanos)
@@ -93,6 +92,33 @@ internal class RealCache<in Key, Value>(
                 // update eviction metadata and return the value
                 it.recordRead(nowNanos)
                 it.value
+            }
+        }
+    }
+
+    override fun get(key: Key, loader: () -> Value): Value {
+        synchronized(this) {
+            val nowNanos = clock.currentTimeNanos
+            return cacheEntries[key]?.let {
+                if (it.isExpired(nowNanos)) {
+                    // clean up expired entries
+                    expireEntries(nowNanos)
+                    null
+                } else {
+                    // update eviction metadata
+                    it.recordRead(nowNanos)
+                    it.value
+                }
+            } ?: loader().let { loadedValue ->
+                // cache the loaded value if value for the key is still absent
+                // from the cache entries after executing the loader
+                val existingValue = get(key)
+                if (existingValue != null) {
+                    existingValue
+                } else {
+                    put(key, loadedValue)
+                    loadedValue
+                }
             }
         }
     }

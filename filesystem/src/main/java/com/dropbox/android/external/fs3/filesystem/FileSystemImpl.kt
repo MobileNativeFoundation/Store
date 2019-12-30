@@ -85,7 +85,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
 
     private fun getFile(path: String): FSFile? {
         val cleanedPath = cleanPath(path)
-        return files.get(cleanedPath, fallback = FSFile(root, cleanedPath))
+        return files.get(cleanedPath, loader = { FSFile(root, cleanedPath) })
     }
 
     private fun cleanPath(dirty: String): String =
@@ -110,22 +110,10 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
             val simplifiedPath = Util.simplifyPath(
                 file!!.path.replaceFirst(root.path.toRegex(), "")
             )
-            foundFiles.add(files.get(simplifiedPath, fallback = FSFile(root, simplifiedPath)))
+            foundFiles.add(
+                files.get(simplifiedPath, loader = { FSFile(root, simplifiedPath) })
+            )
         }
         return foundFiles
-    }
-}
-
-/**
- * Cache and return a [fallback] value when no value associated with the [key] exists in the cache,
- * otherwise return the existing value.
- */
-private fun <Key, Value> Cache<Key, Value>.get(key: Key, fallback: Value): Value {
-    val value = get(key)
-    return if (value != null) {
-        value
-    } else {
-        put(key, fallback)
-        fallback
     }
 }
