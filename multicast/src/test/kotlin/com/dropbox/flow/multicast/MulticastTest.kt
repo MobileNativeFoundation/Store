@@ -48,11 +48,11 @@ import org.junit.runners.JUnit4
 class MulticastTest {
     private val testScope = TestCoroutineScope()
 
-    private fun <T> createMulticaster(f: Flow<T>): Multicaster<T> {
+    private fun <T> createMulticaster(flow: Flow<T>, bufferSize: Int = 0): Multicaster<T> {
         return Multicaster(
             scope = testScope,
-            bufferSize = 0,
-            source = f,
+            bufferSize = bufferSize,
+            source = flow,
             onEach = {})
     }
 
@@ -400,10 +400,10 @@ class MulticastTest {
     }
 
     @Test
-    fun closed() = testScope.runBlockingTest {
+    fun closed_whileCollecting() = testScope.runBlockingTest {
         var collectionCount = 0
         val multicaster = createMulticaster(flow {
-           collectionCount ++
+            collectionCount++
             emit(1)
             // suspend forever
             suspendCancellableCoroutine<Unit> {}
@@ -417,8 +417,49 @@ class MulticastTest {
         runCurrent()
         assertThat(collection.isCompleted).isTrue()
         assertThat(collection.await()).isEqualTo(listOf(1))
+    }
 
+    @Test
+    fun closed_subscriberAfterClose() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(flow {
+            collectionCount++
+            emit(1)
+            // suspend forever
+            suspendCancellableCoroutine<Unit> {}
+        })
+        multicaster.close()
+        // now add a subscriber, should just close immediately
+        runCurrent()
+        val collection = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection.isActive).isFalse()
+        assertThat(collection.await()).isEmpty()
+    }
+
+    @Test
+    fun closed_additionalSubscriberAfterClose_withBuffer() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(
+            flow = flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            },
+            bufferSize = 10
+        )
+        async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        multicaster.close()
+        runCurrent()
         // now add a new subscriber, should just close immediately
+        // note that even there is a buffer, closing multicast releases all resources so buffer
+        // will be gone as well.
         val collection2 = async {
             multicaster.flow.toList()
         }

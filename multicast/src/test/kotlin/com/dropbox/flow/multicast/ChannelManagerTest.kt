@@ -142,11 +142,11 @@ class ChannelManagerTest {
         }
 
     @Test
-    fun `Calling close on ChannelManager should close downstream channels when a value is also dispatched`() =
+    fun `GIVEN two downstreams and a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
         assertClosingChannelManager(true)
 
     @Test
-    fun `Calling close on ChannelManager should close downstream channels when no values are dispatched`() =
+    fun `GIVEN two downstreams without a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
         assertClosingChannelManager(false)
 
     private fun assertClosingChannelManager(dispatchValue: Boolean) = scope.runBlockingTest {
