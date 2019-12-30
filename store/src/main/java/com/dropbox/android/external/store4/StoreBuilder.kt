@@ -36,8 +36,6 @@ interface StoreBuilder<Key, Output> {
     fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
     fun disableCache(): StoreBuilder<Key, Output>
-    fun fetchBufferSize(fetchBufferSize: Int): StoreBuilder<Key, Output>
-    fun keepFetcherAlive(keepFetcherAlive: Boolean): StoreBuilder<Key, Output>
 
     /**
      * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
@@ -111,8 +109,6 @@ private class BuilderImpl<Key, Output>(
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
-    private var fetchBufferSize: Int = 0
-    private var keepFetcherAlive: Boolean = false
 
     private fun <NewOutput> withSourceOfTruth(
         sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
@@ -140,16 +136,6 @@ private class BuilderImpl<Key, Output>(
 
     override fun disableCache(): BuilderImpl<Key, Output> {
         cachePolicy = null
-        return this
-    }
-
-    override fun fetchBufferSize(fetchBufferSize: Int): StoreBuilder<Key, Output> {
-        this.fetchBufferSize = fetchBufferSize
-        return this
-    }
-
-    override fun keepFetcherAlive(keepFetcherAlive: Boolean): StoreBuilder<Key, Output> {
-        this.keepFetcherAlive = keepFetcherAlive
         return this
     }
 
@@ -194,8 +180,6 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
-    private var fetchBufferSize: Int = 0
-    private var keepFetcherAlive: Boolean = false
 
     override fun scope(scope: CoroutineScope): BuilderWithSourceOfTruth<Key, Input, Output> {
         this.scope = scope
@@ -213,28 +197,13 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
     }
 
     override fun build(): Store<Key, Output> {
-        require(!keepFetcherAlive || fetchBufferSize > 0) {
-            "Must set fetchBufferSize > 0 in order to enable keepFetcherAlive"
-        }
         @Suppress("UNCHECKED_CAST")
         return RealStore(
             scope = scope ?: GlobalScope,
             sourceOfTruth = sourceOfTruth,
             fetcher = fetcher,
-            memoryPolicy = cachePolicy,
-            fetchBufferSize = fetchBufferSize,
-            keepFetcherAlive = keepFetcherAlive
+            memoryPolicy = cachePolicy
         )
-    }
-
-    override fun fetchBufferSize(fetchBufferSize: Int): BuilderWithSourceOfTruth<Key, Input, Output> {
-        this.fetchBufferSize = fetchBufferSize
-        return this
-    }
-
-    override fun keepFetcherAlive(keepFetcherAlive: Boolean): BuilderWithSourceOfTruth<Key, Input, Output> {
-        this.keepFetcherAlive = keepFetcherAlive
-        return this
     }
 
     override fun <NewOutput> persister(

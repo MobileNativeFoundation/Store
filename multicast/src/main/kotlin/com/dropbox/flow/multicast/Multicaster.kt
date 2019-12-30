@@ -59,6 +59,8 @@ class Multicaster<T>(
     /**
      * If true, an active upstream will stay alive even if all downstreams are closed. A downstream
      * coming in later will receive a value from the live upstream.
+     *
+     * The upstream will be kept alive until [scope] cancels or [close] is called.
      */
     private val keepUpstreamAlive: Boolean = false,
     /**
