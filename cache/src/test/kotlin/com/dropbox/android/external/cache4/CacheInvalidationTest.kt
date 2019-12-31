@@ -8,7 +8,7 @@ class CacheInvalidationTest {
 
     @Test
     fun `calling invalidate(key) evicts the entry associated with the key`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -28,7 +28,7 @@ class CacheInvalidationTest {
         val clock = TestClock(virtualTimeNanos = 0)
         val oneMinute = TimeUnit.MINUTES.toNanos(1)
 
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -58,7 +58,7 @@ class CacheInvalidationTest {
 
     @Test
     fun `calling invalidateAll() evicts all entries in the cache`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")

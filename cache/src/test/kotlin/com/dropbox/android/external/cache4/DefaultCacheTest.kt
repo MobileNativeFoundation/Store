@@ -7,7 +7,7 @@ class DefaultCacheTest {
 
     @Test
     fun `get(key) returns null when no entry with the associated key exists`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         assertThat(cache.get(1))
@@ -16,7 +16,7 @@ class DefaultCacheTest {
 
     @Test
     fun `get(key) returns value when entry with the associated key exists`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -31,7 +31,7 @@ class DefaultCacheTest {
 
     @Test
     fun `calling get(key) multiple times return the same value`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -48,7 +48,7 @@ class DefaultCacheTest {
 
     @Test
     fun `get(key) returns latest value when values have been replaced for the same key`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -64,7 +64,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache complex type value with hashcode`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, TypeWithHashCode>()
 
         cache.put(1, TypeWithHashCode("dog", 10))
@@ -79,7 +79,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache complex type value without hashcode`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, TypeWithoutHashCode>()
 
         cache.put(1, TypeWithoutHashCode("dog", 10))
@@ -98,7 +98,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache with complex type key with hashcode`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<TypeWithHashCode, String>()
 
         cache.put(TypeWithHashCode("a", 1), "dog")
@@ -111,7 +111,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache with complex type key without hashcode`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<TypeWithoutHashCode, String>()
 
         val key = TypeWithoutHashCode("a", 1)
@@ -130,7 +130,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache same value with different keys`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, TypeWithoutHashCode>()
 
         val valueToCache = TypeWithoutHashCode("dog", 10)
@@ -147,7 +147,7 @@ class DefaultCacheTest {
 
     @Test
     fun `can cache using Unit as key`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Unit, String>()
 
         cache.put(Unit, "dog")

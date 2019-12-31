@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
  * beyond [maxSize], least recently accessed entries will be evicted.
  *
  */
-internal class RealCache<in Key, Value>(
+internal class RealCache<in Key : Any, Value : Any>(
     val expireAfterWriteNanos: Long,
     val expireAfterAccessNanos: Long,
     val maxSize: Long,

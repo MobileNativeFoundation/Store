@@ -1,7 +1,6 @@
 package com.dropbox.android.external.fs3.filesystem
 
 import com.dropbox.android.external.cache4.Cache
-import com.dropbox.android.external.cache4.CacheBuilder
 import com.dropbox.android.external.fs3.RecordState
 import com.dropbox.android.external.fs3.Util
 import okio.BufferedSource
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit
  */
 internal class FileSystemImpl(private val root: File) : FileSystem {
 
-    private val files: Cache<String, FSFile> = CacheBuilder()
+    private val files: Cache<String, FSFile> = Cache.Builder.newBuilder()
         .maximumCacheSize(20)
         .build()
 

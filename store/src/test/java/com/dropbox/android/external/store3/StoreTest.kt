@@ -1,6 +1,6 @@
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.cache4.CacheBuilder
+import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.fresh
@@ -123,7 +123,7 @@ class StoreTest(
 
     @Test
     fun testEquivalence() = testScope.runBlockingTest {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .maximumCacheSize(1)
             .expireAfterAccess(java.lang.Long.MAX_VALUE, TimeUnit.SECONDS)
             .build<BarCode, String>()

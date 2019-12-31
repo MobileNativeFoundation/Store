@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transform
 
 // possible replacement for [Store] as an internal only representation
-// if this class becomes public, should probaly be named IntermediateStore to distingush from
+// if this class becomes public, should probably be named IntermediateStore to distinguish from
 // Store and also clarify that it still needs to be built/open? (how do we ensure?)
-interface Store<Key, Output> {
+interface Store<Key : Any, Output : Any> {
 
     /**
      * Return a flow for the given key
@@ -18,7 +18,7 @@ interface Store<Key, Output> {
 
     /**
      * Purge a particular entry from memory and disk cache.
-     * Persistant storage will only be cleared if a delete function was passed to
+     * Persistent storage will only be cleared if a delete function was passed to
      * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
      */
     suspend fun clear(key: Key)
@@ -26,11 +26,11 @@ interface Store<Key, Output> {
 
 @ExperimentalCoroutinesApi
 @Deprecated("Legacy")
-fun <Key, Output> Store<Key, Output>.stream(key: Key) = stream(
-        StoreRequest.skipMemory(
-                key = key,
-                refresh = true
-        )
+fun <Key : Any, Output : Any> Store<Key, Output>.stream(key: Key) = stream(
+    StoreRequest.skipMemory(
+        key = key,
+        refresh = true
+    )
 ).transform {
     it.throwIfError()
     it.dataOrNull()?.let { output ->
@@ -38,14 +38,14 @@ fun <Key, Output> Store<Key, Output>.stream(key: Key) = stream(
     }
 }
 
-suspend fun <Key, Output> Store<Key, Output>.get(key: Key) = stream(
-        StoreRequest.cached(key, refresh = false)
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
+    StoreRequest.cached(key, refresh = false)
 ).filterNot {
     it is StoreResponse.Loading
 }.first().requireData()
 
-suspend fun <Key, Output> Store<Key, Output>.fresh(key: Key) = stream(
-        StoreRequest.fresh(key)
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = stream(
+    StoreRequest.fresh(key)
 ).filterNot {
     it is StoreResponse.Loading
 }.first().requireData()

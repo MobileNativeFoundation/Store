@@ -1,11 +1,6 @@
 package com.dropbox.android.external.cache4
 
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.spy
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,14 +17,15 @@ class CacheLoaderTest {
 
     @Test
     fun `get(key, loader) returns value from loader when no entry with the associated key exists before and after executing the loader`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         val loader = createLoader("dog")
 
         val value = cache.get(1, loader)
 
-        verify(loader, times(1)).invoke()
+        assertThat(loader.invokeCount)
+            .isEqualTo(1)
 
         assertThat(value)
             .isEqualTo("dog")
@@ -37,7 +33,7 @@ class CacheLoaderTest {
 
     @Test
     fun `get(key, loader) returns existing value when an entry with the associated key exists before executing the loader`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -46,7 +42,8 @@ class CacheLoaderTest {
 
         val value = cache.get(1, loader)
 
-        verify(loader, never()).invoke()
+        assertThat(loader.invokeCount)
+            .isEqualTo(0)
 
         assertThat(value)
             .isEqualTo("dog")
@@ -55,7 +52,7 @@ class CacheLoaderTest {
     @Test
     fun `get(key, loader) returns existing value when an entry with the associated key is absent initially but present after executing the loader`() =
         runBlocking {
-            val cache = CacheBuilder()
+            val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -75,7 +72,8 @@ class CacheLoaderTest {
 
             delay(executionTime + 10)
 
-            verify(loader, times(1)).invoke()
+            assertThat(loader.invokeCount)
+                .isEqualTo(1)
 
             // entry from loader should not be cached as an entry already exists
             // by the time loader returns
@@ -88,14 +86,15 @@ class CacheLoaderTest {
 
     @Test
     fun `value returned by loader is cached when value associated with the key is still absent after executing the loader`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         val loader = createLoader("dog")
 
         cache.get(1, loader)
 
-        verify(loader, times(1)).invoke()
+        assertThat(loader.invokeCount)
+            .isEqualTo(1)
 
         assertThat(cache.get(1))
             .isEqualTo("dog")
@@ -103,7 +102,7 @@ class CacheLoaderTest {
 
     @Test
     fun `value returned by loader is not cached when an unexpired value associated with the key exists`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         cache.put(1, "dog")
@@ -112,7 +111,8 @@ class CacheLoaderTest {
 
         cache.get(1, loader)
 
-        verify(loader, never()).invoke()
+        assertThat(loader.invokeCount)
+            .isEqualTo(0)
 
         assertThat(cache.get(1))
             .isEqualTo("dog")
@@ -121,7 +121,7 @@ class CacheLoaderTest {
     @Test
     fun `calling get(key, loader) executes the loader and caches the value returned when an expired value associated with the key exists`() =
         runBlocking {
-            val cache = CacheBuilder()
+            val cache = Cache.Builder.newBuilder()
                 .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
                 .clock(clock)
                 .build<Long, String>()
@@ -146,7 +146,8 @@ class CacheLoaderTest {
 
             delay(executionTime + 10)
 
-            verify(loader, times(1)).invoke()
+            assertThat(loader.invokeCount)
+                .isEqualTo(1)
 
             // entry from loader should be cached as the existing one has expired.
             assertThat(value)
@@ -159,7 +160,7 @@ class CacheLoaderTest {
     @Test
     fun `calling get(key, loader) executes the loader and caches the value returned when an existing value was invalidated`() =
         runBlocking {
-            val cache = CacheBuilder()
+            val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -182,7 +183,8 @@ class CacheLoaderTest {
 
             delay(executionTime + 10)
 
-            verify(loader, times(1)).invoke()
+            assertThat(loader.invokeCount)
+                .isEqualTo(1)
 
             // entry from loader should be cached as previous one had been invalidated.
             assertThat(value)
@@ -195,7 +197,7 @@ class CacheLoaderTest {
     @Test
     fun `only 1 loader is executed by multiple concurrent get(key, loader) calls`() =
         runBlocking {
-            val cache = CacheBuilder()
+            val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
 
             val executionTime = 20L
@@ -210,7 +212,8 @@ class CacheLoaderTest {
 
             delay(executionTime * 3 + 10)
 
-            verify(loader, times(1)).invoke()
+            assertThat(loader.invokeCount)
+                .isEqualTo(1)
 
             assertThat(cache.get(1))
                 .isEqualTo("cat")
@@ -218,7 +221,7 @@ class CacheLoaderTest {
 
     @Test
     fun `a loader exception is propagated to the get(key, loader) call`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
         val loader = createFailingLoader<String>(IOException())
@@ -227,7 +230,8 @@ class CacheLoaderTest {
             cache.get(1, loader)
         }
 
-        verify(loader, times(1)).invoke()
+        assertThat(loader.invokeCount)
+            .isEqualTo(1)
 
         assertThat(cache.get(1))
             .isNull()
@@ -236,7 +240,7 @@ class CacheLoaderTest {
     @Test
     fun `a blocked concurrent get(key, loader) call is unblocked and executes its own loader after the loader from an earlier concurrent call throws an exception`() =
         runBlocking {
-            val cache = CacheBuilder()
+            val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -259,8 +263,10 @@ class CacheLoaderTest {
 
             delay(executionTime * 2)
 
-            verify(loader1, times(1)).invoke()
-            verify(loader2, times(1)).invoke()
+            assertThat(loader1.invokeCount)
+                .isEqualTo(1)
+            assertThat(loader2.invokeCount)
+                .isEqualTo(1)
 
             assertThat(value)
                 .isEqualTo("cat")
@@ -268,47 +274,33 @@ class CacheLoaderTest {
             assertThat(cache.get(1))
                 .isEqualTo("cat")
         }
+}
 
-    private fun <Value> createLoader(computedValue: Value): () -> Value {
-        return spy<() -> Value>().apply {
-            whenever(invoke()).thenReturn(computedValue)
-        }
-    }
-
-    private fun <Value> createSlowLoader(
-        computedValue: Value,
-        executionTime: Long
-    ): () -> Value {
-        return spy<() -> Value>().apply {
-            whenever(invoke()).thenAnswer {
-                runBlocking {
-                    delay(executionTime)
-                }
-                computedValue
-            }
-        }
-    }
-
-    private fun <Value> createFailingLoader(exception: Exception): () -> Value {
-        return spy<() -> Value>().apply {
-            whenever(invoke()).thenAnswer {
-                throw exception
-            }
-        }
-    }
-
-    @Suppress("SameParameterValue")
-    private fun <Value> createSlowFailingLoader(
-        exception: Exception,
-        executionTime: Long
-    ): () -> Value {
-        return spy<() -> Value>().apply {
-            whenever(invoke()).thenAnswer {
-                runBlocking {
-                    delay(executionTime)
-                }
-                throw exception
-            }
-        }
+private class TestLoader<Value>(private val loader: () -> Value) : () -> Value {
+    var invokeCount = 0
+    override operator fun invoke(): Value {
+        invokeCount++
+        return loader()
     }
 }
+
+private fun <Value> createLoader(computedValue: Value) =
+    TestLoader { computedValue }
+
+private fun <Value> createSlowLoader(
+    computedValue: Value,
+    executionTime: Long
+) = TestLoader {
+    runBlocking { delay(executionTime) }
+    computedValue
+}
+
+private fun <Value> createFailingLoader(exception: Exception) =
+    TestLoader { throw exception }
+
+@Suppress("SameParameterValue")
+private fun <Value> createSlowFailingLoader(exception: Exception, executionTime: Long) =
+    TestLoader {
+        runBlocking { delay(executionTime) }
+        throw exception
+    }

@@ -4,8 +4,6 @@ apply plugin: 'org.jetbrains.dokka'
 dependencies {
     implementation libraries.kotlinStdLib
 
-    testImplementation libraries.mockito
-    testImplementation libraries.mockitoKotlin
     testImplementation libraries.junit
     testImplementation libraries.truth
     testImplementation libraries.coroutinesTest

@@ -12,7 +12,7 @@ class CacheExpirationTest {
 
     @Test
     fun `cache never expires by default`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .build<Long, String>()
 
@@ -30,7 +30,7 @@ class CacheExpirationTest {
 
     @Test
     fun `cache entry gets evicted when expired after write`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -52,7 +52,7 @@ class CacheExpirationTest {
 
     @Test
     fun `replacing a cache value resets the write expiry time`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -80,7 +80,7 @@ class CacheExpirationTest {
 
     @Test
     fun `reading a cache entry does not reset the write expiry time`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -103,7 +103,7 @@ class CacheExpirationTest {
 
     @Test
     fun `cache entry gets evicted when expired after access`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterAccess(twoMinutes, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -123,7 +123,7 @@ class CacheExpirationTest {
 
     @Test
     fun `replacing a cache value resets the access expiry time`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterAccess(twoMinutes, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -151,7 +151,7 @@ class CacheExpirationTest {
 
     @Test
     fun `reading a cache entry resets the access expiry time`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterAccess(twoMinutes, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -180,7 +180,7 @@ class CacheExpirationTest {
 
     @Test
     fun `cache expiration respects both expireAfterWrite and expireAfterAccess`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(twoMinutes, TimeUnit.NANOSECONDS)
             .expireAfterAccess(oneMinute, TimeUnit.NANOSECONDS)
@@ -213,7 +213,7 @@ class CacheExpirationTest {
 
     @Test
     fun `only expired cache entries are evicted`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -252,7 +252,7 @@ class CacheExpirationTest {
 
     @Test
     fun `cache entry gets evicted when exceeding maximum size before expected expiry`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .maximumCacheSize(2)
             .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
@@ -279,7 +279,7 @@ class CacheExpirationTest {
 
     @Test
     fun `no values are cached when expireAfterWrite is explicitly set to 0`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterWrite(0, TimeUnit.NANOSECONDS)
             .build<Long, String>()
@@ -296,7 +296,7 @@ class CacheExpirationTest {
 
     @Test
     fun `no values are cached when expireAfterAccess is explicitly set to 0`() {
-        val cache = CacheBuilder()
+        val cache = Cache.Builder.newBuilder()
             .clock(clock)
             .expireAfterAccess(0, TimeUnit.NANOSECONDS)
             .build<Long, String>()

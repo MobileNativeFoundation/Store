@@ -60,9 +60,9 @@ class FlowStoreTest {
                 Loading(
                     origin = Fetcher
                 ), Data(
-                value = "three-1",
-                origin = Fetcher
-            )
+                    value = "three-1",
+                    origin = Fetcher
+                )
             )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
             .assertItems(
@@ -478,7 +478,7 @@ class FlowStoreTest {
         )
     }
 
-    private fun <Key, Input, Output> build(
+    private fun <Key : Any, Input : Any, Output : Any> build(
         nonFlowingFetcher: (suspend (Key) -> Input)? = null,
         flowingFetcher: ((Key) -> Flow<Input>)? = null,
         persisterReader: (suspend (Key) -> Output?)? = null,

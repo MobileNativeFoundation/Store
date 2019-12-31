@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.flow
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-data class TestStoreBuilder<Key, Output>(
+data class TestStoreBuilder<Key : Any, Output : Any>(
     private val buildStore: () -> Store<Key, Output>
 ) {
     fun build(storeType: TestStoreType): Store<Key, out Output> = when (storeType) {
@@ -39,7 +39,7 @@ data class TestStoreBuilder<Key, Output>(
 
     companion object {
 
-        fun <Key, Output> from(
+        fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
             fetcher: Fetcher<Output, Key>,
             persister: Persister<Output, Key>? = null,
@@ -52,7 +52,7 @@ data class TestStoreBuilder<Key, Output>(
         )
 
         @Suppress("UNCHECKED_CAST")
-        fun <Key, Output> from(
+        fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
             inflight: Boolean = true,
             cached: Boolean = false,
@@ -71,7 +71,7 @@ data class TestStoreBuilder<Key, Output>(
         )
 
         @Suppress("UNCHECKED_CAST")
-        fun <Key, Output> from(
+        fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
             inflight: Boolean = true,
             cached: Boolean = false,
@@ -99,7 +99,11 @@ data class TestStoreBuilder<Key, Output>(
                         .scope(scope)
                         .let {
                             if (cached) {
-                                cacheMemoryPolicy?.let { cacheMemoryPolicy -> it.cachePolicy(cacheMemoryPolicy) } ?: it
+                                cacheMemoryPolicy?.let { cacheMemoryPolicy ->
+                                    it.cachePolicy(
+                                        cacheMemoryPolicy
+                                    )
+                                } ?: it
                             } else {
                                 it.disableCache()
                             }
@@ -122,31 +126,32 @@ data class TestStoreBuilder<Key, Output>(
 
         internal fun <Key, Output> sourceOfTruthFromLegacy(
             persister: Persister<Output, Key>,
-                // parser that runs after get from db
+            // parser that runs after get from db
             postParser: KeyParser<Key, Output, Output>? = null
         ): SourceOfTruth<Key, Output, Output> {
             return PersistentSourceOfTruth(
-                    realReader = { key ->
-                        flow {
-                            if (postParser == null) {
-                                emit(persister.read(key))
-                            } else {
-                                persister.read(key)?.let {
-                                    val postParsed = postParser.apply(key, it)
-                                    emit(postParsed)
-                                } ?: emit(null)
-                            }
+                realReader = { key ->
+                    flow {
+                        if (postParser == null) {
+                            emit(persister.read(key))
+                        } else {
+                            persister.read(key)?.let {
+                                val postParsed = postParser.apply(key, it)
+                                emit(postParsed)
+                            } ?: emit(null)
                         }
-                    },
-                    realWriter = { key, value ->
-                        persister.write(key, value)
-                    },
-                    realDelete = { key ->
-                        (persister as? Clearable<Key>)?.clear(key)
                     }
+                },
+                realWriter = { key, value ->
+                    persister.write(key, value)
+                },
+                realDelete = { key ->
+                    (persister as? Clearable<Key>)?.clear(key)
+                }
             )
         }
     }
+
     // wraps a regular fun to suspend, couldn't figure out how to create suspend fun variables :/
     private class SuspendWrapper<P0, R>(
         val f: (P0) -> R
