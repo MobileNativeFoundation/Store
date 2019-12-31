@@ -90,7 +90,7 @@ internal class RealCache<in Key, Value>(
                 null
             } else {
                 // update eviction metadata and return the value
-                it.recordRead(nowNanos)
+                recordRead(it, nowNanos)
                 it.value
             }
         }
@@ -106,7 +106,7 @@ internal class RealCache<in Key, Value>(
                     null
                 } else {
                     // update eviction metadata
-                    it.recordRead(nowNanos)
+                    recordRead(it, nowNanos)
                     it.value
                 }
             } ?: loader().let { loadedValue ->
@@ -130,12 +130,13 @@ internal class RealCache<in Key, Value>(
         val existingEntry = cacheEntries[key]
         if (existingEntry != null) {
             // cache entry found
-            existingEntry.recordWrite(nowNanos)
+            recordWrite(existingEntry, nowNanos)
             existingEntry.value = value
+            cacheEntries[key] = existingEntry
         } else {
             // create a new cache entry
             val newEntry = CacheEntry(key, value)
-            newEntry.recordWrite(nowNanos)
+            recordWrite(newEntry, nowNanos)
             cacheEntries[key] = newEntry
         }
 
@@ -209,28 +210,28 @@ internal class RealCache<in Key, Value>(
     }
 
     /**
-     * Update the eviction metadata on the [CacheEntry] which has just been read.
+     * Update the eviction metadata on the [cacheEntry] which has just been read.
      */
-    private fun CacheEntry<Key, Value>.recordRead(nowNanos: Long) {
+    private fun recordRead(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
         if (expiresAfterAccess) {
-            accessTimeNanos = nowNanos
+            cacheEntry.accessTimeNanos = nowNanos
         }
-        accessQueue?.add(this)
+        accessQueue?.add(cacheEntry)
     }
 
     /**
-     * Update the eviction metadata on the [CacheEntry] which has just been written.
+     * Update the eviction metadata on the [CacheEntry] which is about to be written.
      * Note that a write is also considered an access.
      */
-    private fun CacheEntry<Key, Value>.recordWrite(nowNanos: Long) {
+    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
         if (expiresAfterAccess) {
-            accessTimeNanos = nowNanos
+            cacheEntry.accessTimeNanos = nowNanos
         }
         if (expiresAfterWrite) {
-            writeTimeNanos = nowNanos
+            cacheEntry.writeTimeNanos = nowNanos
         }
-        accessQueue?.add(this)
-        writeQueue?.add(this)
+        accessQueue?.add(cacheEntry)
+        writeQueue?.add(cacheEntry)
     }
 
     companion object {

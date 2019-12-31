@@ -221,7 +221,7 @@ class CacheExpirationTest {
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        // cache a new new
+        // cache a new value
         clock.virtualTimeNanos = oneMinute / 2
         cache.put(3, "bird")
 
