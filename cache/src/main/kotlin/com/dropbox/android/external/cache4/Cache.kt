@@ -18,11 +18,12 @@ interface Cache<in Key : Any, Value : Any> {
      * otherwise gets the value by invoking [loader], associates the value with [key] in the cache,
      * and returns the cached value.
      *
-     * When this is called from multiple threads concurrently, if an unexpired value for the [key]
-     * is present by the time the [loader] returns the new value, the existing value won't be
-     * replaced by the new value. Instead the existing value will be returned.
+     * Note that [loader] is executed on the caller's thread. When called from multiple threads
+     * concurrently, if an unexpired value for the [key] is present by the time the [loader] returns
+     * the new value, the existing value won't be replaced by the new value.
+     * Instead the existing value will be returned.
      *
-     * Note that [loader] is executed on the caller's thread.
+     * Any exceptions thrown by the [loader] will be propagated to the caller of this function.
      */
     fun get(key: Key, loader: () -> Value): Value
 
