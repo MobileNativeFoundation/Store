@@ -26,7 +26,6 @@ import kotlin.concurrent.withLock
  *
  * Size-based evictions are enabled by specifying [maxSize]. When the size of the cache entries grows
  * beyond [maxSize], least recently accessed entries will be evicted.
- *
  */
 internal class RealCache<Key : Any, Value : Any>(
     val expireAfterWriteNanos: Long,
@@ -73,7 +72,7 @@ internal class RealCache<Key : Any, Value : Any>(
     private val expiresAfterAccess = expireAfterAccessNanos > 0
 
     /**
-     * A map of [Key] : Lock pairs for doing per-key synchronization.
+     * A map of [Key] : [Lock] pairs for doing key-based synchronization.
      */
     private val keyBasedLocks: MutableMap<Key, Lock> = ConcurrentHashMap()
 

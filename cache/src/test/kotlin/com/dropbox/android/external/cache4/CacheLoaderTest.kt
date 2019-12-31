@@ -303,11 +303,11 @@ class CacheLoaderTest {
         }
 }
 
-private class TestLoader<Value>(private val loader: () -> Value) : () -> Value {
+private class TestLoader<Value>(private val block: () -> Value) : () -> Value {
     var invokeCount = 0
     override operator fun invoke(): Value {
         invokeCount++
-        return loader()
+        return block()
     }
 }
 
