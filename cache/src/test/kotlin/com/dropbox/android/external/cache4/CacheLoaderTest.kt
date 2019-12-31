@@ -195,7 +195,7 @@ class CacheLoaderTest {
         }
 
     @Test
-    fun `only 1 loader is executed by multiple concurrent get(key, loader) calls`() =
+    fun `only 1 loader is executed for multiple concurrent get(key, loader) calls with the same key`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
@@ -206,6 +206,7 @@ class CacheLoaderTest {
 
             repeat(3) {
                 launch(Dispatchers.Default) {
+                    // all calls use the same key
                     cache.get(1, loader)
                 }
             }
@@ -214,6 +215,32 @@ class CacheLoaderTest {
 
             assertThat(loader.invokeCount)
                 .isEqualTo(1)
+
+            assertThat(cache.get(1))
+                .isEqualTo("cat")
+        }
+
+    @Test
+    fun `each loader is executed for multiple concurrent get(key, loader) calls with different keys`() =
+        runBlocking {
+            val cache = Cache.Builder.newBuilder()
+                .build<Long, String>()
+
+            val executionTime = 20L
+
+            val loader = createSlowLoader("cat", executionTime)
+
+            repeat(3) {
+                launch(Dispatchers.Default) {
+                    // each call uses a different key
+                    cache.get(it.toLong(), loader)
+                }
+            }
+
+            delay(executionTime * 3 + 10)
+
+            assertThat(loader.invokeCount)
+                .isEqualTo(3)
 
             assertThat(cache.get(1))
                 .isEqualTo("cat")
