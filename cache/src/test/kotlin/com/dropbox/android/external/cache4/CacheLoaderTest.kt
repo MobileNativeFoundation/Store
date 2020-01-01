@@ -1,7 +1,6 @@
 package com.dropbox.android.external.cache4
 
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -61,11 +60,11 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 delay(1)
                 cache.put(1, "cat")
             }
@@ -132,11 +131,11 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 delay(1)
                 cache.put(1, "cat")
 
@@ -169,11 +168,11 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 delay(1)
                 cache.put(1, "cat")
 
@@ -205,7 +204,7 @@ class CacheLoaderTest {
             val loader = createSlowLoader("cat", executionTime)
 
             repeat(3) {
-                launch(Dispatchers.Default) {
+                launch(newSingleThreadDispatcher()) {
                     // all calls use the same key
                     cache.get(1, loader)
                 }
@@ -231,7 +230,7 @@ class CacheLoaderTest {
             val loader = createSlowLoader("cat", executionTime)
 
             repeat(3) {
-                launch(Dispatchers.Default) {
+                launch(newSingleThreadDispatcher()) {
                     // each call uses a different key
                     cache.get(it.toLong(), loader)
                 }
@@ -251,7 +250,7 @@ class CacheLoaderTest {
         val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
-        val loader = createFailingLoader<String>(IOException())
+        val loader = createFailingLoader(IOException())
 
         assertThrows(IOException::class.java) {
             cache.get(1, loader)
@@ -272,18 +271,18 @@ class CacheLoaderTest {
 
             val executionTime = 50L
 
-            val loader1 = createSlowFailingLoader<String>(IOException(), executionTime)
+            val loader1 = createSlowFailingLoader(IOException(), executionTime)
             val loader2 = createLoader("cat")
 
             var value: String? = null
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 runCatching {
                     cache.get(1, loader1)
                 }
             }
 
-            launch(Dispatchers.Default) {
+            launch(newSingleThreadDispatcher()) {
                 delay(1)
                 value = cache.get(1, loader2)
             }
@@ -322,11 +321,11 @@ private fun <Value> createSlowLoader(
     computedValue
 }
 
-private fun <Value> createFailingLoader(exception: Exception) =
+private fun createFailingLoader(exception: Exception) =
     TestLoader { throw exception }
 
 @Suppress("SameParameterValue")
-private fun <Value> createSlowFailingLoader(exception: Exception, executionTime: Long) =
+private fun createSlowFailingLoader(exception: Exception, executionTime: Long) =
     TestLoader {
         runBlocking { delay(executionTime) }
         throw exception

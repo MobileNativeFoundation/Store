@@ -2,9 +2,6 @@ package com.dropbox.android.external.cache4
 
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 /**
  * An implementation of [Cache] inspired by Guava Cache.
@@ -72,9 +69,9 @@ internal class RealCache<Key : Any, Value : Any>(
     private val expiresAfterAccess = expireAfterAccessNanos > 0
 
     /**
-     * A map of [Key] : [Lock] pairs for doing key-based synchronization.
+     * A key-based synchronizer for running cache loader.
      */
-    private val keyBasedLocks: MutableMap<Key, Lock> = ConcurrentHashMap()
+    private val loaderSynchronizer = KeyedSynchronizer<Key>()
 
     init {
         // writeQueue is required if write expiry is enabled
@@ -104,7 +101,7 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun get(key: Key, loader: () -> Value): Value {
-        return runWithKeyLock(key) {
+        return loaderSynchronizer.run(key) {
             val nowNanos = clock.currentTimeNanos
             cacheEntries[key]?.let {
                 if (it.isExpired(nowNanos)) {
@@ -239,26 +236,6 @@ internal class RealCache<Key : Any, Value : Any>(
         }
         accessQueue?.add(cacheEntry)
         writeQueue?.add(cacheEntry)
-    }
-
-    /**
-     * Gets the [Lock] associated with the [key] from the map if present,
-     * otherwise associates a new [Lock] with the specified [key] in the map and returns the new lock.
-     */
-    private fun <Key> MutableMap<Key, Lock>.getLock(key: Key): Lock {
-        val lock: Lock? = get(key) ?: put(key, ReentrantLock())
-        return lock ?: get(key)!!
-    }
-
-    /**
-     * Executes the given [action] under a [Lock] associated with the [key].
-     */
-    private fun <T> runWithKeyLock(key: Key, action: () -> T): T {
-        return keyBasedLocks.getLock(key).withLock {
-            action()
-        }.also {
-            keyBasedLocks.remove(key)
-        }
     }
 
     companion object {
