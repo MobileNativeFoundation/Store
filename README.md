@@ -113,7 +113,7 @@ lifecycleScope.launchWhenStarted {
 }
 ```
 
-For convenience, there are `Store.get(key)`, `Store.stream(key)` and `Store.fetch(key)` extension functions. 
+For convenience, there are `Store.get(key)`, `Store.stream(key)` and `Store.fresh(key)` extension functions.
 
 * `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister.
 * `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher.
@@ -134,12 +134,12 @@ By default, 100 items will be cached in memory for 24 hours. You may pass in you
 
 ### Busting through the cache
 
-Alternatively, you can call `store.fetch(key)` to get a `suspended result` that skips the memory (and optional disk cache).
+Alternatively, you can call `store.fresh(key)` to get a `suspended result` that skips the memory (and optional disk cache).
 
 
-A good use case is overnight background updates use `fetch()` to make sure that calls to `store.get()` will not have to hit the network during normal usage. Another good use case for `fetch()` is when a user wants to pull to refresh.
+A good use case is overnight background updates use `fresh()` to make sure that calls to `store.get()` will not have to hit the network during normal usage. Another good use case for `fresh()` is when a user wants to pull to refresh.
 
-Calls to both `fetch()` and `get()` emit one value or throw an error.
+Calls to both `fresh()` and `get()` emit one value or throw an error.
 
 
 ### Stream
@@ -194,7 +194,7 @@ The above builder is how we recommend working with data on Android. With the abo
 + Memory caching with TTL & Size policies
 + Disk caching with simple integration with Room
 + In-flight request management
-+ Ability to get cached data or bust through your caches (`get()` vs. `fetch()`)
++ Ability to get cached data or bust through your caches (`get()` vs. `fresh()`)
 + Ability to listen for any new emissions from network (stream)
 + Structured Concurrency through APIs build on Coroutines and Kotlin Flow
 
