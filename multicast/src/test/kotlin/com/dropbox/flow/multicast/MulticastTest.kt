@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
@@ -47,11 +48,11 @@ import org.junit.runners.JUnit4
 class MulticastTest {
     private val testScope = TestCoroutineScope()
 
-    private fun <T> createMulticaster(f: Flow<T>): Multicaster<T> {
+    private fun <T> createMulticaster(flow: Flow<T>, bufferSize: Int = 0): Multicaster<T> {
         return Multicaster(
             scope = testScope,
-            bufferSize = 0,
-            source = f,
+            bufferSize = bufferSize,
+            source = flow,
             onEach = {})
     }
 
@@ -396,6 +397,75 @@ class MulticastTest {
         assertThat(c2.isActive).isFalse()
         assertThat(c2.await()).isEqualTo(listOf("a_1"))
         unlockC1.complete(Unit)
+    }
+
+    @Test
+    fun closed_whileCollecting() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(flow {
+            collectionCount++
+            emit(1)
+            // suspend forever
+            suspendCancellableCoroutine<Unit> {}
+        })
+        val collection = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection.isActive).isTrue()
+        multicaster.close()
+        runCurrent()
+        assertThat(collection.isCompleted).isTrue()
+        assertThat(collection.await()).isEqualTo(listOf(1))
+    }
+
+    @Test
+    fun closed_subscriberAfterClose() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(flow {
+            collectionCount++
+            emit(1)
+            // suspend forever
+            suspendCancellableCoroutine<Unit> {}
+        })
+        multicaster.close()
+        // now add a subscriber, should just close immediately
+        runCurrent()
+        val collection = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection.isActive).isFalse()
+        assertThat(collection.await()).isEmpty()
+    }
+
+    @Test
+    fun closed_additionalSubscriberAfterClose_withBuffer() = testScope.runBlockingTest {
+        var collectionCount = 0
+        val multicaster = createMulticaster(
+            flow = flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            },
+            bufferSize = 10
+        )
+        async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        multicaster.close()
+        runCurrent()
+        // now add a new subscriber, should just close immediately
+        // note that even there is a buffer, closing multicast releases all resources so buffer
+        // will be gone as well.
+        val collection2 = async {
+            multicaster.flow.toList()
+        }
+        runCurrent()
+        assertThat(collection2.isActive).isFalse()
+        assertThat(collection2.await()).isEmpty()
     }
 
     private fun versionedMulticaster(
