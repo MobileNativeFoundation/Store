@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emitAll
@@ -30,8 +31,10 @@ import kotlinx.coroutines.flow.transform
 
 /**
  * Like a publish, shares 1 upstream value with multiple downstream receiver.
- * It has one store specific behavior where upstream flow is suspended until at least 1 downstream
- * flow emits the value to ensure we don't abuse the upstream flow of downstream cannot keep up.
+ *
+ * This operation still keeps the upstream flow cold such that it is suspended until at least 1
+ * downstream value collects the latest dispatched value OR a new downstream is added while [buffer]
+ * is empty.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -72,21 +75,42 @@ class Multicaster<T>(
         )
     }
 
+    /**
+     * The shared downstream flow. Collectors of this flow will share values dispatched by the
+     * [source] Flow.
+     */
     val flow = flow<T> {
         val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
         val subFlow = channel.consumeAsFlow()
-                .onStart {
+            .onStart {
+                try {
                     channelManager.addDownstream(channel)
+                } catch (closed: ClosedSendChannelException) {
+                    // before we could start, channel manager was closed.
+                    // close our downstream manually as it won't be closed by the ChannelManager
+                    channel.close()
                 }
-                .transform {
-                    emit(it.value)
-                    it.delivered.complete(Unit)
-                }.onCompletion {
-                channelManager.removeDownstream(channel)
+            }
+            .transform {
+                emit(it.value)
+                it.delivered.complete(Unit)
+            }.onCompletion {
+                try {
+                    channelManager.removeDownstream(channel)
+                } catch (closed: ClosedSendChannelException) {
+                    // ignore, we might be closed because ChannelManager is closed
                 }
+            }
         emitAll(subFlow)
     }
 
+    /**
+     * Closes the [Multicaster]. All current collectors on the [flow] will complete and any new
+     * collector will receive 0 values and immediately close even if the [bufferSize] is set to a
+     * positive value.
+     *
+     * This is an idempotent operation.
+     */
     suspend fun close() {
         channelManager.close()
     }

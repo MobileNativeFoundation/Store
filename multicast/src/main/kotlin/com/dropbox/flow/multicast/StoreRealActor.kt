@@ -18,6 +18,7 @@ package com.dropbox.flow.multicast
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import java.util.concurrent.atomic.AtomicBoolean
@@ -75,10 +76,14 @@ internal abstract class StoreRealActor<T>(
     }
 
     suspend fun close() {
-        // using a custom token to close so that we can gracefully close the downstream
-        inboundChannel.send(CLOSE_TOKEN)
-        // wait until close is done done
-        closeCompleted.await()
+        try {
+            // using a custom token to close so that we can gracefully close the downstream
+            inboundChannel.send(CLOSE_TOKEN)
+            // wait until close is done done
+            closeCompleted.await()
+        } catch (closed: ClosedSendChannelException) {
+            // already closed, ignore
+        }
     }
 
     companion object {

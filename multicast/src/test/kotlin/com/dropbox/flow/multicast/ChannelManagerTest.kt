@@ -16,6 +16,7 @@
 package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -28,12 +29,10 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.lang.Exception
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -140,6 +139,40 @@ class ChannelManagerTest {
 
             assertThat(collection1.await()).isEqualTo(listOf("a", "b"))
             assertThat(collection2.await()).isEqualTo(listOf("a", "b"))
+        }
+
+    @Test
+    fun `GIVEN two downstreams and a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
+        assertClosingChannelManager(true)
+
+    @Test
+    fun `GIVEN two downstreams without a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
+        assertClosingChannelManager(false)
+
+    private fun assertClosingChannelManager(dispatchValue: Boolean) = scope.runBlockingTest {
+        val downstream1 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        manager.addDownstream(downstream1)
+        manager.addDownstream(downstream2)
+        if (dispatchValue) {
+            upstream.send("a")
+        }
+        manager.close()
+        assertThat(downstream1.isClosedForSend).isTrue()
+        assertThat(downstream2.isClosedForSend).isTrue()
+        // it can be open for receive if and only if we've already sent a value
+        assertThat(downstream1.isClosedForReceive).isEqualTo(!dispatchValue)
+        assertThat(downstream2.isClosedForReceive).isEqualTo(!dispatchValue)
+    }
+
+    @Test
+    fun `Calling close multiple times on ChannelManager should be idempotent`() =
+        scope.runBlockingTest {
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+            manager.close()
+            manager.close()
+            assertThat(downstream.isClosedForSend).isTrue()
         }
 }
 
