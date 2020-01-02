@@ -82,9 +82,9 @@ internal class RealStore<Key, Input, Output>(
      * requests are shared.
      */
     private val fetcherController = FetcherController(
-            scope = scope,
-            realFetcher = fetcher,
-            sourceOfTruth = this.sourceOfTruth
+        scope = scope,
+        realFetcher = fetcher,
+        sourceOfTruth = this.sourceOfTruth
     )
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {

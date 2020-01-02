@@ -49,6 +49,14 @@ internal class ChannelManager<T>(
      * it will receive values as well.
      */
     private val piggybackingDownstream: Boolean = false,
+
+    /**
+     * If true, an active upstream will stay alive even if all downstreams are closed. A downstream
+     * coming in later will receive a value from the live upstream.
+     *
+     * The upstream will be kept alive until [scope] cancels or [close] is called.
+     */
+    private val keepUpstreamAlive: Boolean = false,
     /**
      * Called when a value is dispatched
      */
@@ -56,6 +64,11 @@ internal class ChannelManager<T>(
 
     private val upstream: Flow<T>
 ) {
+    init {
+        require(!keepUpstreamAlive || bufferSize > 0) {
+            "Must set bufferSize > 0 if keepUpstreamAlive is enabled"
+        }
+    }
 
     suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         actor.send(Message.AddChannel(channel))
@@ -73,6 +86,7 @@ internal class ChannelManager<T>(
     private inner class Actor : StoreRealActor<Message<T>>(scope) {
 
         private val buffer = Buffer<T>(bufferSize)
+
         /**
          * The current producer
          */
@@ -200,7 +214,7 @@ internal class ChannelManager<T>(
             }
             if (index >= 0) {
                 channels.removeAt(index)
-                if (channels.isEmpty()) {
+                if (!keepUpstreamAlive && channels.isEmpty()) {
                     producer?.cancelAndJoin()
                 }
             }
