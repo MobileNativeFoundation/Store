@@ -11,12 +11,12 @@ interface Api {
     @GET("r/{subredditName}/new/.json")
     suspend fun fetchSubreddit(
         @Path("subredditName") subredditName: String,
-        @Query("limit") limit: String
+        @Query("limit") limit: Int
     ): RedditData
 
     @GET("r/{subredditName}/new/.json")
     suspend fun fetchSubredditForPersister(
         @Path("subredditName") subredditName: String,
-        @Query("limit") limit: String
+        @Query("limit") limit: Int
     ): ResponseBody
 }

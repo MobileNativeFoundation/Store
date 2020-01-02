@@ -5,23 +5,20 @@ import java.util.concurrent.TimeUnit
 internal object StoreDefaults {
 
     /**
-     * Default Cache TTL, can be overridden
+     * Cache TTL (default is 24 hours), can be overridden
      *
-     * @return memory persister ttl
+     * @return memory cache TTL
      */
-    val cacheTTL: Long
-        get() = TimeUnit.HOURS.toSeconds(24)
+    val cacheTTL: Long = TimeUnit.HOURS.toSeconds(24)
 
     /**
-     * Default mem persister is 1, can be overridden otherwise
+     * Cache size (default is 100), can be overridden
      *
-     * @return memory persister size
+     * @return memory cache size
      */
-    val cacheSize: Long
-        get() = 100
+    val cacheSize: Long = 100
 
-    val cacheTTLTimeUnit: TimeUnit
-        get() = TimeUnit.SECONDS
+    val cacheTTLTimeUnit: TimeUnit = TimeUnit.SECONDS
 
     val memoryPolicy = MemoryPolicy.builder()
             .setMemorySize(cacheSize)
