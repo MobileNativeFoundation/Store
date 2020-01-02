@@ -15,9 +15,32 @@ class CacheLoaderTest {
     private val expiryDuration = TimeUnit.MINUTES.toNanos(1)
 
     @Test
-    fun `get(key, loader) returns value from loader when no entry with the associated key exists before and after executing the loader`() {
+    fun `get(key, loader) returns value from loader when no value with the associated key exists before and after executing the loader`() {
         val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
+
+        val loader = createLoader("dog")
+
+        val value = cache.get(1, loader)
+
+        assertThat(loader.invokeCount)
+            .isEqualTo(1)
+
+        assertThat(value)
+            .isEqualTo("dog")
+    }
+
+    @Test
+    fun `get(key, loader) returns value from loader when an expired value with the associated key exists before executing the loader and none exists after executing the loader`() {
+        val cache = Cache.Builder.newBuilder()
+            .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
+            .clock(clock)
+            .build<Long, String>()
+
+        cache.put(1, "cat")
+
+        // now expires
+        clock.virtualTimeNanos = expiryDuration
 
         val loader = createLoader("dog")
 
@@ -100,25 +123,7 @@ class CacheLoaderTest {
     }
 
     @Test
-    fun `value returned by loader is not cached when an unexpired value associated with the key exists`() {
-        val cache = Cache.Builder.newBuilder()
-            .build<Long, String>()
-
-        cache.put(1, "dog")
-
-        val loader = createLoader("cat")
-
-        cache.get(1, loader)
-
-        assertThat(loader.invokeCount)
-            .isEqualTo(0)
-
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
-    }
-
-    @Test
-    fun `calling get(key, loader) executes the loader and caches the value returned when an expired value associated with the key exists`() =
+    fun `value returned by loader is cached when value associated with the key is present but expired after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
                 .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
@@ -157,7 +162,25 @@ class CacheLoaderTest {
         }
 
     @Test
-    fun `calling get(key, loader) executes the loader and caches the value returned when an existing value was invalidated`() =
+    fun `value returned by loader is not cached when an unexpired value associated with the key exists`() {
+        val cache = Cache.Builder.newBuilder()
+            .build<Long, String>()
+
+        cache.put(1, "dog")
+
+        val loader = createLoader("cat")
+
+        cache.get(1, loader)
+
+        assertThat(loader.invokeCount)
+            .isEqualTo(0)
+
+        assertThat(cache.get(1))
+            .isEqualTo("dog")
+    }
+
+    @Test
+    fun `value returned by loader is cached when an existing value was invalidated while executing loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
                 .build<Long, String>()
