@@ -69,9 +69,9 @@ internal class RealCache<Key : Any, Value : Any>(
     private val expiresAfterAccess = expireAfterAccessNanos > 0
 
     /**
-     * A key-based synchronizer for running cache loader.
+     * A key-based synchronizer for running cache loaders.
      */
-    private val loaderSynchronizer = KeyedSynchronizer<Key>()
+    private val loadersSynchronizer = KeyedSynchronizer<Key>()
 
     init {
         // writeQueue is required if write expiry is enabled
@@ -101,7 +101,7 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun get(key: Key, loader: () -> Value): Value {
-        return loaderSynchronizer.run(key) {
+        return loadersSynchronizer.synchronizedFor(key) {
             val nowNanos = clock.currentTimeNanos
             cacheEntries[key]?.let {
                 if (it.isExpired(nowNanos)) {
@@ -136,6 +136,8 @@ internal class RealCache<Key : Any, Value : Any>(
             // cache entry found
             recordWrite(existingEntry, nowNanos)
             existingEntry.value = value
+            // perform an update explicitly to create a memory barrier
+            // to synchronize subsequent access to the map from other threads.
             cacheEntries[key] = existingEntry
         } else {
             // create a new cache entry

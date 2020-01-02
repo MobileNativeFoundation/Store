@@ -12,7 +12,7 @@ class KeyedSynchronizerTest {
     private val synchronizer = KeyedSynchronizer<String>()
 
     @Test
-    fun `actions associated with the same key are run sequentially`() = runBlocking {
+    fun `actions associated with the same key are mutually exclusive`() = runBlocking {
         val key = "a"
         var action1Started = false
         var action2Started = false
@@ -22,19 +22,19 @@ class KeyedSynchronizerTest {
 
         // run action with synchronizer using the same key on 3 different threads concurrently
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run(key) {
+            synchronizer.synchronizedFor(key) {
                 action1Started = true
                 runBlocking { delay(actionTime) }
             }
         }
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run(key) {
+            synchronizer.synchronizedFor(key) {
                 action2Started = true
                 runBlocking { delay(actionTime) }
             }
         }
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run(key) {
+            synchronizer.synchronizedFor(key) {
                 action3Started = true
                 runBlocking { delay(actionTime) }
             }
@@ -69,19 +69,19 @@ class KeyedSynchronizerTest {
 
         // run action with synchronizer using different keys on 3 different threads concurrently
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run("a") {
+            synchronizer.synchronizedFor("a") {
                 action1Started = true
                 runBlocking { delay(actionTime) }
             }
         }
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run("b") {
+            synchronizer.synchronizedFor("b") {
                 action2Started = true
                 runBlocking { delay(actionTime) }
             }
         }
         launch(newSingleThreadDispatcher()) {
-            synchronizer.run("c") {
+            synchronizer.synchronizedFor("c") {
                 action3Started = true
                 runBlocking { delay(actionTime) }
             }
@@ -108,7 +108,7 @@ class KeyedSynchronizerTest {
             // start running action with synchronizer using the same key on 2 different threads concurrently
             launch(newSingleThreadDispatcher()) {
                 // 1st action
-                synchronizer.run(key) {
+                synchronizer.synchronizedFor(key) {
                     action1Started = true
                     runBlocking { delay(actionTime) }
                 }
@@ -116,7 +116,7 @@ class KeyedSynchronizerTest {
                 // start running 3rd action once 1st action has finished
                 launch(newSingleThreadDispatcher()) {
                     // 3rd action
-                    synchronizer.run(key) {
+                    synchronizer.synchronizedFor(key) {
                         action3Started = true
                         runBlocking { delay(actionTime) }
                     }
@@ -124,7 +124,7 @@ class KeyedSynchronizerTest {
             }
             launch(newSingleThreadDispatcher()) {
                 // 2nd action
-                synchronizer.run(key) {
+                synchronizer.synchronizedFor(key) {
                     action2Started = true
                     runBlocking { delay(actionTime) }
                 }
@@ -163,7 +163,7 @@ class KeyedSynchronizerTest {
             launch(newSingleThreadDispatcher()) {
                 // 1st action throws an exception
                 runCatching {
-                    synchronizer.run<String>(key) {
+                    synchronizer.synchronizedFor<String>(key) {
                         action1Started = true
                         runBlocking { delay(actionTime) }
                         throw IOException()
@@ -173,7 +173,7 @@ class KeyedSynchronizerTest {
                 // start running 3rd action once 1st action has finished
                 launch(newSingleThreadDispatcher()) {
                     // 3rd action
-                    synchronizer.run(key) {
+                    synchronizer.synchronizedFor(key) {
                         action3Started = true
                         runBlocking { delay(actionTime) }
                     }
@@ -181,7 +181,7 @@ class KeyedSynchronizerTest {
             }
             launch(newSingleThreadDispatcher()) {
                 // 2nd action
-                synchronizer.run(key) {
+                synchronizer.synchronizedFor(key) {
                     action2Started = true
                     runBlocking { delay(actionTime) }
                 }
