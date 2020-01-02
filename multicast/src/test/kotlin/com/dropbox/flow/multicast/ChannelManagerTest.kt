@@ -371,7 +371,7 @@ class ChannelManagerTest {
 
         return@coroutineScope manager
     }
-  
+
     @Test
     fun `GIVEN two downstreams and a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
         assertClosingChannelManager(true)
