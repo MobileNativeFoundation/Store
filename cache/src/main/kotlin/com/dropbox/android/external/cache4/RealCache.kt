@@ -175,7 +175,11 @@ internal class RealCache<Key : Any, Value : Any>(
      * Remove all expired entries.
      */
     private fun expireEntries(nowNanos: Long) {
-        listOfNotNull(writeQueue, accessQueue).forEach { queue ->
+        val queuesToProcess = listOfNotNull(
+            if (expiresAfterWrite) writeQueue else null,
+            if (expiresAfterAccess) accessQueue else null
+        )
+        queuesToProcess.forEach { queue ->
             synchronized(queue) {
                 val iterator = queue.iterator()
                 for (entry in iterator) {
