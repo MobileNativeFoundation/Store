@@ -75,6 +75,7 @@ class CacheLoaderTest {
     fun `get(key, loader) returns existing value when an entry with the associated key is absent initially but present after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
+                .concurrencyLevel(2)
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -127,6 +128,7 @@ class CacheLoaderTest {
         runBlocking {
             val cache = Cache.Builder.newBuilder()
                 .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
+                .concurrencyLevel(2)
                 .clock(clock)
                 .build<Long, String>()
 
@@ -183,6 +185,7 @@ class CacheLoaderTest {
     fun `value returned by loader is cached when an existing value was invalidated while executing loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
+                .concurrencyLevel(2)
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -220,6 +223,7 @@ class CacheLoaderTest {
     fun `only 1 loader is executed for multiple concurrent get(key, loader) calls with the same key`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
+                .concurrencyLevel(4)
                 .build<Long, String>()
 
             val executionTime = 20L
@@ -246,6 +250,7 @@ class CacheLoaderTest {
     fun `each loader is executed for multiple concurrent get(key, loader) calls with different keys`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
+                .concurrencyLevel(4)
                 .build<Long, String>()
 
             val executionTime = 20L
@@ -290,6 +295,7 @@ class CacheLoaderTest {
     fun `a blocked concurrent get(key, loader) call is unblocked and executes its own loader after the loader from an earlier concurrent call throws an exception`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
+                .concurrencyLevel(2)
                 .build<Long, String>()
 
             val executionTime = 50L
