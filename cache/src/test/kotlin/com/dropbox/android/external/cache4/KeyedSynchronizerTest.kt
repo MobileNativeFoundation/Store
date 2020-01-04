@@ -18,7 +18,7 @@ class KeyedSynchronizerTest {
         var action2Started = false
         var action3Started = false
 
-        val actionTime = 50L
+        val actionTime = 80L
 
         // run action with synchronizer using the same key on 3 different threads concurrently
         launch(newSingleThreadDispatcher()) {
