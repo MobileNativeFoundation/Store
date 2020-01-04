@@ -28,6 +28,7 @@ internal class RealCache<Key : Any, Value : Any>(
     val expireAfterWriteNanos: Long,
     val expireAfterAccessNanos: Long,
     val maxSize: Long,
+    val concurrencyLevel: Int,
     val clock: Clock
 ) : Cache<Key, Value> {
 
@@ -35,7 +36,7 @@ internal class RealCache<Key : Any, Value : Any>(
      * A map holding the current cache entries.
      */
     private val cacheEntries: MutableMap<Key, CacheEntry<Key, Value>> = ConcurrentHashMap(
-        INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL
+        INITIAL_CAPACITY, LOAD_FACTOR, concurrencyLevel
     )
 
     /**
@@ -253,7 +254,6 @@ internal class RealCache<Key : Any, Value : Any>(
     companion object {
         private const val INITIAL_CAPACITY = 16
         private const val LOAD_FACTOR = 0.75f
-        private const val CONCURRENCY_LEVEL = 4
     }
 }
 

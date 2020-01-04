@@ -1,5 +1,6 @@
 package com.dropbox.android.external.cache4
 
+import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.DEFAULT_CONCURRENCY_LEVEL
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.DEFAULT_EXPIRATION_NANOS
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.UNSET_LONG
 import com.google.common.truth.Truth.assertThat
@@ -100,7 +101,7 @@ class CacheBuilderTest {
     }
 
     @Test
-    fun `set maximumCacheSize with negative value`() {
+    fun `set maximumCacheSize to negative value`() {
         val exception = assertThrows(IllegalArgumentException::class.java) {
             Cache.Builder.newBuilder()
                 .maximumCacheSize(-1)
@@ -133,6 +134,42 @@ class CacheBuilderTest {
 
         // when expireAfterAccess is explicitly set to 0 by user, max size will also be set to 0
         assertThat(cache.maxSize).isEqualTo(0)
+    }
+
+    @Test
+    fun `set concurrencyLevel to positive value`() {
+        val cache = Cache.Builder.newBuilder()
+            .concurrencyLevel(8)
+            .build<Any, Any>() as RealCache
+
+        assertThat(cache.concurrencyLevel)
+            .isEqualTo(8)
+    }
+
+    @Test
+    fun `set concurrencyLevel to 0`() {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            Cache.Builder.newBuilder()
+                .concurrencyLevel(0)
+                .build<Any, Any>() as RealCache
+        }
+
+        assertThat(exception).hasMessageThat().contains(
+            "concurrency level must be positive"
+        )
+    }
+
+    @Test
+    fun `set concurrencyLevel to negative value`() {
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            Cache.Builder.newBuilder()
+                .concurrencyLevel(-1)
+                .build<Any, Any>() as RealCache
+        }
+
+        assertThat(exception).hasMessageThat().contains(
+            "concurrency level must be positive"
+        )
     }
 
     @Test
@@ -177,6 +214,9 @@ class CacheBuilderTest {
 
         assertThat(cache.maxSize)
             .isEqualTo(UNSET_LONG)
+
+        assertThat(cache.concurrencyLevel)
+            .isEqualTo(DEFAULT_CONCURRENCY_LEVEL)
 
         assertThat(cache.clock)
             .isEqualTo(SystemClock)

@@ -78,6 +78,14 @@ interface Cache<in Key : Any, Value : Any> {
         fun maximumCacheSize(size: Long): Builder
 
         /**
+         * Guides the allowed concurrent update operations. This is used as a hint for internal sizing,
+         * actual concurrency will vary.
+         *
+         * If not set, default concurrency level is 16.
+         */
+        fun concurrencyLevel(concurrencyLevel: Int): Builder
+
+        /**
          * Specifies [Clock] for this cache.
          *
          * This is useful for controlling time in tests
@@ -110,6 +118,7 @@ internal class CacheBuilderImpl : Cache.Builder {
     private var expireAfterWriteNanos = UNSET_LONG
     private var expireAfterAccessNanos = UNSET_LONG
     private var maxSize = UNSET_LONG
+    private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
     private var clock: Clock? = null
 
     override fun expireAfterWrite(duration: Long, unit: TimeUnit): CacheBuilderImpl = apply {
@@ -131,6 +140,13 @@ internal class CacheBuilderImpl : Cache.Builder {
             "maximum size must not be negative"
         }
         this.maxSize = size
+    }
+
+    override fun concurrencyLevel(concurrencyLevel: Int): Cache.Builder = apply {
+        require(concurrencyLevel > 0) {
+            "concurrency level must be positive"
+        }
+        this.concurrencyLevel = concurrencyLevel
     }
 
     override fun clock(clock: Clock): CacheBuilderImpl = apply {
@@ -162,6 +178,7 @@ internal class CacheBuilderImpl : Cache.Builder {
             effectiveExpireAfterWrite,
             effectiveExpireAfterAccess,
             effectiveMaxSize,
+            concurrencyLevel,
             effectiveClock
         )
     }
@@ -169,5 +186,6 @@ internal class CacheBuilderImpl : Cache.Builder {
     companion object {
         internal const val UNSET_LONG: Long = -1
         internal const val DEFAULT_EXPIRATION_NANOS = 0L
+        internal const val DEFAULT_CONCURRENCY_LEVEL = 16
     }
 }
