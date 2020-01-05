@@ -242,6 +242,31 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     /**
+     * Update the eviction metadata on the [cacheEntry] which has just been read.
+     */
+    private fun recordRead(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
+        if (expiresAfterAccess) {
+            cacheEntry.accessTimeNanos = nowNanos
+        }
+        accessQueue?.add(cacheEntry)
+    }
+
+    /**
+     * Update the eviction metadata on the [CacheEntry] which is about to be written.
+     * Note that a write is also considered an access.
+     */
+    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
+        if (expiresAfterAccess) {
+            cacheEntry.accessTimeNanos = nowNanos
+        }
+        if (expiresAfterWrite) {
+            cacheEntry.writeTimeNanos = nowNanos
+        }
+        accessQueue?.add(cacheEntry)
+        writeQueue?.add(cacheEntry)
+    }
+
+    /**
      * [cacheEntries], [writeQueue], and [accessQueue] can get out of sync due to thread preemption.
      * Call this function will address any inconsistencies by only retaining the intersection
      * of [cacheEntries], [writeQueue], and [accessQueue].
@@ -274,31 +299,6 @@ internal class RealCache<Key : Any, Value : Any>(
                 }
             }
         }
-    }
-
-    /**
-     * Update the eviction metadata on the [cacheEntry] which has just been read.
-     */
-    private fun recordRead(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
-        if (expiresAfterAccess) {
-            cacheEntry.accessTimeNanos = nowNanos
-        }
-        accessQueue?.add(cacheEntry)
-    }
-
-    /**
-     * Update the eviction metadata on the [CacheEntry] which is about to be written.
-     * Note that a write is also considered an access.
-     */
-    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
-        if (expiresAfterAccess) {
-            cacheEntry.accessTimeNanos = nowNanos
-        }
-        if (expiresAfterWrite) {
-            cacheEntry.writeTimeNanos = nowNanos
-        }
-        accessQueue?.add(cacheEntry)
-        writeQueue?.add(cacheEntry)
     }
 
     companion object {
