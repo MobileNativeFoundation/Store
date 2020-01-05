@@ -1,24 +1,32 @@
 package com.dropbox.android.external.cache4
 
+import com.dropbox.android.external.cache4.testutil.ConcurrencyTest
+import com.dropbox.android.external.cache4.testutil.ConcurrencyTestRule
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 
 class KeyedSynchronizerTest {
 
+    @Rule
+    @JvmField
+    val concurrencyTestRule = ConcurrencyTestRule()
+
     private val synchronizer = KeyedSynchronizer<String>()
 
     @Test
+    @ConcurrencyTest
     fun `actions associated with the same key are mutually exclusive`() = runBlocking {
         val key = "a"
         var action1Started = false
         var action2Started = false
         var action3Started = false
 
-        val actionTime = 80L
+        val actionTime = 50L
 
         // run action with synchronizer using the same key on 3 different threads concurrently
         launch(newSingleThreadDispatcher()) {
@@ -60,6 +68,7 @@ class KeyedSynchronizerTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `actions associated with different keys can run concurrently`() = runBlocking {
         var action1Started = false
         var action2Started = false
@@ -96,6 +105,7 @@ class KeyedSynchronizerTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `a new action is queued after existing blocked actions using the same key from different thread`() =
         runBlocking {
             val key = "a"
@@ -150,6 +160,7 @@ class KeyedSynchronizerTest {
         }
 
     @Test
+    @ConcurrencyTest
     fun `the next blocked action is unblocked when an action using the same key from another thread throws an exception`() =
         runBlocking {
             val key = "a"

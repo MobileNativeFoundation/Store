@@ -1,15 +1,22 @@
 package com.dropbox.android.external.cache4
 
+import com.dropbox.android.external.cache4.testutil.ConcurrencyTest
+import com.dropbox.android.external.cache4.testutil.ConcurrencyTestRule
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertThrows
+import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class CacheLoaderTest {
+
+    @Rule
+    @JvmField
+    val concurrencyTestRule = ConcurrencyTestRule()
 
     private val clock = TestClock(virtualTimeNanos = 0)
     private val expiryDuration = TimeUnit.MINUTES.toNanos(1)
@@ -76,6 +83,7 @@ class CacheLoaderTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `get(key, loader) returns existing value when an entry with the associated key is absent initially but present after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -128,6 +136,7 @@ class CacheLoaderTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `value returned by loader is cached when value associated with the key is present but expired after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -186,6 +195,7 @@ class CacheLoaderTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `value returned by loader is cached when an existing value was invalidated while executing loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -224,6 +234,7 @@ class CacheLoaderTest {
         }
 
     @Test
+    @ConcurrencyTest
     fun `only 1 loader is executed for multiple concurrent get(key, loader) calls with the same key`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -251,6 +262,7 @@ class CacheLoaderTest {
         }
 
     @Test
+    @ConcurrencyTest
     fun `each loader is executed for multiple concurrent get(key, loader) calls with different keys`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -296,6 +308,7 @@ class CacheLoaderTest {
     }
 
     @Test
+    @ConcurrencyTest
     fun `a blocked concurrent get(key, loader) call is unblocked and executes its own loader after the loader from an earlier concurrent call throws an exception`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
