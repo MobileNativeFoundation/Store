@@ -184,6 +184,12 @@ internal class RealCache<Key : Any, Value : Any>(
             if (expiresAfterWrite) writeQueue else null,
             if (expiresAfterAccess) accessQueue else null
         )
+
+        // address any inconsistencies between the queues and map before processing.
+        if (queuesToProcess.isNotEmpty()) {
+            performMaintenance()
+        }
+
         queuesToProcess.forEach { queue ->
             synchronized(queue) {
                 val iterator = queue.iterator()
@@ -222,11 +228,51 @@ internal class RealCache<Key : Any, Value : Any>(
             return
         }
 
+        checkNotNull(accessQueue)
+
+        // address any inconsistencies between the queues and map before eviction.
+        performMaintenance()
+
         while (cacheEntries.size > maxSize) {
-            val entryToEvict = accessQueue!!.first()
+            val entryToEvict = accessQueue.first()
             cacheEntries.remove(entryToEvict.key)
             writeQueue?.remove(entryToEvict)
             accessQueue.remove(entryToEvict)
+        }
+    }
+
+    /**
+     * [cacheEntries], [writeQueue], and [accessQueue] can get out of sync due to thread preemption.
+     * Call this function will address any inconsistencies by only retaining the intersection
+     * of [cacheEntries], [writeQueue], and [accessQueue].
+     */
+    private fun performMaintenance() {
+        val queues = listOfNotNull(writeQueue, accessQueue)
+        queues.forEach { queue ->
+            val queueSize = queue.size
+            val cacheEntrySize = cacheEntries.size
+
+            if (queueSize < cacheEntrySize) {
+                // remove the entry from the current queue
+                val iterator = cacheEntries.iterator()
+                for (item in iterator) {
+                    val cacheEntry = item.value
+                    if (!queue.contains(cacheEntry)) {
+                        iterator.remove()
+                        // also make sure the other queue does not have it
+                        if (queue == writeQueue) {
+                            accessQueue?.remove(cacheEntry)
+                        } else {
+                            writeQueue?.remove(cacheEntry)
+                        }
+                    }
+                }
+            } else if (queueSize > cacheEntrySize) {
+                // remove entries in queue but not in map
+                queue.removeAll {
+                    !cacheEntries.containsKey(it.key)
+                }
+            }
         }
     }
 
