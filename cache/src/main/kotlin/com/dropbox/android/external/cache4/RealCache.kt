@@ -96,9 +96,11 @@ internal class RealCache<Key : Any, Value : Any>(
             } else {
                 // update eviction metadata
                 recordRead(it, nowNanos)
-                // perform an update to the map to create a memory barrier for synchronizing
-                // subsequent access to the map from other threads.
-                cacheEntries[key] = it
+                // if entry's access time has been updated, perform an update to the map to create
+                // a memory barrier for synchronizing subsequent access to the map from other threads.
+                if (expiresAfterAccess) {
+                    cacheEntries[key] = it
+                }
                 it.value
             }
         }
@@ -115,9 +117,11 @@ internal class RealCache<Key : Any, Value : Any>(
                 } else {
                     // update eviction metadata
                     recordRead(it, nowNanos)
-                    // perform an update to the map to create a memory barrier for synchronizing
-                    // subsequent access to the map from other threads.
-                    cacheEntries[key] = it
+                    // if entry's access time has been updated, perform an update to the map to create
+                    // a memory barrier for synchronizing subsequent access to the map from other threads.
+                    if (expiresAfterAccess) {
+                        cacheEntries[key] = it
+                    }
                     it.value
                 }
             } ?: loader().let { loadedValue ->

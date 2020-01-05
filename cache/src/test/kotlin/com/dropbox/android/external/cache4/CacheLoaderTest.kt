@@ -54,11 +54,15 @@ class CacheLoaderTest {
     }
 
     @Test
-    fun `get(key, loader) returns existing value when an entry with the associated key exists before executing the loader`() {
+    fun `get(key, loader) returns existing value when an unexpired entry with the associated key exists before executing the loader`() {
         val cache = Cache.Builder.newBuilder()
+            .expireAfterAccess(expiryDuration, TimeUnit.NANOSECONDS)
             .build<Long, String>()
 
         cache.put(1, "dog")
+
+        // just before expiry
+        clock.virtualTimeNanos = expiryDuration - 1
 
         val loader = createLoader("cat")
 
