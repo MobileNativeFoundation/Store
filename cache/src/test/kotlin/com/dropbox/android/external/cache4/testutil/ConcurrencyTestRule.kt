@@ -17,12 +17,12 @@ class ConcurrencyTestRule : TestRule {
     ): Statement {
         val annotation: ConcurrencyTest =
             description.getAnnotation(ConcurrencyTest::class.java) ?: return base
-        val maxRetires: Int = annotation.retries
-        require(maxRetires > 0) { "Number of retries must be greater than 1." }
+        val maxRetries: Int = annotation.retries
+        require(maxRetries > 0) { "Number of retries must be greater than 1." }
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
-                while (attempts < maxRetires) {
+                while (attempts < maxRetries) {
                     try {
                         base.evaluate()
                         return
