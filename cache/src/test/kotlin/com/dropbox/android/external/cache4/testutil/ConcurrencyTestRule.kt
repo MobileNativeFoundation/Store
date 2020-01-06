@@ -9,7 +9,7 @@ import org.junit.runners.model.Statement
  */
 class ConcurrencyTestRule : TestRule {
     private var error: Throwable? = null
-    private var attemptIndex = 0
+    private var attempts = 0
 
     override fun apply(
         base: Statement,
@@ -17,18 +17,18 @@ class ConcurrencyTestRule : TestRule {
     ): Statement {
         val annotation: ConcurrencyTest =
             description.getAnnotation(ConcurrencyTest::class.java) ?: return base
-        val times: Int = annotation.retries
-        require(times > 0) { "Number of retires must be greater than 1." }
+        val maxRetires: Int = annotation.retries
+        require(maxRetires > 0) { "Number of retries must be greater than 1." }
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
-                while (attemptIndex < times) {
+                while (attempts < maxRetires) {
                     try {
                         base.evaluate()
                         return
                     } catch (t: Throwable) {
                         error = t
-                        attemptIndex++
+                        attempts++
                     }
                 }
                 throw error!!

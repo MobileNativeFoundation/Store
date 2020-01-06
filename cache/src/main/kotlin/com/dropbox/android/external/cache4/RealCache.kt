@@ -187,7 +187,7 @@ internal class RealCache<Key : Any, Value : Any>(
 
         // address any inconsistencies between the queues and map before processing.
         if (queuesToProcess.isNotEmpty()) {
-            performMaintenance()
+            cleanUpDeadEntries()
         }
 
         queuesToProcess.forEach { queue ->
@@ -231,7 +231,7 @@ internal class RealCache<Key : Any, Value : Any>(
         checkNotNull(accessQueue)
 
         // address any inconsistencies between the queues and map before eviction.
-        performMaintenance()
+        cleanUpDeadEntries()
 
         while (cacheEntries.size > maxSize) {
             val entryToEvict = accessQueue.first()
@@ -267,18 +267,22 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     /**
-     * [cacheEntries], [writeQueue], and [accessQueue] can get out of sync due to thread preemption.
-     * Call this function will address any inconsistencies by only retaining the intersection
+     * Although [cacheEntries], [writeQueue], and [accessQueue] are meant to have identical entries,
+     * in theory they can get out of sync with enough concurrency due to thread preemption.
+     * Overtime the inconsistency between the queues and the map might cause memory leaks, e.g.
+     * when performing size-based evictions, an entry in the [cacheEntries] but not in [accessQueue]
+     * would never be evicted.
+     * Calling this function will address these inconsistencies by only retaining the intersection
      * of [cacheEntries], [writeQueue], and [accessQueue].
      */
-    private fun performMaintenance() {
+    private fun cleanUpDeadEntries() {
         val queues = listOfNotNull(writeQueue, accessQueue)
         queues.forEach { queue ->
             val queueSize = queue.size
             val cacheEntrySize = cacheEntries.size
 
             if (queueSize < cacheEntrySize) {
-                // remove the entry from the current queue
+                // remove entries in the map but not in the queue
                 val iterator = cacheEntries.iterator()
                 for (item in iterator) {
                     val cacheEntry = item.value
@@ -293,7 +297,7 @@ internal class RealCache<Key : Any, Value : Any>(
                     }
                 }
             } else if (queueSize > cacheEntrySize) {
-                // remove entries in queue but not in map
+                // remove entries in the queue but not in the map
                 queue.removeAll {
                     !cacheEntries.containsKey(it.key)
                 }
