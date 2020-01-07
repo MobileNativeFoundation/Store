@@ -1,8 +1,5 @@
 package com.dropbox.android.external.store4.legacy
 
-import com.dropbox.android.external.store4.Persister
-import java.io.Serializable
-
 /**
  * Barcode is used as an example unique
  * identifier for a particular [com.dropbox.android.external.store4.Store]

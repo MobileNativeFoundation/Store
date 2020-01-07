@@ -66,8 +66,6 @@ interface StoreBuilder<Key, Output> {
         delete: (suspend (Key) -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
 
-
-
     /**
      * Connects a ([kotlinx.coroutines.flow.Flow]) source of truth that is accessed via [reader], [writer] and [delete].
      *
@@ -79,8 +77,7 @@ interface StoreBuilder<Key, Output> {
      * please use another override
      */
 
-
-    fun  nonFlowingPersisterLegacy(
+    fun nonFlowingPersisterLegacy(
         persister: Persister<Output, Key>
     ): StoreBuilder<Key, Output>
 
@@ -105,8 +102,6 @@ interface StoreBuilder<Key, Output> {
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
-
-
 
     companion object {
         /**
@@ -137,7 +132,6 @@ interface StoreBuilder<Key, Output> {
             fetcher: (key: Key) -> Flow<Output>
         ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
     }
-
 }
 
 @FlowPreview
@@ -205,18 +199,17 @@ private class BuilderImpl<Key, Output>(
         )
     }
 
-    override fun  nonFlowingPersisterLegacy(
+    override fun nonFlowingPersisterLegacy(
         persister: Persister<Output, Key>
     ): BuilderWithSourceOfTruth<Key, Output, Output> {
-         val sourceOfTruth: PersistentNonFlowingSourceOfTruth<Key, Output, Output> = PersistentNonFlowingSourceOfTruth(
-             realReader = { key -> persister.read(key) },
-             realWriter = { key, input -> persister.write(key, input) },
-             realDelete = { key -> TODO() }
-         )
-         return  withLegacySourceOfTruth(sourceOfTruth)
+        val sourceOfTruth: PersistentNonFlowingSourceOfTruth<Key, Output, Output> =
+            PersistentNonFlowingSourceOfTruth(
+                realReader = { key -> persister.read(key) },
+                realWriter = { key, input -> persister.write(key, input) },
+                realDelete = { key -> TODO() }
+            )
+        return withLegacySourceOfTruth(sourceOfTruth)
     }
-
-
 
     override fun <NewOutput> persister(
         reader: (Key) -> Flow<NewOutput?>,

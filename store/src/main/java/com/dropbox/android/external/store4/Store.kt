@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transform
 
-
 interface Store<Key, Output> {
 
     /**

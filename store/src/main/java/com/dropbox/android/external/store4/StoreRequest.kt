@@ -52,7 +52,7 @@ data class StoreRequest<Key> private constructor(
         )
         /**
          * Create a Store Request which will return data from memory/disk caches
-         * @param refresh  - if true then return fetcher (new) data as well (updating your caches)
+         * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> cached(key: Key, refresh: Boolean) = StoreRequest(
                 key = key,
@@ -61,7 +61,7 @@ data class StoreRequest<Key> private constructor(
         )
         /**
          * Create a Store Request which will return data from disk cache
-         * @param refresh  - if true then return fetcher (new) data as well (updating your caches)
+         * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreRequest(
                 key = key,
