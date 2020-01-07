@@ -25,19 +25,14 @@ import kotlinx.coroutines.flow.transform
  *  .build()
  *  //single shot response
  *  viewModelScope.launch {
- *    liveData.value = try {
  *      val data = store.fresh(key)
- *      Lce.Success(data)
- *    } catch (e: Exception) {
- *      Lce.Error(e)
- *    }
  *  }
  *
  *  //get cached data and collect future emissions as well
  *  viewModelScope.launch {
  *    val data = store.cached(key, refresh=true)
  *                    .collect{data.value=it }
- *    }
+ *  }
  *
  */
 interface Store<Key, Output> {
