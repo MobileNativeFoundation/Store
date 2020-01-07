@@ -16,24 +16,26 @@
 package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.lang.Exception
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -49,7 +51,7 @@ class ChannelManagerTest {
     )
 
     @Test
-    fun `Given one downstream WHEN two values come in on the upstream THEN two values are consumed`() =
+    fun `GIVEN one downstream WHEN two values come in on the upstream THEN two values are consumed`() =
         scope.runBlockingTest {
             val collection = async {
                 val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
@@ -68,7 +70,7 @@ class ChannelManagerTest {
         }
 
     @Test(expected = TestException::class)
-    fun `Given one downstream WHEN upstream errors THEN error is propagated`() =
+    fun `GIVEN one downstream WHEN upstream errors THEN error is propagated`() =
         scope.runBlockingTest {
             val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
             manager.addDownstream(downstream)
@@ -87,7 +89,7 @@ class ChannelManagerTest {
         }
 
     @Test
-    fun `Given one downstream WHEN upstream closes THEN downstream is closed`() =
+    fun `GIVEN one downstream WHEN upstream closes THEN downstream is closed`() =
         scope.runBlockingTest {
             val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
             manager.addDownstream(downstream)
@@ -108,7 +110,7 @@ class ChannelManagerTest {
         }
 
     @Test
-    fun `Given two downstreams WHEN two values come in on the upstream THEN two values are consumed`() =
+    fun `GIVEN two downstreams WHEN two values come in on the upstream THEN two values are consumed`() =
         scope.runBlockingTest {
             val downstream1 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
             val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
@@ -140,6 +142,268 @@ class ChannelManagerTest {
 
             assertThat(collection1.await()).isEqualTo(listOf("a", "b"))
             assertThat(collection2.await()).isEqualTo(listOf("a", "b"))
+        }
+
+    @Test
+    fun `GIVEN no keepUpstreamAlive WHEN add two non overlapping downstreams THEN second channel receives value AND registers only once`() =
+        scope.runBlockingTest {
+            val upstreamCreateCount =
+                `consume two non-overlapping downstreams and count upstream creations`(
+                    keepUpstreamAlive = false
+                )
+            assertThat(upstreamCreateCount).isEqualTo(2)
+        }
+
+    @Test
+    fun `GIVEN keepUpstreamAlive WHEN add two non overlapping downstreams THEN second channel receives value AND registers only once`() =
+        scope.runBlockingTest {
+            val upstreamCreateCount =
+                `consume two non-overlapping downstreams and count upstream creations`(
+                    keepUpstreamAlive = true
+                )
+            assertThat(upstreamCreateCount).isEqualTo(1)
+        }
+
+    private suspend fun `consume two non-overlapping downstreams and count upstream creations`(
+        keepUpstreamAlive: Boolean
+    ) = coroutineScope {
+        // upstream that tracks creates and can be emitted to on demand
+        var upstreamCreateCount = 0
+        val upstreamChannel = Channel<String>(Channel.UNLIMITED)
+        val upstream = flow {
+            upstreamCreateCount++
+            for (message in upstreamChannel) {
+                emit(message)
+            }
+        }
+
+        // create a manager with this specific upstream
+        val manager = ChannelManager(
+            scope,
+            bufferSize = 1,
+            onEach = {},
+            keepUpstreamAlive = keepUpstreamAlive,
+            upstream = upstream
+        )
+
+        // subscribe with fist downstream
+        val downstream1 =
+            Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        manager.addDownstream(downstream1)
+        val s1 = async {
+            downstream1.consumeAsFlow()
+                .onCompletion { manager.removeDownstream(downstream1) }
+                .first().let {
+                    it.markDelivered()
+                    it.value
+                }
+        }
+
+        // get value and make sure first downstream is closed
+        upstreamChannel.send("a")
+        assertThat(s1.await()).isEqualTo("a")
+        assertThat(downstream1.isClosedForReceive)
+
+        val downstream2 =
+            Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        manager.addDownstream(downstream2)
+        val s2 = async {
+            downstream2.consumeAsFlow()
+                .onCompletion { manager.removeDownstream(downstream2) }
+                .onEach { it.markDelivered() }
+                .toList()
+                .map { it.value }
+        }
+
+        // get the final value
+        upstreamChannel.send("b")
+        upstreamChannel.close()
+        assertThat(s2.await()).isEqualTo(listOf("a", "b")) // buffer=1 so 'a' should be sent as well
+
+        return@coroutineScope upstreamCreateCount
+    }
+
+    @Test
+    fun `GIVEN keepUpstreamAlive AND buffer of size 1 WHEN add two non overlapping downstreams AND emit during keepalive THEN second channel receives 2 values`() =
+        scope.runBlockingTest {
+            val manager = newManagerInKeepAliveModeWithPendingFetch(
+                bufferSize = 1,
+                firstValue = "a",
+                pendingValue = "b"
+            )
+
+            // add downstream
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+            val s2 = async {
+                downstream.consumeAsFlow()
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .onEach { it.markDelivered() }
+                    .toList()
+                    .map { it.value }
+            }
+            upstream.send("c")
+            upstream.close()
+
+            assertThat(s2.await()).isEqualTo(listOf("b", "c"))
+        }
+
+    @Test
+    fun `GIVEN keepUpstreamAlive AND buffer of size 1 WHEN add two non overlapping downstreams AND a 3rd channel overlapping the 2nd channle AND emit during keepalive THEN 3rd channel receives 1 values`() =
+        scope.runBlockingTest {
+            val manager = newManagerInKeepAliveModeWithPendingFetch(
+                bufferSize = 1,
+                firstValue = "a",
+                pendingValue = "b"
+            )
+
+            // add downstream
+            val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream2)
+            val pending = async {
+                downstream2.receive().let {
+                    it.markDelivered()
+                    it.value
+                }
+            }
+            assertThat(pending.await()).isEqualTo("b")
+
+            val downstream3 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream3)
+            val collection = async {
+                downstream3.consumeAsFlow()
+                    .onEach { it.markDelivered() }
+                    .toList()
+                    .map { it.value }
+            }
+            upstream.close()
+
+            assertThat(collection.await()).isEqualTo(listOf("b"))
+        }
+
+    @Test
+    fun `GIVEN keepUpstreamAlive AND buffer of size 1 WHEN add two non overlapping downstreams AND emit during keepalive AND emit after keepalive THEN second channel receives 2 values`() =
+        scope.runBlockingTest {
+            val manager = newManagerInKeepAliveModeWithPendingFetch(
+                bufferSize = 1,
+                pendingValue = "b"
+            )
+
+            // add downstream
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+            val s2 = async {
+                downstream.consumeAsFlow()
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .onEach { it.markDelivered() }
+                    .toList()
+                    .map { it.value }
+            }
+
+            // get the final value
+            upstream.send("c")
+            upstream.close()
+            assertThat(s2.await()).isEqualTo(listOf("b", "c"))
+        }
+
+    @Test
+    fun `GIVEN keepUpstreamAlive AND buffer of size 2 WHEN add two non overlapping downstreams AND emit during keepalive AND emit after keepalive THEN second channel receives 3 values`() =
+        scope.runBlockingTest {
+            val manager = newManagerInKeepAliveModeWithPendingFetch(
+                bufferSize = 2,
+                firstValue = "a",
+                pendingValue = "b"
+            )
+
+            // add downstream
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+            val collection = async {
+                downstream.consumeAsFlow()
+                    .onCompletion { manager.removeDownstream(downstream) }
+                    .onEach { it.markDelivered() }
+                    .toList()
+                    .map { it.value }
+            }
+
+            // get the final value
+            upstream.send("c")
+            upstream.close()
+            assertThat(collection.await()).isEqualTo(listOf("a", "b", "c"))
+        }
+
+    private suspend fun newManagerInKeepAliveModeWithPendingFetch(
+        bufferSize: Int,
+        firstValue: String = "a",
+        pendingValue: String = "b"
+    ) = coroutineScope {
+        // upstream that tracks creates and can be emitted to on demand
+
+        // create a manager with this specific upstream
+        val manager = ChannelManager(
+            scope,
+            bufferSize,
+            onEach = {},
+            keepUpstreamAlive = true,
+            upstream = upstream.consumeAsFlow()
+        )
+
+        // subscribe with fist downstream
+        val downstream =
+            Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        manager.addDownstream(downstream)
+        val value = async {
+            downstream.consumeAsFlow()
+                .onCompletion { manager.removeDownstream(downstream) }
+                .first().let {
+                    it.markDelivered()
+                    it.value
+                }
+        }
+
+        // get value and make sure first downstream is closed
+        upstream.send(firstValue)
+        assertThat(value.await()).isEqualTo(firstValue)
+        assertThat(downstream.isClosedForReceive)
+
+        // emit with no downstreams
+        upstream.send(pendingValue)
+
+        return@coroutineScope manager
+    }
+
+    @Test
+    fun `GIVEN two downstreams and a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
+        assertClosingChannelManager(true)
+
+    @Test
+    fun `GIVEN two downstreams without a dispatched value WHEN ChannelManager is closed THEN it should close downstreams`() =
+        assertClosingChannelManager(false)
+
+    private fun assertClosingChannelManager(dispatchValue: Boolean) = scope.runBlockingTest {
+        val downstream1 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        val downstream2 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+        manager.addDownstream(downstream1)
+        manager.addDownstream(downstream2)
+        if (dispatchValue) {
+            upstream.send("a")
+        }
+        manager.close()
+        assertThat(downstream1.isClosedForSend).isTrue()
+        assertThat(downstream2.isClosedForSend).isTrue()
+        // it can be open for receive if and only if we've already sent a value
+        assertThat(downstream1.isClosedForReceive).isEqualTo(!dispatchValue)
+        assertThat(downstream2.isClosedForReceive).isEqualTo(!dispatchValue)
+    }
+
+    @Test
+    fun `Calling close multiple times on ChannelManager should be idempotent`() =
+        scope.runBlockingTest {
+            val downstream = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
+            manager.addDownstream(downstream)
+            manager.close()
+            manager.close()
+            assertThat(downstream.isClosedForSend).isTrue()
         }
 }
 

@@ -53,3 +53,9 @@ compileTestKotlin {
         jvmTarget = "1.8"
     }
 }
+
+
+dokka {
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/dokkaHtml"
+}
