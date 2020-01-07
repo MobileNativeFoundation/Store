@@ -33,12 +33,29 @@ import kotlinx.coroutines.flow.flow
 @ExperimentalCoroutinesApi
 interface StoreBuilder<Key, Output> {
     fun build(): Store<Key, Output>
+    /**
+     * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
+     *  [Store] will open a global scope for management of shared responses, if instead you'd like to control
+     *  the scope that sharing/multicasting happens in you can pass a @param [scope]
+     *
+     *   @param scope - scope to use for sharing
+     */
     fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
+
+    /**
+     * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
+     *  or size based eviction
+     *  Example: MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(TimeUnit.SECONDS).build()
+     */
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
+
+    /**
+     * by default a Store caches in memory with a default policy of max items = 16
+     */
     fun disableCache(): StoreBuilder<Key, Output>
 
     /**
-     * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
+     * Connects a (non-[flow]) source of truth that is accessible via [reader], [writer] and
      * [delete].
      *
      * @see persister
@@ -49,8 +66,26 @@ interface StoreBuilder<Key, Output> {
         delete: (suspend (Key) -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
 
+
+
     /**
-     * Connects a ([Flow]) source of truth that is accessed via [reader], [writer] and [delete].
+     * Connects a ([kotlinx.coroutines.flow.Flow]) source of truth that is accessed via [reader], [writer] and [delete].
+     *
+     * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
+     * for waiting on network update before local modifications are available (via [Store.stream]).
+     *
+     * @param [com.dropbox.android.external.store4.Persister] reads records from the source of truth
+     * WARNING: Delete operation is not supported when using a legacy [com.dropbox.android.external.store4.Persister],
+     * please use another override
+     */
+
+
+    fun  nonFlowingPersisterLegacy(
+        persister: Persister<Output, Key>
+    ): StoreBuilder<Key, Output>
+
+    /**
+     * Connects a ([kotlinx.coroutines.flow.Flow]) source of truth that is accessed via [reader], [writer] and [delete].
      *
      * For maximal flexibility, [writer]'s record type ([Output]] and [reader]'s record type
      * ([NewOutput]) are not identical. This allows us to read one type of objects from network and
@@ -70,6 +105,8 @@ interface StoreBuilder<Key, Output> {
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
+
+
 
     companion object {
         /**
@@ -100,6 +137,7 @@ interface StoreBuilder<Key, Output> {
             fetcher: (key: Key) -> Flow<Output>
         ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
     }
+
 }
 
 @FlowPreview
@@ -112,6 +150,20 @@ private class BuilderImpl<Key, Output>(
 
     private fun <NewOutput> withSourceOfTruth(
         sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
+    ) = BuilderWithSourceOfTruth(fetcher, sourceOfTruth).let { builder ->
+        if (cachePolicy == null) {
+            builder.disableCache()
+        } else {
+            builder.cachePolicy(cachePolicy)
+        }
+    }.let { builder ->
+        scope?.let {
+            builder.scope(it)
+        } ?: builder
+    }
+
+    private fun withLegacySourceOfTruth(
+        sourceOfTruth: PersistentNonFlowingSourceOfTruth<Key, Output, Output>
     ) = BuilderWithSourceOfTruth(fetcher, sourceOfTruth).let { builder ->
         if (cachePolicy == null) {
             builder.disableCache()
@@ -152,6 +204,19 @@ private class BuilderImpl<Key, Output>(
             )
         )
     }
+
+    override fun  nonFlowingPersisterLegacy(
+        persister: Persister<Output, Key>
+    ): BuilderWithSourceOfTruth<Key, Output, Output> {
+         val sourceOfTruth: PersistentNonFlowingSourceOfTruth<Key, Output, Output> = PersistentNonFlowingSourceOfTruth(
+             realReader = { key -> persister.read(key) },
+             realWriter = { key, input -> persister.write(key, input) },
+             realDelete = { key -> TODO() }
+         )
+         return  withLegacySourceOfTruth(sourceOfTruth)
+    }
+
+
 
     override fun <NewOutput> persister(
         reader: (Key) -> Flow<NewOutput?>,
@@ -217,4 +282,7 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)?
     ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
+
+    override fun nonFlowingPersisterLegacy(persister: Persister<Output, Key>): StoreBuilder<Key, Output> =
+        error("Multiple persisters are not supported")
 }

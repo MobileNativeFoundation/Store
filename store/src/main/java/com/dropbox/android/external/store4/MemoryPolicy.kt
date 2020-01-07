@@ -3,18 +3,15 @@ package com.dropbox.android.external.store4
 import java.util.concurrent.TimeUnit
 
 /**
- * MemoryPolicy holds all required info to create MemoryCache and
- * [NoopPersister]
+ * MemoryPolicy holds all required info to create MemoryCache
  *
  *
- * This class is used, in order to define the appropriate parameters for the MemoryCache
+ * This class is used, in order to define the appropriate parameters for the Memory [com.dropbox.android.external.cache3.Cache]
  * to be built.
  *
  *
  * MemoryPolicy is used by a [Store]
- * and defines the in-memory cache behavior. It is also used by
- * [NoopPersister]
- * to define a basic caching mechanism.
+ * and defines the in-memory cache behavior.
  */
 class MemoryPolicy internal constructor(
     val expireAfterWrite: Long,

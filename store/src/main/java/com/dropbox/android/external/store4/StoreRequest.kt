@@ -15,42 +15,54 @@
  */
 package com.dropbox.android.external.store4
 
+/**
+ * data class to represent a single store request
+ * @param key a unique identifier for your data
+ * @param skippedCaches List of cache types that should be skipped when retuning the response see [CacheType]
+ * @param refresh If set to true  [Store] will always get fresh value from fetcher while also
+ *  starting the stream from the local [com.dropbox.android.external.store4.impl.SourceOfTruth] and memory cache
+ *
+ */
 data class StoreRequest<Key> private constructor(
-    /**
-     * The key for the request
-     */
+
     val key: Key,
-    /**
-     * List of cache types that should be skipped when retuning the response
-     */
+
     private val skippedCaches: Int,
-    /**
-     * If set to with stream requests, Store will always get fresh value from fetcher while also
-     * starting the stream from the local data (disk and/or memory cache)
-     */
+
     val refresh: Boolean = false
 ) {
 
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
 
+    /**
+     * Factories for common store requests
+     */
     companion object {
         private val allCaches = CacheType.values().fold(0) { prev, next ->
             prev.or(next.flag)
         }
 
-        // TODO figure out if any of these helper methods make sense
+        /**
+         * Create a Store Request which will skip all caches and hit your fetcher (filling your caches)
+         */
         fun <Key> fresh(key: Key) = StoreRequest(
                 key = key,
                 skippedCaches = allCaches,
                 refresh = true
         )
-
+        /**
+         * Create a Store Request which will return data from memory/disk caches
+         * @param refresh  - if true then return fetcher (new) data as well (updating your caches)
+         */
         fun <Key> cached(key: Key, refresh: Boolean) = StoreRequest(
                 key = key,
                 skippedCaches = 0,
                 refresh = refresh
         )
-
+        /**
+         * Create a Store Request which will return data from disk cache
+         * @param refresh  - if true then return fetcher (new) data as well (updating your caches)
+         */
         fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreRequest(
                 key = key,
                 skippedCaches = CacheType.MEMORY.flag,
