@@ -55,7 +55,7 @@ interface StoreBuilder<Key, Output> {
     fun disableCache(): StoreBuilder<Key, Output>
 
     /**
-     * Connects a (non-[flow]) source of truth that is accessible via [reader], [writer] and
+     * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
      * [delete].
      *
      * @see persister
@@ -206,7 +206,7 @@ private class BuilderImpl<Key, Output>(
             PersistentNonFlowingSourceOfTruth(
                 realReader = { key -> persister.read(key) },
                 realWriter = { key, input -> persister.write(key, input) },
-                realDelete = { key -> TODO() }
+                realDelete = { key -> error("Delete is not implemented in legacy persisters") }
             )
         return withLegacySourceOfTruth(sourceOfTruth)
     }

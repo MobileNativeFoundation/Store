@@ -6,11 +6,45 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.transform
 
+/**
+ * A Store is responsible for managing a particular data request.
+ *
+ * When you create an implementation of a Store, you provide it with a Fetcher, a function that defines how data will be fetched over network.
+ *
+ * You can also define how your Store will cache data in-memory and on-disk. See [StoreBuilder] for full configuration
+ *
+ * Example usage:
+ *
+ * val store = StoreBuilder
+ *  .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
+ *    provideRetrofit().fetchSubreddit(query, config.limit).data.children.map(::toPosts)
+ *   }
+ *  .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
+ *             writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
+ *             delete = { (query, _) -> db.postDao().clearFeed(query) })
+ *  .build()
+ *  //single shot response
+ *  viewModelScope.launch {
+ *    liveData.value = try {
+ *      val data = store.fresh(key)
+ *      Lce.Success(data)
+ *    } catch (e: Exception) {
+ *      Lce.Error(e)
+ *    }
+ *  }
+ *
+ *  //get cached data and collect future emissions as well
+ *  viewModelScope.launch {
+ *    val data = store.cached(key, refresh=true)
+ *                    .collect{data.value=it }
+ *    }
+ *
+ */
 interface Store<Key, Output> {
 
     /**
      * Return a flow for the given key
-     * @param request - see [com.dropbox.android.external.store4.StoreRequest] for configurations
+     * @param request - see [StoreRequest] for configurations
      */
     fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>>
 
