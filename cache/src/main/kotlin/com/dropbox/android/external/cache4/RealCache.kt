@@ -185,12 +185,6 @@ internal class RealCache<Key : Any, Value : Any>(
                         cacheEntries.remove(entry.key)
                         // remove the entry from the current queue
                         iterator.remove()
-                        // also remove the entry from the other queue
-                        if (queue == writeQueue) {
-                            accessQueue?.remove(entry)
-                        } else {
-                            writeQueue?.remove(entry)
-                        }
                     } else {
                         // found unexpired entry, no need to look any further
                         break
