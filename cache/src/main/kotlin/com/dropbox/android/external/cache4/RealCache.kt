@@ -96,11 +96,6 @@ internal class RealCache<Key : Any, Value : Any>(
             } else {
                 // update eviction metadata
                 recordRead(it, nowNanos)
-                // if entry's access time has been updated, perform an update to the map to create
-                // a memory barrier for synchronizing subsequent access to the map from other threads.
-                if (expiresAfterAccess) {
-                    cacheEntries[key] = it
-                }
                 it.value
             }
         }
@@ -117,11 +112,6 @@ internal class RealCache<Key : Any, Value : Any>(
                 } else {
                     // update eviction metadata
                     recordRead(it, nowNanos)
-                    // if entry's access time has been updated, perform an update to the map to create
-                    // a memory barrier for synchronizing subsequent access to the map from other threads.
-                    if (expiresAfterAccess) {
-                        cacheEntries[key] = it
-                    }
                     it.value
                 }
             } ?: loader().let { loadedValue ->
@@ -147,9 +137,6 @@ internal class RealCache<Key : Any, Value : Any>(
             // cache entry found
             recordWrite(existingEntry, nowNanos)
             existingEntry.value = value
-            // perform an update to the map to create a memory barrier for synchronizing
-            // subsequent access to the map from other threads.
-            cacheEntries[key] = existingEntry
         } else {
             // create a new cache entry
             val newEntry = CacheEntry(key, value)
@@ -309,12 +296,10 @@ internal class RealCache<Key : Any, Value : Any>(
  *
  * A cache entry can be reused by updating [value], [accessTimeNanos], or [writeTimeNanos],
  * as this allows us to avoid creating new instance of [CacheEntry] on every access and write.
- *
- * Note that we assume cache entries are stored in thread-safe collections such as ConcurrentHashMap.
  */
 private data class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
-    var value: Value,
-    var accessTimeNanos: Long = Long.MAX_VALUE,
-    var writeTimeNanos: Long = Long.MAX_VALUE
+    @Volatile var value: Value,
+    @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,
+    @Volatile var writeTimeNanos: Long = Long.MAX_VALUE
 )
