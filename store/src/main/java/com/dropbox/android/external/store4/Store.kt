@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.transform
  *
  * val store = StoreBuilder
  *  .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
- *    provideRetrofit().fetchSubreddit(query, config.limit).data.children.map(::toPosts)
+ *    provideRetrofit().fetchData(query, config.limit).data.children.map(::toPosts)
  *   }
- *  .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
- *             writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
- *             delete = { (query, _) -> db.postDao().clearFeed(query) })
+ *  .persister(reader = { (query, _) -> db.postDao().loadData(query) },
+ *             writer = { (query, _), posts -> db.dataDAO().insertData(query, posts) },
+ *             delete = { (query, _) -> db.dataDAO().clearData(query) })
  *  .build()
  *  //single shot response
  *  viewModelScope.launch {
