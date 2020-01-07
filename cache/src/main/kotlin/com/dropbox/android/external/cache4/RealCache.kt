@@ -272,16 +272,13 @@ internal class RealCache<Key : Any, Value : Any>(
      * Overtime the inconsistency between the queues and the map might cause memory leaks, e.g.
      * when performing size-based evictions, an entry in the [cacheEntries] but not in [accessQueue]
      * would never be evicted.
-     * Calling this function will address these inconsistencies by only retaining the intersection
-     * of [cacheEntries], [writeQueue], and [accessQueue].
+     * Calling this function will remove entries which are in the [cacheEntries] map but not in either
+     * [writeQueue] or [accessQueue].
      */
     private fun cleanUpDeadEntries() {
         val queues = listOfNotNull(writeQueue, accessQueue)
         queues.forEach { queue ->
-            val queueSize = queue.size
-            val cacheEntrySize = cacheEntries.size
-
-            if (queueSize < cacheEntrySize) {
+            if (queue.size < cacheEntries.size) {
                 // remove entries in the map but not in the queue
                 val iterator = cacheEntries.iterator()
                 for (item in iterator) {
@@ -295,11 +292,6 @@ internal class RealCache<Key : Any, Value : Any>(
                             writeQueue?.remove(cacheEntry)
                         }
                     }
-                }
-            } else if (queueSize > cacheEntrySize) {
-                // remove entries in the queue but not in the map
-                queue.removeAll {
-                    !cacheEntries.containsKey(it.key)
                 }
             }
         }
