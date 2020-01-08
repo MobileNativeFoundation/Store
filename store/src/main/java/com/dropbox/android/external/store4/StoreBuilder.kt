@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.flow
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-interface StoreBuilder<Key, Output> {
+interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -60,7 +60,7 @@ interface StoreBuilder<Key, Output> {
      *
      * @see persister
      */
-    fun <NewOutput> nonFlowingPersister(
+    fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)? = null
@@ -76,7 +76,6 @@ interface StoreBuilder<Key, Output> {
      * WARNING: Delete operation is not supported when using a legacy [com.dropbox.android.external.store4.Persister],
      * please use another override
      */
-
     fun nonFlowingPersisterLegacy(
         persister: Persister<Output, Key>
     ): StoreBuilder<Key, Output>
@@ -97,7 +96,7 @@ interface StoreBuilder<Key, Output> {
      * @param delete deletes records in the source of truth
      *
      */
-    fun <NewOutput> persister(
+    fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)? = null
@@ -112,7 +111,7 @@ interface StoreBuilder<Key, Output> {
          *
          * @param fetcher a function for fetching network records.
          */
-        fun <Key, Output> fromNonFlow(
+        fun <Key : Any, Output : Any> fromNonFlow(
             fetcher: suspend (key: Key) -> Output
         ): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
             flow {
@@ -128,7 +127,7 @@ interface StoreBuilder<Key, Output> {
          *
          * @param fetcher a function for fetching a flow of network records.
          */
-        fun <Key, Output> from(
+        fun <Key : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Output>
         ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
     }
@@ -136,13 +135,13 @@ interface StoreBuilder<Key, Output> {
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-private class BuilderImpl<Key, Output>(
+private class BuilderImpl<Key : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Output>
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
-    private fun <NewOutput> withSourceOfTruth(
+    private fun <NewOutput : Any> withSourceOfTruth(
         sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
     ) = BuilderWithSourceOfTruth(fetcher, sourceOfTruth).let { builder ->
         if (cachePolicy == null) {
@@ -185,7 +184,7 @@ private class BuilderImpl<Key, Output>(
         return this
     }
 
-    override fun <NewOutput> nonFlowingPersister(
+    override fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)?
@@ -206,12 +205,12 @@ private class BuilderImpl<Key, Output>(
             PersistentNonFlowingSourceOfTruth(
                 realReader = { key -> persister.read(key) },
                 realWriter = { key, input -> persister.write(key, input) },
-                realDelete = { key -> error("Delete is not implemented in legacy persisters") }
+                realDelete = { error("Delete is not implemented in legacy persisters") }
             )
         return withLegacySourceOfTruth(sourceOfTruth)
     }
 
-    override fun <NewOutput> persister(
+    override fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)?
@@ -232,7 +231,7 @@ private class BuilderImpl<Key, Output>(
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-private class BuilderWithSourceOfTruth<Key, Input, Output>(
+private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
@@ -264,13 +263,13 @@ private class BuilderWithSourceOfTruth<Key, Input, Output>(
         )
     }
 
-    override fun <NewOutput> persister(
+    override fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)?
     ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
 
-    override fun <NewOutput> nonFlowingPersister(
+    override fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
         delete: (suspend (Key) -> Unit)?

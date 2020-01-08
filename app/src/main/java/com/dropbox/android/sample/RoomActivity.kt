@@ -91,7 +91,7 @@ class RoomActivity : AppCompatActivity() {
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class StoreState<Key, Output>(
+internal class StoreState<Key : Any, Output : Any>(
     private val store: Store<Key, Output>
 ) {
     private val keyFlow = Channel<Key>(capacity = Channel.CONFLATED)
