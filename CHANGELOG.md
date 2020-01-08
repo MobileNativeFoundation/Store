@@ -3,6 +3,11 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-alpha01 *(2020-01-08)*
+----------------------------
+
+**New Features**
+* Store has been rewritten using Kotlin Coroutines instead of RxJava
 
 Version 3.1.0 *(2018-06-07)*
 ----------------------------

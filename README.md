@@ -25,7 +25,7 @@ Maven central artifacts coming soon. For now please build from source or run `./
 ###### Include gradle dependency (as well as MavenCentral Snapshot repo)
 
 ```groovy
-implementation 'com.dropbox.mobile.store:store4:4.0.0-SNAPSHOT'
+implementation 'com.dropbox.mobile.store:store4:4.0.0-alpha01'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
@@ -201,4 +201,4 @@ The above builder is how we recommend working with data on Android. With the abo
 
 ### Artifacts
 
-**CurrentVersion = 4.0.0-SNAPSHOT**
+**CurrentVersion = 4.0.0-alpha01**
