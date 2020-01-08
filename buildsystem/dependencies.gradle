@@ -61,7 +61,6 @@ ext.libraries = [
         junit                   : "junit:junit:$versions.junit",
         truth                   : "com.google.truth:truth:$versions.truth",
         mockito                 : "org.mockito:mockito-core:$versions.mockito",
-        mockitoInline           : "org.mockito:mockito-inline:$versions.mockito",
         mockitoKotlin           : "com.nhaarman.mockitokotlin2:mockito-kotlin:$versions.mockitoKotlin",
         coroutinesCore          : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines",
         coroutinesAndroid       : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines",
