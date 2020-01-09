@@ -24,10 +24,15 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -443,6 +448,70 @@ class FlowStoreTest {
                 )
             )
     }
+
+    @Test
+    fun avoidRefresh_withoutSourceOfTruth() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = build<Int, String, String>(
+            nonFlowingFetcher = fetcher::fetch,
+            enableCache = true
+        )
+        val firstFetch = pipeline.fresh(3).requireData()
+        assertThat(firstFetch).isEqualTo("three-1")
+        val secondCollect = mutableListOf<StoreResponse<String>>()
+        val collection = launch {
+            pipeline.stream(StoreRequest.cached(3, refresh = false)).collect {
+                secondCollect.add(it)
+            }
+        }
+        testScope.runCurrent()
+        assertThat(secondCollect).containsExactly(
+            Data(
+                value = "three-1",
+                origin = Cache
+            )
+        )
+        collection.cancelAndJoin()
+    }
+
+    @Test
+    fun avoidRefresh_withSourceOfTruth() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val persister = InMemoryPersister<Int, String>()
+        val pipeline = build(
+            nonFlowingFetcher = fetcher::fetch,
+            persisterReader = persister::read,
+            persisterWriter = persister::write,
+            enableCache = true
+        )
+        val firstFetch = pipeline.fresh(3).requireData()
+        assertThat(firstFetch).isEqualTo("three-1")
+        val secondCollect = mutableListOf<StoreResponse<String>>()
+        val collection = launch {
+            pipeline.stream(StoreRequest.cached(3, refresh = false)).collect {
+                secondCollect.add(it)
+            }
+        }
+        testScope.runCurrent()
+        assertThat(secondCollect).containsExactly(
+            Data(
+                value = "three-1",
+                origin = Cache
+            ),
+            Data(
+                value = "three-1",
+                origin = Persister
+            )
+        )
+        collection.cancelAndJoin()
+    }
+
 
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
