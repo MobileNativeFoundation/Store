@@ -51,7 +51,7 @@ StoreBuilder
       reader = db.postDao()::loadPosts,
       writer = db.postDao()::insertPosts,
       delete = db.postDao()::clearFeed
-  ).build()        
+  ).build()
 ```
 
 With the above setup you have:
@@ -68,8 +68,8 @@ You create a Store using a builder. The only requirement is to include a functio
 
 
 ```kotlin
-val store = StoreBuilder 
-        .from{articleId -> api.getArticle(articleId)} // api returns Flow<Article>
+val store = StoreBuilder
+        .from { articleId -> api.getArticle(articleId) } // api returns Flow<Article>
         .build()
 ```
 
@@ -93,7 +93,7 @@ Each `StoreResponse` includes an `origin` field which specifies where the event 
 * The `Data` class has a `value` field which includes an instance of the type returned by `Store`.
 * The `Error` class includes an `error` field that contains the exception thrown by the given `origin`.
 
-When an error happens, `Store` does not throw an exception, instead, it wraps it in a `StoreResponse.Error` type which allows `Flow` to continue so that it can still receive updates that might be triggered by either changes in your data source or subsequent fetch operations. 
+When an error happens, `Store` does not throw an exception, instead, it wraps it in a `StoreResponse.Error` type which allows `Flow` to continue so that it can still receive updates that might be triggered by either changes in your data source or subsequent fetch operations.
 
 ```kotlin
 lifecycleScope.launchWhenStarted {
@@ -120,10 +120,10 @@ For convenience, there are `Store.get(key)`, `Store.stream(key)` and `Store.fres
 * `suspend fun Store.stream(key: Key): Flow<Value>`: This method returns a `Flow` of the values for the given `key`.
 
 ```kotlin
- lifecycleScope.launchWhenStarted {
+lifecycleScope.launchWhenStarted {
   val article = store.get(key)
   updateUI(article)
- }
+}
 ```
 
 The first time you call to `suspend store.get(key)`, the response will be stored in an in-memory cache and in the persister, if provided.
@@ -149,9 +149,9 @@ example calls:
 ```kotlin
 lifecycleScope.launchWhenStarted {
     store.stream(StoreRequest.cached(3, refresh = false)) //will get cached value followed by any fresh values, refresh will also trigger network call if set to `true` even if the data is available in cache or disk.
-    .collect{  }
+        .collect {}
     store.stream(StoreRequest.fresh(3)) //skip cache, go directly to fetcher
-        .collect{  }
+        .collect {}
 }
 ```
 
@@ -180,7 +180,7 @@ StoreBuilder
     reader = db.postDao()::loadPosts,
     writer = db.postDao()::insertPosts,
     delete = db.postDao()::clearFeed
-  ).build()        
+  ).build()
 ```
 
 Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in-memory cache for the “persister” implementation and instead have two levels of in-memory caching--one with inflated and one with deflated models, allowing for sharing of the “persister” cache data between stores.
