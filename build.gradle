@@ -90,4 +90,3 @@ subprojects {
     project.plugins.withType(com.android.build.gradle.LibraryPlugin).whenPluginAdded(preDexClosure)
 }
 
-
