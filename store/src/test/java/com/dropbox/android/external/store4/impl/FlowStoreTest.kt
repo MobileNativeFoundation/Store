@@ -474,6 +474,21 @@ class FlowStoreTest {
                 origin = Cache
             )
         )
+        // trigger another fetch from network
+        val secondFetch = pipeline.fresh(3).requireData()
+        assertThat(secondFetch).isEqualTo("three-2")
+        testScope.runCurrent()
+        // make sure cached also received it
+        assertThat(secondCollect).containsExactly(
+            Data(
+                value = "three-1",
+                origin = Cache
+            ),
+            Data(
+                value = "three-2",
+                origin = Fetcher
+            )
+        )
         collection.cancelAndJoin()
     }
 
@@ -507,6 +522,25 @@ class FlowStoreTest {
             Data(
                 value = "three-1",
                 origin = Persister
+            )
+        )
+        // trigger another fetch from network
+        val secondFetch = pipeline.fresh(3).requireData()
+        assertThat(secondFetch).isEqualTo("three-2")
+        testScope.runCurrent()
+        // make sure cached also received it
+        assertThat(secondCollect).containsExactly(
+            Data(
+                value = "three-1",
+                origin = Cache
+            ),
+            Data(
+                value = "three-1",
+                origin = Persister
+            ),
+            Data(
+                value = "three-2",
+                origin = Fetcher
             )
         )
         collection.cancelAndJoin()

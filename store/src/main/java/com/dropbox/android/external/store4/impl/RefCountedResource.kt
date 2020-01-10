@@ -32,7 +32,7 @@ internal class RefCountedResource<Key, T>(
         items.getOrPut(key) {
             Item(create(key))
         }.also {
-            it.refCount ++
+            it.refCount++
         }.value
     }
 
@@ -41,7 +41,7 @@ internal class RefCountedResource<Key, T>(
         check(existing != null && existing.value === value) {
             "inconsistent release, seems like $value was leaked or never acquired"
         }
-        existing.refCount --
+        existing.refCount--
         if (existing.refCount < 1) {
             items.remove(key)
             onRelease?.invoke(key, value)
@@ -51,6 +51,15 @@ internal class RefCountedResource<Key, T>(
     // used in tests
     suspend fun size() = lock.withLock {
         items.size
+    }
+
+    suspend fun <R> use(key: Key, block: suspend (T) -> R): R {
+        val resource = acquire(key)
+        return try {
+            block(resource)
+        } finally {
+            release(key, resource)
+        }
     }
 
     private inner class Item(

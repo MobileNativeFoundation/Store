@@ -52,6 +52,9 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      */
     private val versionCounter = AtomicLong(0)
 
+    val defaultOrigin: ResponseOrigin
+        get() = delegate.defaultOrigin
+
     fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<DataWithOrigin<Output>> {
         return flow {
             val barrier = barriers.acquire(key)

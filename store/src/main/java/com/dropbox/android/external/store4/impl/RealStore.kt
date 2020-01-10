@@ -42,18 +42,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
     private val memoryPolicy: MemoryPolicy?
 ) : Store<Key, Output> {
-    /**
-     * This source of truth is either a real database or an in memory source of truth created by
-     * the builder.
-     * Whatever is given, we always put a [SourceOfTruthWithBarrier] in front of it so that while
-     * we write the value from fetcher into the disk, we can block reads to avoid sending new data
-     * as if it came from the server (the [StoreResponse.origin] field).
-     */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>? =
-        sourceOfTruth?.let {
-            SourceOfTruthWithBarrier(it)
-        }
-
     private val memCache = memoryPolicy?.let {
         Cache.Builder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
@@ -67,7 +55,20 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             }
         }.build<Key, Output>()
     }
-
+    /**
+     * This source of truth is either a real database or an in memory source of truth created by
+     * the builder.
+     * Whatever is given, we always put a [SourceOfTruthWithBarrier] in front of it so that while
+     * we write the value from fetcher into the disk, we can block reads to avoid sending new data
+     * as if it came from the server (the [StoreResponse.origin] field).
+     */
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>? =
+        sourceOfTruth?.let {
+            SourceOfTruthWithBarrier(it)
+        } ?: memCache?.let {
+            val cacheSourceOfTruth = CacheSourceOfTruth(memCache) as SourceOfTruth<Key, Input, Output>
+            SourceOfTruthWithBarrier(cacheSourceOfTruth)
+        }
     /**
      * Fetcher controller maintains 1 and only 1 `Multicaster` for a given key to ensure network
      * requests are shared.
@@ -83,10 +84,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             @Suppress("UNCHECKED_CAST")
             createNetworkFlow(
                 request = request,
+                sourceOfTruthCacheType = null,
                 networkLock = null
             ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
         } else {
-            diskNetworkCombined(request, sourceOfTruth)
+            sourceOfTruthNetworkCombined(request, sourceOfTruth)
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != ResponseOrigin.Cache) {
@@ -96,9 +98,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             }
         }.onStart {
             // if there is anything cached, dispatch it first if requested
-            if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                memCache?.get(request.key)?.let { cached ->
-                    emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
+            if (sourceOfTruth?.defaultOrigin != ResponseOrigin.Cache) {
+                if (!request.shouldSkipCache(CacheType.MEMORY)) {
+                    memCache?.get(request.key)?.let { cached ->
+                        emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
+                    }
                 }
             }
         }
@@ -133,14 +137,20 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
      * [StoreRequest.refresh] is set to `true`, we enable the fetcher flow.
      * This ensures we first get the value from disk and then load from server if necessary.
      */
-    private fun diskNetworkCombined(
+    private fun sourceOfTruthNetworkCombined(
         request: StoreRequest<Key>,
         sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>
     ): Flow<StoreResponse<Output>> {
+        val sourceOfTruthCacheType = when (sourceOfTruth.defaultOrigin) {
+            ResponseOrigin.Persister -> CacheType.DISK
+            ResponseOrigin.Cache -> CacheType.MEMORY
+            else -> null
+        }
+
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
-        val networkFlow = createNetworkFlow(request, networkLock)
-        if (!request.shouldSkipCache(CacheType.DISK)) {
+        val networkFlow = createNetworkFlow(request, sourceOfTruthCacheType, networkLock)
+        if (sourceOfTruthCacheType == null || !request.shouldSkipCache(sourceOfTruthCacheType)) {
             diskLock.complete(Unit)
         }
         val diskFlow = sourceOfTruth.reader(request.key, diskLock)
@@ -182,12 +192,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     private fun createNetworkFlow(
         request: StoreRequest<Key>,
+        sourceOfTruthCacheType: CacheType?,
         networkLock: CompletableDeferred<Unit>?
     ): Flow<StoreResponse<Input>> {
         return fetcherController
             .getFetcher(request.key)
             .onStart {
-                if (!request.shouldSkipCache(CacheType.DISK)) {
+                if (sourceOfTruthCacheType != null && !request.shouldSkipCache(sourceOfTruthCacheType)) {
                     // wait until network gives us the go
                     networkLock?.await()
                 }
