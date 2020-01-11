@@ -26,15 +26,11 @@ dependencies {
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 
-
-    compileOnly libraries.jsr305
-
     testImplementation libraries.mockito
     testImplementation libraries.mockitoKotlin
     testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
-    testCompileOnly libraries.jsr305
 }
 
 apply from: rootProject.file("gradle/maven-push.gradle")
