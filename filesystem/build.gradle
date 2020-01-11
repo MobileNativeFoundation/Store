@@ -9,8 +9,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-apply plugin: 'java'
-
 group = GROUP
 version = VERSION_NAME
 
