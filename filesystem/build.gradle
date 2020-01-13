@@ -9,15 +9,12 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-apply plugin: 'java'
-
 group = GROUP
 version = VERSION_NAME
 
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.okio
-    compileOnly libraries.jsr305
     compileOnly libraries.javax
     implementation libraries.coroutinesCore
     implementation project(path: ':cache')
@@ -26,9 +23,7 @@ dependencies {
     testImplementation libraries.mockitoKotlin
     testImplementation libraries.truth
     testImplementation libraries.junit
-    testImplementation libraries.gson
     testImplementation libraries.coroutinesTest
-    testCompileOnly libraries.jsr305
 }
 
 apply from: rootProject.file("gradle/maven-push.gradle")

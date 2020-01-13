@@ -17,6 +17,8 @@ import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import okio.Buffer
 import okio.BufferedSource
@@ -26,6 +28,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
+@UseExperimental(FlowPreview::class, ExperimentalCoroutinesApi::class)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
@@ -80,16 +83,13 @@ object Graph {
                 }
                 .nonFlowingPersister(
                         reader = {
-                            try {
+                            runCatching {
                                 val source = fileSystemPersister.read(Unit)
                                 source?.let { adapter.fromJson(it) }
-                            } catch (e: Exception) {
-                                null
-                            }
+                            }.getOrNull()
                         },
-                        writer = { _, config ->
+                        writer = { _, _ ->
                             val buffer = Buffer()
-                            val raw = adapter.toJson(buffer, config)
                             fileSystemPersister.write(Unit, buffer)
                         }
                 )
@@ -109,12 +109,12 @@ object Graph {
         return it.data.copy(
             preview = it.data.preview?.let {
                 it.copy(
-                    images = it.images.map {
+                    images = it.images.map { image ->
                         @Suppress("DEPRECATION")
-                        it.copy(
-                            source = it.source.copy(
+                        image.copy(
+                            source = image.source.copy(
                                 // preview urls are html encoded, need to escape
-                                url = Html.fromHtml(it.source.url).toString()
+                                url = Html.fromHtml(image.source.url).toString()
                             )
                         )
                     }

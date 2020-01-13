@@ -10,12 +10,8 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.dokka'
 }
-
-apply plugin: 'java'
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-
 
 group = GROUP
 version = VERSION_NAME
@@ -26,15 +22,11 @@ dependencies {
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 
-
-    compileOnly libraries.jsr305
-
     testImplementation libraries.mockito
     testImplementation libraries.mockitoKotlin
     testImplementation libraries.truth
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
-    testCompileOnly libraries.jsr305
 }
 
 apply from: rootProject.file("gradle/maven-push.gradle")

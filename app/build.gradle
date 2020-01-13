@@ -1,8 +1,11 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'com.getkeepsafe.dexcount'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'com.getkeepsafe.dexcount'
+    id 'kotlin-kapt'
+    id 'kotlin-android-extensions'
+}
+
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
@@ -34,6 +37,9 @@ android {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += [
+                '-Xuse-experimental=kotlin.Experimental',
+        ]
     }
 }
 
@@ -42,7 +48,6 @@ dependencies {
     testImplementation libraries.junit
     testImplementation libraries.mockito
     testImplementation libraries.coroutinesTest
-    testCompileOnly libraries.jsr305
     implementation libraries.supportRecyclerView
     implementation libraries.supportAppCompat
     implementation libraries.supportFragments
