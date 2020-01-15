@@ -17,17 +17,30 @@ package com.dropbox.android.external.store4.impl
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestCoroutineScope
 
 /**
- * Asserts only the [expected] items by just taking that many from the stream
+ * Takes all items in the flow that are available by collecting on it as long as there are active
+ * jobs in the given [TestCoroutineScope].
  *
- * Use this when Pipeline has an infinite part (e.g. Persister or a never ending fetcher)
+ * It ensures all expected items are dispatched as well as no additional unexpected items are
+ * dispatched.
  */
 @ExperimentalCoroutinesApi
-suspend fun <T> Flow<T>.assertItems(vararg expected: T) {
-    assertThat(this.take(expected.size).toList())
-            .isEqualTo(expected.toList())
+suspend fun <T> Flow<T>.assertItems(scope:TestCoroutineScope, vararg expected: T) {
+    val collectedSoFar = mutableListOf<T>()
+    val collectJob = scope.launch {
+        this@assertItems.collect {
+            collectedSoFar.add(it)
+        }
+    }
+    scope.advanceUntilIdle()
+    collectJob.cancel()
+    assertThat(collectedSoFar).isEqualTo(expected.toList())
 }

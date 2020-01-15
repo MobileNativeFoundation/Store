@@ -15,9 +15,9 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.ResponseOrigin.Cache
 import com.dropbox.android.external.store4.ResponseOrigin.Fetcher
+import com.dropbox.android.external.store4.ResponseOrigin.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -57,6 +58,7 @@ class FlowStoreTest {
         )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ), Data(
@@ -65,7 +67,9 @@ class FlowStoreTest {
                 )
             )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
+            .take(1) // TODO remove when Issue #59 is fixed.
             .assertItems(
+                testScope,
                 Data(
                     value = "three-1",
                     origin = Cache
@@ -73,6 +77,7 @@ class FlowStoreTest {
             )
         pipeline.stream(StoreRequest.fresh(3))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -82,7 +87,9 @@ class FlowStoreTest {
                 )
             )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
+            .take(1) // TODO remove when Issue #59 is fixed.
             .assertItems(
+                testScope,
                 Data(
                     value = "three-2",
                     origin = Cache
@@ -105,6 +112,7 @@ class FlowStoreTest {
         )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -115,13 +123,19 @@ class FlowStoreTest {
             )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
             .assertItems(
+                testScope,
                 Data(
                     value = "three-1",
                     origin = Cache
+                ),
+                Data(
+                    value = "three-1",
+                    origin = Persister
                 )
             )
         pipeline.stream(StoreRequest.fresh(3))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -132,9 +146,14 @@ class FlowStoreTest {
             )
         pipeline.stream(StoreRequest.cached(3, refresh = false))
             .assertItems(
+                testScope,
                 Data(
                     value = "three-2",
                     origin = Cache
+                ),
+                Data(
+                    value = "three-2",
+                    origin = Persister
                 )
             )
     }
@@ -156,6 +175,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -167,13 +187,14 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Data(
                     value = "three-1",
                     origin = Cache
                 ),
                 Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 ),
                 Loading(
                     origin = Fetcher
@@ -198,6 +219,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -209,6 +231,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Data(
                     value = "three-1",
                     origin = Cache
@@ -236,6 +259,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -247,6 +271,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -274,6 +299,7 @@ class FlowStoreTest {
 
         pipeline.stream(StoreRequest.fresh(3))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -288,9 +314,10 @@ class FlowStoreTest {
             )
         pipeline.stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 ),
                 Loading(
                     origin = Fetcher
@@ -326,12 +353,13 @@ class FlowStoreTest {
         pipeline
             .stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 )
             )
     }
@@ -361,12 +389,13 @@ class FlowStoreTest {
         pipeline
             .stream(StoreRequest.cached(3, refresh = true))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 ),
                 Data(
                     value = "three-1",
@@ -374,7 +403,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-2",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 ),
                 Data(
                     value = "three-2",
@@ -401,6 +430,7 @@ class FlowStoreTest {
         }
         pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
             .assertItems(
+                testScope,
                 Loading(
                     origin = Fetcher
                 ),
@@ -410,14 +440,15 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 )
             )
         pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
             .assertItems(
+                testScope,
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = Persister
                 ),
                 Loading(
                     origin = Fetcher
