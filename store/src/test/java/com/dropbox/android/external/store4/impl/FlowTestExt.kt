@@ -17,11 +17,8 @@ package com.dropbox.android.external.store4.impl
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 
@@ -33,7 +30,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
  * dispatched.
  */
 @ExperimentalCoroutinesApi
-suspend fun <T> Flow<T>.assertItems(scope:TestCoroutineScope, vararg expected: T) {
+suspend fun <T> Flow<T>.assertItems(scope: TestCoroutineScope, vararg expected: T) {
     val collectedSoFar = mutableListOf<T>()
     val collectJob = scope.launch {
         this@assertItems.collect {
