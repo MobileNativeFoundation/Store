@@ -26,8 +26,10 @@ import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -36,6 +38,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -89,10 +92,7 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        assertThat(
-            pipeline.stream(StoreRequest.cached(3, refresh = false))
-                .take(1) // TODO remove when Issue #59 is fixed.
-        )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Data(
                     value = "three-2",
