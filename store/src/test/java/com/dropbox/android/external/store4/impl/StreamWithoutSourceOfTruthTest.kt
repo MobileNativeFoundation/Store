@@ -61,8 +61,7 @@ class StreamWithoutSourceOfTruthTest(
             ).take(3).toList()
         }
         delay(1_000) // make sure the async block starts first
-        pipeline.stream(StoreRequest.fresh(3)).assertItems(
-            testScope,
+        assertThat(pipeline.stream(StoreRequest.fresh(3))).emitsExactly(
             StoreResponse.Loading(
                 origin = ResponseOrigin.Fetcher
             ),

@@ -56,9 +56,8 @@ class FlowStoreTest {
             nonFlowingFetcher = fetcher::fetch,
             enableCache = true
         )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ), Data(
@@ -66,18 +65,17 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .take(1) // TODO remove when Issue #59 is fixed.
-            .assertItems(
-                testScope,
-                Data(
-                    value = "three-1",
-                    origin = Cache
-                )
+        assertThat(
+            pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .take(1) // TODO remove when Issue #59 is fixed.
+        ).emitsExactly(
+            Data(
+                value = "three-1",
+                origin = Cache
             )
-        pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                testScope,
+        )
+        assertThat(pipeline.stream(StoreRequest.fresh(3)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -86,10 +84,11 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .take(1) // TODO remove when Issue #59 is fixed.
-            .assertItems(
-                testScope,
+        assertThat(
+            pipeline.stream(StoreRequest.cached(3, refresh = false))
+                .take(1) // TODO remove when Issue #59 is fixed.
+        )
+            .emitsExactly(
                 Data(
                     value = "three-2",
                     origin = Cache
@@ -110,9 +109,8 @@ class FlowStoreTest {
             persisterWriter = persister::write,
             enableCache = true
         )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -121,21 +119,22 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+            .emitsExactly(
                 Data(
                     value = "three-1",
                     origin = Cache
                 ),
+                // note that we still get the data from persister as well as we don't listen to
+                // the persister for the cached items unless there is an active stream, which
+                // means cache can go out of sync w/ the persister
                 Data(
                     value = "three-1",
                     origin = Persister
                 )
             )
-        pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.fresh(3)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -144,9 +143,8 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        pipeline.stream(StoreRequest.cached(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+            .emitsExactly(
                 Data(
                     value = "three-2",
                     origin = Cache
@@ -173,9 +171,8 @@ class FlowStoreTest {
             enableCache = true
         )
 
-        pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -185,9 +182,8 @@ class FlowStoreTest {
                 )
             )
 
-        pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Data(
                     value = "three-1",
                     origin = Cache
@@ -217,9 +213,8 @@ class FlowStoreTest {
             enableCache = true
         )
 
-        pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -229,9 +224,8 @@ class FlowStoreTest {
                 )
             )
 
-        pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Data(
                     value = "three-1",
                     origin = Cache
@@ -257,9 +251,8 @@ class FlowStoreTest {
             enableCache = true
         )
 
-        pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -269,9 +262,8 @@ class FlowStoreTest {
                 )
             )
 
-        pipeline.stream(StoreRequest.skipMemory(3, refresh = false))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -297,9 +289,8 @@ class FlowStoreTest {
             enableCache = false
         )
 
-        pipeline.stream(StoreRequest.fresh(3))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.fresh(3)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -312,9 +303,8 @@ class FlowStoreTest {
                     origin = Fetcher
                 )
             )
-        pipeline.stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Data(
                     value = "three-2",
                     origin = Persister
@@ -350,10 +340,8 @@ class FlowStoreTest {
             delay(10)
             persister.flowWriter(3, "local-1")
         }
-        pipeline
-            .stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -386,10 +374,8 @@ class FlowStoreTest {
             delay(10) // go in between two server requests
             persister.flowWriter(3, "local-2")
         }
-        pipeline
-            .stream(StoreRequest.cached(3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -428,9 +414,8 @@ class FlowStoreTest {
             delay(10)
             persister.flowWriter(3, "local-1")
         }
-        pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
+            .emitsExactly(
                 Loading(
                     origin = Fetcher
                 ),
@@ -443,9 +428,8 @@ class FlowStoreTest {
                     origin = Persister
                 )
             )
-        pipeline.stream(StoreRequest.cached(key = 3, refresh = true))
-            .assertItems(
-                testScope,
+        assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
+            .emitsExactly(
                 Data(
                     value = "local-1",
                     origin = Persister
@@ -467,12 +451,6 @@ class FlowStoreTest {
         StoreRequest.cached(
             key = key,
             refresh = false
-        )
-    )
-
-    suspend fun Store<Int, String>.fresh(key: Int) = get(
-        StoreRequest.fresh(
-            key = key
         )
     )
 
