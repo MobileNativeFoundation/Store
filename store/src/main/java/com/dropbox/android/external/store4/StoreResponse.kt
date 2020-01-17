@@ -84,7 +84,7 @@ sealed class StoreResponse<out T> {
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> Error(error, origin)
         is Loading -> Loading(origin)
-        is Data -> throw IllegalStateException("cannot swap type for $this")
+        is Data -> throw IllegalStateException("cannot swap type for StoreResponse.Data")
     }
 }
 
