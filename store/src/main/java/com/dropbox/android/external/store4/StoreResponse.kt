@@ -15,9 +15,6 @@
  */
 package com.dropbox.android.external.store4
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-
 /**
  * Holder for responses from Store.
  *
@@ -25,7 +22,7 @@ import kotlinx.coroutines.flow.map
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreResponse< out T> {
+sealed class StoreResponse<out T> {
     /**
      * Represents the source of the Response.
      */
