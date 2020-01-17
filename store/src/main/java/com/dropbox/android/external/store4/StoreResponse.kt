@@ -108,12 +108,3 @@ enum class ResponseOrigin {
      */
     Fetcher
 }
-
-// @Suppress("UNCHECKED_CAST")
-// internal fun <Input> Flow<StoreResponse<Input>>.hideData(): Flow<StoreResponse<Unit>> = map {
-//     when (it) {
-//         is StoreResponse.Error -> StoreResponse.Error<Unit>(it.error, it.origin)
-//         is StoreResponse.Loading -> StoreResponse.Loading(it.origin)
-//         is StoreResponse.Data -> StoreResponse.Data(value = Unit, origin = it.origin)
-//     }
-// }
