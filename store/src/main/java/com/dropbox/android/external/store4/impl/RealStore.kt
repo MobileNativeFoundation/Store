@@ -151,11 +151,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             .transform {
                 // left is Fetcher while right is source of truth
                 if (it is Either.Left) {
-                    if (it.value !is StoreResponse.Data<*>) {
+                    if (it.value !is StoreResponse.Data) {
                         emit(it.value.swapType())
                     }
                     // network sent something
-                    if (it.value is StoreResponse.Data<*>) {
+                    if (it.value is StoreResponse.Data) {
                         // unlocking disk only if network sent data so that fresh data request never
                         // receives disk data by mistake
                         diskLock.complete(Unit)
