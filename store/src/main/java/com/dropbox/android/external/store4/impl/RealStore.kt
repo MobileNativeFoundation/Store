@@ -81,10 +81,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
         return if (sourceOfTruth == null) {
+            @Suppress("UNCHECKED_CAST")
             createNetworkFlow(
                 request = request,
                 networkLock = null
-            )
+            ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
         } else {
             diskNetworkCombined(request, sourceOfTruth)
         }.onEach {
@@ -183,7 +184,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private fun createNetworkFlow(
         request: StoreRequest<Key>,
         networkLock: CompletableDeferred<Unit>?
-    ): Flow<StoreResponse<Output>> {
+    ): Flow<StoreResponse<Input>> {
         return fetcherController
             .getFetcher(request.key)
             .onStart {
@@ -196,8 +197,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         origin = ResponseOrigin.Fetcher
                     )
                 )
-            }.map {
-                it.swapType<Output>()
             }
     }
 }

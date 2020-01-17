@@ -15,6 +15,9 @@
  */
 package com.dropbox.android.external.store4
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
 /**
  * Holder for responses from Store.
  *
@@ -22,7 +25,7 @@ package com.dropbox.android.external.store4
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreResponse<T> {
+sealed class StoreResponse< out T> {
     /**
      * Represents the source of the Response.
      */
@@ -42,7 +45,7 @@ sealed class StoreResponse<T> {
      * Error dispatched by a pipeline
      */
     data class Error<T>(val error: Throwable, override val origin: ResponseOrigin) :
-            StoreResponse<T>()
+        StoreResponse<T>()
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
@@ -81,11 +84,10 @@ sealed class StoreResponse<T> {
         else -> null
     }
 
-    @Suppress("UNCHECKED_CAST")
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> Error(error, origin)
         is Loading -> Loading(origin)
-        is Data -> Data(value = value as R, origin = origin)
+        is Data -> throw IllegalStateException("cannot swap type for $this")
     }
 }
 
@@ -106,3 +108,12 @@ enum class ResponseOrigin {
      */
     Fetcher
 }
+
+// @Suppress("UNCHECKED_CAST")
+// internal fun <Input> Flow<StoreResponse<Input>>.hideData(): Flow<StoreResponse<Unit>> = map {
+//     when (it) {
+//         is StoreResponse.Error -> StoreResponse.Error<Unit>(it.error, it.origin)
+//         is StoreResponse.Loading -> StoreResponse.Loading(it.origin)
+//         is StoreResponse.Data -> StoreResponse.Data(value = Unit, origin = it.origin)
+//     }
+// }
