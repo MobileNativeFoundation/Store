@@ -58,6 +58,13 @@ class MemoryPolicy internal constructor(
             this.expireAfterTimeUnit = expireAfterTimeUnit
         }
 
+        /**
+         *  Sets the maximum number of items ([maxSize]) kept in the cache.
+         *
+         *  When [maxSize] is 0, entries will be discarded immediately and no values will be cached.
+         *
+         *  If not set, cache size will be unlimited.
+         */
         fun setMemorySize(maxSize: Long): MemoryPolicyBuilder = apply {
             this.maxSize = maxSize
         }
