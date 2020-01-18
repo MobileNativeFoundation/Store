@@ -18,11 +18,11 @@ package com.dropbox.android.external.store4.impl
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 
 @UseExperimental(ExperimentalCoroutinesApi::class)
@@ -45,15 +45,24 @@ internal class FlowSubject<T> constructor(
      */
     suspend fun emitsExactly(vararg expected: T) {
         val collectedSoFar = mutableListOf<T>()
-        val collectJob = testCoroutineScope.launch {
+        val collectionCoroutine = testCoroutineScope.async {
             actual.collect {
                 collectedSoFar.add(it)
-                assertThat(collectedSoFar.size).isAtMost(expected.size)
+                if (collectedSoFar.size > expected.size) {
+                    assertWithMessage("Too many emissions in the flow")
+                        .that(collectedSoFar)
+                        .isEqualTo(expected)
+                }
             }
         }
         testCoroutineScope.advanceUntilIdle()
-        collectJob.cancel()
-        assertThat(collectedSoFar).isEqualTo(expected.toList())
+        collectionCoroutine.getCompletionExceptionOrNull()?.let {
+            throw it
+        }
+        collectionCoroutine.cancel()
+        assertWithMessage("Flow didn't exactly emit expected items")
+            .that(collectedSoFar)
+            .isEqualTo(expected.toList())
     }
 
     class Factory<T>(
