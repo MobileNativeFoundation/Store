@@ -57,6 +57,7 @@ class MemoryPolicyBuilderTest {
                 .setMemorySize(10L)
                 .build()
 
+        assertThat(policy.hasMaxSize).isEqualTo(true)
         assertThat(policy.maxSize).isEqualTo(10L)
     }
 
@@ -65,6 +66,7 @@ class MemoryPolicyBuilderTest {
         val policy = MemoryPolicy.builder()
                 .build()
 
-        assertThat(policy.maxSize).isEqualTo(1L)
+        assertThat(policy.hasMaxSize).isEqualTo(false)
+        assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_POLICY)
     }
 }
