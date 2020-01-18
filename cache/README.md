@@ -1,6 +1,10 @@
 # Cache
 
-**Cache** is an in-memory caching library for Kotlin, primarily targeted at mobile.
+**Cache** is an in-memory caching library written in 100% Kotlin. Primary features include:
+
+* Time-based evictions (expirations)
+* Size-based evictions
+* Cache loader
 
 While this library was originally written to be used by [Store 4](https://github.com/dropbox/Store) for in-memory caching, it can also be used for general-purpose caching.
 
