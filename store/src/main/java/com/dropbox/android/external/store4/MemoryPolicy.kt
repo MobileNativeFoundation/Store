@@ -17,16 +17,10 @@ class MemoryPolicy internal constructor(
     val expireAfterWrite: Long,
     val expireAfterAccess: Long,
     val expireAfterTimeUnit: TimeUnit,
-    private val maxSizeNotDefault: Long
+    val maxSize: Long
 ) {
 
     val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_POLICY
-
-    val isDefaultAccessPolicy: Boolean = expireAfterAccess == DEFAULT_POLICY
-
-    val isDefaultMaxSize: Boolean = maxSizeNotDefault == DEFAULT_POLICY
-
-    val maxSize: Long = if (isDefaultMaxSize) 1 else maxSizeNotDefault
 
     val hasWritePolicy: Boolean = expireAfterWrite != DEFAULT_POLICY
 
@@ -73,7 +67,7 @@ class MemoryPolicy internal constructor(
             expireAfterWrite = expireAfterWrite,
             expireAfterAccess = expireAfterAccess,
             expireAfterTimeUnit = expireAfterTimeUnit,
-            maxSizeNotDefault = maxSize
+            maxSize = maxSize
         )
     }
 
