@@ -20,10 +20,18 @@ Store leverages multiple request throttling to prevent excessive calls to the ne
 
 ### How to include in your project
 
-###### Include gradle dependency (as well as MavenCentral Snapshot repo)
+Artifacts are hosted on **Maven Central**.
+
+###### Latest version:
 
 ```groovy
-implementation 'com.dropbox.mobile.store:store4:4.0.0-alpha01'
+def store_version = "4.0.0-alpha01"
+```
+
+###### Add the dependency to your `build.gradle`:
+
+```groovy
+implementation 'com.dropbox.mobile.store:store4:${store_version}'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
@@ -111,11 +119,10 @@ lifecycleScope.launchWhenStarted {
 }
 ```
 
-For convenience, there are `Store.get(key)`, `Store.stream(key)` and `Store.fresh(key)` extension functions.
+For convenience, there are `Store.get(key)` and `Store.fresh(key)` extension functions.
 
-* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister.
-* `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher.
-* `suspend fun Store.stream(key: Key): Flow<Value>`: This method returns a `Flow` of the values for the given `key`.
+* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister. An error will be thrown if not value is available in either the `cache` or `persister`, and the `fetcher` fails to load the data from the network.
+* `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher. An error will be thrown if the `fetcher` fails to load the data from the network, regardless of whether any value is available in the `cache` or `persister`.
 
 ```kotlin
 lifecycleScope.launchWhenStarted {
@@ -127,7 +134,7 @@ lifecycleScope.launchWhenStarted {
 The first time you call to `suspend store.get(key)`, the response will be stored in an in-memory cache and in the persister, if provided.
 All subsequent calls to `store.get(key)` with the same `Key` will retrieve the cached version of the data, minimizing unnecessary data calls. This prevents your app from fetching fresh data over the network (or from another external data source) in situations when doing so would unnecessarily waste bandwidth and battery. A great use case is any time your views are recreated after a rotation, they will be able to request the cached data from your Store. Having this data available can help you avoid the need to retain this in the view layer.
 
-By default, 100 items will be cached in memory for 24 hours. You may pass in your own memory policy to override the default policy.
+By default, 100 items will be cached in memory for 24 hours. You may [pass in your own memory policy to override the default policy](#Configuring-In-memory-Cache).
 
 
 ### Busting through the cache
@@ -183,9 +190,6 @@ StoreBuilder
 
 Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in-memory cache for the “persister” implementation and instead have two levels of in-memory caching--one with inflated and one with deflated models, allowing for sharing of the “persister” cache data between stores.
 
-
-
-
 If using SQLite we recommend working with [Room](https://developer.android.com/topic/libraries/architecture/room) which returns a `Flow` from a query
 
 The above builder is how we recommend working with data on Android. With the above setup you have:
@@ -196,7 +200,30 @@ The above builder is how we recommend working with data on Android. With the abo
 + Ability to listen for any new emissions from network (stream)
 + Structured Concurrency through APIs build on Coroutines and Kotlin Flow
 
+### Configuring in-memory Cache
 
-### Artifacts
+You can configure in-memory cache with the `MemoryPolicy`:
 
-**CurrentVersion = 4.0.0-alpha01**
+```kotlin
+StoreBuilder
+    .fromNonFlow {
+        api.fetchSubreddit(it, "10").data.children.map(::toPosts)
+    }.cachePolicy(
+        MemoryPolicy.builder()
+            .setMemorySize(10)
+            .setExpireAfterAccess(10) // or setExpireAfterWrite(10)
+            .setExpireAfterTimeUnit(TimeUnit.MINUTES)
+            .build()
+    ).persister(
+        reader = db.postDao()::loadPosts,
+        writer = db.postDao()::insertPosts,
+        delete = db.postDao()::clearFeed
+    ).build()
+```
+
+* `setMemorySize(maxSize: Long)` sets the maximum number of entries to be kept in the cache before starting to evict the least recently used items.
+* `setExpireAfterAccess(expireAfterAccess: Long)` sets the maximum time an entry can live in the cache since the last access, where "access" means reading the cache, adding a new cache entry, and replacing an existing entry with a new one. This duration is also known as **time-to-idle (TTI)**.
+* `setExpireAfterWrite(expireAfterWrite: Long)` sets the maximum time an entry can live in the cache since the last write, where "write" means adding a new cache entry and replacing an existing entry with a new one. This duration is also known as **time-to-live (TTL)**.
+* `setExpireAfterTimeUnit(expireAfterTimeUnit: TimeUnit)` sets the time unit used when setting `expireAfterAccess` or `expireAfterWrite`. Default unit is `TimeUnit.SECONDS`.
+
+Note that `setExpireAfterAccess` and `setExpireAfterWrite` **cannot** both be set at the same time.
