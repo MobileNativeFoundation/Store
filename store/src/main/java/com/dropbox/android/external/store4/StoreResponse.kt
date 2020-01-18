@@ -22,7 +22,7 @@ package com.dropbox.android.external.store4
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreResponse<T> {
+sealed class StoreResponse<out T> {
     /**
      * Represents the source of the Response.
      */
@@ -42,7 +42,7 @@ sealed class StoreResponse<T> {
      * Error dispatched by a pipeline
      */
     data class Error<T>(val error: Throwable, override val origin: ResponseOrigin) :
-            StoreResponse<T>()
+        StoreResponse<T>()
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
@@ -81,11 +81,10 @@ sealed class StoreResponse<T> {
         else -> null
     }
 
-    @Suppress("UNCHECKED_CAST")
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> Error(error, origin)
         is Loading -> Loading(origin)
-        is Data -> Data(value = value as R, origin = origin)
+        is Data -> throw IllegalStateException("cannot swap type for StoreResponse.Data")
     }
 }
 
