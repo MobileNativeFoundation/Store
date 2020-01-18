@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
@@ -81,10 +80,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
         return if (sourceOfTruth == null) {
+            @Suppress("UNCHECKED_CAST")
             createNetworkFlow(
                 request = request,
                 networkLock = null
-            )
+            ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
         } else {
             diskNetworkCombined(request, sourceOfTruth)
         }.onEach {
@@ -150,11 +150,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             .transform {
                 // left is Fetcher while right is source of truth
                 if (it is Either.Left) {
-                    if (it.value !is StoreResponse.Data<*>) {
+                    if (it.value !is StoreResponse.Data) {
                         emit(it.value.swapType())
                     }
                     // network sent something
-                    if (it.value is StoreResponse.Data<*>) {
+                    if (it.value is StoreResponse.Data) {
                         // unlocking disk only if network sent data so that fresh data request never
                         // receives disk data by mistake
                         diskLock.complete(Unit)
@@ -183,7 +183,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private fun createNetworkFlow(
         request: StoreRequest<Key>,
         networkLock: CompletableDeferred<Unit>?
-    ): Flow<StoreResponse<Output>> {
+    ): Flow<StoreResponse<Input>> {
         return fetcherController
             .getFetcher(request.key)
             .onStart {
@@ -196,8 +196,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         origin = ResponseOrigin.Fetcher
                     )
                 )
-            }.map {
-                it.swapType<Output>()
             }
     }
 }
