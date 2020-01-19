@@ -74,7 +74,6 @@ class FlowSubjectTest {
             but was : [1, 3, 2]
             """.trimIndent()
         )
-
     }
 
     @Test
