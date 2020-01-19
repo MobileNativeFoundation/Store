@@ -49,7 +49,7 @@ internal class FlowSubject<T> constructor(
             actual.collect {
                 collectedSoFar.add(it)
                 if (collectedSoFar.size > expected.size) {
-                    assertWithMessage("Too many emissions in the flow")
+                    assertWithMessage("Too many emissions in the flow (only first additional item is shown)")
                         .that(collectedSoFar)
                         .isEqualTo(expected)
                 }

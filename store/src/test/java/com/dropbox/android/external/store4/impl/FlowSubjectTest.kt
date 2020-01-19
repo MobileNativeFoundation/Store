@@ -88,7 +88,7 @@ class FlowSubjectTest {
         }
         assertThat(exception).hasMessageThat().contains(
             """
-            Too many emissions in the flow
+            Too many emissions in the flow (only first additional item is shown)
             expected: [1, 2, 3]
             but was : [1, 2, 3, 4]
         """.trimIndent()
