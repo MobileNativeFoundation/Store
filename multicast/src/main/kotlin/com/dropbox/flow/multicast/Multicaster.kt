@@ -87,12 +87,12 @@ class Multicaster<T>(
      * The shared downstream flow. Collectors of this flow will share values dispatched by the
      * [source] Flow.
      */
-    val flow = flow<T> {
+    fun newFlow(piggybackOnly: Boolean = false) = flow<T> {
         val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
         val subFlow = channel.consumeAsFlow()
             .onStart {
                 try {
-                    channelManager.addDownstream(channel)
+                    channelManager.addDownstream(channel, piggybackOnly)
                 } catch (closed: ClosedSendChannelException) {
                     // before we could start, channel manager was closed.
                     // close our downstream manually as it won't be closed by the ChannelManager

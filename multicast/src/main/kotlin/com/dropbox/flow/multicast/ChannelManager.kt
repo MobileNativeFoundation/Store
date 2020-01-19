@@ -70,8 +70,8 @@ internal class ChannelManager<T>(
         }
     }
 
-    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
-        actor.send(Message.AddChannel(channel))
+    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>, piggybackOnly: Boolean = false) =
+        actor.send(Message.AddChannel(channel, piggybackOnly))
 
     suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         actor.send(Message.RemoveChannel(channel))
@@ -139,7 +139,7 @@ internal class ChannelManager<T>(
             val leftovers = mutableListOf<ChannelEntry<T>>()
             channels.forEach {
                 when {
-                    it.receivedValue -> {
+                    !it.stillRequiresDispatch -> {
                         if (!piggybackingDownstream) {
                             it.close()
                         } else {
@@ -226,10 +226,13 @@ internal class ChannelManager<T>(
         private suspend fun doAdd(msg: Message.AddChannel<T>) {
             addEntry(
                 entry = ChannelEntry(
-                    channel = msg.channel
+                    channel = msg.channel,
+                    piggybackOnly = msg.piggybackOnly
                 )
             )
-            activateIfNecessary()
+            if (!msg.piggybackOnly) {
+                activateIfNecessary()
+            }
         }
 
         private fun activateIfNecessary() {
@@ -249,9 +252,6 @@ internal class ChannelManager<T>(
             }
             check(new) {
                 "$entry is already in the list."
-            }
-            check(!entry.receivedValue) {
-                "$entry already received a value"
             }
             channels.add(entry)
             if (buffer.items.isNotEmpty()) {
@@ -275,20 +275,23 @@ internal class ChannelManager<T>(
          */
         private val channel: SendChannel<Message.Dispatch.Value<T>>,
         /**
-         * Tracking whether we've ever dispatched a value or an error to downstream
+         * Tracking whether this channel a piggyback only channel that can be closed without ever
+         * receiving a value or error.
          */
-        private var _receivedValue: Boolean = false
+        private var piggybackOnly: Boolean = false
     ) {
-        val receivedValue
-            get() = _receivedValue
+        private var _stillRequiresDispatch: Boolean = !piggybackOnly
+
+        val stillRequiresDispatch
+            get() = _stillRequiresDispatch
 
         suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
-            _receivedValue = true
+            _stillRequiresDispatch = false
             channel.send(value)
         }
 
         fun dispatchError(error: Throwable) {
-            _receivedValue = true
+            _stillRequiresDispatch = false
             channel.close(error)
         }
 
@@ -309,7 +312,8 @@ internal class ChannelManager<T>(
          * Add a new channel, that means a new downstream subscriber
          */
         class AddChannel<T>(
-            val channel: SendChannel<Dispatch.Value<T>>
+            val channel: SendChannel<Dispatch.Value<T>>,
+            val piggybackOnly: Boolean = false
         ) : Message<T>()
 
         /**

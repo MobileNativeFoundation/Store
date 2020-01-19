@@ -447,6 +447,7 @@ class FlowStoreTest {
                 )
             )
     }
+
     data class StringWrapper(val wrapped: String)
 
     @Test
@@ -501,7 +502,7 @@ class FlowStoreTest {
         val persister = InMemoryPersister<Int, String>()
         val pipeline = build(
             nonFlowingFetcher = fetcher::fetch,
-            persisterReader = { key -> persister.read(key)?.let {StringWrapper(it)} },
+            persisterReader = { key -> persister.read(key)?.let { StringWrapper(it) } },
             persisterWriter = persister::write,
             enableCache = true
         )

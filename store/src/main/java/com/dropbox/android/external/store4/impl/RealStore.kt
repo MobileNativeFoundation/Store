@@ -79,11 +79,16 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     )
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
+        val cached = memCache?.get(request.key)
         return if (sourceOfTruth == null) {
+            // piggypack only if not specified fresh data AND reading non null value from cache
+            val piggybackOnly = !request.refresh &&
+                !request.shouldSkipCache(CacheType.MEMORY) && cached != null
             @Suppress("UNCHECKED_CAST")
             createNetworkFlow(
                 request = request,
-                networkLock = null
+                networkLock = null,
+                piggybackOnly = piggybackOnly
             ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
         } else {
             diskNetworkCombined(request, sourceOfTruth)
@@ -97,7 +102,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         }.onStart {
             // if there is anything cached, dispatch it first if requested
             if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                memCache?.get(request.key)?.let { cached ->
+                cached?.let {
                     emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
                 }
             }
@@ -167,7 +172,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             StoreResponse.Data(
                                 value = diskData.value,
                                 origin = diskData.origin
-                            ) as StoreResponse<Output>
+                            )
                         )
                     }
 
@@ -182,20 +187,19 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     private fun createNetworkFlow(
         request: StoreRequest<Key>,
-        networkLock: CompletableDeferred<Unit>?
+        networkLock: CompletableDeferred<Unit>?,
+        piggybackOnly: Boolean = false
     ): Flow<StoreResponse<Input>> {
         return fetcherController
-            .getFetcher(request.key)
+            .getFetcher(request.key, piggybackOnly)
             .onStart {
                 if (!request.shouldSkipCache(CacheType.DISK)) {
-                    // wait until network gives us the go
+                    // wait until disk gives us the go
                     networkLock?.await()
                 }
-                emit(
-                    StoreResponse.Loading(
-                        origin = ResponseOrigin.Fetcher
-                    )
-                )
+                if (!piggybackOnly) {
+                    emit(StoreResponse.Loading(origin = ResponseOrigin.Fetcher))
+                }
             }
     }
 }
