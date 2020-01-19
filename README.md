@@ -1,4 +1,6 @@
-# Store(4)
+# Store 4
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/)
 
 Store is a Kotlin library for effortless data loading.
 
@@ -121,7 +123,7 @@ lifecycleScope.launchWhenStarted {
 
 For convenience, there are `Store.get(key)` and `Store.fresh(key)` extension functions.
 
-* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister. An error will be thrown if not value is available in either the `cache` or `persister`, and the `fetcher` fails to load the data from the network.
+* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister. An error will be thrown if no value is available in either the `cache` or `persister`, and the `fetcher` fails to load the data from the network.
 * `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher. An error will be thrown if the `fetcher` fails to load the data from the network, regardless of whether any value is available in the `cache` or `persister`.
 
 ```kotlin
