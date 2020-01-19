@@ -18,7 +18,10 @@ package com.dropbox.android.external.store4.impl
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
@@ -34,6 +37,16 @@ class FlowSubjectTest {
     @Test
     fun exactFlow() = testScope.runBlockingTest {
         val src = flowOf(1, 2, 3)
+        assertThat(src).emitsExactly(1, 2, 3)
+    }
+
+    @Test
+    fun exactFlow_neverEnding() = testScope.runBlockingTest {
+        val src = flow {
+            emitAll(flowOf(1, 2, 3))
+            // suspend forever
+            suspendCancellableCoroutine<Unit> { }
+        }
         assertThat(src).emitsExactly(1, 2, 3)
     }
 

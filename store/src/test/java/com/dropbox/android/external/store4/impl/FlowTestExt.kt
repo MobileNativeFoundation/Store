@@ -21,6 +21,7 @@ import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -56,10 +57,12 @@ internal class FlowSubject<T> constructor(
             }
         }
         testCoroutineScope.advanceUntilIdle()
-        collectionCoroutine.getCompletionExceptionOrNull()?.let {
-            throw it
+        if (!collectionCoroutine.isActive) {
+            collectionCoroutine.getCompletionExceptionOrNull()?.let {
+                throw it
+            }
         }
-        collectionCoroutine.cancel()
+        collectionCoroutine.cancelAndJoin()
         assertWithMessage("Flow didn't exactly emit expected items")
             .that(collectedSoFar)
             .isEqualTo(expected.toList())
