@@ -84,32 +84,43 @@ class Multicaster<T>(
     }
 
     /**
-     * The shared downstream flow. Collectors of this flow will share values dispatched by the
-     * [source] Flow.
+     * Gets a new downstream flow. Collectors of this flow will share values dispatched by a
+     * single upstream [source] Flow.
+     *
+     * @param piggybackOnly if true this downstream will cause a new upstream to start running
+     * (which only happens if no upstream is running alreay, e.g on if this is the first downstream
+     * added). Unlike a "regular" downstream, a [piggybackOnly] downstream can be closed without
+     * having any values emitted on it. [piggybackOnly] is only valid if [piggybackingDownstream] is
+     * enabled for this [Multicaster].
      */
-    fun newFlow(piggybackOnly: Boolean = false) = flow<T> {
-        val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
-        val subFlow = channel.consumeAsFlow()
-            .onStart {
-                try {
-                    channelManager.addDownstream(channel, piggybackOnly)
-                } catch (closed: ClosedSendChannelException) {
-                    // before we could start, channel manager was closed.
-                    // close our downstream manually as it won't be closed by the ChannelManager
-                    channel.close()
+    fun newDownsteam(piggybackOnly: Boolean = false): Flow<T> {
+        check(!piggybackOnly || piggybackingDownstream) {
+            "cannot create a piggyback only flow when piggybackDownstream is disabled"
+        }
+        return flow {
+            val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
+            val subFlow = channel.consumeAsFlow()
+                .onStart {
+                    try {
+                        channelManager.addDownstream(channel, piggybackOnly)
+                    } catch (closed: ClosedSendChannelException) {
+                        // before we could start, channel manager was closed.
+                        // close our downstream manually as it won't be closed by the ChannelManager
+                        channel.close()
+                    }
                 }
-            }
-            .transform {
-                emit(it.value)
-                it.delivered.complete(Unit)
-            }.onCompletion {
-                try {
-                    channelManager.removeDownstream(channel)
-                } catch (closed: ClosedSendChannelException) {
-                    // ignore, we might be closed because ChannelManager is closed
+                .transform {
+                    emit(it.value)
+                    it.delivered.complete(Unit)
+                }.onCompletion {
+                    try {
+                        channelManager.removeDownstream(channel)
+                    } catch (closed: ClosedSendChannelException) {
+                        // ignore, we might be closed because ChannelManager is closed
+                    }
                 }
-            }
-        emitAll(subFlow)
+            emitAll(subFlow)
+        }
     }
 
     /**

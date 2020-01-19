@@ -224,6 +224,9 @@ internal class ChannelManager<T>(
          * Add a new downstream collector
          */
         private suspend fun doAdd(msg: Message.AddChannel<T>) {
+            check(!msg.piggybackOnly || piggybackingDownstream) {
+                "cannot add a piggyback only downstream when piggybackDownstream is disabled"
+            }
             addEntry(
                 entry = ChannelEntry(
                     channel = msg.channel,
@@ -261,7 +264,9 @@ internal class ChannelManager<T>(
                 }
             } else {
                 // unlock upstream since we now have a downstream that needs values
-                lastDeliveryAck?.complete(Unit)
+                if (!entry.piggybackOnly) {
+                    lastDeliveryAck?.complete(Unit)
+                }
             }
         }
     }
@@ -278,7 +283,7 @@ internal class ChannelManager<T>(
          * Tracking whether this channel a piggyback only channel that can be closed without ever
          * receiving a value or error.
          */
-        private var piggybackOnly: Boolean = false
+        val piggybackOnly: Boolean = false
     ) {
         private var _stillRequiresDispatch: Boolean = !piggybackOnly
 

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -48,12 +49,18 @@ import org.junit.runners.JUnit4
 class MulticastTest {
     private val testScope = TestCoroutineScope()
 
-    private fun <T> createMulticaster(flow: Flow<T>, bufferSize: Int = 0): Multicaster<T> {
+    private fun <T> createMulticaster(
+        flow: Flow<T>,
+        bufferSize: Int = 0,
+        piggybackDownstream: Boolean = false
+    ): Multicaster<T> {
         return Multicaster(
             scope = testScope,
             bufferSize = bufferSize,
             source = flow,
-            onEach = {})
+            onEach = {},
+            piggybackingDownstream = piggybackDownstream
+        )
     }
 
     @Test
@@ -69,9 +76,9 @@ class MulticastTest {
                 }
             }
         )
-        assertThat(activeFlow.newFlow().toList())
+        assertThat(activeFlow.newDownsteam().toList())
             .isEqualTo(listOf("a", "b", "c"))
-        assertThat(activeFlow.newFlow().toList())
+        assertThat(activeFlow.newDownsteam().toList())
             .isEqualTo(listOf("d", "e", "f"))
     }
 
@@ -84,12 +91,12 @@ class MulticastTest {
             }
         )
         val c1 = async {
-            activeFlow.newFlow().onEach {
+            activeFlow.newDownsteam().onEach {
                 delay(100)
             }.toList()
         }
         val c2 = async {
-            activeFlow.newFlow().onEach {
+            activeFlow.newDownsteam().onEach {
                 delay(200)
             }.toList()
         }
@@ -107,10 +114,10 @@ class MulticastTest {
             }
         )
         val c1 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         val c2 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         assertThat(c1.await()).isEqualTo(listOf("a", "b", "c"))
         assertThat(c2.await()).isEqualTo(listOf("a", "b", "c"))
@@ -124,10 +131,10 @@ class MulticastTest {
             }
         )
         val c1 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         val c2 = async {
-            activeFlow.newFlow().also {
+            activeFlow.newDownsteam().also {
                 delay(110)
             }.toList()
         }
@@ -151,16 +158,16 @@ class MulticastTest {
             }
         )
         val c1 = async {
-            activeFlow.newFlow().onEach {
+            activeFlow.newDownsteam().onEach {
             }.toList()
         }
         val c2 = async {
-            activeFlow.newFlow().also {
+            activeFlow.newDownsteam().also {
                 delay(3)
             }.toList()
         }
         val c3 = async {
-            activeFlow.newFlow().also {
+            activeFlow.newDownsteam().also {
                 delay(20)
             }.toList()
         }
@@ -184,7 +191,7 @@ class MulticastTest {
         )
         val receivedValue = CompletableDeferred<String>()
         val receivedError = CompletableDeferred<Throwable>()
-        activeFlow.newFlow()
+        activeFlow.newDownsteam()
             .onEach {
                 check(receivedValue.isActive) {
                     "already received value"
@@ -217,13 +224,13 @@ class MulticastTest {
             }
         )
         launch {
-            activeFlow.newFlow().catch {}.toList()
+            activeFlow.newDownsteam().catch {}.toList()
         }
         // wait until the above collector registers and receives first value
         dispatchedFirstValue.await()
         val receivedValue = CompletableDeferred<String>()
         val receivedError = CompletableDeferred<Throwable>()
-        activeFlow.newFlow()
+        activeFlow.newDownsteam()
             .onStart {
                 registeredSecondCollector.complete(Unit)
             }
@@ -260,12 +267,12 @@ class MulticastTest {
             }
         )
         val firstCollector = async {
-            activeFlow.newFlow().onEach { delay(5) }.take(2).toList()
+            activeFlow.newDownsteam().onEach { delay(5) }.take(2).toList()
         }
         delay(11) // miss first two values
         val secondCollector = async {
             // this will come in a new channel
-            activeFlow.newFlow().take(2).toList()
+            activeFlow.newDownsteam().take(2).toList()
         }
         assertThat(firstCollector.await()).isEqualTo(listOf("a_1", "b_1"))
         assertThat(secondCollector.await()).isEqualTo(listOf("a_2", "b_2"))
@@ -295,19 +302,19 @@ class MulticastTest {
             onEach = {}
         )
         val c1 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         delay(4) // c2 misses first value
         val c2 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         delay(50) // c3 misses first 4 values
         val c3 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         delay(100) // c4 misses all values
         val c4 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         assertThat(c1.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
         assertThat(c2.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
@@ -324,8 +331,8 @@ class MulticastTest {
             source = flowOf(1, 2, 3),
             onEach = {}
         )
-        assertThat(activeFlow.newFlow().toList()).isEqualTo(listOf(1, 2, 3))
-        assertThat(activeFlow.newFlow().toList()).isEqualTo(listOf(1, 2, 3))
+        assertThat(activeFlow.newDownsteam().toList()).isEqualTo(listOf(1, 2, 3))
+        assertThat(activeFlow.newDownsteam().toList()).isEqualTo(listOf(1, 2, 3))
     }
 
     @Test
@@ -337,14 +344,14 @@ class MulticastTest {
         )
         val unlockC1 = CompletableDeferred<Unit>()
         val c1 = async {
-            activeFlow.newFlow().collect {
+            activeFlow.newDownsteam().collect {
                 unlockC1.await()
                 // never ack!
                 throw RuntimeException("done 1")
             }
         }
         val c2 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         testScope.runCurrent()
         assertThat(c2.isActive).isFalse()
@@ -361,14 +368,14 @@ class MulticastTest {
         )
         val unlockC1 = CompletableDeferred<Unit>()
         val c1 = async {
-            activeFlow.newFlow().collect {
+            activeFlow.newDownsteam().collect {
                 unlockC1.await()
                 // never ack!
                 throw RuntimeException("done 1")
             }
         }
         val c2 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         testScope.runCurrent()
         assertThat(c2.isActive).isFalse()
@@ -385,13 +392,13 @@ class MulticastTest {
         )
         val unlockC1 = CompletableDeferred<Unit>()
         val c1 = async {
-            activeFlow.newFlow().collect {
+            activeFlow.newDownsteam().collect {
                 unlockC1.await()
                 throw RuntimeException("done 1")
             }
         }
         val c2 = async {
-            activeFlow.newFlow().toList()
+            activeFlow.newDownsteam().toList()
         }
         testScope.runCurrent()
         assertThat(c2.isActive).isFalse()
@@ -409,7 +416,7 @@ class MulticastTest {
             suspendCancellableCoroutine<Unit> {}
         })
         val collection = async {
-            multicaster.newFlow().toList()
+            multicaster.newDownsteam().toList()
         }
         runCurrent()
         assertThat(collection.isActive).isTrue()
@@ -432,7 +439,7 @@ class MulticastTest {
         // now add a subscriber, should just close immediately
         runCurrent()
         val collection = async {
-            multicaster.newFlow().toList()
+            multicaster.newDownsteam().toList()
         }
         runCurrent()
         assertThat(collection.isActive).isFalse()
@@ -452,7 +459,7 @@ class MulticastTest {
             bufferSize = 10
         )
         async {
-            multicaster.newFlow().toList()
+            multicaster.newDownsteam().toList()
         }
         runCurrent()
         multicaster.close()
@@ -461,12 +468,45 @@ class MulticastTest {
         // note that even there is a buffer, closing multicast releases all resources so buffer
         // will be gone as well.
         val collection2 = async {
-            multicaster.newFlow().toList()
+            multicaster.newDownsteam().toList()
         }
         runCurrent()
         assertThat(collection2.isActive).isFalse()
         assertThat(collection2.await()).isEmpty()
     }
+
+    @Test
+    fun `GIVEN piggybackDownstream AND piggybackOnly downstream followed by regular downstream WHEN add piggback downstream AND add downstream THAN upstream does not start until 2nd downstream is added AND both get value`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val source = flow {
+                createCount++
+                emit("value")
+            }
+            val multicaster =
+                createMulticaster(flow = source, piggybackDownstream = true)
+            val piggybackDownstream = multicaster.newDownsteam(piggybackOnly = true)
+            val piggybackValue = testScope.async { piggybackDownstream.first() }
+            testScope.advanceUntilIdle()
+            assertThat(createCount).isEqualTo(0)
+            assertThat(piggybackValue.isCompleted).isEqualTo(false)
+
+            val downstream = multicaster.newDownsteam(piggybackOnly = false)
+            val value = testScope.async { downstream.first() }
+            testScope.advanceUntilIdle()
+            assertThat(createCount).isEqualTo(1)
+            assertThat(piggybackValue.isCompleted).isEqualTo(true)
+            assertThat(piggybackValue.getCompleted()).isEqualTo("value")
+            assertThat(value.isCompleted).isEqualTo(true)
+            assertThat(value.getCompleted()).isEqualTo("value")
+        }
+
+    @Test(expected = IllegalStateException::class)
+    fun `GIVEN no piggybackDownstream WHEN adding a piggybackOnly downstream THAN throws IllegalStateException`() =
+        testScope.runBlockingTest {
+            val multicaster = createMulticaster(flowOf("a"), piggybackDownstream = false)
+            multicaster.newDownsteam(piggybackOnly = true)
+        }
 
     private fun versionedMulticaster(
         bufferSize: Int = 0,
