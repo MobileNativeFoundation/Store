@@ -15,19 +15,68 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.FailureMetadata
+import com.google.common.truth.Subject
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.test.TestCoroutineScope
 
-/**
- * Asserts only the [expected] items by just taking that many from the stream
- *
- * Use this when Pipeline has an infinite part (e.g. Persister or a never ending fetcher)
- */
-@ExperimentalCoroutinesApi
-suspend fun <T> Flow<T>.assertItems(vararg expected: T) {
-    assertThat(this.take(expected.size).toList())
+@UseExperimental(ExperimentalCoroutinesApi::class)
+internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
+    return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
+}
+
+@UseExperimental(ExperimentalCoroutinesApi::class)
+internal class FlowSubject<T> constructor(
+    failureMetadata: FailureMetadata,
+    private val testCoroutineScope: TestCoroutineScope,
+    private val actual: Flow<T>
+) : Subject(failureMetadata, actual) {
+    /**
+     * Takes all items in the flow that are available by collecting on it as long as there are
+     * active jobs in the given [TestCoroutineScope].
+     *
+     * It ensures all expected items are dispatched as well as no additional unexpected items are
+     * dispatched.
+     */
+    suspend fun emitsExactly(vararg expected: T) {
+        val collectedSoFar = mutableListOf<T>()
+        val collectionCoroutine = testCoroutineScope.async {
+            actual.collect {
+                collectedSoFar.add(it)
+                if (collectedSoFar.size > expected.size) {
+                    assertWithMessage("Too many emissions in the flow (only first additional item is shown)")
+                        .that(collectedSoFar)
+                        .isEqualTo(expected)
+                }
+            }
+        }
+        testCoroutineScope.advanceUntilIdle()
+        if (!collectionCoroutine.isActive) {
+            collectionCoroutine.getCompletionExceptionOrNull()?.let {
+                throw it
+            }
+        }
+        collectionCoroutine.cancelAndJoin()
+        assertWithMessage("Flow didn't exactly emit expected items")
+            .that(collectedSoFar)
             .isEqualTo(expected.toList())
+    }
+
+    class Factory<T>(
+        private val testCoroutineScope: TestCoroutineScope
+    ) : Subject.Factory<FlowSubject<T>, Flow<T>> {
+        override fun createSubject(metadata: FailureMetadata, actual: Flow<T>): FlowSubject<T> {
+            return FlowSubject(
+                failureMetadata = metadata,
+                actual = actual,
+                testCoroutineScope = testCoroutineScope
+            )
+        }
+    }
 }

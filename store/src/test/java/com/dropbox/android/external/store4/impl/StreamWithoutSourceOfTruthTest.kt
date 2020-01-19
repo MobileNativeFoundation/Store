@@ -19,6 +19,7 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -43,46 +43,46 @@ class StreamWithoutSourceOfTruthTest(
     @Test
     fun streamWithoutPersister() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
-                3 to "three-1",
-                3 to "three-2"
+            3 to "three-1",
+            3 to "three-2"
         )
         val pipeline = StoreBuilder.fromNonFlow(fetcher::fetch)
-                .scope(testScope)
-                .let {
-                    if (enableCache) {
-                        it
-                    } else {
-                        it.disableCache()
-                    }
-                }.build()
+            .scope(testScope)
+            .let {
+                if (enableCache) {
+                    it
+                } else {
+                    it.disableCache()
+                }
+            }.build()
         val twoItemsNoRefresh = async {
             pipeline.stream(
-                    StoreRequest.cached(3, refresh = false)
+                StoreRequest.cached(3, refresh = false)
             ).take(3).toList()
         }
         delay(1_000) // make sure the async block starts first
-        pipeline.stream(StoreRequest.fresh(3)).assertItems(
-                StoreResponse.Loading(
-                        origin = ResponseOrigin.Fetcher
-                ),
-                StoreResponse.Data(
-                        value = "three-2",
-                        origin = ResponseOrigin.Fetcher
-                )
+        assertThat(pipeline.stream(StoreRequest.fresh(3))).emitsExactly(
+            StoreResponse.Loading(
+                origin = ResponseOrigin.Fetcher
+            ),
+            StoreResponse.Data(
+                value = "three-2",
+                origin = ResponseOrigin.Fetcher
+            )
         )
         println("!")
         assertThat(twoItemsNoRefresh.await()).containsExactly(
-                StoreResponse.Loading<String>(
-                        origin = ResponseOrigin.Fetcher
-                ),
-                StoreResponse.Data(
-                        value = "three-1",
-                        origin = ResponseOrigin.Fetcher
-                ),
-                StoreResponse.Data(
-                        value = "three-2",
-                        origin = ResponseOrigin.Fetcher
-                )
+            StoreResponse.Loading<String>(
+                origin = ResponseOrigin.Fetcher
+            ),
+            StoreResponse.Data(
+                value = "three-1",
+                origin = ResponseOrigin.Fetcher
+            ),
+            StoreResponse.Data(
+                value = "three-2",
+                origin = ResponseOrigin.Fetcher
+            )
         )
     }
 
