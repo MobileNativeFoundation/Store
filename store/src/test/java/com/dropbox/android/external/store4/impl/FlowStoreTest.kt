@@ -583,6 +583,55 @@ class FlowStoreTest {
         fetcher1Job.cancelAndJoin()
     }
 
+    @Test
+    fun withCachedTwoStreamers_slowCollectorReceivesAllNewValues() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2",
+            3 to "three-3"
+        )
+        val pipeline = build<Int, String, String>(
+            nonFlowingFetcher = fetcher::fetch,
+            enableCache = true
+        )
+        val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+        val fetcher1Job = async {
+            pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
+                fetcher1Collected.add(it)
+                delay(1_000)
+            }
+        }
+        testScope.advanceUntilIdle()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1")
+            )
+        )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-1"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-2"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-3")
+            )
+        testScope.advanceUntilIdle()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1"),
+                Data(origin = Fetcher, value = "three-2"),
+                Data(origin = Fetcher, value = "three-3")
+            )
+        )
+        fetcher1Job.cancelAndJoin()
+    }
+
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
