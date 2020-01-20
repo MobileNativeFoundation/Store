@@ -19,6 +19,7 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.ResponseOrigin
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -39,6 +40,7 @@ class CacheSourceOfTruth<Key : Any, Output : Any>(
         }
     )
 
+    @UseExperimental(FlowPreview::class)
     override fun reader(key: Key): Flow<Output?> {
         return flow {
             keyTrackers.use(key) { channel ->

@@ -24,13 +24,10 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
-import com.google.common.truth.Truth
+import com.dropbox.android.external.store4.fresh
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -38,7 +35,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -459,7 +455,7 @@ class FlowStoreTest {
             nonFlowingFetcher = fetcher::fetch,
             enableCache = true
         )
-        val firstFetch = pipeline.fresh(3).requireData()
+        val firstFetch = pipeline.fresh(3)
         assertThat(firstFetch).isEqualTo("three-1")
         val secondCollect = mutableListOf<StoreResponse<String>>()
         val collection = launch {
@@ -475,7 +471,7 @@ class FlowStoreTest {
             )
         )
         // trigger another fetch from network
-        val secondFetch = pipeline.fresh(3).requireData()
+        val secondFetch = pipeline.fresh(3)
         assertThat(secondFetch).isEqualTo("three-2")
         testScope.runCurrent()
         // make sure cached also received it
@@ -505,7 +501,7 @@ class FlowStoreTest {
             persisterWriter = persister::write,
             enableCache = true
         )
-        val firstFetch = pipeline.fresh(3).requireData()
+        val firstFetch = pipeline.fresh(3)
         assertThat(firstFetch).isEqualTo("three-1")
         val secondCollect = mutableListOf<StoreResponse<String>>()
         val collection = launch {
@@ -525,7 +521,7 @@ class FlowStoreTest {
             )
         )
         // trigger another fetch from network
-        val secondFetch = pipeline.fresh(3).requireData()
+        val secondFetch = pipeline.fresh(3)
         assertThat(secondFetch).isEqualTo("three-2")
         testScope.runCurrent()
         // make sure cached also received it
@@ -545,7 +541,6 @@ class FlowStoreTest {
         )
         collection.cancelAndJoin()
     }
-
 
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
