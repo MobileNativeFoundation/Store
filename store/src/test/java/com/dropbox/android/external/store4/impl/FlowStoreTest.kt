@@ -28,6 +28,7 @@ import com.dropbox.android.external.store4.fresh
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -542,6 +543,46 @@ class FlowStoreTest {
         collection.cancelAndJoin()
     }
 
+    @Test
+    fun withCachedTwoStreamers() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = build<Int, String, String>(
+            nonFlowingFetcher = fetcher::fetch,
+            enableCache = true
+        )
+        val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+        val fetcher1Job = async {
+            pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
+                fetcher1Collected.add(it)
+            }
+        }
+        testScope.runCurrent()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1")
+            )
+        )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-1"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        testScope.runCurrent()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1"),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        )
+        fetcher1Job.cancelAndJoin()
+    }
+
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
@@ -620,6 +661,7 @@ class FlowStoreTest {
                     it.disableCache()
                 }
             }.let {
+                @Suppress("UNCHECKED_CAST")
                 when {
                     flowingPersisterReader != null -> it.persister(
                         reader = flowingPersisterReader,
