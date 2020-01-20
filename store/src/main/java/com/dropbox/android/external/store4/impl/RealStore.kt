@@ -98,11 +98,10 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             }
         }.onStart {
             // if there is anything cached, dispatch it first if requested
-            if (sourceOfTruth?.defaultOrigin != ResponseOrigin.Cache) {
-                if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                    memCache?.get(request.key)?.let { cached ->
-                        emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
-                    }
+            if (sourceOfTruth?.defaultOrigin != ResponseOrigin.Cache &&
+                !request.shouldSkipCache(CacheType.MEMORY)) {
+                memCache?.get(request.key)?.let { cached ->
+                    emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
                 }
             }
         }
@@ -147,16 +146,16 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             else -> null
         }
 
-        val diskLock = CompletableDeferred<Unit>()
+        val sourceOfTruthLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
         val networkFlow = createNetworkFlow(request, sourceOfTruthCacheType, networkLock)
         if (sourceOfTruthCacheType == null || !request.shouldSkipCache(sourceOfTruthCacheType)) {
-            diskLock.complete(Unit)
+            sourceOfTruthLock.complete(Unit)
         }
-        val diskFlow = sourceOfTruth.reader(request.key, diskLock)
+        val sourceOfTruthFlow = sourceOfTruth.reader(request.key, sourceOfTruthLock)
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
-        return networkFlow.merge(diskFlow.withIndex())
+        return networkFlow.merge(sourceOfTruthFlow.withIndex())
             .transform {
                 // left is Fetcher while right is source of truth
                 if (it is Either.Left) {
@@ -165,25 +164,25 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     }
                     // network sent something
                     if (it.value is StoreResponse.Data) {
-                        // unlocking disk only if network sent data so that fresh data request never
-                        // receives disk data by mistake
-                        diskLock.complete(Unit)
+                        // unlocking SOT only if network sent data so that fresh data request never
+                        // receives SOT data by mistake
+                        sourceOfTruthLock.complete(Unit)
                     }
                 } else if (it is Either.Right) {
-                    // right, that is data from disk
-                    val (index, diskData) = it.value
-                    if (diskData.value != null) {
+                    // right, that is data from source of truth
+                    val (index, sourceOfTruthData) = it.value
+                    if (sourceOfTruthData.value != null) {
                         emit(
                             StoreResponse.Data(
-                                value = diskData.value,
-                                origin = diskData.origin
+                                value = sourceOfTruthData.value,
+                                origin = sourceOfTruthData.origin
                             ) as StoreResponse<Output>
                         )
                     }
 
                     // if this is the first disk value and it is null, we should enable fetcher
                     // TODO should we ignore the index and always enable?
-                    if (index == 0 && (diskData.value == null || request.refresh)) {
+                    if (index == 0 && (sourceOfTruthData.value == null || request.refresh)) {
                         networkLock.complete(Unit)
                     }
                 }

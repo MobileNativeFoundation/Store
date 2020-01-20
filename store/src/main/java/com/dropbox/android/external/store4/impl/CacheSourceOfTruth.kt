@@ -26,8 +26,14 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 
+/**
+ * A [SourceOfTruth] implementation that wraps a cache.
+ *
+ * This is used by the [RealStore] when there is no persister but cache is enabled.This way,
+ * active streams see all new values even if they were fetched for other streams.
+ */
 @UseExperimental(ExperimentalCoroutinesApi::class)
-class CacheSourceOfTruth<Key : Any, Output : Any>(
+internal class CacheSourceOfTruth<Key : Any, Output : Any>(
     private val cache: Cache<Key, Output>
 ) : SourceOfTruth<Key, Output, Output> {
     private val keyTrackers = RefCountedResource<Key, ConflatedBroadcastChannel<Output?>>(
