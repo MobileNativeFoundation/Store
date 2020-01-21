@@ -69,7 +69,7 @@ cache.get(1) // returns "bird"
 
 ### Cache Loader
 
-**Cache** provides an API for get cached value by key and using the provided `loader: () -> Value` lambda to compute and cache the value automatically if none exists.
+**Cache** provides an API for getting cached value by key and using the provided `loader: () -> Value` lambda to compute and cache the value automatically if none exists.
 
 ```kotlin
 val cache = Cache.Builder.newBuilder().build<Long, User>()
@@ -156,7 +156,7 @@ cache.invalidateAll()
 
 ### Unit Testing Cache Expirations
 
-To make it easier for testing logics that depend on cache expirations, `Cache.Builder` provides an API for setting a fake implementation of [Clock] for controlling (virtual) time in tests.
+To make it easier for testing logics that depend on cache expirations, `Cache.Builder` provides an API for setting a fake implementation of `Clock` for controlling (virtual) time in tests.
 
 First define a custom `Clock` implementation:
 
