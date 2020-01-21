@@ -139,7 +139,7 @@ internal class ChannelManager<T>(
             val leftovers = mutableListOf<ChannelEntry<T>>()
             channels.forEach {
                 when {
-                    !it.stillRequiresDispatch -> {
+                    !it.awaitsDispatch -> {
                         if (!piggybackingDownstream) {
                             it.close()
                         } else {
@@ -263,10 +263,7 @@ internal class ChannelManager<T>(
                     entry.dispatchValue(it)
                 }
             } else {
-                // unlock upstream since we now have a downstream that needs values
-                if (!entry.piggybackOnly) {
-                    lastDeliveryAck?.complete(Unit)
-                }
+                lastDeliveryAck?.complete(Unit)
             }
         }
     }
@@ -285,18 +282,18 @@ internal class ChannelManager<T>(
          */
         val piggybackOnly: Boolean = false
     ) {
-        private var _stillRequiresDispatch: Boolean = !piggybackOnly
+        private var _awaitsDispatch: Boolean = !piggybackOnly
 
-        val stillRequiresDispatch
-            get() = _stillRequiresDispatch
+        val awaitsDispatch
+            get() = _awaitsDispatch
 
         suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
-            _stillRequiresDispatch = false
+            _awaitsDispatch = false
             channel.send(value)
         }
 
         fun dispatchError(error: Throwable) {
-            _stillRequiresDispatch = false
+            _awaitsDispatch = false
             channel.close(error)
         }
 

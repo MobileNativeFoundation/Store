@@ -88,7 +88,7 @@ internal class FetcherController<Key, Input, Output>(
         return flow {
             val fetcher = fetchers.acquire(key)
             try {
-                emitAll(fetcher.newDownsteam(piggybackOnly))
+                emitAll(fetcher.newDownstream(piggybackOnly))
             } finally {
                 fetchers.release(key, fetcher)
             }

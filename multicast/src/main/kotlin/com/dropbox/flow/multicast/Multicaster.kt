@@ -87,13 +87,12 @@ class Multicaster<T>(
      * Gets a new downstream flow. Collectors of this flow will share values dispatched by a
      * single upstream [source] Flow.
      *
-     * @param piggybackOnly if true this downstream will cause a new upstream to start running
-     * (which only happens if no upstream is running alreay, e.g on if this is the first downstream
-     * added). Unlike a "regular" downstream, a [piggybackOnly] downstream can be closed without
-     * having any values emitted on it. [piggybackOnly] is only valid if [piggybackingDownstream] is
-     * enabled for this [Multicaster].
+     * @param piggybackOnly if true this downstream will not cause a new upstream to start running
+     * (which only happens if no upstream is running already, e.g if this is the first downstream
+     * added). [piggybackOnly] is only valid if [piggybackingDownstream] is enabled for this
+     * [Multicaster].
      */
-    fun newDownsteam(piggybackOnly: Boolean = false): Flow<T> {
+    fun newDownstream(piggybackOnly: Boolean = false): Flow<T> {
         check(!piggybackOnly || piggybackingDownstream) {
             "cannot create a piggyback only flow when piggybackDownstream is disabled"
         }

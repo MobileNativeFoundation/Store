@@ -28,6 +28,7 @@ import com.dropbox.android.external.store4.fresh
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -71,7 +72,6 @@ class FlowStoreTest {
             )
         assertThat(
             pipeline.stream(StoreRequest.cached(3, refresh = false))
-                .take(1) // TODO remove when Issue #59 is fixed.
         ).emitsExactly(
             Data(
                 value = "three-1",
@@ -448,8 +448,6 @@ class FlowStoreTest {
             )
     }
 
-    data class StringWrapper(val wrapped: String)
-
     @Test
     fun avoidRefresh_withoutSourceOfTruth() = testScope.runBlockingTest {
         val fetcher = FakeFetcher(
@@ -502,13 +500,13 @@ class FlowStoreTest {
         val persister = InMemoryPersister<Int, String>()
         val pipeline = build(
             nonFlowingFetcher = fetcher::fetch,
-            persisterReader = { key -> persister.read(key)?.let { StringWrapper(it) } },
+            persisterReader = persister::read,
             persisterWriter = persister::write,
             enableCache = true
         )
         val firstFetch = pipeline.fresh(3)
-        assertThat(firstFetch).isEqualTo(StringWrapper("three-1"))
-        val secondCollect = mutableListOf<StoreResponse<StringWrapper>>()
+        assertThat(firstFetch).isEqualTo("three-1")
+        val secondCollect = mutableListOf<StoreResponse<String>>()
         val collection = launch {
             pipeline.stream(StoreRequest.cached(3, refresh = false)).collect {
                 secondCollect.add(it)
@@ -517,34 +515,123 @@ class FlowStoreTest {
         testScope.runCurrent()
         assertThat(secondCollect).containsExactly(
             Data(
-                value = StringWrapper("three-1"),
+                value = "three-1",
                 origin = Cache
             ),
             Data(
-                value = StringWrapper("three-1"),
+                value = "three-1",
                 origin = Persister
             )
         )
         // trigger another fetch from network
         val secondFetch = pipeline.fresh(3)
-        assertThat(secondFetch).isEqualTo(StringWrapper("three-2"))
+        assertThat(secondFetch).isEqualTo("three-2")
         testScope.runCurrent()
         // make sure cached also received it
         assertThat(secondCollect).containsExactly(
             Data(
-                value = StringWrapper("three-1"),
+                value = "three-1",
                 origin = Cache
             ),
             Data(
-                value = StringWrapper("three-1"),
+                value = "three-1",
                 origin = Persister
             ),
             Data(
-                value = StringWrapper("three-2"),
+                value = "three-2",
                 origin = Fetcher
             )
         )
         collection.cancelAndJoin()
+    }
+
+    @Test
+    fun withCachedTwoStreamers() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = build<Int, String, String>(
+            nonFlowingFetcher = fetcher::fetch,
+            enableCache = true
+        )
+        val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+        val fetcher1Job = async {
+            pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
+                fetcher1Collected.add(it)
+            }
+        }
+        testScope.runCurrent()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1")
+            )
+        )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-1"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        testScope.runCurrent()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1"),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        )
+        fetcher1Job.cancelAndJoin()
+    }
+
+    @Test
+    fun withCachedTwoStreamers_slowCollectorReceivesAllNewValues() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2",
+            3 to "three-3"
+        )
+        val pipeline = build<Int, String, String>(
+            nonFlowingFetcher = fetcher::fetch,
+            enableCache = true
+        )
+        val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+        val fetcher1Job = async {
+            pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
+                fetcher1Collected.add(it)
+                delay(1_000)
+            }
+        }
+        testScope.advanceUntilIdle()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1")
+            )
+        )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-1"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-2")
+            )
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+            .emitsExactly(
+                Data(origin = Cache, value = "three-2"),
+                Loading(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-3")
+            )
+        testScope.advanceUntilIdle()
+        assertThat(fetcher1Collected).isEqualTo(
+            listOf(
+                Loading<String>(origin = Fetcher),
+                Data(origin = Fetcher, value = "three-1"),
+                Data(origin = Fetcher, value = "three-2"),
+                Data(origin = Fetcher, value = "three-3")
+            )
+        )
+        fetcher1Job.cancelAndJoin()
     }
 
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
@@ -625,6 +712,7 @@ class FlowStoreTest {
                     it.disableCache()
                 }
             }.let {
+                @Suppress("UNCHECKED_CAST")
                 when {
                     flowingPersisterReader != null -> it.persister(
                         reader = flowingPersisterReader,

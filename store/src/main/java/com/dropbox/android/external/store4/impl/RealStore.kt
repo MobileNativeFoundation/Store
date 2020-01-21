@@ -29,6 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
@@ -78,20 +80,30 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         sourceOfTruth = this.sourceOfTruth
     )
 
-    override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> {
-        val cached = memCache?.get(request.key)
-        return if (sourceOfTruth == null) {
+    override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> =
+        flow<StoreResponse<Output>> {
+            val cached = memCache?.get(request.key)
             // piggypack only if not specified fresh data AND reading non null value from cache
             val piggybackOnly = !request.refresh &&
                 !request.shouldSkipCache(CacheType.MEMORY) && cached != null
-            @Suppress("UNCHECKED_CAST")
-            createNetworkFlow(
-                request = request,
-                networkLock = null,
-                piggybackOnly = piggybackOnly
-            ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
-        } else {
-            diskNetworkCombined(request, sourceOfTruth)
+            // if there is anything cached, dispatch it first if requested
+            if (!request.shouldSkipCache(CacheType.MEMORY)) {
+                cached?.let {
+                    emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
+                }
+            }
+            if (sourceOfTruth == null) {
+                @Suppress("UNCHECKED_CAST")
+                emitAll(
+                    createNetworkFlow(
+                        request = request,
+                        networkLock = null,
+                        piggybackOnly = piggybackOnly
+                    ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
+                )
+            } else {
+                emitAll(diskNetworkCombined(request, sourceOfTruth))
+            }
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != ResponseOrigin.Cache) {
@@ -99,15 +111,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     memCache?.put(request.key, data)
                 }
             }
-        }.onStart {
-            // if there is anything cached, dispatch it first if requested
-            if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                cached?.let {
-                    emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
-                }
-            }
         }
-    }
 
     override suspend fun clear(key: Key) {
         memCache?.invalidate(key)
