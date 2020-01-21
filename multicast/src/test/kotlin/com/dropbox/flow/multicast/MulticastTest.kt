@@ -476,7 +476,7 @@ class MulticastTest {
     }
 
     @Test
-    fun `GIVEN piggybackDownstream AND piggybackOnly downstream followed by regular downstream WHEN add piggback downstream AND add downstream THAN upstream does not start until 2nd downstream is added AND both get value`() =
+    fun `GIVEN piggybackDownstream AND piggybackOnly downstream followed by regular downstream WHEN add piggback downstream AND add downstream THEN upstream does not start until 2nd downstream is added AND both get value`() =
         testScope.runBlockingTest {
             var createCount = 0
             val source = flow {
@@ -502,7 +502,7 @@ class MulticastTest {
         }
 
     @Test(expected = IllegalStateException::class)
-    fun `GIVEN no piggybackDownstream WHEN adding a piggybackOnly downstream THAN throws IllegalStateException`() =
+    fun `GIVEN no piggybackDownstream WHEN adding a piggybackOnly downstream THEN throws IllegalStateException`() =
         testScope.runBlockingTest {
             val multicaster = createMulticaster(flowOf("a"), piggybackDownstream = false)
             multicaster.newDownstream(piggybackOnly = true)
