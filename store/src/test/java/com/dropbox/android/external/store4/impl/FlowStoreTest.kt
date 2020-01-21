@@ -548,7 +548,7 @@ class FlowStoreTest {
         }
 
     @Test
-    fun `GIVEN cache and no sourceOfTruth WHEN 3 cached streams with refresh AND 1st has a slow collection THEN 1st streams gets 3 fetch updates AND other streams get cache result AND fetch result`() =
+    fun `GIVEN cache and no sourceOfTruth WHEN 3 cached streams with refresh AND 1st has slow collection THEN 1st streams gets 3 fetch updates AND other streams get cache result AND fetch result`() =
         testScope.runBlockingTest {
             val fetcher = FakeFetcher(
                 3 to "three-1",
