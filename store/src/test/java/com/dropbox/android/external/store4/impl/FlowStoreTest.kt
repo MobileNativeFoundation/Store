@@ -90,7 +90,7 @@ class FlowStoreTest {
             )
         assertThat(
             pipeline.stream(StoreRequest.cached(3, refresh = false))
-                .take(1) // TODO remove when Issue #59 is fixed.
+                .take(1)
         )
             .emitsExactly(
                 Data(

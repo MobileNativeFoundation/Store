@@ -82,17 +82,19 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> =
         flow<StoreResponse<Output>> {
-            val cached = memCache?.get(request.key)
-            // piggypack only if not specified fresh data AND reading non null value from cache
-            val piggybackOnly = !request.refresh &&
-                !request.shouldSkipCache(CacheType.MEMORY) && cached != null
-            // if there is anything cached, dispatch it first if requested
-            if (!request.shouldSkipCache(CacheType.MEMORY)) {
-                cached?.let {
-                    emit(StoreResponse.Data(value = cached, origin = ResponseOrigin.Cache))
-                }
+            val cached = if (request.shouldSkipCache(CacheType.MEMORY)) {
+                null
+            } else {
+                memCache?.get(request.key)
+            }
+
+            cached?.let {
+                // if we read a value from cache, dispatch it first
+                emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
             }
             if (sourceOfTruth == null) {
+                // piggypack only if not specified fresh data AND we emitted a value from the cache
+                val piggybackOnly = !request.refresh && cached != null
                 @Suppress("UNCHECKED_CAST")
                 emitAll(
                     createNetworkFlow(

@@ -277,7 +277,7 @@ internal class ChannelManager<T>(
          */
         private val channel: SendChannel<Message.Dispatch.Value<T>>,
         /**
-         * Tracking whether this channel a piggyback only channel that can be closed without ever
+         * Tracking whether this channel is a piggyback only channel that can be closed without ever
          * receiving a value or error.
          */
         val piggybackOnly: Boolean = false
