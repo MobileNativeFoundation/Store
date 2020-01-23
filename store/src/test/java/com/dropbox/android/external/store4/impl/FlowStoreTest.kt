@@ -90,7 +90,6 @@ class FlowStoreTest {
             )
         assertThat(
             pipeline.stream(StoreRequest.cached(3, refresh = false))
-                .take(1)
         )
             .emitsExactly(
                 Data(
