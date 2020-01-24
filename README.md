@@ -58,7 +58,8 @@ StoreBuilder
   }.persister(
       reader = db.postDao()::loadPosts,
       writer = db.postDao()::insertPosts,
-      delete = db.postDao()::clearFeed
+      delete = db.postDao()::clearFeed,
+      deleteAll = db.postDao()::clearAllFeeds
   ).build()
 ```
 
@@ -219,7 +220,8 @@ StoreBuilder
     ).persister(
         reader = db.postDao()::loadPosts,
         writer = db.postDao()::insertPosts,
-        delete = db.postDao()::clearFeed
+        delete = db.postDao()::clearFeed,
+        deleteAll = db.postDao()::clearAllFeeds
     ).build()
 ```
 
