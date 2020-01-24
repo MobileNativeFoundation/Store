@@ -103,6 +103,10 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
         delegate.delete(key)
     }
 
+    suspend fun deleteAll() {
+        delegate.deleteAll()
+    }
+
     private sealed class BarrierMsg(
         val version: Long
     ) {

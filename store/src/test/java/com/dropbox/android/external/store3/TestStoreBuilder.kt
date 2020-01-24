@@ -144,9 +144,6 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
                 },
                 realWriter = { key, value ->
                     persister.write(key, value)
-                },
-                realDelete = { key ->
-                    (persister as? Clearable<Key>)?.clear(key)
                 }
             )
         }
