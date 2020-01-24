@@ -231,3 +231,56 @@ StoreBuilder
 * `setExpireAfterTimeUnit(expireAfterTimeUnit: TimeUnit)` sets the time unit used when setting `expireAfterAccess` or `expireAfterWrite`. Default unit is `TimeUnit.SECONDS`.
 
 Note that `setExpireAfterAccess` and `setExpireAfterWrite` **cannot** both be set at the same time.
+
+### Clearing store entries
+
+You can delete a specific entry by key from a store, or clear all entries in a store.
+
+#### Store with no persister
+
+```kotlin
+val store = StoreBuilder
+  .fromNonFlow<Pair<String, RedditConfig, , List<Post>> {
+      api.fetchSubreddit(it, "10").data.children.map(::toPosts)
+  }.build()
+```
+
+The following will clear the entry associated with the key from the in-memory cache:
+
+```kotlin
+store.clear("10" to RedditConfig(10))
+```
+
+The following will clear all entries from the in-memory cache:
+
+```kotlin
+store.clearAll()
+```
+
+#### Store with persister
+
+When store has a persister (source of truth), you'll need to provide the `delete` and `deleteAll` functions for `clear(key)` and `clearAll()` to work:
+
+```kotlin
+StoreBuilder
+  .fromNonFlow<Pair<String, RedditConfig, , List<Post>> {
+      api.fetchSubreddit(it, "10").data.children.map(::toPosts)
+  }.persister(
+      reader = db.postDao()::loadPosts,
+      writer = db.postDao()::insertPosts,
+      delete = db.postDao()::clearFeed,
+      deleteAll = db.postDao()::clearAllFeeds
+  ).build()
+```
+
+The following will clear the entry associated with the key from both the in-memory cache and the persister (source of truth):
+
+```kotlin
+store.clear("10" to RedditConfig(10))
+```
+
+The following will clear all entries from both the in-memory cache and the persister (source of truth):
+
+```kotlin
+store.clearAll()
+```

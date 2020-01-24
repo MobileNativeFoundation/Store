@@ -82,7 +82,7 @@ class ClearStoreByKeyTest {
         store.get(key)
         assertThat(networkCalls.get()).isEqualTo(1)
 
-        // clear story entry by key
+        // clear store entry by key
         store.clear(key)
 
         // should hit network again
