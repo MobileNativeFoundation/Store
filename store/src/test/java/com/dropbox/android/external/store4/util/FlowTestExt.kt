@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl
+package com.dropbox.android.external.store4.util
 
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
@@ -28,7 +28,11 @@ import kotlinx.coroutines.test.TestCoroutineScope
 
 @UseExperimental(ExperimentalCoroutinesApi::class)
 internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
-    return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
+    return Truth.assertAbout(
+        FlowSubject.Factory<T>(
+            this
+        )
+    ).that(flow)
 }
 
 @UseExperimental(ExperimentalCoroutinesApi::class)

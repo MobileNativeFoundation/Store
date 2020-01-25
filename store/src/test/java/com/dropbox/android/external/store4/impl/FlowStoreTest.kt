@@ -24,6 +24,10 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
+import com.dropbox.android.external.store4.util.FakeFetcher
+import com.dropbox.android.external.store4.util.InMemoryPersister
+import com.dropbox.android.external.store4.util.asObservable
+import com.dropbox.android.external.store4.util.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -38,7 +42,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.collections.set
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -468,23 +471,6 @@ class FlowStoreTest {
                 emit(it.second)
             }
         }
-    }
-
-    class InMemoryPersister<Key, Output> {
-        private val data = mutableMapOf<Key, Output>()
-
-        @Suppress("RedundantSuspendModifier") // for function reference
-        suspend fun read(key: Key) = data[key]
-
-        @Suppress("RedundantSuspendModifier") // for function reference
-        suspend fun write(key: Key, output: Output) {
-            data[key] = output
-        }
-
-        suspend fun asObservable() = SimplePersisterAsFlowable(
-            reader = this::read,
-            writer = this::write
-        )
     }
 
     private fun <Key : Any, Input : Any, Output : Any> build(

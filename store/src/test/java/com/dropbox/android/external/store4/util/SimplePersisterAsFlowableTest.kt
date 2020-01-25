@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl
+package com.dropbox.android.external.store4.util
 
 import com.dropbox.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.CompletableDeferred
@@ -84,18 +84,18 @@ class SimplePersisterAsFlowableTest {
         var readIndex = 0
         val written = mutableListOf<String>()
         return SimplePersisterAsFlowable<BarCode, String, String>(
-                reader = {
-                    if (readIndex >= values.size) {
-                        throw AssertionError("should not've read this many")
-                    }
-                    values[readIndex++]
-                },
-                writer = { _: BarCode, value: String ->
-                    written.add(value)
-                },
-                delete = {
-                    TODO("not implemented")
+            reader = {
+                if (readIndex >= values.size) {
+                    throw AssertionError("should not've read this many")
                 }
+                values[readIndex++]
+            },
+            writer = { _: BarCode, value: String ->
+                written.add(value)
+            },
+            delete = {
+                TODO("not implemented")
+            }
         ) to written
     }
 }

@@ -15,11 +15,12 @@
  */
 package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.impl.FlowStoreTest
 import com.dropbox.android.external.store4.impl.DataWithOrigin
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
+import com.dropbox.android.external.store4.util.InMemoryPersister
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -29,14 +30,13 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @FlowPreview
 @ExperimentalCoroutinesApi
 class SourceOfTruthWithBarrierTest {
     private val testScope = TestCoroutineScope()
-    private val persister = FlowStoreTest.InMemoryPersister<Int, String>()
+    private val persister = InMemoryPersister<Int, String>()
     private val delegate: SourceOfTruth<Int, String, String> =
             PersistentSourceOfTruth(
                     realReader = { key ->

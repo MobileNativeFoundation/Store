@@ -1,21 +1,18 @@
 package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.android.external.store4.get
+import com.dropbox.android.external.store4.util.InMemoryPersister
+import com.dropbox.android.external.store4.util.getWithOrigin
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.concurrent.atomic.AtomicInteger
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -25,69 +22,147 @@ class ClearAllStoreTest {
 
     private val testScope = TestCoroutineScope()
 
-    private val key = "key"
+    private val key1 = "key1"
+    private val key2 = "key2"
+    private val value1 = 1
+    private val value2 = 2
 
-    private val networkCalls = AtomicInteger(0)
-    private val deleteAllCalls = AtomicInteger(0)
-
-    private val diskReader = mock<(String) -> Flow<Int?>>()
-    private val diskWriter = mock<suspend (String, Int) -> Unit>()
-
-    @Test
-    fun `clearAll() with persister`() = testScope.runBlockingTest {
-        whenever(diskReader.invoke(key))
-            .thenReturn(flowOf(null)) // no value in disk initially
-            .thenReturn(flowOf(1)) // value exists after fetching from network
-            .thenReturn(flowOf(null)) // no value after clearing
-            .thenReturn(flowOf(1)) // value exists after additional network call
-        whenever(diskWriter.invoke(key, 1)).thenReturn(Unit)
-
-        val store = StoreBuilder.fromNonFlow<String, Int>(
-            fetcher = { networkCalls.incrementAndGet() }
-        ).scope(testScope)
-            .persister(
-                reader = diskReader,
-                writer = diskWriter,
-                deleteAll = { deleteAllCalls.incrementAndGet() }
-            )
-            .build()
-
-        // should hit network first time
-        store.get(key)
-        assertThat(networkCalls.get()).isEqualTo(1)
-
-        // should not hit network
-        store.get(key)
-        assertThat(networkCalls.get()).isEqualTo(1)
-
-        // clear all entries in store
-        store.clearAll()
-        assertThat(deleteAllCalls.get()).isEqualTo(1)
-
-        // should hit network again
-        store.get(key)
-        assertThat(networkCalls.toInt()).isEqualTo(2)
+    private val fetcher: suspend (key: String) -> Int = { key: String ->
+        when (key) {
+            key1 -> value1
+            key2 -> value2
+            else -> throw IllegalStateException("Unknown key")
+        }
     }
 
+    private val persister = InMemoryPersister<String, Int>()
+
     @Test
-    fun `clearAll() with in-memory cache and no persister`() = testScope.runBlockingTest {
-        val store = StoreBuilder.fromNonFlow<String, Int>(
-            fetcher = { networkCalls.incrementAndGet() }
-        ).scope(testScope).build()
+    fun `calling clearAll() on store with persister (no in-memory cache) deletes all entries from the persister`() =
+        testScope.runBlockingTest {
+            val store = StoreBuilder.fromNonFlow(
+                fetcher = fetcher
+            ).scope(testScope)
+                .disableCache()
+                .nonFlowingPersister(
+                    reader = persister::read,
+                    writer = persister::write,
+                    deleteAll = persister::deleteAll
+                )
+                .build()
 
-        // should hit network first time
-        store.get(key)
-        assertThat(networkCalls.get()).isEqualTo(1)
+            // should receive data from network first time
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value2
+                    )
+                )
 
-        // should not hit network
-        store.get(key)
-        assertThat(networkCalls.get()).isEqualTo(1)
+            // should receive data from persister
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Persister,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Persister,
+                        value = value2
+                    )
+                )
 
-        // clear all entries in store
-        store.clearAll()
+            // clear all entries in store
+            store.clearAll()
+            assertThat(persister.peekEntry(key1))
+                .isNull()
+            assertThat(persister.peekEntry(key2))
+                .isNull()
 
-        // should hit network again
-        store.get(key)
-        assertThat(networkCalls.toInt()).isEqualTo(2)
-    }
+            // should fetch data from network again
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value2
+                    )
+                )
+        }
+
+    @Test
+    fun `calling clearAll() on store with in-memory cache (no persister) deletes all entries from the in-memory cache`() =
+        testScope.runBlockingTest {
+            val store = StoreBuilder.fromNonFlow(
+                fetcher = fetcher
+            ).scope(testScope).build()
+
+            // should receive data from network first time
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value2
+                    )
+                )
+
+            // should receive data from cache
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Cache,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Cache,
+                        value = value2
+                    )
+                )
+
+            // clear all entries in store
+            store.clearAll()
+
+            // should fetch data from network again
+            assertThat(store.getWithOrigin(key1))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value1
+                    )
+                )
+            assertThat(store.getWithOrigin(key2))
+                .isEqualTo(
+                    DataWithOrigin(
+                        origin = ResponseOrigin.Fetcher,
+                        value = value2
+                    )
+                )
+        }
 }

@@ -15,6 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.util.KeyTracker
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -34,7 +35,8 @@ class KeyTrackerTest {
     private val scope1 = TestCoroutineScope()
     private val scope2 = TestCoroutineScope()
 
-    private val subject = KeyTracker<Char>()
+    private val subject =
+        KeyTracker<Char>()
 
     @Test
     fun dontSkipInvalidations() = scope1.runBlockingTest {
