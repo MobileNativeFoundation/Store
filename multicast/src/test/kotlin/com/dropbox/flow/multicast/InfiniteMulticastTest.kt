@@ -69,19 +69,19 @@ class InfiniteMulticastTest {
             delay(100)
         })
         val c1 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(100)
             }.take(6).toList()
         }
         val c2 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(200)
             }.take(6).toList()
         }
         // ensure first flow finishes
         delay(10_000)
         // add another
-        val c3 = activeFlow.flow.take(3).toList()
+        val c3 = activeFlow.newDownstream().take(3).toList()
         assertThat(c1.await())
             .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
         assertThat(c2.await())
@@ -104,19 +104,19 @@ class InfiniteMulticastTest {
             delay(100)
         })
         val c1 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(100)
             }.take(6).toList()
         }
         val c2 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(200)
             }.take(6).toList()
         }
         // ensure first flow finishes
         delay(10_000)
         // add another
-        val c3 = activeFlow.flow.take(1).toList()
+        val c3 = activeFlow.newDownstream().take(1).toList()
         assertThat(c1.await())
             .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
         assertThat(c2.await())
@@ -139,19 +139,19 @@ class InfiniteMulticastTest {
             delay(100)
         })
         val c1 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(100)
             }.take(4).toList()
         }
         val c2 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(200)
             }.take(5).toList()
         }
         // ensure first flow finishes
         delay(10_000)
         // add another
-        val c3 = activeFlow.flow.take(3).toList()
+        val c3 = activeFlow.newDownstream().take(3).toList()
         assertThat(c1.await())
             .isEqualTo(listOf("a0", "b0", "c0", "a1"))
         assertThat(c2.await())
@@ -175,19 +175,19 @@ class InfiniteMulticastTest {
             emit(it)
         })
         val c1 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(100)
             }.take(4).toList()
         }
         val c2 = async {
-            activeFlow.flow.onEach {
+            activeFlow.newDownstream().onEach {
                 delay(200)
             }.take(5).toList()
         }
         // ensure first flow finishes
         delay(10_000)
         // add another
-        val c3 = activeFlow.flow.take(1).toList()
+        val c3 = activeFlow.newDownstream().take(1).toList()
         assertThat(c1.await())
             .isEqualTo(listOf("a0", "b0", "c0", "a1"))
         assertThat(c2.await())

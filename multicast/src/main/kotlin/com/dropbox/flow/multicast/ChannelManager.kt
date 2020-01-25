@@ -70,8 +70,8 @@ internal class ChannelManager<T>(
         }
     }
 
-    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
-        actor.send(Message.AddChannel(channel))
+    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>, piggybackOnly: Boolean = false) =
+        actor.send(Message.AddChannel(channel, piggybackOnly))
 
     suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         actor.send(Message.RemoveChannel(channel))
@@ -139,7 +139,7 @@ internal class ChannelManager<T>(
             val leftovers = mutableListOf<ChannelEntry<T>>()
             channels.forEach {
                 when {
-                    it.receivedValue -> {
+                    !it.awaitsDispatch -> {
                         if (!piggybackingDownstream) {
                             it.close()
                         } else {
@@ -224,12 +224,18 @@ internal class ChannelManager<T>(
          * Add a new downstream collector
          */
         private suspend fun doAdd(msg: Message.AddChannel<T>) {
+            check(!msg.piggybackOnly || piggybackingDownstream) {
+                "cannot add a piggyback only downstream when piggybackDownstream is disabled"
+            }
             addEntry(
                 entry = ChannelEntry(
-                    channel = msg.channel
+                    channel = msg.channel,
+                    piggybackOnly = msg.piggybackOnly
                 )
             )
-            activateIfNecessary()
+            if (!msg.piggybackOnly) {
+                activateIfNecessary()
+            }
         }
 
         private fun activateIfNecessary() {
@@ -250,9 +256,6 @@ internal class ChannelManager<T>(
             check(new) {
                 "$entry is already in the list."
             }
-            check(!entry.receivedValue) {
-                "$entry already received a value"
-            }
             channels.add(entry)
             if (buffer.items.isNotEmpty()) {
                 // if there is anything in the buffer, send it
@@ -260,7 +263,6 @@ internal class ChannelManager<T>(
                     entry.dispatchValue(it)
                 }
             } else {
-                // unlock upstream since we now have a downstream that needs values
                 lastDeliveryAck?.complete(Unit)
             }
         }
@@ -275,20 +277,23 @@ internal class ChannelManager<T>(
          */
         private val channel: SendChannel<Message.Dispatch.Value<T>>,
         /**
-         * Tracking whether we've ever dispatched a value or an error to downstream
+         * Tracking whether this channel is a piggyback only channel that can be closed without ever
+         * receiving a value or error.
          */
-        private var _receivedValue: Boolean = false
+        val piggybackOnly: Boolean = false
     ) {
-        val receivedValue
-            get() = _receivedValue
+        private var _awaitsDispatch: Boolean = !piggybackOnly
+
+        val awaitsDispatch
+            get() = _awaitsDispatch
 
         suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
-            _receivedValue = true
+            _awaitsDispatch = false
             channel.send(value)
         }
 
         fun dispatchError(error: Throwable) {
-            _receivedValue = true
+            _awaitsDispatch = false
             channel.close(error)
         }
 
@@ -309,7 +314,8 @@ internal class ChannelManager<T>(
          * Add a new channel, that means a new downstream subscriber
          */
         class AddChannel<T>(
-            val channel: SendChannel<Dispatch.Value<T>>
+            val channel: SendChannel<Dispatch.Value<T>>,
+            val piggybackOnly: Boolean = false
         ) : Message<T>()
 
         /**
