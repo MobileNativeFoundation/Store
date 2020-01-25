@@ -34,8 +34,7 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
     private val writer: suspend (Key, Input) -> Unit,
     private val delete: (suspend (Key) -> Unit)? = null
 ) {
-    private val versionTracker =
-        KeyTracker<Key>()
+    private val versionTracker = KeyTracker<Key>()
 
     fun flowReader(key: Key): Flow<Output?> = flow {
         versionTracker.keyFlow(key).collect {

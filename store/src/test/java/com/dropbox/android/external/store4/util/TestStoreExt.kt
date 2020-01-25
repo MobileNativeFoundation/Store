@@ -11,10 +11,11 @@ import kotlinx.coroutines.flow.first
  * Helper factory that will return data along with the response origin for [key]
  * if it is cached otherwise will return fresh/network data (updating your caches)
  */
-internal suspend fun <Key : Any, Output : Any> Store<Key, Output>.getWithOrigin(key: Key) = stream(
-    StoreRequest.cached(key, refresh = false)
-).filterNot {
-    it is StoreResponse.Loading
-}.first().let {
-    DataWithOrigin(it.origin, it.requireData())
-}
+internal suspend fun <Key : Any, Output : Any> Store<Key, Output>.getDataWithOrigin(key: Key) =
+    stream(
+        StoreRequest.cached(key, refresh = false)
+    ).filterNot {
+        it is StoreResponse.Loading
+    }.first().let {
+        DataWithOrigin(it.origin, it.requireData())
+    }

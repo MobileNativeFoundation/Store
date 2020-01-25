@@ -3,7 +3,7 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.util.InMemoryPersister
-import com.dropbox.android.external.store4.util.getWithOrigin
+import com.dropbox.android.external.store4.util.getDataWithOrigin
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -39,7 +39,7 @@ class ClearStoreByKeyTest {
                 .build()
 
             // should receive data from network first time
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Fetcher,
@@ -48,7 +48,7 @@ class ClearStoreByKeyTest {
                 )
 
             // should receive data from persister
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Persister,
@@ -62,7 +62,7 @@ class ClearStoreByKeyTest {
                 .isNull()
 
             // should fetch data from network again
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Fetcher,
@@ -81,7 +81,7 @@ class ClearStoreByKeyTest {
             ).scope(testScope).build()
 
             // should receive data from network first time
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Fetcher,
@@ -90,7 +90,7 @@ class ClearStoreByKeyTest {
                 )
 
             // should receive data from cache
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Cache,
@@ -102,7 +102,7 @@ class ClearStoreByKeyTest {
             store.clear(key)
 
             // should fetch data from network again
-            assertThat(store.getWithOrigin(key))
+            assertThat(store.getDataWithOrigin(key))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Fetcher,
@@ -135,8 +135,8 @@ class ClearStoreByKeyTest {
                 .build()
 
             // get data for both keys
-            store.getWithOrigin(key1)
-            store.getWithOrigin(key2)
+            store.getDataWithOrigin(key1)
+            store.getDataWithOrigin(key2)
 
             // clear store entry for key1
             store.clear(key1)
@@ -150,7 +150,7 @@ class ClearStoreByKeyTest {
                 .isEqualTo(value2)
 
             // getting data for key1 should hit the network again
-            assertThat(store.getWithOrigin(key1))
+            assertThat(store.getDataWithOrigin(key1))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Fetcher,
@@ -159,7 +159,7 @@ class ClearStoreByKeyTest {
                 )
 
             // getting data for key2 should not hit the network
-            assertThat(store.getWithOrigin(key2))
+            assertThat(store.getDataWithOrigin(key2))
                 .isEqualTo(
                     DataWithOrigin(
                         origin = ResponseOrigin.Cache,

@@ -28,11 +28,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 
 @UseExperimental(ExperimentalCoroutinesApi::class)
 internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
-    return Truth.assertAbout(
-        FlowSubject.Factory<T>(
-            this
-        )
-    ).that(flow)
+    return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
 }
 
 @UseExperimental(ExperimentalCoroutinesApi::class)

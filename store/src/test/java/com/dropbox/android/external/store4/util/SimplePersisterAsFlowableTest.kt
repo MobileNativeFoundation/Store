@@ -16,6 +16,7 @@
 package com.dropbox.android.external.store4.util
 
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -26,7 +27,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
@@ -49,14 +49,14 @@ class SimplePersisterAsFlowableTest {
         val collectedValues = CompletableDeferred<List<String?>>()
         otherScope.launch {
             collectedValues.complete(flowable
-                    .flowReader(barcode)
-                    .onEach {
-                        if (collectedFirst.isActive) {
-                            collectedFirst.complete(Unit)
-                        }
+                .flowReader(barcode)
+                .onEach {
+                    if (collectedFirst.isActive) {
+                        collectedFirst.complete(Unit)
                     }
-                    .take(2)
-                    .toList())
+                }
+                .take(2)
+                .toList())
         }
         collectedFirst.await()
         flowable.flowWriter(barcode, "x")

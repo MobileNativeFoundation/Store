@@ -2,6 +2,9 @@ package com.dropbox.android.external.store4.util
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+/**
+ * An in-memory non-flowing persister for testing.
+ */
 class InMemoryPersister<Key, Output> {
     private val data = mutableMapOf<Key, Output>()
 
