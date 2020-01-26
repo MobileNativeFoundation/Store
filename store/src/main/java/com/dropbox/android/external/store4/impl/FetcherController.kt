@@ -84,11 +84,11 @@ internal class FetcherController<Key, Input, Output>(
         }
     )
 
-    fun getFetcher(key: Key): Flow<StoreResponse<Input>> {
+    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreResponse<Input>> {
         return flow {
             val fetcher = fetchers.acquire(key)
             try {
-                emitAll(fetcher.flow)
+                emitAll(fetcher.newDownstream(piggybackOnly))
             } finally {
                 fetchers.release(key, fetcher)
             }
