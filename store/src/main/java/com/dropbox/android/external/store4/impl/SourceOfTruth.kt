@@ -30,6 +30,7 @@ internal interface SourceOfTruth<Key, Input, Output> {
     fun reader(key: Key): Flow<Output?>
     suspend fun write(key: Key, value: Input)
     suspend fun delete(key: Key)
+    suspend fun deleteAll()
     // for testing
     suspend fun getSize(): Int
 }
@@ -37,13 +38,21 @@ internal interface SourceOfTruth<Key, Input, Output> {
 internal class PersistentSourceOfTruth<Key, Input, Output>(
     private val realReader: (Key) -> Flow<Output?>,
     private val realWriter: suspend (Key, Input) -> Unit,
-    private val realDelete: (suspend (Key) -> Unit)? = null
+    private val realDelete: (suspend (Key) -> Unit)? = null,
+    private val realDeleteAll: (suspend () -> Unit)? = null
 ) : SourceOfTruth<Key, Input, Output> {
     override val defaultOrigin = ResponseOrigin.Persister
+
     override fun reader(key: Key): Flow<Output?> = realReader(key)
+
     override suspend fun write(key: Key, value: Input) = realWriter(key, value)
+
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)
+    }
+
+    override suspend fun deleteAll() {
+        realDeleteAll?.invoke()
     }
 
     // for testing
@@ -55,16 +64,23 @@ internal class PersistentSourceOfTruth<Key, Input, Output>(
 internal class PersistentNonFlowingSourceOfTruth<Key, Input, Output>(
     private val realReader: suspend (Key) -> Output?,
     private val realWriter: suspend (Key, Input) -> Unit,
-    private val realDelete: (suspend (Key) -> Unit)? = null
+    private val realDelete: (suspend (Key) -> Unit)? = null,
+    private val realDeleteAll: (suspend () -> Unit)?
 ) : SourceOfTruth<Key, Input, Output> {
     override val defaultOrigin = ResponseOrigin.Persister
+
     override fun reader(key: Key): Flow<Output?> = flow {
         emit(realReader(key))
     }
 
     override suspend fun write(key: Key, value: Input) = realWriter(key, value)
+
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)
+    }
+
+    override suspend fun deleteAll() {
+        realDeleteAll?.invoke()
     }
 
     // for testing

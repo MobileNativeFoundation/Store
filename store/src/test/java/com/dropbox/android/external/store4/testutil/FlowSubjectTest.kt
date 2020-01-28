@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dropbox.android.external.store4.impl
+package com.dropbox.android.external.store4.testutil
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi

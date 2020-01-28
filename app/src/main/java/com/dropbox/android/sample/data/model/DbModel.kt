@@ -57,7 +57,7 @@ abstract class PostDao {
     @Transaction
     open suspend fun insertPosts(subredditName: String, posts: List<Post>) {
         // first clear the feed
-        clearFeed(subredditName)
+        clearFeedBySubredditName(subredditName)
         // convert them into database models
         val feedEntities = posts.mapIndexed { index: Int, post: Post ->
             FeedEntity(
@@ -76,7 +76,10 @@ abstract class PostDao {
     }
 
     @Query("DELETE FROM FeedEntity WHERE subredditName = :subredditName")
-    abstract suspend fun clearFeed(subredditName: String)
+    abstract suspend fun clearFeedBySubredditName(subredditName: String)
+
+    @Query("DELETE FROM FeedEntity")
+    abstract suspend fun clearAllFeeds()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertPosts(

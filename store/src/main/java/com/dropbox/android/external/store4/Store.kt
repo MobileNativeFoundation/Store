@@ -21,14 +21,16 @@ import kotlinx.coroutines.flow.transform
  *   }
  *  .persister(reader = { (query, _) -> db.postDao().loadData(query) },
  *             writer = { (query, _), posts -> db.dataDAO().insertData(query, posts) },
- *             delete = { (query, _) -> db.dataDAO().clearData(query) })
+ *             delete = { (query, _) -> db.dataDAO().clearData(query) },
+ *             deleteAll = db.postDao()::clearAllFeeds)
  *  .build()
- *  //single shot response
+ *
+ *  // single shot response
  *  viewModelScope.launch {
  *      val data = store.fresh(key)
  *  }
  *
- *  //get cached data and collect future emissions as well
+ *  // get cached data and collect future emissions as well
  *  viewModelScope.launch {
  *    val data = store.cached(key, refresh=true)
  *                    .collect{data.value=it }
@@ -49,6 +51,14 @@ interface Store<Key : Any, Output : Any> {
      * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
      */
     suspend fun clear(key: Key)
+
+    /**
+     * Purge all entries from memory and disk cache.
+     * Persistent storage will only be cleared if a deleteAll function was passed to
+     * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
+     */
+    @ExperimentalStoreApi
+    suspend fun clearAll()
 }
 
 @ExperimentalCoroutinesApi

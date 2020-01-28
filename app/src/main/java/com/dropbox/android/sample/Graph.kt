@@ -38,23 +38,28 @@ object Graph {
             .fromNonFlow { key: String ->
                 provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
             }
-            .persister(reader = db.postDao()::loadPosts,
+            .persister(
+                reader = db.postDao()::loadPosts,
                 writer = db.postDao()::insertPosts,
-                delete = db.postDao()::clearFeed)
+                delete = db.postDao()::clearFeedBySubredditName,
+                deleteAll = db.postDao()::clearAllFeeds
+            )
             .build()
     }
 
     fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-                .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
-                    provideRetrofit().fetchSubreddit(query, config.limit)
-                            .data.children.map(::toPosts)
-                }
-                .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
-                        writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
-                        delete = { (query, _) -> db.postDao().clearFeed(query) })
-                .build()
+            .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
+                provideRetrofit().fetchSubreddit(query, config.limit)
+                    .data.children.map(::toPosts)
+            }
+            .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
+                writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
+                delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
+                deleteAll = db.postDao()::clearAllFeeds
+            )
+            .build()
     }
 
     private fun provideRoom(context: SampleApp): RedditDb {
@@ -72,29 +77,34 @@ object Graph {
 
     fun provideConfigStore(context: Context): Store<Unit, RedditConfig> {
         val fileSystem = FileSystemFactory.create(context.cacheDir)
-        val fileSystemPersister = FileSystemPersister.create(fileSystem, object : PathResolver<Unit> {
-            override fun resolve(key: Unit) = "config.json"
-        })
+        val fileSystemPersister =
+            FileSystemPersister.create(fileSystem, object : PathResolver<Unit> {
+                override fun resolve(key: Unit) = "config.json"
+            })
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
-                .fromNonFlow<Unit, RedditConfig> {
-                    delay(500)
-                    RedditConfig(10)
+            .fromNonFlow<Unit, RedditConfig> {
+                delay(500)
+                RedditConfig(10)
+            }
+            .nonFlowingPersister(
+                reader = {
+                    runCatching {
+                        val source = fileSystemPersister.read(Unit)
+                        source?.let { adapter.fromJson(it) }
+                    }.getOrNull()
+                },
+                writer = { _, _ ->
+                    val buffer = Buffer()
+                    fileSystemPersister.write(Unit, buffer)
                 }
-                .nonFlowingPersister(
-                        reader = {
-                            runCatching {
-                                val source = fileSystemPersister.read(Unit)
-                                source?.let { adapter.fromJson(it) }
-                            }.getOrNull()
-                        },
-                        writer = { _, _ ->
-                            val buffer = Buffer()
-                            fileSystemPersister.write(Unit, buffer)
-                        }
-                )
-                .cachePolicy(MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(TimeUnit.SECONDS).build())
-                .build()
+            )
+            .cachePolicy(
+                MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(
+                    TimeUnit.SECONDS
+                ).build()
+            )
+            .build()
     }
 
     private fun provideRetrofit(): Api {
