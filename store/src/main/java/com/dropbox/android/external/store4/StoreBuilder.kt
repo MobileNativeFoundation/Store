@@ -55,15 +55,16 @@ interface StoreBuilder<Key : Any, Output : Any> {
     fun disableCache(): StoreBuilder<Key, Output>
 
     /**
-     * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer] and
-     * [delete].
+     * Connects a (non-[Flow]) source of truth that is accessible via [reader], [writer],
+     * [delete], and [deleteAll].
      *
      * @see persister
      */
     fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
+        delete: (suspend (Key) -> Unit)? = null,
+        deleteAll: (suspend () -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
 
     /**
@@ -93,13 +94,15 @@ interface StoreBuilder<Key : Any, Output : Any> {
      * @param reader reads records from the source of truth
      * @param writer writes records **coming in from the fetcher (network)** to the source of truth.
      * Writing local user updates to the source of truth via [Store] is currently not supported.
-     * @param delete deletes records in the source of truth
+     * @param delete deletes records in the source of truth for the give key
+     * @param deleteAll deletes all records in the source of truth
      *
      */
     fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)? = null
+        delete: (suspend (Key) -> Unit)? = null,
+        deleteAll: (suspend () -> Unit)? = null
     ): StoreBuilder<Key, NewOutput>
 
     companion object {
@@ -187,13 +190,15 @@ private class BuilderImpl<Key : Any, Output : Any>(
     override fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)?
+        delete: (suspend (Key) -> Unit)?,
+        deleteAll: (suspend () -> Unit)?
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth(
             PersistentNonFlowingSourceOfTruth(
                 realReader = reader,
                 realWriter = writer,
-                realDelete = delete
+                realDelete = delete,
+                realDeleteAll = deleteAll
             )
         )
     }
@@ -205,7 +210,8 @@ private class BuilderImpl<Key : Any, Output : Any>(
             PersistentNonFlowingSourceOfTruth(
                 realReader = { key -> persister.read(key) },
                 realWriter = { key, input -> persister.write(key, input) },
-                realDelete = { error("Delete is not implemented in legacy persisters") }
+                realDelete = { error("Delete is not implemented in legacy persisters") },
+                realDeleteAll = { error("Delete all is not implemented in legacy persisters") }
             )
         return withLegacySourceOfTruth(sourceOfTruth)
     }
@@ -213,13 +219,15 @@ private class BuilderImpl<Key : Any, Output : Any>(
     override fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)?
+        delete: (suspend (Key) -> Unit)?,
+        deleteAll: (suspend () -> Unit)?
     ): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
         return withSourceOfTruth(
             PersistentSourceOfTruth(
                 realReader = reader,
                 realWriter = writer,
-                realDelete = delete
+                realDelete = delete,
+                realDeleteAll = deleteAll
             )
         )
     }
@@ -266,13 +274,15 @@ private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     override fun <NewOutput : Any> persister(
         reader: (Key) -> Flow<NewOutput?>,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)?
+        delete: (suspend (Key) -> Unit)?,
+        deleteAll: (suspend () -> Unit)?
     ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
 
     override fun <NewOutput : Any> nonFlowingPersister(
         reader: suspend (Key) -> NewOutput?,
         writer: suspend (Key, Output) -> Unit,
-        delete: (suspend (Key) -> Unit)?
+        delete: (suspend (Key) -> Unit)?,
+        deleteAll: (suspend () -> Unit)?
     ): StoreBuilder<Key, NewOutput> = error("Multiple persisters are not supported")
 
     override fun nonFlowingPersisterLegacy(persister: Persister<Output, Key>): StoreBuilder<Key, Output> =

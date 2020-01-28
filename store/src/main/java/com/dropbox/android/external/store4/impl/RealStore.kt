@@ -17,6 +17,7 @@ package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.CacheType
+import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
@@ -118,6 +119,12 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     override suspend fun clear(key: Key) {
         memCache?.invalidate(key)
         sourceOfTruth?.delete(key)
+    }
+
+    @ExperimentalStoreApi
+    override suspend fun clearAll() {
+        memCache?.invalidateAll()
+        sourceOfTruth?.deleteAll()
     }
 
     /**

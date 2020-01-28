@@ -18,7 +18,7 @@ ext.versions = [
         javax                : '1',
         room                 : '2.2.2',
         coreKtx              : '1.1.0',
-        lifecycle            : '2.2.0-rc03',
+        lifecycle            : '2.2.0',
 
         // Testing.
         junit                : '4.13',

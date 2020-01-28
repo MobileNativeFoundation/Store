@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl
+package com.dropbox.android.external.store4.testutil
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -89,10 +89,10 @@ internal class KeyTracker<Key> {
             val keyChannel = lock.withLock {
                 channels.getOrPut(key) {
                     KeyChannel(
-                            channel = BroadcastChannel<Unit>(Channel.CONFLATED).apply {
-                                // start w/ an initial value.
-                                offer(Unit)
-                            }
+                        channel = BroadcastChannel<Unit>(Channel.CONFLATED).apply {
+                            // start w/ an initial value.
+                            offer(Unit)
+                        }
                     )
                 }.also {
                     it.acquire() // refcount
@@ -130,3 +130,9 @@ internal class KeyTracker<Key> {
         }
     }
 }
+
+@ExperimentalCoroutinesApi
+suspend fun <Key, Output> InMemoryPersister<Key, Output>.asFlowable() = SimplePersisterAsFlowable(
+    reader = this::read,
+    writer = this::write
+)
