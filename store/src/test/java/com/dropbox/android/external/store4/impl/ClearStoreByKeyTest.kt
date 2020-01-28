@@ -3,8 +3,8 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
-import com.dropbox.android.external.store4.util.InMemoryPersister
-import com.dropbox.android.external.store4.util.getData
+import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.getData
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

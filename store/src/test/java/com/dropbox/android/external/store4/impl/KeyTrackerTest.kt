@@ -15,7 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.util.KeyTracker
+import com.dropbox.android.external.store4.testutil.KeyTracker
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async

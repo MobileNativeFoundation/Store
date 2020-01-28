@@ -1,4 +1,4 @@
-package com.dropbox.android.external.store4.util
+package com.dropbox.android.external.store4.testutil
 
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreRequest

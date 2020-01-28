@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.util
+package com.dropbox.android.external.store4.testutil
 
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject

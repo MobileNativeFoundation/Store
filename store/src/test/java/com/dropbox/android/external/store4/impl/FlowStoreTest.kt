@@ -25,10 +25,10 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
 import com.dropbox.android.external.store4.fresh
-import com.dropbox.android.external.store4.util.FakeFetcher
-import com.dropbox.android.external.store4.util.InMemoryPersister
-import com.dropbox.android.external.store4.util.asObservable
-import com.dropbox.android.external.store4.util.assertThat
+import com.dropbox.android.external.store4.testutil.FakeFetcher
+import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.asFlowable
+import com.dropbox.android.external.store4.testutil.assertThat
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -330,7 +330,7 @@ class FlowStoreTest {
 
     @Test
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runBlockingTest {
-        val persister = InMemoryPersister<Int, String>().asObservable()
+        val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = build(
             flowingFetcher = {
                 flow {
@@ -359,7 +359,7 @@ class FlowStoreTest {
 
     @Test
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runBlockingTest {
-        val persister = InMemoryPersister<Int, String>().asObservable()
+        val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = build(
             flowingFetcher = {
                 flow {
@@ -406,7 +406,7 @@ class FlowStoreTest {
     @Test
     fun errorTest() = testScope.runBlockingTest {
         val exception = IllegalArgumentException("wow")
-        val persister = InMemoryPersister<Int, String>().asObservable()
+        val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = build(
             nonFlowingFetcher = {
                 throw exception

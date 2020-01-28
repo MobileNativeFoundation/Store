@@ -240,15 +240,15 @@ You can delete a specific entry by key from a store, or clear all entries in a s
 
 ```kotlin
 val store = StoreBuilder
-  .fromNonFlow<Pair<String, RedditConfig, , List<Post>> {
-      api.fetchSubreddit(it, "10").data.children.map(::toPosts)
+  .fromNonFlow<String, Int> { key: String ->
+      api.fetchData(key)
   }.build()
 ```
 
 The following will clear the entry associated with the key from the in-memory cache:
 
 ```kotlin
-store.clear("10" to RedditConfig(10))
+store.clear("10")
 ```
 
 The following will clear all entries from the in-memory cache:
@@ -263,20 +263,20 @@ When store has a persister (source of truth), you'll need to provide the `delete
 
 ```kotlin
 StoreBuilder
-  .fromNonFlow<Pair<String, RedditConfig, , List<Post>> {
-      api.fetchSubreddit(it, "10").data.children.map(::toPosts)
+  .fromNonFlow<String, Int> { key: String ->
+      api.fetchData(key)
   }.persister(
-      reader = db.postDao()::loadPosts,
-      writer = db.postDao()::insertPosts,
-      delete = db.postDao()::clearFeed,
-      deleteAll = db.postDao()::clearAllFeeds
+      reader = dao::loadData,
+      writer = dao::writeData,
+      delete = dao::clearDataByKey,
+      deleteAll = dao::clearAllData
   ).build()
 ```
 
 The following will clear the entry associated with the key from both the in-memory cache and the persister (source of truth):
 
 ```kotlin
-store.clear("10" to RedditConfig(10))
+store.clear("10")
 ```
 
 The following will clear all entries from both the in-memory cache and the persister (source of truth):

@@ -1,6 +1,4 @@
-package com.dropbox.android.external.store4.util
-
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+package com.dropbox.android.external.store4.testutil
 
 /**
  * An in-memory non-flowing persister for testing.
@@ -30,9 +28,3 @@ class InMemoryPersister<Key, Output> {
         return data[key]
     }
 }
-
-@ExperimentalCoroutinesApi
-suspend fun <Key, Output> InMemoryPersister<Key, Output>.asObservable() = SimplePersisterAsFlowable(
-    reader = this::read,
-    writer = this::write
-)

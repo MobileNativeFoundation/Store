@@ -19,7 +19,7 @@ import com.dropbox.android.external.store4.impl.DataWithOrigin
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
-import com.dropbox.android.external.store4.util.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
