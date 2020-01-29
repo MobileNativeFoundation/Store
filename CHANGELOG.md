@@ -3,6 +3,16 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-alpha02 *(2020-01-29)*
+----------------------------
+
+**New Features**
+* Introduce piggyback only downstreams to multicaster and fix #59 (#75)
+* Change flow collection util to drain the flow (#64)
+* Readme improvements (#70, #72)
+* Avoid illegal cast in RealStore.stream (#69)
+* Added docs to MemoryPolicy.setMemorySize (#67) (#68)
+
 Version 4.0.0-alpha01 *(2020-01-08)*
 ----------------------------
 
