@@ -1,6 +1,8 @@
 package com.dropbox.android.external.cache4
 
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 class CacheEvictionTest {
@@ -167,5 +169,19 @@ class CacheEvictionTest {
 
         assertThat(cache.get(2))
             .isNull()
+    }
+
+    @Test
+    fun `cache entry eviction can happen concurrently`() = runBlocking {
+        val cache = Cache.Builder.newBuilder()
+            .maximumCacheSize(2)
+            .build<Long, String>()
+
+        // this should not produce a ConcurrentModificationException
+        repeat(20) {
+            launch(newSingleThreadDispatcher()) {
+                cache.put(it.toLong(), "value for $it")
+            }
+        }
     }
 }
