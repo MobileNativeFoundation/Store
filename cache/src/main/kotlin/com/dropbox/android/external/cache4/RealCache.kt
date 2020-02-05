@@ -215,10 +215,12 @@ internal class RealCache<Key : Any, Value : Any>(
         cleanUpDeadEntries()
 
         while (cacheEntries.size > maxSize) {
-            val entryToEvict = accessQueue.first()
-            cacheEntries.remove(entryToEvict.key)
-            writeQueue?.remove(entryToEvict)
-            accessQueue.remove(entryToEvict)
+            val entryToEvict = synchronized(accessQueue) { accessQueue.firstOrNull() }
+            entryToEvict?.run {
+                cacheEntries.remove(entryToEvict.key)
+                writeQueue?.remove(entryToEvict)
+                accessQueue.remove(entryToEvict)
+            }
         }
     }
 
