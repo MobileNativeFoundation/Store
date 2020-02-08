@@ -57,6 +57,8 @@ ext.libraries = [
         mockito                 : "org.mockito:mockito-core:$versions.mockito",
         mockitoKotlin           : "com.nhaarman.mockitokotlin2:mockito-kotlin:$versions.mockitoKotlin",
         coroutinesCore          : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines",
+        coroutinesRx          : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$versions.coroutines",
+        coroutinesReactive          : "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:$versions.coroutines",
         coroutinesAndroid       : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines",
         coroutinesTest          : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines"
 ]
