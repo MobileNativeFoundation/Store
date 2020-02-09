@@ -14,6 +14,7 @@ dependencies {
     testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
     testImplementation libraries.truth
+    testImplementation libraries.mockito
 }
 group = GROUP
 version = VERSION_NAME

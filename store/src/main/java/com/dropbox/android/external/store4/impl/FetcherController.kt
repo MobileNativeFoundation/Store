@@ -63,7 +63,7 @@ internal class FetcherController<Key, Input, Output>(
             Multicaster(
                 scope = scope,
                 bufferSize = 0,
-                source = realFetcher(key).map {
+                source = flow { emitAll(realFetcher(key)) }.map {
                     StoreResponse.Data(
                         it,
                         origin = ResponseOrigin.Fetcher
