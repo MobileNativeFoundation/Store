@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -56,7 +55,7 @@ class RxStoreTest {
     private val testScope = TestCoroutineScope()
 
     @Test
-    fun getAndFresh()  {
+    fun getAndFresh() {
         val fetcher = FakeFetcher(
             3 to "three-1",
             3 to "three-2"
@@ -802,13 +801,13 @@ class FakeFetcher<Key, Output>(
 ) {
     private var index = 0
     @Suppress("RedundantSuspendModifier") // needed for function reference
-    fun fetch(key: Key): Single<Output> {
+    fun fetch(key: Key): Single<Output> = Single.fromCallable {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }
         val pair = responses[index++]
         assertThat(pair.first).isEqualTo(key)
-        return Single.just(pair.second)
+        pair.second
     }
 }
 
