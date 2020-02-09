@@ -15,6 +15,9 @@ class InMemoryRxPersister<Key, Output> {
      }
 
     @Suppress("RedundantSuspendModifier") // for function reference
-     fun write(key: Key, output: Output): Single<Unit> =
-        Single.fromCallable { data[key] = output }
+     fun write(key: Key, output: Output): Single<Unit> {
+        return Single.fromCallable {
+            data[key] = output
+        }
+     }
 }

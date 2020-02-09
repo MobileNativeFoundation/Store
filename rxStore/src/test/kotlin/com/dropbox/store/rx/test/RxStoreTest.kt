@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -111,7 +112,7 @@ class RxStoreTest {
     }
 
     @Test
-    fun getAndFresh_withPersister() {
+    fun getAndFresh_withPersister()= testScope.runBlockingTest {
         val fetcher = FakeFetcher(
             3 to "three-1",
             3 to "three-2"
@@ -158,7 +159,7 @@ class RxStoreTest {
             )
         pipeline.observe(StoreRequest.fresh(3))
             .test()
-            .awaitCount(2)
+            .awaitCount(4)
             .assertValuesOnly(
                 Loading(
                     origin = Fetcher
@@ -169,19 +170,19 @@ class RxStoreTest {
                 )
             )
 
-        pipeline.observe(StoreRequest.cached(3, refresh = false))
-            .test()
-            .awaitCount(2)
-            .assertValuesOnly(
-                Data(
-                    value = "three-2",
-                    origin = Cache
-                ),
-                Data(
-                    value = "three-2",
-                    origin = Persister
-                )
-            )
+        // pipeline.observe(StoreRequest.cached(3, refresh = false))
+        //     .test()
+        //     .awaitCount(2)
+        //     .assertValuesOnly(
+        //         Data(
+        //             value = "three-2",
+        //             origin = Cache
+        //         ),
+        //         Data(
+        //             value = "three-2",
+        //             origin = Persister
+        //         )
+        //     )
     }
     //
     // @Test
