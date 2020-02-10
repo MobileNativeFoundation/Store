@@ -49,7 +49,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Single<Unit>
  */
  fun <Key : Any,  Output : Any> rxFlowStore(
      fetcher: (key: Key) -> Flowable<Output>
-): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
+): BuilderImpl<Key, Output> = BuilderImpl { key: Key ->
     fetcher.invoke(key).asFlow()
 }
 
@@ -87,8 +87,8 @@ fun <Key : Any, Output : Any, NewOutput : Any> BuilderImpl<Key, Output>.withFlow
     writer: (Key, Output) -> Single<Unit>,
     delete: ((Key) -> Unit)? = null,
     deleteAll: (() -> Unit)? = null
-) {
-    persister(
+): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
+    return persister(
         reader = { key -> reader.invoke(key).asFlow() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = { key -> delete?.invoke(key) },
