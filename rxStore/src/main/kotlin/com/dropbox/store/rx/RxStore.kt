@@ -47,9 +47,9 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Single<Unit>
  *
  * @param fetcher a function for fetching a flow of network records.
  */
- fun <Key : Any,  Output : Any> rxFlowStore(
-     fetcher: (key: Key) -> Flowable<Output>
-): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
+fun <Key : Any, Output : Any> rxFlowStore(
+    fetcher: (key: Key) -> Flowable<Output>
+): BuilderImpl<Key, Output> = BuilderImpl { key: Key ->
     fetcher.invoke(key).asFlow()
 }
 
@@ -66,7 +66,6 @@ fun <Key : Any, Output : Any> rxSingleStore(
     BuilderImpl { key: Key ->
         fetcher.invoke(key).toFlowable().asFlow()
     }
-
 
 fun <Key : Any, Output : Any, NewOutput : Any> BuilderImpl<Key, Output>.withSinglePersister(
     reader: (Key) -> Maybe<NewOutput>,
@@ -87,13 +86,11 @@ fun <Key : Any, Output : Any, NewOutput : Any> BuilderImpl<Key, Output>.withFlow
     writer: (Key, Output) -> Single<Unit>,
     delete: ((Key) -> Unit)? = null,
     deleteAll: (() -> Unit)? = null
-) {
-    persister(
+): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
+    return persister(
         reader = { key -> reader.invoke(key).asFlow() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = { key -> delete?.invoke(key) },
         deleteAll = { deleteAll?.invoke() }
     )
 }
-
-

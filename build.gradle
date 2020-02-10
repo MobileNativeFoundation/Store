@@ -7,13 +7,9 @@ buildscript {
         google()
         jcenter()
     }
-    ext {
-        kotlin_version = '1.3.61'
-    }
 
     ext.versions = [
             androidGradlePlugin : '4.0.0-alpha09',
-            dexcountGradlePlugin: '1.0.2',
             kotlin              : '1.3.61',
             dokkaGradlePlugin   : '0.10.0',
             ktlintGradle        : '9.1.1',
@@ -22,7 +18,6 @@ buildscript {
 
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.androidGradlePlugin}"
-        classpath "com.getkeepsafe.dexcount:dexcount-gradle-plugin:${versions.dexcountGradlePlugin}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
