@@ -9,10 +9,9 @@ dependencies {
     implementation libraries.coroutinesRx
     implementation libraries.coroutinesReactive
     implementation project(path: ':store')
-    implementation "io.reactivex.rxjava2:rxjava:2.2.17"
+    implementation libraries.rx2
 
     testImplementation libraries.junit
-    testImplementation libraries.coroutinesTest
     testImplementation libraries.truth
     testImplementation libraries.mockito
 }

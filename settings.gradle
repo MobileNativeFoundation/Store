@@ -1,1 +1,1 @@
-include ':app', ':store', ':cache', ':filesystem', ':multicast',':rxStore'
+include ':app', ':store', ':cache', ':filesystem', ':multicast',':store-rx2'

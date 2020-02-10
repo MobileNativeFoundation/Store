@@ -47,7 +47,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Single<Unit>
  *
  * @param fetcher a function for fetching a flow of network records.
  */
-fun <Key : Any, Output : Any> rxFlowStore(
+fun <Key : Any, Output : Any> rxFlowableStore(
     fetcher: (key: Key) -> Flowable<Output>
 ): BuilderImpl<Key, Output> = BuilderImpl { key: Key ->
     fetcher.invoke(key).asFlow()

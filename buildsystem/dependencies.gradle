@@ -19,6 +19,7 @@ ext.versions = [
         room                 : '2.2.2',
         coreKtx              : '1.1.0',
         lifecycle            : '2.2.0',
+        rx2                  : '2.2.17',
 
         // Testing.
         junit                : '4.13',
@@ -50,6 +51,7 @@ ext.libraries = [
         roomCompiler            : "androidx.room:room-compiler:$versions.room",
         roomRuntime             : "androidx.room:room-ktx:$versions.room",
         coreKtx                 : "androidx.core:core-ktx:$versions.coreKtx",
+        rx2                     : "io.reactivex.rxjava2:rxjava:$versions.rx2",
 
         // Testing.
         junit                   : "junit:junit:$versions.junit",
