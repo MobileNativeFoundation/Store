@@ -1,4 +1,4 @@
-package com.dropbox.store.rx
+package com.dropbox.store.rx2
 
 import com.dropbox.android.external.store4.BuilderImpl
 import com.dropbox.android.external.store4.BuilderWithSourceOfTruth

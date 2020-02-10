@@ -1,11 +1,11 @@
-package com.dropbox.store.rx.test
+package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx.observe
-import com.dropbox.store.rx.rxSingleStore
-import com.dropbox.store.rx.withSinglePersister
+import com.dropbox.store.rx2.observe
+import com.dropbox.store.rx2.rxSingleStore
+import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Maybe
 import io.reactivex.Single
 import org.junit.Test
