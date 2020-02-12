@@ -99,7 +99,7 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
         reader = { key -> reader.invoke(key).await() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = delete?.let { { key -> delete(key).await() } },
-        deleteAll = { deleteAll?.invoke()?.await() }
+        deleteAll = deleteAll?.let { { deleteAll().await() } }
     ) as BuilderWithSourceOfTruth<Key, Output, NewOutput>
 }
 
