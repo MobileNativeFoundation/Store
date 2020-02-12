@@ -144,7 +144,7 @@ private class BuilderImpl<Key : Any, Output : Any>(
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
-    fun <NewOutput : Any> withSourceOfTruth(
+    private fun <NewOutput : Any> withSourceOfTruth(
         sourceOfTruth: SourceOfTruth<Key, Output, NewOutput>? = null
     ) = BuilderWithSourceOfTruth(fetcher, sourceOfTruth).let { builder ->
         if (cachePolicy == null) {
@@ -239,7 +239,7 @@ private class BuilderImpl<Key : Any, Output : Any>(
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
+private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {

@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class RxSingleStoreTest {
     val atomicInteger = AtomicInteger(0)
     val fakeDisk = mutableMapOf<Int, String>()
-    val store =
+    private val store =
         rxSingleStore<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()} occurrence" } }
             .withSinglePersister(
                 reader = {
@@ -38,7 +38,7 @@ class RxSingleStoreTest {
 
     @Test
     fun simpleTest() {
-        val values = store.observe(StoreRequest.cached(3, false))
+        store.observe(StoreRequest.cached(3, false))
             .test()
             .awaitCount(2)
             .assertValues(
@@ -46,7 +46,7 @@ class RxSingleStoreTest {
                 StoreResponse.Data("3 1 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val values2 = store.observe(StoreRequest.cached(3, false))
+        store.observe(StoreRequest.cached(3, false))
             .test()
             .awaitCount(2)
             .assertValues(
@@ -54,9 +54,7 @@ class RxSingleStoreTest {
                 StoreResponse.Data("3 1 occurrence", ResponseOrigin.Persister)
             )
 
-        // assertThat(values).isNotEmpty()
-
-        val values3 = store.observe(StoreRequest.fresh(3))
+        store.observe(StoreRequest.fresh(3))
             .test()
             .awaitCount(2)
             .assertValues(
@@ -64,7 +62,7 @@ class RxSingleStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val values4 = store.observe(StoreRequest.cached(3, false))
+        store.observe(StoreRequest.cached(3, false))
             .test()
             .awaitCount(2)
             .assertValues(
