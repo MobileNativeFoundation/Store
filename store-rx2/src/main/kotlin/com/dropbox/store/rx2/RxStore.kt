@@ -32,7 +32,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreRequest<K
  * Persistent storage will only be cleared if a delete function was passed to
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Single<Unit> =
+fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable =
     rxSingle { clear(key) }
 
 /**
