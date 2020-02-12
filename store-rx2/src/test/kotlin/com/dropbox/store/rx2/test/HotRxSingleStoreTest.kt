@@ -5,22 +5,20 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.rxSingleStore
-import com.dropbox.store.rx2.withScheduler
 import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Maybe
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
-class RxSingleStoreTest {
+class HotRxSingleStoreTest {
     val atomicInteger = AtomicInteger(0)
     val fakeDisk = mutableMapOf<Int, String>()
     val store =
-        rxSingleStore<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()} occurrence" } }
+        rxSingleStore<Int, String> { Single.just("$it ${atomicInteger.incrementAndGet()} occurrence") }
             .withSinglePersister(
                 reader = {
                     if (fakeDisk[it] != null)
@@ -33,7 +31,6 @@ class RxSingleStoreTest {
                     Single.fromCallable { fakeDisk[key] = value }
                 }
             )
-            .withScheduler(Schedulers.io())
             .build()
 
     @Test

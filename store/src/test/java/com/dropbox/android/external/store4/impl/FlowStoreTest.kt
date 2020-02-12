@@ -108,7 +108,6 @@ class FlowStoreTest {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-
         val pipeline = build(
             nonFlowingFetcher = fetcher::fetch,
             persisterReader = persister::read,
