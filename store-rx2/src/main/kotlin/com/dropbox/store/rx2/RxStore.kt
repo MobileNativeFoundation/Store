@@ -98,7 +98,7 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
     return nonFlowingPersister(
         reader = { key -> reader.invoke(key).await() },
         writer = { key, output -> writer.invoke(key, output).await() },
-        delete = { key -> delete?.invoke(key)?.await() },
+        delete = delete?.let { { key -> delete(key).await() } },
         deleteAll = { deleteAll?.invoke()?.await() }
     ) as BuilderWithSourceOfTruth<Key, Output, NewOutput>
 }
