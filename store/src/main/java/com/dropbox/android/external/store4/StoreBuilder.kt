@@ -239,9 +239,9 @@ private class BuilderImpl<Key : Any, Output : Any>(
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
+internal class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Input>,
-    val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
+    private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy

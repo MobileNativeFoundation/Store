@@ -1,6 +1,5 @@
 package com.dropbox.store.rx2
 
-import com.dropbox.android.external.store4.BuilderWithSourceOfTruth
 import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
@@ -18,7 +17,7 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.asCoroutineDispatcher
 import kotlinx.coroutines.rx2.asFlowable
 import kotlinx.coroutines.rx2.await
-import kotlinx.coroutines.rx2.rxSingle
+import kotlinx.coroutines.rx2.rxCompletable
 
 /**
  * Return a flow for the given key
@@ -32,8 +31,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreRequest<K
  * Persistent storage will only be cleared if a delete function was passed to
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable =
-    rxSingle { clear(key) }
+fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable = rxCompletable { clear(key) }
 
 /**
  * Purge all entries from memory and disk cache.
@@ -41,8 +39,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Complet
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
 @ExperimentalStoreApi
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Single<Unit> =
-    rxSingle { clearAll() }
+fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable = rxCompletable { clearAll() }
 
 /**
  * Creates a new [StoreBuilder] from a [Flowable] fetcher.
@@ -94,13 +91,16 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
     writer: (Key, Output) -> Single<Unit>,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
-): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
+): StoreBuilder<Key, NewOutput> {
+    val deleteFun: (suspend (Key) -> Unit)? =
+        if (delete != null) { key -> delete(key).await() } else null
+    val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
     return nonFlowingPersister(
         reader = { key -> reader.invoke(key).await() },
         writer = { key, output -> writer.invoke(key, output).await() },
-        delete = delete?.let { { key -> delete(key).await() } },
-        deleteAll = deleteAll?.let { { deleteAll().await() } }
-    ) as BuilderWithSourceOfTruth<Key, Output, NewOutput>
+        delete = deleteFun,
+        deleteAll = deleteAllFun
+    )
 }
 
 /**
@@ -125,11 +125,14 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withFlo
     writer: (Key, Output) -> Single<Unit>,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
-): BuilderWithSourceOfTruth<Key, Output, NewOutput> {
+): StoreBuilder<Key, NewOutput> {
+    val deleteFun: (suspend (Key) -> Unit)? =
+        if (delete != null) { key -> delete(key).await() } else null
+    val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
     return persister(
         reader = { key -> reader.invoke(key).asFlow() },
         writer = { key, output -> writer.invoke(key, output).await() },
-        delete = { key -> delete?.invoke(key)?.await() },
-        deleteAll = { deleteAll?.invoke()?.await() }
-    ) as BuilderWithSourceOfTruth<Key, Output, NewOutput>
+        delete = deleteFun,
+        deleteAll = deleteAllFun
+    )
 }

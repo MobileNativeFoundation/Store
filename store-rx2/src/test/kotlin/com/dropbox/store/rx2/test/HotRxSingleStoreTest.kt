@@ -6,8 +6,11 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.rxSingleStore
 import com.dropbox.store.rx2.withSinglePersister
+import com.google.common.truth.Truth.assertThat
 import io.reactivex.Maybe
 import io.reactivex.Single
+import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -15,58 +18,60 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
 class HotRxSingleStoreTest {
-    val atomicInteger = AtomicInteger(0)
-    val fakeDisk = mutableMapOf<Int, String>()
-    val store =
-        rxSingleStore<Int, String> { Single.just("$it ${atomicInteger.incrementAndGet()} occurrence") }
-            .withSinglePersister(
-                reader = {
-                    if (fakeDisk[it] != null)
-                        Maybe.fromCallable { fakeDisk[it]!! }
-                    else
-                        Maybe.empty()
-
-                },
-                writer = { key, value ->
-                    Single.fromCallable { fakeDisk[key] = value }
-                }
-            )
+    private val testScope = TestCoroutineScope()
+    @Test
+    fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() = testScope.runBlockingTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = rxSingleStore<Int, String> { fetcher.fetch(it) }
+            .scope(testScope)
             .build()
 
-    @Test
-    fun simpleTest() {
-        val values = store.observe(StoreRequest.cached(3, false))
-            .test()
-            .awaitCount(2)
-            .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
-                StoreResponse.Data("3 1 occurrence", ResponseOrigin.Fetcher)
+        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+            .emitsExactly(
+                StoreResponse.Loading<String>(
+                    origin = ResponseOrigin.Fetcher
+                ), StoreResponse.Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
             )
-
-        val values2 = store.observe(StoreRequest.cached(3, false))
-            .test()
-            .awaitCount(2)
-            .assertValues(
-                StoreResponse.Data("3 1 occurrence", ResponseOrigin.Cache),
-                StoreResponse.Data("3 1 occurrence", ResponseOrigin.Persister)
+        assertThat(
+            pipeline.stream(StoreRequest.cached(3, refresh = false))
+        ).emitsExactly(
+            StoreResponse.Data(
+                value = "three-1",
+                origin = ResponseOrigin.Cache
             )
+        )
 
-        // assertThat(values).isNotEmpty()
-
-        val values3 = store.observe(StoreRequest.fresh(3))
-            .test()
-            .awaitCount(2)
-            .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
-                StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
+        assertThat(pipeline.stream(StoreRequest.fresh(3)))
+            .emitsExactly(
+                StoreResponse.Loading<String>(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                StoreResponse.Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Fetcher
+                )
             )
+    }
+}
 
-        val values4 = store.observe(StoreRequest.cached(3, false))
-            .test()
-            .awaitCount(2)
-            .assertValues(
-                StoreResponse.Data("3 2 occurrence", ResponseOrigin.Cache),
-                StoreResponse.Data("3 2 occurrence", ResponseOrigin.Persister)
-            )
+class FakeFetcher<Key, Output>(
+    vararg val responses: Pair<Key, Output>
+) {
+    private var index = 0
+    @Suppress("RedundantSuspendModifier") // needed for function reference
+    fun fetch(key: Key): Single<Output> {
+        //will throw if fetcher called more than twice
+        if (index >= responses.size) {
+            throw AssertionError("unexpected fetch request")
+        }
+        val pair = responses[index++]
+        assertThat(pair.first).isEqualTo(key)
+        return Single.just(pair.second)
     }
 }
