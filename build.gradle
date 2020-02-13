@@ -6,20 +6,23 @@ buildscript {
         }
         google()
         jcenter()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 
     ext.versions = [
-            androidGradlePlugin : '4.0.0-alpha09',
-            kotlin              : '1.3.61',
-            dokkaGradlePlugin   : '0.10.0',
-            ktlintGradle        : '9.1.1',
-            spotlessGradlePlugin: '3.26.1',
-            jacocoGradlePlugin  : '0.8.5'
+            androidGradlePlugin         : '4.0.0-alpha09',
+            kotlin                      : '1.3.61',
+            dokkaGradlePlugin           : '0.10.0',
+            ktlintGradle                : '9.1.1',
+            spotlessGradlePlugin        : '3.26.1',
+            jacocoGradlePlugin          : '0.8.5',
+            binaryCompatibilityValidator: '0.1.1',
     ]
 
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.androidGradlePlugin}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:${versions.binaryCompatibilityValidator}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
@@ -28,6 +31,12 @@ buildscript {
 }
 
 apply from: 'buildsystem/dependencies.gradle'
+
+apply plugin: 'binary-compatibility-validator'
+
+apiValidation {
+    ignoredProjects += ["app"]
+}
 
 allprojects {
     repositories {
