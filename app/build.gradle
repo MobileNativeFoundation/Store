@@ -57,6 +57,9 @@ dependencies {
     implementation libraries.roomRuntime
     implementation libraries.coreKtx
     implementation libraries.lifecycleExtensions
+    implementation libraries.navigationFragment
+    implementation libraries.navigationUi
+    implementation libraries.constraintLayout
 
     implementation libraries.picasso
     implementation libraries.moshi

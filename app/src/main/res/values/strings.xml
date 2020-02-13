@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Sample</string>
     <string name="fetch_subreddit">Read</string>
+    <string name="toolbar_title">Sample</string>
+    <string name="bottom_navigation_menu_title_reddit">Reddit</string>
+    <string name="bottom_navigation_menu_title_stream">Stream</string>
+    <string name="bottom_navigation_menu_title_room">Room</string>
 </resources>

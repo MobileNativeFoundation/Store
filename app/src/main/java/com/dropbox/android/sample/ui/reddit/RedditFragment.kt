@@ -1,43 +1,52 @@
-package com.dropbox.android.sample
+package com.dropbox.android.sample.ui.reddit
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.dropbox.android.sample.R
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.reddit.PostAdapter
 import com.dropbox.android.sample.utils.Lce
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_room_store.*
+import kotlinx.android.synthetic.main.fragment_room_store.*
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
 
-class RedditActivity : AppCompatActivity() {
+class RedditFragment : Fragment() {
 
     private val viewModel: RedditViewModel by viewModels()
 
     private val adapter = PostAdapter()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_room_store)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_room_store, container, false)
+    }
 
-        setSupportActionBar(findViewById<View>(R.id.toolbar) as Toolbar)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-        pullToRefresh.setOnRefreshListener {
-            viewModel.refresh(subredditInput.text.toString())
-        }
-        fetchButton.setOnClickListener {
-            viewModel.refresh(subredditInput.text.toString())
-        }
-        viewModel.liveData.observe(this, Observer { lce: Lce<List<Post>> ->
+        viewModel.liveData.observe(viewLifecycleOwner, Observer { lce: Lce<List<Post>> ->
             pullToRefresh.isRefreshing = lce is Lce.Loading
             when (lce) {
                 is Lce.Error -> showErrorMessage(lce.message)
                 is Lce.Success -> updateData(lce.data)
             }
         })
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        pullToRefresh.setOnRefreshListener {
+            viewModel.refresh(subredditInput.text.toString())
+        }
+
+        fetchButton.setOnClickListener {
+            viewModel.refresh(subredditInput.text.toString())
+        }
     }
 
     private fun updateData(data: List<Post>) {

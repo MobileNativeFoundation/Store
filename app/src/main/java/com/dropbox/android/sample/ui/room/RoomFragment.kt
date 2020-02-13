@@ -1,18 +1,21 @@
-package com.dropbox.android.sample
+package com.dropbox.android.sample.ui.room
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.sample.R
+import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.reddit.PostAdapter
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_room_store.*
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
+import kotlinx.android.synthetic.main.fragment_room_store.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -24,12 +27,19 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 @FlowPreview
-class RoomActivity : AppCompatActivity() {
+class RoomFragment : Fragment() {
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_room_store, container, false)
+    }
+
     @ExperimentalCoroutinesApi
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_room_store)
-        setSupportActionBar(findViewById<View>(R.id.toolbar) as Toolbar)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         initUI()
     }
 
@@ -44,7 +54,7 @@ class RoomActivity : AppCompatActivity() {
             }
         }
 
-        val storeState = StoreState((application as SampleApp).roomStore)
+        val storeState = StoreState((activity?.application as SampleApp).roomStore)
         lifecycleScope.launchWhenStarted {
             fun refresh() {
                 launch {
