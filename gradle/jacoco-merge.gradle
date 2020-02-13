@@ -57,5 +57,5 @@ project.afterEvaluate {
         }
     }
 
-    build.dependsOn "${coverageTaskName}"
+    check.dependsOn "${coverageTaskName}"
 }
