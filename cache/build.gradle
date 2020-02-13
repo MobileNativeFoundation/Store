@@ -8,6 +8,7 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.dokka'
+    id 'jacoco'
 }
 
 dependencies {
@@ -22,7 +23,6 @@ group = GROUP
 version = VERSION_NAME
 
 apply from: rootProject.file("gradle/maven-push.gradle")
-apply from: rootProject.file("gradle/jacoco.gradle")
 
 
 targetCompatibility = 1.8
