@@ -1,10 +1,11 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ResponseOrigin
+import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.store.rx2.observe
-import com.dropbox.store.rx2.rxSingleStore
+import com.dropbox.store.rx2.fromSingle
 import com.dropbox.store.rx2.withScheduler
 import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Maybe
@@ -20,7 +21,7 @@ class RxSingleStoreTest {
     val atomicInteger = AtomicInteger(0)
     val fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        rxSingleStore<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()} occurrence" } }
+        StoreBuilder.fromSingle<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()} occurrence" } }
             .withSinglePersister(
                 reader = {
                     if (fakeDisk[it] != null)

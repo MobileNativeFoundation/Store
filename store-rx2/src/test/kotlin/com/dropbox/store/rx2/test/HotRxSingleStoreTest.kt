@@ -1,63 +1,61 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ResponseOrigin
+import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx2.observe
-import com.dropbox.store.rx2.rxSingleStore
-import com.dropbox.store.rx2.withSinglePersister
+import com.dropbox.store.rx2.fromSingle
 import com.google.common.truth.Truth.assertThat
-import io.reactivex.Maybe
 import io.reactivex.Single
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
 class HotRxSingleStoreTest {
     private val testScope = TestCoroutineScope()
     @Test
-    fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() = testScope.runBlockingTest {
-        val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
-        )
-        val pipeline = rxSingleStore<Int, String> { fetcher.fetch(it) }
-            .scope(testScope)
-            .build()
+    fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
+        testScope.runBlockingTest {
+            val fetcher = FakeFetcher(
+                3 to "three-1",
+                3 to "three-2"
+            )
+            val pipeline = StoreBuilder.fromSingle<Int, String> { fetcher.fetch(it) }
+                .scope(testScope)
+                .build()
 
-        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
-            .emitsExactly(
-                StoreResponse.Loading<String>(
-                    origin = ResponseOrigin.Fetcher
-                ), StoreResponse.Data(
-                    value = "three-1",
-                    origin = ResponseOrigin.Fetcher
+            assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
+                .emitsExactly(
+                    StoreResponse.Loading<String>(
+                        origin = ResponseOrigin.Fetcher
+                    ), StoreResponse.Data(
+                        value = "three-1",
+                        origin = ResponseOrigin.Fetcher
+                    )
                 )
-            )
-        assertThat(
-            pipeline.stream(StoreRequest.cached(3, refresh = false))
-        ).emitsExactly(
-            StoreResponse.Data(
-                value = "three-1",
-                origin = ResponseOrigin.Cache
-            )
-        )
-
-        assertThat(pipeline.stream(StoreRequest.fresh(3)))
-            .emitsExactly(
-                StoreResponse.Loading<String>(
-                    origin = ResponseOrigin.Fetcher
-                ),
+            assertThat(
+                pipeline.stream(StoreRequest.cached(3, refresh = false))
+            ).emitsExactly(
                 StoreResponse.Data(
-                    value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    value = "three-1",
+                    origin = ResponseOrigin.Cache
                 )
             )
-    }
+
+            assertThat(pipeline.stream(StoreRequest.fresh(3)))
+                .emitsExactly(
+                    StoreResponse.Loading<String>(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.Data(
+                        value = "three-2",
+                        origin = ResponseOrigin.Fetcher
+                    )
+                )
+        }
 }
 
 class FakeFetcher<Key, Output>(

@@ -49,7 +49,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable 
  *
  * @param fetcher a function for fetching a flow of network records.
  */
-fun <Key : Any, Output : Any> rxFlowableStore(
+fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
 ): StoreBuilder<Key, Output> = from { key: Key ->
     fetcher.invoke(key).asFlow()
@@ -62,7 +62,7 @@ fun <Key : Any, Output : Any> rxFlowableStore(
  *
  * @param fetcher a function for fetching a [Single] network response for a [Key]
  */
-fun <Key : Any, Output : Any> rxSingleStore(
+fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
 ): StoreBuilder<Key, Output> =
     from { key: Key ->
