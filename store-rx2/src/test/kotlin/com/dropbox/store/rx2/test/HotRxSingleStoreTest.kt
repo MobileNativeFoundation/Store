@@ -7,6 +7,8 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.store.rx2.fromSingle
 import com.google.common.truth.Truth.assertThat
 import io.reactivex.Single
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
@@ -14,6 +16,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
+@FlowPreview
+@ExperimentalCoroutinesApi
 class HotRxSingleStoreTest {
     private val testScope = TestCoroutineScope()
     @Test

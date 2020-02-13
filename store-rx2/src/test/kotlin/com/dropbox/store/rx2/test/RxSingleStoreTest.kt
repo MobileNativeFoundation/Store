@@ -11,15 +11,19 @@ import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
+@FlowPreview
+@ExperimentalCoroutinesApi
 class RxSingleStoreTest {
-    val atomicInteger = AtomicInteger(0)
-    val fakeDisk = mutableMapOf<Int, String>()
+    private val atomicInteger = AtomicInteger(0)
+    private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.fromSingle<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()} occurrence" } }
             .withSinglePersister(

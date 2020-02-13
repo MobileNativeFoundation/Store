@@ -11,6 +11,8 @@ import io.reactivex.Maybe
 import io.reactivex.Scheduler
 import io.reactivex.Single
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.asCoroutineDispatcher
@@ -22,6 +24,7 @@ import kotlinx.coroutines.rx2.rxCompletable
  * Return a flow for the given key
  * @param request - see [StoreRequest] for configurations
  */
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreRequest<Key>): Flowable<StoreResponse<Output>> =
     stream(request).asFlowable()
 
@@ -50,6 +53,8 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable 
  *
  * @param fetcher a function for fetching a flow of network records.
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
 ): StoreBuilder<Key, Output> = from { key: Key ->
@@ -63,6 +68,8 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  *
  * @param fetcher a function for fetching a [Single] network response for a [Key]
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
 ): StoreBuilder<Key, Output> =
@@ -72,6 +79,8 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
  * Define what scheduler fetcher requests will be called on,
  * if a scheduler is not set Store will use [GlobalScope]
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
     scheduler: Scheduler
 ): StoreBuilder<Key, Output> {
@@ -84,6 +93,8 @@ fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
  *
  * @see persister
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSinglePersister(
     reader: (Key) -> Maybe<NewOutput>,
     writer: (Key, Output) -> Single<Unit>,
@@ -118,6 +129,8 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
  * @param deleteAll deletes all records in the source of truth
  *
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withFlowablePersister(
     reader: (Key) -> Flowable<NewOutput>,
     writer: (Key, Output) -> Single<Unit>,

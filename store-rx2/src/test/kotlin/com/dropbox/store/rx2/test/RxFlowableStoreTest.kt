@@ -10,16 +10,20 @@ import com.dropbox.store.rx2.withFlowablePersister
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
+@FlowPreview
+@ExperimentalCoroutinesApi
 class RxFlowableStoreTest {
-    val atomicInteger = AtomicInteger(0)
-    val fakeDisk = mutableMapOf<Int, String>()
-    val store =
+    private val atomicInteger = AtomicInteger(0)
+    private val fakeDisk = mutableMapOf<Int, String>()
+    private val store =
         StoreBuilder.fromFlowable<Int, String> {
             Flowable.create({ emitter ->
                 emitter.onNext("$it ${atomicInteger.incrementAndGet()} occurrence")
@@ -42,7 +46,7 @@ class RxFlowableStoreTest {
 
     @Test
     fun simpleTest() {
-        val values = store.observe(StoreRequest.fresh(3))
+        store.observe(StoreRequest.fresh(3))
             .test()
             .awaitCount(3)
             .assertValues(
@@ -51,7 +55,7 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val values2 = store.observe(StoreRequest.cached(3, false))
+        store.observe(StoreRequest.cached(3, false))
             .test()
             .awaitCount(2)
             .assertValues(
@@ -59,7 +63,7 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Persister)
             )
 
-        val values3 = store.observe(StoreRequest.fresh(3))
+        store.observe(StoreRequest.fresh(3))
             .test()
             .awaitCount(3)
             .assertValues(
@@ -68,7 +72,7 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val values4 = store.observe(StoreRequest.cached(3, false))
+        store.observe(StoreRequest.cached(3, false))
             .test()
             .awaitCount(2)
             .assertValues(
