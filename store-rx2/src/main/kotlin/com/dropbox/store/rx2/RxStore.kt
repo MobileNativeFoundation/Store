@@ -53,7 +53,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable 
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
 ): StoreBuilder<Key, Output> = from { key: Key ->
-    fetcher.invoke(key).asFlow()
+    fetcher(key).asFlow()
 }
 
 /**
@@ -66,10 +66,7 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
 ): StoreBuilder<Key, Output> =
-    from { key: Key ->
-        fetcher.invoke(key).toFlowable().asFlow()
-
-    }
+    from { key: Key -> fetcher(key).toFlowable().asFlow() }
 
 /**
  * Define what scheduler fetcher requests will be called on,
