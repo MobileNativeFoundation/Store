@@ -7,7 +7,6 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'jacoco'
 }
 
 group = GROUP
@@ -28,3 +27,4 @@ dependencies {
 }
 
 apply from: rootProject.file("gradle/maven-push.gradle")
+apply from: rootProject.file("gradle/jacoco.gradle")

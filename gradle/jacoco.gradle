@@ -3,6 +3,7 @@
 // and https://github.com/pushtorefresh/storio/blob/master/gradle/jacoco-android.gradle
 
 // Enables code coverage for JVM tests.
+apply plugin: "jacoco"
 // Android Gradle Plugin out of the box supports only code coverage for instrumentation tests.
 // Creates a task that will merge coverage for all projects
 project.afterEvaluate {
@@ -15,33 +16,26 @@ project.afterEvaluate {
         description = "Generate Jacoco coverage reports for the build."
 
         List<String> fileFilter = ['**/R.class',
-                        '**/R$*.class',
-                        '**/*$ViewInjector*.*',
-                        '**/*$ViewBinder*.*',
-                        '**/BuildConfig.*',
-                        '**/Manifest*.*',
-                        '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
-                        '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
-                        '**/*Module.*', // Modules for Dagger.
-                        '**/*Dagger*.*', // Dagger auto-generated code.
-                        '**/*MembersInjector*.*', // Dagger auto-generated code.
-                        '**/*_Provide*Factory*.*'] // Dagger auto-generated code.
-        def kotlinFileTree =
-                rootProject.allprojects.collect { project ->
-                    fileTree(
-                            dir: "${project.buildDir}/classes",
-                            excludes: fileFilter)
-                }
+                                   '**/R$*.class',
+                                   '**/*$ViewInjector*.*',
+                                   '**/*$ViewBinder*.*',
+                                   '**/BuildConfig.*',
+                                   '**/Manifest*.*',
+                                   '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
+                                   '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
+                                   '**/*Module.*', // Modules for Dagger.
+                                   '**/*Dagger*.*', // Dagger auto-generated code.
+                                   '**/*MembersInjector*.*', // Dagger auto-generated code.
+                                   '**/*_Provide*Factory*.*'] // Dagger auto-generated code.
+        def kotlinFileTree = fileTree(
+                dir: "${project.buildDir}/classes",
+                excludes: fileFilter)
         logger.debug("Kotlin classes dirs: " + kotlinFileTree)
 
         classDirectories.setFrom kotlinFileTree
 
-        def coverageSourceDirs = rootProject.allprojects.collect { project ->
-            new File(project.projectDir, "src/main/java")
-        }
-        def coverageData = rootProject.allprojects.collect { project ->
-            fileTree(dir: new File(project.buildDir, 'jacoco'), include: '*.exec')
-        }
+        def coverageSourceDirs = new File(project.projectDir, "src/main/java")
+        def coverageData = fileTree(dir: new File(project.buildDir, 'jacoco'), include: '*.exec')
 
         logger.debug("Coverage source dirs: " + coverageSourceDirs)
         logger.debug("Coverage execution data: " + executionData)
