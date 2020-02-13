@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'com.getkeepsafe.dexcount'
     id 'kotlin-kapt'
     id 'kotlin-android-extensions'
 }
