@@ -64,7 +64,7 @@ class FakeFetcher<Key, Output>(
     private var index = 0
     @Suppress("RedundantSuspendModifier") // needed for function reference
     fun fetch(key: Key): Single<Output> {
-        //will throw if fetcher called more than twice
+        // will throw if fetcher called more than twice
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }

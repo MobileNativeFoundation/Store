@@ -33,7 +33,6 @@ class RxFlowableStoreTest {
                         Flowable.fromCallable { fakeDisk[it]!! }
                     else
                         Flowable.empty()
-
                 },
                 writer = { key, value ->
                     Single.fromCallable { fakeDisk[key] = value }

@@ -28,7 +28,6 @@ class RxSingleStoreTest {
                         Maybe.fromCallable { fakeDisk[it]!! }
                     else
                         Maybe.empty()
-
                 },
                 writer = { key, value ->
                     Single.fromCallable { fakeDisk[key] = value }
