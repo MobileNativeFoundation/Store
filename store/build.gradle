@@ -30,6 +30,8 @@ dependencies {
 }
 
 apply from: rootProject.file("gradle/maven-push.gradle")
+apply from: rootProject.file("gradle/jacoco.gradle")
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 repositories {
