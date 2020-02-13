@@ -27,7 +27,7 @@ project.afterEvaluate {
                                    '**/*Dagger*.*', // Dagger auto-generated code.
                                    '**/*MembersInjector*.*', // Dagger auto-generated code.
                                    '**/*_Provide*Factory*.*', // Dagger auto-generated code.
-                                   '**/test/**/*.*', // Dagger auto-generated code.
+                                   '**/test/**/*.*', // Test code
         ]
         def kotlinFileTree = fileTree(
                 dir: "${project.buildDir}/classes",
