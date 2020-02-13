@@ -17,9 +17,11 @@ import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import okio.Buffer
 import okio.BufferedSource
 import retrofit2.Retrofit
@@ -94,8 +96,11 @@ object Graph {
                         source?.let { adapter.fromJson(it) }
                     }.getOrNull()
                 },
-                writer = { _, _ ->
+                writer = { _, config ->
                     val buffer = Buffer()
+                    withContext(Dispatchers.IO) {
+                        adapter.toJson(buffer, config)
+                    }
                     fileSystemPersister.write(Unit, buffer)
                 }
             )
