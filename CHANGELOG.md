@@ -3,6 +3,14 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-alpha03 *(2020-02-13)*
+----------------------------
+
+**New Features**
+* Added Rx bindings, available as store-rx2 artifact (#93)
+* Bug fixes (#90)
+* Add ability to delete all entries in the store (#79)
+
 Version 4.0.0-alpha02 *(2020-01-29)*
 ----------------------------
 
