@@ -13,7 +13,8 @@ buildscript {
             kotlin              : '1.3.61',
             dokkaGradlePlugin   : '0.10.0',
             ktlintGradle        : '9.1.1',
-            spotlessGradlePlugin: '3.26.1'
+            spotlessGradlePlugin: '3.26.1',
+            jacocoGradlePlugin  : '0.8.5'
     ]
 
     dependencies {
@@ -22,6 +23,7 @@ buildscript {
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
+        classpath "org.jacoco:org.jacoco.core:${versions.jacocoGradlePlugin}"
     }
 }
 
