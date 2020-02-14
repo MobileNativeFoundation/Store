@@ -2,6 +2,8 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/)
 
+[![codecov](https://codecov.io/gh/dropbox/Store/branch/master/graph/badge.svg)](https://codecov.io/gh/dropbox/Store)
+
 Store is a Kotlin library for effortless data loading.
 
 ### The Problems:
