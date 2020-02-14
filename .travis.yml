@@ -14,6 +14,7 @@ script:
 - "./gradlew check --stacktrace"
 after_success:
 - gradle/deploy_snapshot.sh
+- bash <(curl -s https://codecov.io/bash)
 before_install:
 - yes | sdkmanager "platforms;android-29"
 branches:
