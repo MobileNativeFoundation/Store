@@ -38,17 +38,18 @@ class SourceOfTruthWithBarrierTest {
     private val testScope = TestCoroutineScope()
     private val persister = InMemoryPersister<Int, String>()
     private val delegate: SourceOfTruth<Int, String, String> =
-            PersistentSourceOfTruth(
-                    realReader = { key ->
-                        flow {
-                            emit(persister.read(key))
-                        }
-                    },
-                    realWriter = persister::write,
-                    realDelete = null
-            )
+        PersistentSourceOfTruth(
+            realReader = { key ->
+                flow {
+                    emit(persister.read(key))
+                }
+            },
+            realWriter = persister::write,
+            realDelete = persister::deleteByKey,
+            realDeleteAll = persister::deleteAll
+        )
     private val source = SourceOfTruthWithBarrier(
-            delegate = delegate
+        delegate = delegate
     )
 
     @Test
@@ -59,12 +60,30 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "a")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                    DataWithOrigin(delegate.defaultOrigin, null),
-                    DataWithOrigin(ResponseOrigin.Fetcher, "a")
+                DataWithOrigin(delegate.defaultOrigin, null),
+                DataWithOrigin(ResponseOrigin.Fetcher, "a")
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)
     }
+
+    @Test
+    fun `Given a Source Of Truth WHEN delete is called THEN it is delegated to the persister`() =
+        testScope.runBlockingTest {
+            persister.write(1, "a")
+            source.delete(1)
+            assertThat(persister.read(1)).isNull()
+        }
+
+    @Test
+    fun `Given a Source Of Truth WHEN deleteAll is called THEN it is delegated to the persister`() =
+        testScope.runBlockingTest {
+            persister.write(1, "a")
+            persister.write(2, "b")
+            source.deleteAll()
+            assertThat(persister.read(1)).isNull()
+            assertThat(persister.read(2)).isNull()
+        }
 
     @Test
     fun preAndPostWrites() = testScope.runBlockingTest {
@@ -75,8 +94,8 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "b")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                    DataWithOrigin(delegate.defaultOrigin, "a"),
-                    DataWithOrigin(ResponseOrigin.Fetcher, "b")
+                DataWithOrigin(delegate.defaultOrigin, "a"),
+                DataWithOrigin(ResponseOrigin.Fetcher, "b")
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)

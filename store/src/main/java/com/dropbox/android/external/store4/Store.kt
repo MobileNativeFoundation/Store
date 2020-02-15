@@ -61,20 +61,6 @@ interface Store<Key : Any, Output : Any> {
     suspend fun clearAll()
 }
 
-@ExperimentalCoroutinesApi
-@Deprecated("Legacy")
-fun <Key : Any, Output : Any> Store<Key, Output>.stream(key: Key) = stream(
-    StoreRequest.skipMemory(
-        key = key,
-        refresh = true
-    )
-).transform {
-    it.throwIfError()
-    it.dataOrNull()?.let { output ->
-        emit(output)
-    }
-}
-
 /**
  * Helper factory that will return data for [key] if it is cached otherwise will return fresh/network data (updating your caches)
  */
