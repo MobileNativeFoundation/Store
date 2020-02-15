@@ -78,7 +78,6 @@ public final class com/dropbox/android/external/store4/StoreBuilder$DefaultImpls
 public final class com/dropbox/android/external/store4/StoreKt {
 	public static final fun fresh (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun get (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final fun stream (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public final class com/dropbox/android/external/store4/StoreRequest {
