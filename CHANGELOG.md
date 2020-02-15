@@ -3,11 +3,6 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-Version 4.0.0-alpha04 *(2020-02-15)*
-----------------------------
-* Start tracking API binary compatibility (#97)
-* Bug fixes (#101)
-
 Version 4.0.0-alpha03 *(2020-02-13)*
 ----------------------------
 
