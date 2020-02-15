@@ -91,6 +91,11 @@ afterEvaluate { project ->
 
     signing {
         required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+
+        def signingKeyId = findProperty("signingKeyId")
+        def signingKey = new File(rootProject.projectDir, "tools/release/secring.gpg").toString()
+        def signingPassword = findProperty("signingPassword")
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
         sign configurations.archives
     }
 
