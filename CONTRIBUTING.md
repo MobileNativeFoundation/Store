@@ -38,4 +38,5 @@ Small pull requests for things like typos, bugfixes, etc are always welcome.
 
 Please note that we will not accept pull requests for style changes.
 
-
+We use the [binary-compatibility-validator plugin](https://github.com/Kotlin/binary-compatibility-validator) for tracking the binary compatibility of the APIs we ship.
+If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
