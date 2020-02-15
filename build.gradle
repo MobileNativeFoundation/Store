@@ -62,7 +62,7 @@ allprojects {
 ext {
     // POM file
     GROUP = "com.dropbox.mobile.store"
-    VERSION_NAME = "4.0.0-SNAPSHOT"
+    VERSION_NAME = "4.0.0-alpha04"
     POM_PACKAGING = "pom"
     POM_DESCRIPTION = "Store4 is built with Kotlin Coroutines"
 
