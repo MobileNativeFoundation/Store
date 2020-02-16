@@ -1,10 +1,8 @@
 package com.dropbox.android.external.store4
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.transform
 
 /**
  * A Store is responsible for managing a particular data request.
@@ -59,20 +57,6 @@ interface Store<Key : Any, Output : Any> {
      */
     @ExperimentalStoreApi
     suspend fun clearAll()
-}
-
-@ExperimentalCoroutinesApi
-@Deprecated("Legacy")
-fun <Key : Any, Output : Any> Store<Key, Output>.stream(key: Key) = stream(
-    StoreRequest.skipMemory(
-        key = key,
-        refresh = true
-    )
-).transform {
-    it.throwIfError()
-    it.dataOrNull()?.let { output ->
-        emit(output)
-    }
 }
 
 /**
