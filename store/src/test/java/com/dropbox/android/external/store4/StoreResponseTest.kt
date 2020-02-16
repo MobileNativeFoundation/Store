@@ -10,7 +10,7 @@ class StoreResponseTest {
     fun requireData() {
         assertThat(StoreResponse.Data("Foo", Fetcher).requireData())
             .isEqualTo("Foo")
-        //should throw
+        // should throw
         StoreResponse.Loading<Any>(Fetcher).requireData()
     }
 
@@ -21,8 +21,13 @@ class StoreResponseTest {
 
     @Test()
     fun errorOrNull() {
-        assertThat(StoreResponse.Error<Any>(RuntimeException(), Fetcher).errorOrNull()).isInstanceOf(RuntimeException::class.java)
-        assertThat( StoreResponse.Loading<Any>(Fetcher).errorOrNull()).isNull()
+        assertThat(
+            StoreResponse.Error<Any>(
+                RuntimeException(),
+                Fetcher
+            ).errorOrNull()
+        ).isInstanceOf(RuntimeException::class.java)
+        assertThat(StoreResponse.Loading<Any>(Fetcher).errorOrNull()).isNull()
     }
 
     @Test(expected = IllegalStateException::class)

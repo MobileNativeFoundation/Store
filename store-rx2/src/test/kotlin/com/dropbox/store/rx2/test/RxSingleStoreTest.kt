@@ -1,5 +1,6 @@
 package com.dropbox.store.rx2.test
 
+import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
+@ExperimentalStoreApi
 @RunWith(JUnit4::class)
 @FlowPreview
 @ExperimentalCoroutinesApi

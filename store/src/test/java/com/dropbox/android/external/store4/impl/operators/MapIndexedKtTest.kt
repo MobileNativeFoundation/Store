@@ -10,7 +10,7 @@ class MapIndexedKtTest {
     val scope = TestCoroutineScope()
     @Test
     fun mapIndexed() = runBlockingTest {
-        assertThat(flowOf(5,6).mapIndexed { index, value -> index to value })
+        assertThat(flowOf(5, 6).mapIndexed { index, value -> index to value })
             .emitsExactly(0 to 5, 1 to 6)
     }
 }
