@@ -142,7 +142,7 @@ All subsequent calls to `store.get(key)` with the same `Key` will retrieve the c
 By default, 100 items will be cached in memory for 24 hours. You may [pass in your own memory policy to override the default policy](#Configuring-In-memory-Cache).
 
 
-### Busting through the cache
+### Skipping to Network
 
 Alternatively, you can call `store.fresh(key)` to get a `suspended result` that skips the memory (and optional disk cache).
 
