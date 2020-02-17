@@ -50,7 +50,7 @@ class RxSingleStoreTest {
                     Completable.complete()
                 }
             )
-            .withScheduler(Schedulers.single())
+            .withScheduler(Schedulers.io())
             .build()
 
     @Test
