@@ -4,7 +4,7 @@
 
 [![codecov](https://codecov.io/gh/dropbox/Store/branch/master/graph/badge.svg)](https://codecov.io/gh/dropbox/Store)
 
-Store is a Kotlin library for effortless data loading.
+Store is a Kotlin library for loading data from remote and local sources.
 
 ### The Problems:
 
