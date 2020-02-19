@@ -161,11 +161,16 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         if (!request.shouldSkipCache(CacheType.DISK)) {
             diskLock.complete(Unit)
         }
-        val diskFlow = sourceOfTruth.reader(request.key, diskLock)
+        val diskFlow = sourceOfTruth.reader(request.key, diskLock).onStart {
+            // wait for disk to latch first to ensure it happens before network triggers.
+            // after that, if we'll not read from disk, then allow network to continue
+            if (request.shouldSkipCache(CacheType.DISK)) {
+                networkLock.complete(Unit)
+            }
+        }
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
-        return networkFlow.merge(diskFlow.withIndex())
-            .transform {
+        return networkFlow.merge(diskFlow.withIndex()).transform {
                 // left is Fetcher while right is source of truth
                 if (it is Either.Left) {
                     if (it.value !is StoreResponse.Data) {
@@ -206,10 +211,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         return fetcherController
             .getFetcher(request.key, piggybackOnly)
             .onStart {
-                if (!request.shouldSkipCache(CacheType.DISK)) {
-                    // wait until disk gives us the go
-                    networkLock?.await()
-                }
+                // wait until disk gives us the go
+                networkLock?.await()
                 if (!piggybackOnly) {
                     emit(StoreResponse.Loading(origin = ResponseOrigin.Fetcher))
                 }
