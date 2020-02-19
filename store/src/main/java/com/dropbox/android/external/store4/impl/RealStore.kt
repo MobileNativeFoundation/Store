@@ -164,7 +164,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         val diskFlow = sourceOfTruth.reader(request.key, diskLock)
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
-        return networkFlow.merge(diskFlow.withIndex().onStart {
+        return networkFlow.merge(diskFlow.withIndex()
+                                         .onStart {
             // wait for disk to latch first to ensure it happens before network triggers.
             // after that, if we'll not read from disk, then allow network to continue
             if (request.shouldSkipCache(CacheType.DISK)) {
