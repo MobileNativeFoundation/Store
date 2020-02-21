@@ -1,4 +1,4 @@
-package com.dropbox.android.sample
+package com.dropbox.android.sample.ui.reddit
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
+import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.utils.Lce
 import kotlinx.coroutines.ExperimentalCoroutinesApi

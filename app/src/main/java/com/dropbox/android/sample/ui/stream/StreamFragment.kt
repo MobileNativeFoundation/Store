@@ -1,14 +1,17 @@
-package com.dropbox.android.sample
+package com.dropbox.android.sample.ui.stream
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
+import com.dropbox.android.sample.R
+import kotlinx.android.synthetic.main.fragment_stream.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,15 +28,22 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 @ExperimentalCoroutinesApi
-class StreamActivity : AppCompatActivity(), CoroutineScope {
+class StreamFragment : Fragment(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_stream, container, false)
+    }
+
     @InternalCoroutinesApi
     @FlowPreview
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.stream_activity)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         var counter = 0
 
@@ -48,38 +58,40 @@ class StreamActivity : AppCompatActivity(), CoroutineScope {
             )
             .build()
 
-        findViewById<View>(R.id.get_1).onClick {
+        get_1.onClick {
             store.get(1)
         }
 
-        findViewById<View>(R.id.fresh_1).onClick {
+        fresh_1.onClick {
             store.fresh(1)
         }
 
-        findViewById<View>(R.id.get_2).onClick {
+        get_2.onClick {
             store.get(2)
         }
 
-        findViewById<View>(R.id.fresh_2).onClick {
+        fresh_2.onClick {
             store.fresh(2)
         }
 
         launch {
             store.stream(StoreRequest.cached(1, refresh = false)).collect {
-                findViewById<TextView>(R.id.stream_1).text = "Stream 1 $it"
+                stream_1.text = "Stream 1 $it"
             }
         }
         launch {
             store.stream(StoreRequest.cached(2, refresh = false)).collect {
-                findViewById<TextView>(R.id.stream_2).text = "Stream 2 $it"
+                stream_2.text = "Stream 2 $it"
             }
         }
         launch {
-            flowOf(store.stream(StoreRequest.cached(1, refresh = false)),
-                store.stream(StoreRequest.cached(2, refresh = false)))
+            flowOf(
+                store.stream(StoreRequest.cached(1, refresh = false)),
+                store.stream(StoreRequest.cached(2, refresh = false))
+            )
                 .flattenMerge()
                 .collect {
-                    findViewById<TextView>(R.id.stream).text = "Stream $it"
+                    stream.text = "Stream $it"
                 }
         }
     }
