@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/redditFragment"
+        android:icon="@drawable/ic_reddit"
+        android:title="@string/bottom_navigation_menu_title_reddit" />
+    <item
+        android:id="@+id/roomFragment"
+        android:icon="@drawable/ic_photo"
+        android:title="@string/bottom_navigation_menu_title_room" />
+    <item
+        android:id="@+id/streamFragment"
+        android:icon="@drawable/ic_distribution"
+        android:title="@string/bottom_navigation_menu_title_stream" />
+</menu>

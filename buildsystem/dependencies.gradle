@@ -19,6 +19,8 @@ ext.versions = [
         room                 : '2.2.2',
         coreKtx              : '1.1.0',
         lifecycle            : '2.2.0',
+        navigation           : '2.2.1',
+        constraintLayout     : '1.1.3',
         rx2                  : '2.2.17',
 
         // Testing.
@@ -30,9 +32,12 @@ ext.versions = [
 
 ext.libraries = [
         // UI libs.
+        constraintLayout        : "androidx.constraintlayout:constraintlayout:$versions.constraintLayout",
         supportAppCompat        : 'androidx.appcompat:appcompat:1.1.0',
         supportLifecycle        : "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle",
         lifecycleExtensions     : "androidx.lifecycle:lifecycle-extensions:$versions.lifecycle",
+        navigationFragment      : "androidx.navigation:navigation-fragment-ktx:$versions.navigation",
+        navigationUi            : "androidx.navigation:navigation-ui-ktx:$versions.navigation",
         supportCardView         : 'androidx.cardview:cardview:1.0.0',
         supportDesign           : 'com.google.android.material:material:1.0.0',
         supportRecyclerView     : 'androidx.recyclerview:recyclerview:1.0.0',
