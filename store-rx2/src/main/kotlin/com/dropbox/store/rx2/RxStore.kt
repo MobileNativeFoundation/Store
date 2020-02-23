@@ -91,7 +91,7 @@ fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
  * Connects a (Non Flow) [Single] source of truth that is accessible via [reader], [writer],
  * [delete], and [deleteAll].
  *
- * @see persister
+ * @see com.dropbox.android.external.store4.StoreBuilder.persister
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
