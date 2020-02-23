@@ -21,7 +21,7 @@ import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.rx2.rxCompletable
 
 /**
- * Return a flow for the given key
+ * Return a [Flowable] for the given key
  * @param request - see [StoreRequest] for configurations
  */
 @ExperimentalCoroutinesApi
