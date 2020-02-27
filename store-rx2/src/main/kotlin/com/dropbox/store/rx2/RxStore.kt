@@ -21,7 +21,7 @@ import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.rx2.rxCompletable
 
 /**
- * Return a flow for the given key
+ * Return a [Flowable] for the given key
  * @param request - see [StoreRequest] for configurations
  */
 @ExperimentalCoroutinesApi
@@ -91,7 +91,7 @@ fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
  * Connects a (Non Flow) [Single] source of truth that is accessible via [reader], [writer],
  * [delete], and [deleteAll].
  *
- * @see persister
+ * @see com.dropbox.android.external.store4.StoreBuilder.persister
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
