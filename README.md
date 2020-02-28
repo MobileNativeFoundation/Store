@@ -35,7 +35,7 @@ def store_version = "4.0.0-alpha03"
 ###### Add the dependency to your `build.gradle`:
 
 ```groovy
-implementation 'com.dropbox.mobile.store:store4:${store_version}'
+implementation "com.dropbox.mobile.store:store4:${store_version}"
 ```
 
 ###### Set the source & target compatibilities to `1.8`
