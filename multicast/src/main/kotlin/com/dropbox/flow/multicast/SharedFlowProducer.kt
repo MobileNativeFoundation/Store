@@ -17,6 +17,7 @@ package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -42,7 +43,25 @@ internal class SharedFlowProducer<T>(
     private val src: Flow<T>,
     private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit
 ) {
-    private lateinit var collectionJob: Job
+    private val collectionJob: Job = scope.launch(start = CoroutineStart.LAZY) {
+        try {
+            src.catch {
+                sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
+            }.collect {
+                val ack = CompletableDeferred<Unit>()
+                sendUpsteamMessage(
+                    ChannelManager.Message.Dispatch.Value(
+                        it,
+                        ack
+                    )
+                )
+                // suspend until at least 1 receives the new value
+                ack.await()
+            }
+        } catch (closed: ClosedSendChannelException) {
+            // ignore. if consumers are gone, it might close itself.
+        }
+    }
 
     /**
      * Starts the collection of the upstream flow.
@@ -50,26 +69,8 @@ internal class SharedFlowProducer<T>(
     fun start() {
         scope.launch {
             try {
-                // launch again to track the collection job
-                collectionJob = scope.launch {
-                    try {
-                        src.catch {
-                            sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
-                        }.collect {
-                            val ack = CompletableDeferred<Unit>()
-                            sendUpsteamMessage(
-                                ChannelManager.Message.Dispatch.Value(
-                                    it,
-                                    ack
-                                )
-                            )
-                            // suspend until at least 1 receives the new value
-                            ack.await()
-                        }
-                    } catch (closed: ClosedSendChannelException) {
-                        // ignore. if consumers are gone, it might close itself.
-                    }
-                }
+                // start the collection
+                collectionJob.start()
                 // wait until collection ends, either due to an error or ordered by the channel
                 // manager
                 collectionJob.join()
