@@ -105,3 +105,8 @@ enum class ResponseOrigin {
      */
     Fetcher
 }
+
+sealed class FetcherResult<T> {
+    data class Data<T>(val value: T): FetcherResult<T>()
+    data class Error<T>(val error: Throwable): FetcherResult<T>()
+}

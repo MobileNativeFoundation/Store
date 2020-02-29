@@ -15,6 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.flow.multicast.Multicaster
@@ -45,7 +46,7 @@ internal class FetcherController<Key, Input, Output>(
     /**
      * The function that provides the actualy fetcher flow when needed
      */
-    private val realFetcher: (Key) -> Flow<Input>,
+    private val realFetcher: (Key) -> Flow<FetcherResult<Input>>,
     /**
      * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
      * no [SourceOfTruth] is available.
@@ -64,10 +65,16 @@ internal class FetcherController<Key, Input, Output>(
                 scope = scope,
                 bufferSize = 0,
                 source = flow { emitAll(realFetcher(key)) }.map {
-                    StoreResponse.Data(
-                        it,
-                        origin = ResponseOrigin.Fetcher
-                    ) as StoreResponse<Input>
+                    when (it) {
+                        is FetcherResult.Data -> StoreResponse.Data(
+                            it.value,
+                            origin = ResponseOrigin.Fetcher
+                        ) as StoreResponse<Input>
+                        is FetcherResult.Error -> StoreResponse.Error(
+                            it.error,
+                            origin = ResponseOrigin.Fetcher
+                        )
+                    }
                 }.catch {
                     emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
                 },
