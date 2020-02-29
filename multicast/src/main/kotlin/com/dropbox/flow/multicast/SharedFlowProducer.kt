@@ -69,10 +69,8 @@ internal class SharedFlowProducer<T>(
     fun start() {
         scope.launch {
             try {
-                // start the collection
-                collectionJob.start()
-                // wait until collection ends, either due to an error or ordered by the channel
-                // manager
+                // trigger start of the collection and wait until collection ends, either due to an
+                // error or ordered by the channel manager
                 collectionJob.join()
             } finally {
                 // cleanup the channel manager so that downstreams can be closed if they are not
