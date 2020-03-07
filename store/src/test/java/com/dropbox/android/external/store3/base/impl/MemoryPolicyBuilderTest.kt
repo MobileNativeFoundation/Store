@@ -53,8 +53,7 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testDefaultMemorySizeIfNotSet() {
-        val policy = MemoryPolicy.builder()
-                .build()
+        val policy = MemoryPolicy.builder().build()
 
         assertThat(policy.hasMaxSize).isEqualTo(false)
         assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_SIZE_POLICY)

@@ -29,10 +29,10 @@ class CacheBuilderTest {
             .expireAfterWrite(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedexpireAfterWriteDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
+        val expectedExpireAfterWriteDurationNs = 24 * 60 * 60 * 1000L * 1000L * 1000L
 
         assertThat(cache.expireAfterWriteDuration.toLongNanoseconds())
-            .isEqualTo(expectedexpireAfterWriteDuration)
+            .isEqualTo(expectedExpireAfterWriteDurationNs)
     }
 
     @Test
@@ -64,10 +64,10 @@ class CacheBuilderTest {
             .expireAfterAccess(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedexpireAfterAccessDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
+        val expectedExpireAfterAccessDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
 
         assertThat(cache.expireAfterAccessDuration.toLongNanoseconds())
-            .isEqualTo(expectedexpireAfterAccessDuration)
+            .isEqualTo(expectedExpireAfterAccessDuration)
     }
 
     @Test
