@@ -6,5 +6,5 @@ package com.dropbox.android.external.store4
  */
 @MustBeDocumented
 @Retention(value = AnnotationRetention.BINARY)
-@Experimental(level = Experimental.Level.WARNING)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class ExperimentalStoreApi

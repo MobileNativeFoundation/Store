@@ -30,7 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-@UseExperimental(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
