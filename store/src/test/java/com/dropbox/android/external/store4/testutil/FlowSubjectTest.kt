@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class FlowSubjectTest {
     // Can't use ExpectFailure in these tests because it is not a suspend function.
     private val testScope = TestCoroutineScope()
