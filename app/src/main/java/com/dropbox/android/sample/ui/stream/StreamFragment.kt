@@ -24,8 +24,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 @ExperimentalCoroutinesApi
 class StreamFragment : Fragment(), CoroutineScope {
@@ -40,6 +41,7 @@ class StreamFragment : Fragment(), CoroutineScope {
         return inflater.inflate(R.layout.fragment_stream, container, false)
     }
 
+    @ExperimentalTime
     @InternalCoroutinesApi
     @FlowPreview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -52,8 +54,7 @@ class StreamFragment : Fragment(), CoroutineScope {
             .cachePolicy(
                 MemoryPolicy
                     .builder()
-                    .setExpireAfterWrite(10)
-                    .setExpireAfterTimeUnit(TimeUnit.SECONDS)
+                    .setExpireAfterWrite(10.seconds)
                     .build()
             )
             .build()

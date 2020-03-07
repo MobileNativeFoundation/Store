@@ -11,11 +11,13 @@ import okio.buffer
 import okio.source
 import org.junit.Test
 import java.io.ByteArrayInputStream
+import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
 class FSAllOperationTest {
 
     @Test
+    @ExperimentalTime
     fun readAll() = runBlocking<Unit> {
         val tempDir = createTempDir()
         val fileSystem = FileSystemFactory.create(tempDir)
@@ -31,6 +33,7 @@ class FSAllOperationTest {
     }
 
     @Test
+    @ExperimentalTime
     fun deleteAll() = runBlocking<Unit> {
         val tempDir = createTempDir()
         val fileSystem = FileSystemFactory.create(tempDir)

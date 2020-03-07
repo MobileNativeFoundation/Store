@@ -4,51 +4,41 @@ import com.dropbox.android.external.store4.MemoryPolicy
 
 import org.junit.Test
 
-import java.util.concurrent.TimeUnit
-
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
+@ExperimentalTime
 class MemoryPolicyBuilderTest {
 
     @Test
     fun testBuildExpireAfterWriteMemoryPolicy() {
         val policy = MemoryPolicy.builder()
-                .setExpireAfterWrite(4L)
+                .setExpireAfterWrite(4.seconds)
                 .build()
 
-        assertThat(policy.expireAfterWrite).isEqualTo(4L)
-        assertThat(policy.expireAfterTimeUnit).isEqualTo(TimeUnit.SECONDS)
+        assertThat(policy.expireAfterWrite).isEqualTo(4.seconds)
         assertThat(policy.isDefaultWritePolicy).isFalse()
-        assertThat(policy.expireAfterAccess).isEqualTo(MemoryPolicy.DEFAULT_POLICY)
+        assertThat(policy.expireAfterAccess).isEqualTo(MemoryPolicy.DEFAULT_DURATION_POLICY)
     }
 
     @Test
     fun testBuildExpireAfterAccessMemoryPolicy() {
         val policy = MemoryPolicy.builder()
-                .setExpireAfterAccess(4L)
+                .setExpireAfterAccess(4.seconds)
                 .build()
 
-        assertThat(policy.expireAfterAccess).isEqualTo(4L)
-        assertThat(policy.expireAfterTimeUnit).isEqualTo(TimeUnit.SECONDS)
+        assertThat(policy.expireAfterAccess).isEqualTo(4.seconds)
         assertThat(policy.isDefaultWritePolicy).isTrue()
-        assertThat(policy.expireAfterWrite).isEqualTo(MemoryPolicy.DEFAULT_POLICY)
+        assertThat(policy.expireAfterWrite).isEqualTo(MemoryPolicy.DEFAULT_DURATION_POLICY)
     }
 
     @Test(expected = IllegalStateException::class)
     fun testCannotSetBothExpirationPolicies() {
         MemoryPolicy.builder()
-                .setExpireAfterAccess(4L)
-                .setExpireAfterWrite(4L)
+                .setExpireAfterAccess(4.seconds)
+                .setExpireAfterWrite(4.seconds)
                 .build()
-    }
-
-    @Test
-    fun testBuilderSetsExpireAfterTimeUnit() {
-        val policy = MemoryPolicy.builder()
-                .setExpireAfterTimeUnit(TimeUnit.MINUTES)
-                .build()
-
-        assertThat(policy.expireAfterTimeUnit).isEqualTo(TimeUnit.MINUTES)
     }
 
     @Test
@@ -67,6 +57,6 @@ class MemoryPolicyBuilderTest {
                 .build()
 
         assertThat(policy.hasMaxSize).isEqualTo(false)
-        assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_POLICY)
+        assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_SIZE_POLICY)
     }
 }

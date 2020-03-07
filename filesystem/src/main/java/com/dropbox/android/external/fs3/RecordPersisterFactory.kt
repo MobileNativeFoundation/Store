@@ -8,6 +8,7 @@ import okio.BufferedSource
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 
 /**
  * Factory for [RecordPersister]
@@ -21,6 +22,7 @@ object RecordPersisterFactory {
      *
      * @throws IOException
      */
+    @ExperimentalTime
     @Throws(IOException::class)
     fun create(
         root: File,

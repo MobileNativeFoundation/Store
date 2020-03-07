@@ -1,82 +1,85 @@
 package com.dropbox.android.external.cache4
 
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.DEFAULT_CONCURRENCY_LEVEL
-import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.DEFAULT_EXPIRATION_NANOS
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.UNSET_LONG
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertThrows
 import org.junit.Test
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.hours
+import kotlin.time.nanoseconds
 
+@ExperimentalTime
 class CacheBuilderTest {
 
     @Test
     fun `set expireAfterWrite with zero duration`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0, TimeUnit.NANOSECONDS)
+            .expireAfterWrite(0.nanoseconds)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterWriteNanos)
-            .isEqualTo(0)
+        assertThat(cache.expireAfterWriteDuration)
+            .isEqualTo(Duration.ZERO)
     }
 
     @Test
     fun `set expireAfterWrite with positive duration`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(24, TimeUnit.HOURS)
+            .expireAfterWrite(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedExpireAfterWriteNanos = 24 * 60 * 60 * 1000L * 1000L * 1000L
+        val expectedexpireAfterWriteDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
 
-        assertThat(cache.expireAfterWriteNanos)
-            .isEqualTo(expectedExpireAfterWriteNanos)
+        assertThat(cache.expireAfterWriteDuration.toLongNanoseconds())
+            .isEqualTo(expectedexpireAfterWriteDuration)
     }
 
     @Test
     fun `set expireAfterWrite with negative duration`() {
         val exception = assertThrows(IllegalArgumentException::class.java) {
             Cache.Builder.newBuilder()
-                .expireAfterWrite(-1, TimeUnit.NANOSECONDS)
+                .expireAfterWrite((-1).nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().contains(
-            "expireAfterWrite duration cannot be negative: -1 ${TimeUnit.NANOSECONDS}"
+        assertThat(exception).hasMessageThat().isEqualTo(
+            "expireAfterWrite duration cannot be negative: -1.00ns"
         )
     }
 
     @Test
     fun `set expireAfterAccess with zero duration`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(0, TimeUnit.NANOSECONDS)
+            .expireAfterAccess(0.nanoseconds)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterAccessNanos)
-            .isEqualTo(0)
+        assertThat(cache.expireAfterAccessDuration)
+            .isEqualTo(Duration.ZERO)
     }
 
     @Test
     fun `set expireAfterAccess with positive duration`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(24, TimeUnit.HOURS)
+            .expireAfterAccess(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedExpireAfterAccessNanos = 24 * 60 * 60 * 1000L * 1000L * 1000L
+        val expectedexpireAfterAccessDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
 
-        assertThat(cache.expireAfterAccessNanos)
-            .isEqualTo(expectedExpireAfterAccessNanos)
+        assertThat(cache.expireAfterAccessDuration.toLongNanoseconds())
+            .isEqualTo(expectedexpireAfterAccessDuration)
     }
 
     @Test
     fun `set expireAfterAccess with negative duration`() {
         val exception = assertThrows(IllegalArgumentException::class.java) {
             Cache.Builder.newBuilder()
-                .expireAfterAccess(-1, TimeUnit.NANOSECONDS)
+                .expireAfterAccess((-1).nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().contains(
-            "expireAfterAccess duration cannot be negative: -1 ${TimeUnit.NANOSECONDS}"
+        assertThat(exception).hasMessageThat().isEqualTo(
+            "expireAfterAccess duration cannot be negative: -1.00ns"
         )
     }
 
@@ -108,7 +111,7 @@ class CacheBuilderTest {
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().contains(
+        assertThat(exception).hasMessageThat().isEqualTo(
             "maximum size must not be negative"
         )
     }
@@ -116,7 +119,7 @@ class CacheBuilderTest {
     @Test
     fun `maxSize is 0 when expireAfterWrite has been set to zero`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0, TimeUnit.NANOSECONDS)
+            .expireAfterWrite(0.nanoseconds)
             .maximumCacheSize(100)
             .build<Any, Any>() as RealCache
 
@@ -128,7 +131,7 @@ class CacheBuilderTest {
     @Test
     fun `maxSize is 0 when expireAfterAccess has been set to 0`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(0, TimeUnit.NANOSECONDS)
+            .expireAfterAccess(0.nanoseconds)
             .maximumCacheSize(100)
             .build<Any, Any>() as RealCache
 
@@ -154,7 +157,7 @@ class CacheBuilderTest {
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().contains(
+        assertThat(exception).hasMessageThat().isEqualTo(
             "concurrency level must be positive"
         )
     }
@@ -167,7 +170,7 @@ class CacheBuilderTest {
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().contains(
+        assertThat(exception).hasMessageThat().isEqualTo(
             "concurrency level must be positive"
         )
     }
@@ -186,13 +189,13 @@ class CacheBuilderTest {
     @Test
     fun `SystemClock is used when clock was not set explicitly and either expireAfterWrite or expireAfterAccess is positive`() {
         val timeToLiveCache = Cache.Builder.newBuilder()
-            .expireAfterWrite(1, TimeUnit.NANOSECONDS)
-            .expireAfterAccess(0, TimeUnit.NANOSECONDS)
+            .expireAfterWrite(1.nanoseconds)
+            .expireAfterAccess(0.nanoseconds)
             .build<Any, Any>() as RealCache
 
         val timeToIdleCache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0, TimeUnit.NANOSECONDS)
-            .expireAfterAccess(1, TimeUnit.NANOSECONDS)
+            .expireAfterWrite(0.nanoseconds)
+            .expireAfterAccess(1.nanoseconds)
             .build<Any, Any>() as RealCache
 
         assertThat(timeToLiveCache.clock)
@@ -206,11 +209,11 @@ class CacheBuilderTest {
     fun `build cache with defaults`() {
         val cache = Cache.Builder.newBuilder().build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterWriteNanos)
-            .isEqualTo(DEFAULT_EXPIRATION_NANOS)
+        assertThat(cache.expireAfterWriteDuration)
+            .isEqualTo(Duration.INFINITE)
 
-        assertThat(cache.expireAfterAccessNanos)
-            .isEqualTo(DEFAULT_EXPIRATION_NANOS)
+        assertThat(cache.expireAfterAccessDuration)
+            .isEqualTo(Duration.INFINITE)
 
         assertThat(cache.maxSize)
             .isEqualTo(UNSET_LONG)

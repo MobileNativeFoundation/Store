@@ -1,6 +1,7 @@
 package com.dropbox.android.external.cache4
 
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
@@ -55,7 +56,8 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        fun expireAfterWrite(duration: Long, unit: TimeUnit): Builder
+        @ExperimentalTime
+        fun expireAfterWrite(duration: Duration): Builder
 
         /**
          * Specifies that each entry should be automatically removed from the cache once a fixed duration
@@ -65,7 +67,8 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        fun expireAfterAccess(duration: Long, unit: TimeUnit): Builder
+        @ExperimentalTime
+        fun expireAfterAccess(duration: Duration): Builder
 
         /**
          * Specifies the maximum number of entries the cache may contain.
@@ -115,24 +118,28 @@ interface Cache<in Key : Any, Value : Any> {
  */
 internal class CacheBuilderImpl : Cache.Builder {
 
-    private var expireAfterWriteNanos = UNSET_LONG
-    private var expireAfterAccessNanos = UNSET_LONG
+    @ExperimentalTime
+    private var expireAfterWriteDuration = Duration.INFINITE
+    @ExperimentalTime
+    private var expireAfterAccessDuration = Duration.INFINITE
     private var maxSize = UNSET_LONG
     private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
     private var clock: Clock? = null
 
-    override fun expireAfterWrite(duration: Long, unit: TimeUnit): CacheBuilderImpl = apply {
-        require(duration >= 0) {
-            "expireAfterWrite duration cannot be negative: $duration $unit"
+    @ExperimentalTime
+    override fun expireAfterWrite(duration: Duration): CacheBuilderImpl = apply {
+        require(!duration.isNegative()) {
+            "expireAfterWrite duration cannot be negative: $duration"
         }
-        this.expireAfterWriteNanos = unit.toNanos(duration)
+        this.expireAfterWriteDuration = duration
     }
 
-    override fun expireAfterAccess(duration: Long, unit: TimeUnit): CacheBuilderImpl = apply {
-        require(duration >= 0) {
-            "expireAfterAccess duration cannot be negative: $duration $unit"
+    @ExperimentalTime
+    override fun expireAfterAccess(duration: Duration): CacheBuilderImpl = apply {
+        require(!duration.isNegative()) {
+            "expireAfterAccess duration cannot be negative: $duration"
         }
-        this.expireAfterAccessNanos = unit.toNanos(duration)
+        this.expireAfterAccessDuration = duration
     }
 
     override fun maximumCacheSize(size: Long): CacheBuilderImpl = apply {
@@ -153,20 +160,9 @@ internal class CacheBuilderImpl : Cache.Builder {
         this.clock = clock
     }
 
+    @ExperimentalTime
     override fun <K : Any, V : Any> build(): Cache<K, V> {
-        val effectiveExpireAfterWrite = if (expireAfterWriteNanos == UNSET_LONG) {
-            DEFAULT_EXPIRATION_NANOS
-        } else {
-            expireAfterWriteNanos
-        }
-
-        val effectiveExpireAfterAccess = if (expireAfterAccessNanos == UNSET_LONG) {
-            DEFAULT_EXPIRATION_NANOS
-        } else {
-            expireAfterAccessNanos
-        }
-
-        val effectiveMaxSize = if (expireAfterWriteNanos == 0L || expireAfterAccessNanos == 0L) {
+        val effectiveMaxSize = if (expireAfterWriteDuration == Duration.ZERO || expireAfterAccessDuration == Duration.ZERO) {
             0
         } else {
             maxSize
@@ -175,8 +171,8 @@ internal class CacheBuilderImpl : Cache.Builder {
         val effectiveClock = clock ?: SystemClock
 
         return RealCache(
-            effectiveExpireAfterWrite,
-            effectiveExpireAfterAccess,
+            expireAfterWriteDuration,
+            expireAfterAccessDuration,
             effectiveMaxSize,
             concurrencyLevel,
             effectiveClock
@@ -185,7 +181,6 @@ internal class CacheBuilderImpl : Cache.Builder {
 
     companion object {
         internal const val UNSET_LONG: Long = -1
-        internal const val DEFAULT_EXPIRATION_NANOS = 0L
         internal const val DEFAULT_CONCURRENCY_LEVEL = 16
     }
 }

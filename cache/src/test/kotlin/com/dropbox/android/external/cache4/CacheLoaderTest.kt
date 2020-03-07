@@ -10,16 +10,19 @@ import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.minutes
+import kotlin.time.nanoseconds
 
+@ExperimentalTime
 class CacheLoaderTest {
 
     @Rule
     @JvmField
     val concurrencyTestRule = ConcurrencyTestRule()
 
-    private val clock = TestClock(virtualTimeNanos = 0)
-    private val expiryDuration = TimeUnit.MINUTES.toNanos(1)
+    private val clock = TestClock(virtualDuration = 0.nanoseconds)
+    private val expiryDuration = 1.minutes
 
     @Test
     fun `get(key, loader) returns value from loader when no value with the associated key exists before and after executing the loader`() {
@@ -40,14 +43,14 @@ class CacheLoaderTest {
     @Test
     fun `get(key, loader) returns value from loader when an expired value with the associated key exists before executing the loader and none exists after executing the loader`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
+            .expireAfterWrite(expiryDuration)
             .clock(clock)
             .build<Long, String>()
 
         cache.put(1, "cat")
 
         // now expires
-        clock.virtualTimeNanos = expiryDuration
+        clock.virtualDuration = expiryDuration
 
         val loader = createLoader("dog")
 
@@ -63,13 +66,13 @@ class CacheLoaderTest {
     @Test
     fun `get(key, loader) returns existing value when an unexpired entry with the associated key exists before executing the loader`() {
         val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(expiryDuration, TimeUnit.NANOSECONDS)
+            .expireAfterAccess(expiryDuration)
             .build<Long, String>()
 
         cache.put(1, "dog")
 
         // just before expiry
-        clock.virtualTimeNanos = expiryDuration - 1
+        clock.virtualDuration = expiryDuration - 1.nanoseconds
 
         val loader = createLoader("cat")
 
@@ -140,7 +143,7 @@ class CacheLoaderTest {
     fun `value returned by loader is cached when value associated with the key is present but expired after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
-                .expireAfterWrite(expiryDuration, TimeUnit.NANOSECONDS)
+                .expireAfterWrite(expiryDuration)
                 .concurrencyLevel(2)
                 .clock(clock)
                 .build<Long, String>()
@@ -160,7 +163,7 @@ class CacheLoaderTest {
                 cache.put(1, "cat")
 
                 // now expires
-                clock.virtualTimeNanos = expiryDuration
+                clock.virtualDuration = expiryDuration
             }
 
             delay(executionTime + 10)

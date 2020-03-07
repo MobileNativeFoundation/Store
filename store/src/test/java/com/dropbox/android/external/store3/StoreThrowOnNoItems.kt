@@ -16,8 +16,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.ExperimentalTime
 
 @FlowPreview
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreThrowOnNoItems(

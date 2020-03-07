@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import kotlin.time.ExperimentalTime
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -38,6 +39,7 @@ class ClearAllStoreTest {
 
     private val persister = InMemoryPersister<String, Int>()
 
+    @ExperimentalTime
     @Test
     fun `calling clearAll() on store with persister (no in-memory cache) deletes all entries from the persister`() =
         testScope.runBlockingTest {
@@ -109,6 +111,7 @@ class ClearAllStoreTest {
         }
 
     @Test
+    @ExperimentalTime
     fun `calling clearAll() on store with in-memory cache (no persister) deletes all entries from the in-memory cache`() =
         testScope.runBlockingTest {
             val store = StoreBuilder.fromNonFlow(

@@ -11,8 +11,8 @@ public abstract interface class com/dropbox/android/external/cache4/Cache$Builde
 	public abstract fun build ()Lcom/dropbox/android/external/cache4/Cache;
 	public abstract fun clock (Lcom/dropbox/android/external/cache4/Clock;)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun concurrencyLevel (I)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun expireAfterAccess (JLjava/util/concurrent/TimeUnit;)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun expireAfterWrite (JLjava/util/concurrent/TimeUnit;)Lcom/dropbox/android/external/cache4/Cache$Builder;
+	public abstract fun expireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
+	public abstract fun expireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun maximumCacheSize (J)Lcom/dropbox/android/external/cache4/Cache$Builder;
 }
 

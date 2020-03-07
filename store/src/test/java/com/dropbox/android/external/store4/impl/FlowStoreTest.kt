@@ -46,8 +46,10 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import kotlin.time.ExperimentalTime
 
 @FlowPreview
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class FlowStoreTest {

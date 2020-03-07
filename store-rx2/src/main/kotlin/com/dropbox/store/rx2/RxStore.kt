@@ -19,6 +19,7 @@ import kotlinx.coroutines.rx2.asCoroutineDispatcher
 import kotlinx.coroutines.rx2.asFlowable
 import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.rx2.rxCompletable
+import kotlin.time.ExperimentalTime
 
 /**
  * Return a [Flowable] for the given key
@@ -54,6 +55,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable 
  * @param fetcher a function for fetching a flow of network records.
  */
 @FlowPreview
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
@@ -69,6 +71,7 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  * @param fetcher a function for fetching a [Single] network response for a [Key]
  */
 @FlowPreview
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
