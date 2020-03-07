@@ -41,13 +41,16 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
         freeCompilerArgs += [
-                '-Xuse-experimental=kotlin.Experimental',
+                '-Xopt-in=kotlin.Experimental',
         ]
     }
 }
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += [
+                '-Xopt-in=kotlin.RequiresOptIn',
+        ]
     }
 }
 

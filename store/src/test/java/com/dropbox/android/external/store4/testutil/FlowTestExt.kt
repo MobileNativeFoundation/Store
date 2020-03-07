@@ -26,12 +26,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.TestCoroutineScope
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
     return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
 }
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class FlowSubject<T> constructor(
     failureMetadata: FailureMetadata,
     private val testCoroutineScope: TestCoroutineScope,
