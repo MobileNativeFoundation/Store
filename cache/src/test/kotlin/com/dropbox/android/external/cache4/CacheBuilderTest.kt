@@ -15,12 +15,15 @@ class CacheBuilderTest {
 
     @Test
     fun `set expireAfterWrite with zero duration`() {
-        val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0.nanoseconds)
-            .build<Any, Any>() as RealCache
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            Cache.Builder.newBuilder()
+                .expireAfterWrite(0.nanoseconds)
+                .build<Any, Any>() as RealCache
+        }
 
-        assertThat(cache.expireAfterWriteDuration)
-            .isEqualTo(Duration.ZERO)
+        assertThat(exception).hasMessageThat().isEqualTo(
+            "expireAfterWrite duration must be positive"
+        )
     }
 
     @Test
@@ -29,10 +32,8 @@ class CacheBuilderTest {
             .expireAfterWrite(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedExpireAfterWriteDurationNs = 24 * 60 * 60 * 1000L * 1000L * 1000L
-
-        assertThat(cache.expireAfterWriteDuration.toLongNanoseconds())
-            .isEqualTo(expectedExpireAfterWriteDurationNs)
+        assertThat(cache.expireAfterWriteDuration)
+            .isEqualTo(24.hours)
     }
 
     @Test
@@ -44,18 +45,21 @@ class CacheBuilderTest {
         }
 
         assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterWrite duration cannot be negative: -1.00ns"
+            "expireAfterWrite duration must be positive"
         )
     }
 
     @Test
     fun `set expireAfterAccess with zero duration`() {
-        val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(0.nanoseconds)
-            .build<Any, Any>() as RealCache
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            Cache.Builder.newBuilder()
+                .expireAfterAccess(0.nanoseconds)
+                .build<Any, Any>() as RealCache
+        }
 
-        assertThat(cache.expireAfterAccessDuration)
-            .isEqualTo(Duration.ZERO)
+        assertThat(exception).hasMessageThat().isEqualTo(
+            "expireAfterAccess duration must be positive"
+        )
     }
 
     @Test
@@ -64,10 +68,8 @@ class CacheBuilderTest {
             .expireAfterAccess(24.hours)
             .build<Any, Any>() as RealCache
 
-        val expectedExpireAfterAccessDuration = 24 * 60 * 60 * 1000L * 1000L * 1000L
-
-        assertThat(cache.expireAfterAccessDuration.toLongNanoseconds())
-            .isEqualTo(expectedExpireAfterAccessDuration)
+        assertThat(cache.expireAfterAccessDuration)
+            .isEqualTo(24.hours)
     }
 
     @Test
@@ -79,7 +81,7 @@ class CacheBuilderTest {
         }
 
         assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterAccess duration cannot be negative: -1.00ns"
+            "expireAfterAccess duration must be positive"
         )
     }
 
@@ -114,29 +116,6 @@ class CacheBuilderTest {
         assertThat(exception).hasMessageThat().isEqualTo(
             "maximum size must not be negative"
         )
-    }
-
-    @Test
-    fun `maxSize is 0 when expireAfterWrite has been set to zero`() {
-        val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0.nanoseconds)
-            .maximumCacheSize(100)
-            .build<Any, Any>() as RealCache
-
-        // when expireAfterWrite is explicitly set to 0 by user, max size will also be set to 0
-        assertThat(cache.maxSize)
-            .isEqualTo(0)
-    }
-
-    @Test
-    fun `maxSize is 0 when expireAfterAccess has been set to 0`() {
-        val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(0.nanoseconds)
-            .maximumCacheSize(100)
-            .build<Any, Any>() as RealCache
-
-        // when expireAfterAccess is explicitly set to 0 by user, max size will also be set to 0
-        assertThat(cache.maxSize).isEqualTo(0)
     }
 
     @Test
@@ -184,25 +163,6 @@ class CacheBuilderTest {
 
         assertThat(cache.clock)
             .isEqualTo(testClock)
-    }
-
-    @Test
-    fun `SystemClock is used when clock was not set explicitly and either expireAfterWrite or expireAfterAccess is positive`() {
-        val timeToLiveCache = Cache.Builder.newBuilder()
-            .expireAfterWrite(1.nanoseconds)
-            .expireAfterAccess(0.nanoseconds)
-            .build<Any, Any>() as RealCache
-
-        val timeToIdleCache = Cache.Builder.newBuilder()
-            .expireAfterWrite(0.nanoseconds)
-            .expireAfterAccess(1.nanoseconds)
-            .build<Any, Any>() as RealCache
-
-        assertThat(timeToLiveCache.clock)
-            .isEqualTo(SystemClock)
-
-        assertThat(timeToIdleCache.clock)
-            .isEqualTo(SystemClock)
     }
 
     @Test

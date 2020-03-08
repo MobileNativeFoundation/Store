@@ -278,38 +278,4 @@ class CacheExpirationTest {
         assertThat(cache.get(3))
             .isEqualTo("bird")
     }
-
-    @Test
-    fun `no values are cached when expireAfterWrite is explicitly set to 0`() {
-        val cache = Cache.Builder.newBuilder()
-            .clock(clock)
-            .expireAfterWrite(0.nanoseconds)
-            .build<Long, String>()
-
-        cache.put(1, "dog")
-        cache.put(2, "cat")
-
-        assertThat(cache.get(1))
-            .isNull()
-
-        assertThat(cache.get(2))
-            .isNull()
-    }
-
-    @Test
-    fun `no values are cached when expireAfterAccess is explicitly set to 0`() {
-        val cache = Cache.Builder.newBuilder()
-            .clock(clock)
-            .expireAfterAccess(0.nanoseconds)
-            .build<Long, String>()
-
-        cache.put(1, "dog")
-        cache.put(2, "cat")
-
-        assertThat(cache.get(1))
-            .isNull()
-
-        assertThat(cache.get(2))
-            .isNull()
-    }
 }

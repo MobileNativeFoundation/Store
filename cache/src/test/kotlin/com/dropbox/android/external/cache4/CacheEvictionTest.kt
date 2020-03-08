@@ -4,7 +4,9 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class CacheEvictionTest {
 
     @Test

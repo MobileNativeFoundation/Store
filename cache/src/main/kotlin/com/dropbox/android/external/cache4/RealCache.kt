@@ -66,12 +66,12 @@ internal class RealCache<Key : Any, Value : Any>(
     /**
      * Whether to perform write-time based expiration.
      */
-    private val expiresAfterWrite = expireAfterWriteDuration < Duration.INFINITE
+    private val expiresAfterWrite = expireAfterWriteDuration.isFinite()
 
     /**
      * Whether to perform access-time (both read and write) based expiration.
      */
-    private val expiresAfterAccess = expireAfterAccessDuration < Duration.INFINITE
+    private val expiresAfterAccess = expireAfterAccessDuration.isFinite()
 
     /**
      * A key-based synchronizer for running cache loaders.

@@ -6,6 +6,7 @@ import kotlin.time.ExperimentalTime
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
  */
+@ExperimentalTime
 interface Cache<in Key : Any, Value : Any> {
 
     /**
@@ -56,7 +57,6 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        @ExperimentalTime
         fun expireAfterWrite(duration: Duration): Builder
 
         /**
@@ -67,7 +67,6 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        @ExperimentalTime
         fun expireAfterAccess(duration: Duration): Builder
 
         /**
@@ -116,11 +115,10 @@ interface Cache<in Key : Any, Value : Any> {
 /**
  * A default implementation of [Cache.Builder].
  */
+@ExperimentalTime
 internal class CacheBuilderImpl : Cache.Builder {
 
-    @ExperimentalTime
     private var expireAfterWriteDuration = Duration.INFINITE
-    @ExperimentalTime
     private var expireAfterAccessDuration = Duration.INFINITE
     private var maxSize = UNSET_LONG
     private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
@@ -128,16 +126,16 @@ internal class CacheBuilderImpl : Cache.Builder {
 
     @ExperimentalTime
     override fun expireAfterWrite(duration: Duration): CacheBuilderImpl = apply {
-        require(!duration.isNegative()) {
-            "expireAfterWrite duration cannot be negative: $duration"
+        require(duration.isPositive()) {
+            "expireAfterWrite duration must be positive"
         }
         this.expireAfterWriteDuration = duration
     }
 
     @ExperimentalTime
     override fun expireAfterAccess(duration: Duration): CacheBuilderImpl = apply {
-        require(!duration.isNegative()) {
-            "expireAfterAccess duration cannot be negative: $duration"
+        require(duration.isPositive()) {
+            "expireAfterAccess duration must be positive"
         }
         this.expireAfterAccessDuration = duration
     }
@@ -162,20 +160,12 @@ internal class CacheBuilderImpl : Cache.Builder {
 
     @ExperimentalTime
     override fun <K : Any, V : Any> build(): Cache<K, V> {
-        val effectiveMaxSize = if (expireAfterWriteDuration == Duration.ZERO || expireAfterAccessDuration == Duration.ZERO) {
-            0
-        } else {
-            maxSize
-        }
-
-        val effectiveClock = clock ?: SystemClock
-
         return RealCache(
             expireAfterWriteDuration,
             expireAfterAccessDuration,
-            effectiveMaxSize,
+            maxSize,
             concurrencyLevel,
-            effectiveClock
+            clock ?: SystemClock
         )
     }
 
