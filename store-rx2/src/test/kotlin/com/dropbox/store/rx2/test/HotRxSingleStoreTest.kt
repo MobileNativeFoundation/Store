@@ -14,11 +14,9 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.time.ExperimentalTime
 
 @RunWith(JUnit4::class)
 @FlowPreview
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 class HotRxSingleStoreTest {
     private val testScope = TestCoroutineScope()

@@ -13,7 +13,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.time.ExperimentalTime
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -24,7 +23,6 @@ class ClearStoreByKeyTest {
 
     private val persister = InMemoryPersister<String, Int>()
 
-    @ExperimentalTime
     @Test
     fun `calling clear(key) on store with persister (no in-memory cache) deletes the entry associated with the key from the persister`() =
         testScope.runBlockingTest {
@@ -75,7 +73,6 @@ class ClearStoreByKeyTest {
         }
 
     @Test
-    @ExperimentalTime
     fun `calling clear(key) on store with in-memory cache (no persister) deletes the entry associated with the key from the in-memory cache`() =
         testScope.runBlockingTest {
             val key = "key"
@@ -116,7 +113,6 @@ class ClearStoreByKeyTest {
         }
 
     @Test
-    @ExperimentalTime
     fun `calling clear(key) on store has no effect on existing entries associated with other keys in the in-memory cache or persister`() =
         testScope.runBlockingTest {
             val key1 = "key1"

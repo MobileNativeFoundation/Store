@@ -116,7 +116,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a function for fetching network records.
          */
-        @ExperimentalTime
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> fromNonFlow(
             fetcher: suspend (key: Key) -> Output
         ): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
@@ -133,7 +133,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a function for fetching a flow of network records.
          */
-        @ExperimentalTime
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Output>
         ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
@@ -141,7 +141,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
 }
 
 @FlowPreview
-@ExperimentalTime
+@OptIn(ExperimentalTime::class)
 @ExperimentalCoroutinesApi
 private class BuilderImpl<Key : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Output>
@@ -243,7 +243,7 @@ private class BuilderImpl<Key : Any, Output : Any>(
 }
 
 @FlowPreview
-@ExperimentalTime
+@OptIn(ExperimentalTime::class)
 @ExperimentalCoroutinesApi
 private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Input>,

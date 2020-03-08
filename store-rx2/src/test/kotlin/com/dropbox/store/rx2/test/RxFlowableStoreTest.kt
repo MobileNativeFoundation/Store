@@ -16,11 +16,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.ExperimentalTime
 
 @RunWith(JUnit4::class)
 @FlowPreview
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 class RxFlowableStoreTest {
     private val atomicInteger = AtomicInteger(0)

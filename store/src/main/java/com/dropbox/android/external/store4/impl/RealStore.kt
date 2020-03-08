@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.withIndex
 import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 @FlowPreview
 internal class RealStore<Key : Any, Input : Any, Output : Any>(
@@ -59,6 +58,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             SourceOfTruthWithBarrier(it)
         }
 
+    @OptIn(ExperimentalTime::class)
     private val memCache = memoryPolicy?.let {
         Cache.Builder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
