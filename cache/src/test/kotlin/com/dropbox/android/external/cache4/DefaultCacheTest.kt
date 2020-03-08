@@ -2,9 +2,7 @@ package com.dropbox.android.external.cache4
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class DefaultCacheTest {
 
     @Test
