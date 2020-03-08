@@ -6,6 +6,7 @@ import kotlin.time.ExperimentalTime
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
  */
+@ExperimentalTime
 interface Cache<in Key : Any, Value : Any> {
 
     /**
@@ -56,7 +57,6 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        @ExperimentalTime
         fun expireAfterWrite(duration: Duration): Builder
 
         /**
@@ -67,7 +67,6 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
-        @ExperimentalTime
         fun expireAfterAccess(duration: Duration): Builder
 
         /**
@@ -108,7 +107,6 @@ interface Cache<in Key : Any, Value : Any> {
             /**
              * Returns a new [Cache.Builder] instance.
              */
-            @ExperimentalTime
             fun newBuilder(): Builder = CacheBuilderImpl()
         }
     }
