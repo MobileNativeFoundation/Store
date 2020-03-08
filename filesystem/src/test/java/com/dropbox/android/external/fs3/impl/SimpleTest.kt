@@ -15,13 +15,11 @@ import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import kotlin.time.ExperimentalTime
 
 class SimpleTest {
 
     private lateinit var fileSystem: FileSystem
 
-    @ExperimentalTime
     @Before
     @Throws(IOException::class)
     fun start() {

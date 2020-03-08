@@ -38,7 +38,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
         TestStoreType.FlowStore -> buildStore()
     }
 
-    @ExperimentalTime
+    @OptIn(ExperimentalTime::class)
     companion object {
 
         fun <Key : Any, Output : Any> from(

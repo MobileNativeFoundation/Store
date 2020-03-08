@@ -10,7 +10,6 @@ import java.io.IOException
 import java.lang.String.format
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
-import kotlin.time.ExperimentalTime
 
 /**
  * implements a [FileSystem] as regular files on disk in a specific document root (kind of like a root jail)
@@ -18,7 +17,6 @@ import kotlin.time.ExperimentalTime
  *
  * All operations are on the caller's thread.
  */
-@ExperimentalTime
 internal class FileSystemImpl(private val root: File) : FileSystem {
 
     private val files: Cache<String, FSFile> = Cache.Builder.newBuilder()

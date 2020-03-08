@@ -11,10 +11,8 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import kotlin.time.ExperimentalTime
 
 @FlowPreview
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class SequentialTest(

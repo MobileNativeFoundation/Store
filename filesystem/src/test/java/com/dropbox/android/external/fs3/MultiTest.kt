@@ -11,9 +11,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 class MultiTest {
 
     @Throws(IOException::class)

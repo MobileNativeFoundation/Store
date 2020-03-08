@@ -6,7 +6,6 @@ import kotlin.time.ExperimentalTime
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
  */
-@ExperimentalTime
 interface Cache<in Key : Any, Value : Any> {
 
     /**
@@ -57,6 +56,7 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
+        @ExperimentalTime
         fun expireAfterWrite(duration: Duration): Builder
 
         /**
@@ -67,6 +67,7 @@ interface Cache<in Key : Any, Value : Any> {
          * When [duration] is zero, the cache's max size will be set to 0
          * meaning no values will be cached.
          */
+        @ExperimentalTime
         fun expireAfterAccess(duration: Duration): Builder
 
         /**
@@ -115,15 +116,17 @@ interface Cache<in Key : Any, Value : Any> {
 /**
  * A default implementation of [Cache.Builder].
  */
-@ExperimentalTime
 internal class CacheBuilderImpl : Cache.Builder {
 
+    @ExperimentalTime
     private var expireAfterWriteDuration = Duration.INFINITE
+    @ExperimentalTime
     private var expireAfterAccessDuration = Duration.INFINITE
     private var maxSize = UNSET_LONG
     private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
     private var clock: Clock? = null
 
+    @ExperimentalTime
     override fun expireAfterWrite(duration: Duration): CacheBuilderImpl = apply {
         require(duration.isPositive()) {
             "expireAfterWrite duration must be positive"
@@ -131,6 +134,7 @@ internal class CacheBuilderImpl : Cache.Builder {
         this.expireAfterWriteDuration = duration
     }
 
+    @ExperimentalTime
     override fun expireAfterAccess(duration: Duration): CacheBuilderImpl = apply {
         require(duration.isPositive()) {
             "expireAfterAccess duration must be positive"
@@ -156,6 +160,7 @@ internal class CacheBuilderImpl : Cache.Builder {
         this.clock = clock
     }
 
+    @ExperimentalTime
     override fun <K : Any, V : Any> build(): Cache<K, V> {
         return RealCache(
             expireAfterWriteDuration,
