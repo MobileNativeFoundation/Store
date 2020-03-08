@@ -61,7 +61,7 @@ class RxSingleStoreExtensionsTest {
         store.observeGet(3)
             .test()
             .await()
-            .assertValue("3 2")
+            .assertValue("3 1")
 
         // Return from fresh - forcing a new fetch
         store.observeFresh(3)
