@@ -5,12 +5,13 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.store.rx2.fromSingle
+import com.dropbox.store.rx2.fromSinglePersister
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
 import com.dropbox.store.rx2.observeClearAll
 import com.dropbox.store.rx2.withScheduler
-import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -30,8 +31,9 @@ class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String?>()
     private val store =
-        StoreBuilder.fromSingle<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } }
-            .withSinglePersister(
+        StoreBuilder.fromSingle(
+            fetcher = { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } },
+            sourceOfTruth = SourceOfTruth.fromSinglePersister<Int, String, String>(
                 reader = {
                     if (fakeDisk[it] != null)
                         Maybe.fromCallable { fakeDisk[it]!! }
@@ -50,6 +52,7 @@ class RxSingleStoreTest {
                     Completable.complete()
                 }
             )
+        )
             .withScheduler(Schedulers.trampoline())
             .build()
 

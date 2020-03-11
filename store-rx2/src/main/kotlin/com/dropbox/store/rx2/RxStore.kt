@@ -5,6 +5,7 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.impl.SourceOfTruth
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -62,6 +63,22 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
 }
 
 /**
+ * Creates a new [StoreBuilder] from a [Flowable] fetcher and a [SourceOfTruth].
+ *
+ * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
+ * per request protocol.
+ *
+ * @param fetcher a function for fetching a flow of network records.
+ * @param sourceOfTruth a source of truth for the store.
+ */
+@FlowPreview
+@ExperimentalCoroutinesApi
+fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
+    fetcher: (key: Key) -> Flowable<Input>,
+    sourceOfTruth: SourceOfTruth<Key, Input, Output>
+): StoreBuilder<Key, Output> = from({ key: Key -> fetcher(key).asFlow() }, sourceOfTruth)
+
+/**
  * Creates a new [StoreBuilder] from a [Single] fetcher.
  *
  * Use when creating a [Store] that fetches objects from a [Single] source that emits one response
@@ -76,6 +93,22 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     from { key: Key -> fetcher(key).toFlowable().asFlow() }
 
 /**
+ * Creates a new [StoreBuilder] from a [Single] fetcher and a [SourceOfTruth].
+ *
+ * Use when creating a [Store] that fetches objects from a [Single] source that emits one response
+ *
+ * @param fetcher a function for fetching a [Single] network response for a [Key]
+ * @param sourceOfTruth a source of truth for the store.
+ */
+@FlowPreview
+@ExperimentalCoroutinesApi
+fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromSingle(
+    fetcher: (key: Key) -> Single<Input>,
+    sourceOfTruth: SourceOfTruth<Key, Input, Output>
+): StoreBuilder<Key, Output> =
+    from({ key: Key -> fetcher(key).toFlowable().asFlow() }, sourceOfTruth)
+
+/**
  * Define what scheduler fetcher requests will be called on,
  * if a scheduler is not set Store will use [GlobalScope]
  */
@@ -88,23 +121,23 @@ fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
 }
 
 /**
- * Connects a (Non Flow) [Single] source of truth that is accessible via [reader], [writer],
+ * Creates a (Non Flow) [Single] source of truth that is accessible via [reader], [writer],
  * [delete], and [deleteAll].
  *
  * @see com.dropbox.android.external.store4.StoreBuilder.persister
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSinglePersister(
-    reader: (Key) -> Maybe<NewOutput>,
-    writer: (Key, Output) -> Single<Unit>,
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromSinglePersister(
+    reader: (Key) -> Maybe<Output>,
+    writer: (Key, Input) -> Single<Unit>,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
-): StoreBuilder<Key, NewOutput> {
+): SourceOfTruth<Key, Input, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
         if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
-    return nonFlowingPersister(
+    return fromNonFlow(
         reader = { key -> reader.invoke(key).await() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = deleteFun,
@@ -113,10 +146,10 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
 }
 
 /**
- * Connects a ([Flowable]) source of truth that is accessed via [reader], [writer] and [delete].
+ * Creates a ([Flowable]) source of truth that is accessed via [reader], [writer] and [delete].
  *
- * For maximal flexibility, [writer]'s record type ([Output]] and [reader]'s record type
- * ([NewOutput]) are not identical. This allows us to read one type of objects from network and
+ * For maximal flexibility, [writer]'s record type ([Input]] and [reader]'s record type
+ * ([Output]) are not identical. This allows us to read one type of objects from network and
  * transform them to another type when placing them in local storage.
  *
  * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
@@ -131,16 +164,16 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withFlowablePersister(
-    reader: (Key) -> Flowable<NewOutput>,
-    writer: (Key, Output) -> Single<Unit>,
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowablePersister(
+    reader: (Key) -> Flowable<Output>,
+    writer: (Key, Input) -> Single<Unit>,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
-): StoreBuilder<Key, NewOutput> {
+): SourceOfTruth<Key, Input, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
         if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
-    return persister(
+    return from(
         reader = { key -> reader.invoke(key).asFlow() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = deleteFun,

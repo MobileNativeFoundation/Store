@@ -15,6 +15,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
@@ -37,14 +38,16 @@ object Graph {
     fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow { key: String ->
-                provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
-            }
-            .persister(
-                reader = db.postDao()::loadPosts,
-                writer = db.postDao()::insertPosts,
-                delete = db.postDao()::clearFeedBySubredditName,
-                deleteAll = db.postDao()::clearAllFeeds
+            .fromNonFlow(
+                fetcher = { key: String ->
+                    provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
+                },
+                sourceOfTruth = SourceOfTruth.from(
+                    reader = db.postDao()::loadPosts,
+                    writer = db.postDao()::insertPosts,
+                    delete = db.postDao()::clearFeedBySubredditName,
+                    deleteAll = db.postDao()::clearAllFeeds
+                )
             )
             .build()
     }
@@ -52,14 +55,17 @@ object Graph {
     fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
-                provideRetrofit().fetchSubreddit(query, config.limit)
-                    .data.children.map(::toPosts)
-            }
-            .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
-                writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
-                delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
-                deleteAll = db.postDao()::clearAllFeeds
+            .fromNonFlow<Pair<String, RedditConfig>, List<Post>, List<Post>>(
+                fetcher = { (query, config) ->
+                    provideRetrofit().fetchSubreddit(query, config.limit)
+                        .data.children.map(::toPosts)
+                },
+                sourceOfTruth = SourceOfTruth.from(
+                    reader = { (query, _) -> db.postDao().loadPosts(query) },
+                    writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
+                    delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
+                    deleteAll = db.postDao()::clearAllFeeds
+                )
             )
             .build()
     }
@@ -85,25 +91,25 @@ object Graph {
             })
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
-            .fromNonFlow<Unit, RedditConfig> {
+            .fromNonFlow<Unit, RedditConfig, RedditConfig> (fetcher = {
                 delay(500)
                 RedditConfig(10)
-            }
-            .nonFlowingPersister(
-                reader = {
-                    runCatching {
-                        val source = fileSystemPersister.read(Unit)
-                        source?.let { adapter.fromJson(it) }
-                    }.getOrNull()
-                },
-                writer = { _, config ->
-                    val buffer = Buffer()
-                    withContext(Dispatchers.IO) {
-                        adapter.toJson(buffer, config)
+            },
+                sourceOfTruth = SourceOfTruth.fromNonFlow(
+                    reader = {
+                        runCatching {
+                            val source = fileSystemPersister.read(Unit)
+                            source?.let { adapter.fromJson(it) }
+                        }.getOrNull()
+                    },
+                    writer = { _, config ->
+                        val buffer = Buffer()
+                        withContext(Dispatchers.IO) {
+                            adapter.toJson(buffer, config)
+                        }
+                        fileSystemPersister.write(Unit, buffer)
                     }
-                    fileSystemPersister.write(Unit, buffer)
-                }
-            )
+                ))
             .cachePolicy(
                 MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(
                     TimeUnit.SECONDS

@@ -85,17 +85,23 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
-                    StoreBuilder
-                        .from { key: Key ->
-                            flow {
-                                val value = fetcher.invoke(key = key)
-                                if (fetchParser != null) {
-                                    emit(fetchParser.apply(key, value))
-                                } else {
-                                    emit(value)
-                                }
+                    val realFetcher = { key: Key ->
+                        flow {
+                            val value = fetcher.invoke(key = key)
+                            if (fetchParser != null) {
+                                emit(fetchParser.apply(key, value))
+                            } else {
+                                emit(value)
                             }
                         }
+                    }
+                    StoreBuilder.let {
+                        if (persister == null) {
+                            it.from(realFetcher)
+                        } else {
+                            it.from(realFetcher, sourceOfTruthFromLegacy(persister, postParser))
+                        }
+                    }
                         .scope(scope)
                         .let {
                             if (cached) {
@@ -108,18 +114,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
                                 it.disableCache()
                             }
                         }
-                        .let {
-                            if (persister == null) {
-                                it
-                            } else {
-                                val sourceOfTruth = sourceOfTruthFromLegacy(persister, postParser)
-                                it.persister(
-                                    sourceOfTruth::reader,
-                                    sourceOfTruth::write,
-                                    sourceOfTruth::delete
-                                )
-                            }
-                        }.build()
+                        .build()
                 }
             )
         }

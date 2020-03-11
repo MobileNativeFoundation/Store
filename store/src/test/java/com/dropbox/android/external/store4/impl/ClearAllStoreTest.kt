@@ -5,6 +5,7 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,14 +43,10 @@ class ClearAllStoreTest {
     fun `calling clearAll() on store with persister (no in-memory cache) deletes all entries from the persister`() =
         testScope.runBlockingTest {
             val store = StoreBuilder.fromNonFlow(
-                fetcher = fetcher
+                fetcher = fetcher,
+                sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
                 .disableCache()
-                .nonFlowingPersister(
-                    reader = persister::read,
-                    writer = persister::write,
-                    deleteAll = persister::deleteAll
-                )
                 .build()
 
             // should receive data from network first time

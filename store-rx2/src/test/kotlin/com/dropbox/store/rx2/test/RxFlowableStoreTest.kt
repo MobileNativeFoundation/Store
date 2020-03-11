@@ -4,9 +4,10 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.fromFlowable
-import com.dropbox.store.rx2.withFlowablePersister
+import com.dropbox.store.rx2.fromFlowablePersister
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -24,24 +25,24 @@ class RxFlowableStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.fromFlowable<Int, String> {
+        StoreBuilder.fromFlowable<Int, String, String> ({
             Flowable.create({ emitter ->
                 emitter.onNext("$it ${atomicInteger.incrementAndGet()} occurrence")
                 emitter.onNext("$it ${atomicInteger.incrementAndGet()} occurrence")
                 emitter.onComplete()
             }, BackpressureStrategy.LATEST)
-        }
-            .withFlowablePersister(
+        },
+            sourceOfTruth = SourceOfTruth.fromFlowablePersister(
                 reader = {
                     if (fakeDisk[it] != null)
                         Flowable.fromCallable { fakeDisk[it]!! }
                     else
-                        Flowable.empty()
+                        Flowable.empty<String>()
                 },
                 writer = { key, value ->
                     Single.fromCallable { fakeDisk[key] = value }
                 }
-            )
+            ))
             .build()
 
     @Test

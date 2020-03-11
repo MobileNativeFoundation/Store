@@ -40,13 +40,13 @@ class FetcherControllerTest {
     @Test
     fun simple() = testScope.runBlockingTest {
         val fetcherController = FetcherController<Int, Int, Int>(
-                scope = testScope,
-                realFetcher = { key: Int ->
-                    flow {
-                        emit(key * key)
-                    }
-                },
-                sourceOfTruth = null
+            scope = testScope,
+            realFetcher = { key: Int ->
+                flow {
+                    emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
+                }
+            },
+            sourceOfTruth = null
         )
         val fetcher = fetcherController.getFetcher(3)
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
@@ -54,10 +54,10 @@ class FetcherControllerTest {
             assertThat(fetcherController.fetcherSize()).isEqualTo(1)
         }.first()
         assertThat(received).isEqualTo(
-                Data(
-                        value = 9,
-                        origin = Fetcher
-                )
+            Data(
+                value = 9,
+                origin = Fetcher
+            )
         )
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
     }
@@ -66,23 +66,23 @@ class FetcherControllerTest {
     fun concurrent() = testScope.runBlockingTest {
         var createdCnt = 0
         val fetcherController = FetcherController<Int, Int, Int>(
-                scope = testScope,
-                realFetcher = { key: Int ->
-                    createdCnt++
-                    flow {
-                        // make sure it takes time, otherwise, we may not share
-                        delay(1)
-                        emit(key * key)
-                    }
-                },
-                sourceOfTruth = null
+            scope = testScope,
+            realFetcher = { key: Int ->
+                createdCnt++
+                flow {
+                    // make sure it takes time, otherwise, we may not share
+                    delay(1)
+                    emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
+                }
+            },
+            sourceOfTruth = null
         )
         val fetcherCount = 20
         fun createFetcher() = async {
             fetcherController.getFetcher(3)
-                    .onEach {
-                        assertThat(fetcherController.fetcherSize()).isEqualTo(1)
-                    }.first()
+                .onEach {
+                    assertThat(fetcherController.fetcherSize()).isEqualTo(1)
+                }.first()
         }
 
         val fetchers = (0 until fetcherCount).map {
@@ -90,10 +90,10 @@ class FetcherControllerTest {
         }
         fetchers.forEach {
             assertThat(it.await()).isEqualTo(
-                    Data(
-                            value = 9,
-                            origin = Fetcher
-                    )
+                Data(
+                    value = 9,
+                    origin = Fetcher
+                )
             )
         }
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)

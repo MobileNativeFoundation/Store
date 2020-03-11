@@ -15,6 +15,7 @@
  */
 package com.dropbox.android.external.store4.testutil
 
+import com.dropbox.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -34,6 +35,10 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
     private val writer: suspend (Key, Input) -> Unit,
     private val delete: (suspend (Key) -> Unit)? = null
 ) {
+
+    val supportsDelete: Boolean
+        get() = delete != null
+
     private val versionTracker = KeyTracker<Key>()
 
     fun flowReader(key: Key): Flow<Output?> = flow {
@@ -54,6 +59,14 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
         }
     }
 }
+
+@ExperimentalCoroutinesApi
+fun <Key : Any, Input : Any, Output : Any> SimplePersisterAsFlowable<Key, Input, Output>.asSourceOfTruth() =
+    SourceOfTruth.from(
+        reader = ::flowReader,
+        writer = ::flowWriter,
+        delete = ::flowDelete.takeIf { supportsDelete }
+    )
 
 /**
  * helper class which provides Flows for Keys that can be tracked.
@@ -132,7 +145,8 @@ internal class KeyTracker<Key> {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun <Key, Output> InMemoryPersister<Key, Output>.asFlowable() = SimplePersisterAsFlowable(
-    reader = this::read,
-    writer = this::write
-)
+suspend fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
+    SimplePersisterAsFlowable(
+        reader = this::read,
+        writer = this::write
+    )

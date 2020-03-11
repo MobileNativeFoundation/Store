@@ -4,6 +4,7 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,15 +29,11 @@ class ClearStoreByKeyTest {
         testScope.runBlockingTest {
             val key = "key"
             val value = 1
-            val store = StoreBuilder.fromNonFlow<String, Int>(
-                fetcher = { value }
+            val store = StoreBuilder.fromNonFlow(
+                fetcher = { value },
+                sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
                 .disableCache()
-                .nonFlowingPersister(
-                    reader = persister::read,
-                    writer = persister::write,
-                    delete = persister::deleteByKey
-                )
                 .build()
 
             // should receive data from network first time
@@ -119,20 +116,16 @@ class ClearStoreByKeyTest {
             val key2 = "key2"
             val value1 = 1
             val value2 = 2
-            val store = StoreBuilder.fromNonFlow<String, Int>(
+            val store = StoreBuilder.fromNonFlow(
                 fetcher = { key ->
                     when (key) {
                         key1 -> value1
                         key2 -> value2
                         else -> throw IllegalStateException("Unknown key")
                     }
-                }
+                },
+                sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
-                .nonFlowingPersister(
-                    reader = persister::read,
-                    writer = persister::write,
-                    delete = persister::deleteByKey
-                )
                 .build()
 
             // get data for both keys
