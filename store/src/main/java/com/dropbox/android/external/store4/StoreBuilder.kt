@@ -140,7 +140,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          */
         fun <Key : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Output>
-        ): StoreBuilder<Key, Output> = RealBuilder(
+        ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher,
             fetcherTransformer = { FetcherResult.Data(it) }
         )
@@ -157,7 +157,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = RealBuilder(
+        ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher = fetcher,
             fetcherTransformer = { FetcherResult.Data(it) },
             sourceOfTruth = sourceOfTruth
@@ -176,7 +176,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
         fun <Key : Any, RawInput : Any, Input : Any> from(
             fetcher: (key: Key) -> Flow<RawInput>,
             fetcherTransformer: (RawInput) -> FetcherResult<Input>
-        ): StoreBuilder<Key, Input> = RealBuilder(
+        ): StoreBuilder<Key, Input> = RealStoreBuilder(
             fetcher = fetcher,
             fetcherTransformer = fetcherTransformer
         )
@@ -196,7 +196,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
             fetcher: (key: Key) -> Flow<RawInput>,
             fetcherTransformer: (RawInput) -> FetcherResult<Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = RealBuilder(
+        ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher = fetcher,
             fetcherTransformer = fetcherTransformer,
             sourceOfTruth = sourceOfTruth
@@ -206,7 +206,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-private class RealBuilder<Key : Any, RawInput : Any, Input : Any, Output : Any>(
+private class RealStoreBuilder<Key : Any, RawInput : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<RawInput>,
     private val fetcherTransformer: (RawInput) -> FetcherResult<Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
@@ -214,17 +214,17 @@ private class RealBuilder<Key : Any, RawInput : Any, Input : Any, Output : Any>(
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
-    override fun scope(scope: CoroutineScope): RealBuilder<Key, RawInput, Input, Output> {
+    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, RawInput, Input, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy?): RealBuilder<Key, RawInput, Input, Output> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy?): RealStoreBuilder<Key, RawInput, Input, Output> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): RealBuilder<Key, RawInput, Input, Output> {
+    override fun disableCache(): RealStoreBuilder<Key, RawInput, Input, Output> {
         cachePolicy = null
         return this
     }

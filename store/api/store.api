@@ -23,13 +23,27 @@ public final class com/dropbox/android/external/store4/FetcherResult$Data : com/
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/dropbox/android/external/store4/FetcherResult$Error : com/dropbox/android/external/store4/FetcherResult {
+public abstract class com/dropbox/android/external/store4/FetcherResult$Error : com/dropbox/android/external/store4/FetcherResult {
+}
+
+public final class com/dropbox/android/external/store4/FetcherResult$Error$Exception : com/dropbox/android/external/store4/FetcherResult$Error {
 	public fun <init> (Ljava/lang/Throwable;)V
 	public final fun component1 ()Ljava/lang/Throwable;
-	public final fun copy (Ljava/lang/Throwable;)Lcom/dropbox/android/external/store4/FetcherResult$Error;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/FetcherResult$Error;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/FetcherResult$Error;
+	public final fun copy (Ljava/lang/Throwable;)Lcom/dropbox/android/external/store4/FetcherResult$Error$Exception;
+	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/FetcherResult$Error$Exception;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/FetcherResult$Error$Exception;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getError ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/android/external/store4/FetcherResult$Error$Message : com/dropbox/android/external/store4/FetcherResult$Error {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/dropbox/android/external/store4/FetcherResult$Error$Message;
+	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/FetcherResult$Error$Message;Ljava/lang/String;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/FetcherResult$Error$Message;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -125,7 +139,7 @@ public final class com/dropbox/android/external/store4/StoreRequest$Companion {
 
 public abstract class com/dropbox/android/external/store4/StoreResponse {
 	public final fun dataOrNull ()Ljava/lang/Object;
-	public final fun errorOrNull ()Ljava/lang/Throwable;
+	public final fun errorMessageOrNull ()Ljava/lang/String;
 	public abstract fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public final fun requireData ()Ljava/lang/Object;
 	public final fun throwIfError ()V
@@ -144,14 +158,30 @@ public final class com/dropbox/android/external/store4/StoreResponse$Data : com/
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/dropbox/android/external/store4/StoreResponse$Error : com/dropbox/android/external/store4/StoreResponse {
+public abstract class com/dropbox/android/external/store4/StoreResponse$Error : com/dropbox/android/external/store4/StoreResponse {
+}
+
+public final class com/dropbox/android/external/store4/StoreResponse$Error$Exception : com/dropbox/android/external/store4/StoreResponse$Error {
 	public fun <init> (Ljava/lang/Throwable;Lcom/dropbox/android/external/store4/ResponseOrigin;)V
 	public final fun component1 ()Ljava/lang/Throwable;
 	public final fun component2 ()Lcom/dropbox/android/external/store4/ResponseOrigin;
-	public final fun copy (Ljava/lang/Throwable;Lcom/dropbox/android/external/store4/ResponseOrigin;)Lcom/dropbox/android/external/store4/StoreResponse$Error;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/StoreResponse$Error;Ljava/lang/Throwable;Lcom/dropbox/android/external/store4/ResponseOrigin;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/StoreResponse$Error;
+	public final fun copy (Ljava/lang/Throwable;Lcom/dropbox/android/external/store4/ResponseOrigin;)Lcom/dropbox/android/external/store4/StoreResponse$Error$Exception;
+	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/StoreResponse$Error$Exception;Ljava/lang/Throwable;Lcom/dropbox/android/external/store4/ResponseOrigin;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/StoreResponse$Error$Exception;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getError ()Ljava/lang/Throwable;
+	public fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/android/external/store4/StoreResponse$Error$Message : com/dropbox/android/external/store4/StoreResponse$Error {
+	public fun <init> (Ljava/lang/String;Lcom/dropbox/android/external/store4/ResponseOrigin;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public final fun copy (Ljava/lang/String;Lcom/dropbox/android/external/store4/ResponseOrigin;)Lcom/dropbox/android/external/store4/StoreResponse$Error$Message;
+	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/StoreResponse$Error$Message;Ljava/lang/String;Lcom/dropbox/android/external/store4/ResponseOrigin;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/StoreResponse$Error$Message;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
 	public fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -166,6 +196,10 @@ public final class com/dropbox/android/external/store4/StoreResponse$Loading : c
 	public fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/android/external/store4/StoreResponseKt {
+	public static final fun doThrow (Lcom/dropbox/android/external/store4/StoreResponse$Error;)Ljava/lang/Void;
 }
 
 public abstract interface class com/dropbox/android/external/store4/impl/SourceOfTruth {

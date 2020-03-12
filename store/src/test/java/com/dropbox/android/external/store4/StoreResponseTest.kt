@@ -16,18 +16,18 @@ class StoreResponseTest {
 
     @Test(expected = RuntimeException::class)
     fun throwIfError() {
-        StoreResponse.Error<Any>(RuntimeException(), Fetcher).throwIfError()
+        StoreResponse.Error.Exception<Any>(RuntimeException(), Fetcher).throwIfError()
     }
 
     @Test()
     fun errorOrNull() {
         assertThat(
-            StoreResponse.Error<Any>(
+            StoreResponse.Error.Exception<Any>(
                 RuntimeException(),
                 Fetcher
-            ).errorOrNull()
-        ).isInstanceOf(RuntimeException::class.java)
-        assertThat(StoreResponse.Loading<Any>(Fetcher).errorOrNull()).isNull()
+            ).errorMessageOrNull()
+        ).contains(RuntimeException::class.java.toString())
+        assertThat(StoreResponse.Loading<Any>(Fetcher).errorMessageOrNull()).isNull()
     }
 
     @Test(expected = IllegalStateException::class)

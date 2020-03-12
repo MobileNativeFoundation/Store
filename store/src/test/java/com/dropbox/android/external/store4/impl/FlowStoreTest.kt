@@ -419,7 +419,7 @@ class FlowStoreTest {
                 Loading(
                     origin = Fetcher
                 ),
-                StoreResponse.Error(
+                StoreResponse.Error.Exception(
                     error = exception,
                     origin = Fetcher
                 ),
@@ -437,7 +437,7 @@ class FlowStoreTest {
                 Loading(
                     origin = Fetcher
                 ),
-                StoreResponse.Error(
+                StoreResponse.Error.Exception(
                     error = exception,
                     origin = Fetcher
                 )

@@ -70,13 +70,17 @@ internal class FetcherController<Key, Input, Output>(
                             it.value,
                             origin = ResponseOrigin.Fetcher
                         ) as StoreResponse<Input>
-                        is FetcherResult.Error -> StoreResponse.Error(
+                        is FetcherResult.Error.Message -> StoreResponse.Error.Message(
+                            it.message,
+                            origin = ResponseOrigin.Fetcher
+                        )
+                        is FetcherResult.Error.Exception -> StoreResponse.Error.Exception(
                             it.error,
                             origin = ResponseOrigin.Fetcher
                         )
                     }
                 }.catch {
-                    emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
+                    emit(StoreResponse.Error.Exception(it, origin = ResponseOrigin.Fetcher))
                 },
                 piggybackingDownstream = enablePiggyback,
                 onEach = { response ->
