@@ -29,6 +29,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
 
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 data class TestStoreBuilder<Key : Any, Output : Any>(
     private val buildStore: () -> Store<Key, Output>
@@ -36,7 +37,6 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
     fun build(storeType: TestStoreType): Store<Key, out Output> = when (storeType) {
         TestStoreType.FlowStore -> buildStore()
     }
-
     companion object {
 
         fun <Key : Any, Output : Any> from(
