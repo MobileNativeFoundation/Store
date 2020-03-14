@@ -44,6 +44,11 @@ interface Cache<in Key : Any, Value : Any> {
     fun invalidateAll()
 
     /**
+     * Returns a defensive copy of cache entries as [Map]
+     */
+    fun asMap(): Map<in Key, Value>
+
+    /**
      * Main entry point for creating a [Cache].
      */
     interface Builder {
