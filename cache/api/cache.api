@@ -1,4 +1,5 @@
 public abstract interface class com/dropbox/android/external/cache4/Cache {
+	public abstract fun asMap ()Ljava/util/Map;
 	public abstract fun get (Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun get (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public abstract fun invalidate (Ljava/lang/Object;)V
