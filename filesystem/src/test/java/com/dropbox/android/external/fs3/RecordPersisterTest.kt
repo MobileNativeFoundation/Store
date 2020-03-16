@@ -5,19 +5,21 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
-import java.util.concurrent.TimeUnit
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
 
+@ExperimentalTime
 class RecordPersisterTest {
 
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
 
-    private val sourcePersister = RecordPersister(fileSystem, 1L, TimeUnit.DAYS)
+    private val sourcePersister = RecordPersister(fileSystem, 1.days)
     private val simple = BarCode("type", "key")
 
     @Test
@@ -31,31 +33,31 @@ class RecordPersisterTest {
     }
 
     @Test
-    fun freshTest() = runBlocking<Unit> {
-        whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, SourcePersister.pathForBarcode(simple)))
+    fun freshTest() = runBlocking {
+        whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
                 .thenReturn(RecordState.FRESH)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.FRESH)
     }
 
     @Test
-    fun staleTest() = runBlocking<Unit> {
-        whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, SourcePersister.pathForBarcode(simple)))
+    fun staleTest() = runBlocking {
+        whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
                 .thenReturn(RecordState.STALE)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.STALE)
     }
 
     @Test
-    fun missingTest() = runBlocking<Unit> {
-        whenever(fileSystem.getRecordState(TimeUnit.DAYS, 1L, SourcePersister.pathForBarcode(simple)))
+    fun missingTest() = runBlocking {
+        whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
                 .thenReturn(RecordState.MISSING)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.MISSING)
     }
 
     @Test
-    fun readDoesNotExist() = runBlocking<Unit> {
+    fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(SourcePersister.pathForBarcode(simple)))
                 .thenReturn(false)
 
@@ -67,12 +69,12 @@ class RecordPersisterTest {
     }
 
     @Test
-    fun write() = runBlocking<Unit> {
+    fun write() = runBlocking {
         assertThat(sourcePersister.write(simple, bufferedSource)).isTrue()
     }
 
     @Test
-    fun pathForBarcode() = runBlocking<Unit> {
+    fun pathForBarcode() = runBlocking {
         assertThat(SourcePersister.pathForBarcode(simple)).isEqualTo("typekey")
     }
 }

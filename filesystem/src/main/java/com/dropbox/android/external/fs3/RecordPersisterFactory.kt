@@ -7,12 +7,13 @@ import com.dropbox.android.external.store4.legacy.BarCode
 import okio.BufferedSource
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * Factory for [RecordPersister]
  */
-
+@ExperimentalTime
 object RecordPersisterFactory {
 
     /**
@@ -24,10 +25,9 @@ object RecordPersisterFactory {
     @Throws(IOException::class)
     fun create(
         root: File,
-        expirationDuration: Long,
-        expirationUnit: TimeUnit
+        expirationDuration: Duration
     ): Persister<BufferedSource, BarCode> =
-            RecordPersister(FileSystemFactory.create(root), expirationDuration, expirationUnit)
+            RecordPersister(FileSystemFactory.create(root), expirationDuration)
 
     /**
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
@@ -35,8 +35,7 @@ object RecordPersisterFactory {
      */
     fun create(
         fileSystem: FileSystem,
-        expirationDuration: Long,
-        expirationUnit: TimeUnit
+        expirationDuration: Duration
     ): Persister<BufferedSource, BarCode> =
-            RecordPersister(fileSystem, expirationDuration, expirationUnit)
+            RecordPersister(fileSystem, expirationDuration)
 }
