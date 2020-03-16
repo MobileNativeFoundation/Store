@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized
 import java.util.concurrent.atomic.AtomicInteger
 
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreThrowOnNoItems(

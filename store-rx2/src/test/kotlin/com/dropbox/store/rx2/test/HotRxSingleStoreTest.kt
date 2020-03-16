@@ -17,6 +17,7 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class HotRxSingleStoreTest {
     private val testScope = TestCoroutineScope()

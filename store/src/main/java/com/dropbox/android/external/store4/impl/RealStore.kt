@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.withIndex
 
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @FlowPreview
 internal class RealStore<Key : Any, Input : Any, Output : Any>(

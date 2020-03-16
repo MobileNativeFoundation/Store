@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreTest(

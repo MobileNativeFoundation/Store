@@ -40,6 +40,7 @@ class StreamFragment : Fragment(), CoroutineScope {
         return inflater.inflate(R.layout.fragment_stream, container, false)
     }
 
+    @ExperimentalStdlibApi
     @InternalCoroutinesApi
     @FlowPreview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

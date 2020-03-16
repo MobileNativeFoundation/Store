@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class RxFlowableStoreTest {
     private val atomicInteger = AtomicInteger(0)

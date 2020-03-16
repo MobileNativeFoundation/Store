@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @ExperimentalStoreApi
 @RunWith(JUnit4::class)
