@@ -9,14 +9,13 @@ import okio.source
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.lang.String.format
 
 internal class FSFile(root: File, private val pathValue: String) {
     private val file = File(root, pathValue)
 
     init {
         if (file.exists() && file.isDirectory) {
-            throw FileNotFoundException(format("expecting a file at %s, instead found a directory", pathValue))
+            throw FileNotFoundException("expecting a file at $pathValue, instead found a directory")
         }
         Util.createParentDirs(this.file)
     }

@@ -5,7 +5,8 @@ import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * a **FileSystem** provides an api to a hierarchal structure of [File]s, which does *not* necessarily
@@ -102,9 +103,9 @@ interface FileSystem {
      * compares age of file with given expiration time and returns
      * appropriate recordState
      */
+    @ExperimentalTime
     fun getRecordState(
-        expirationUnit: TimeUnit,
-        expirationDuration: Long,
+        expirationDuration: Duration,
         path: String
     ): RecordState
 }
