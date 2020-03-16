@@ -26,6 +26,7 @@ import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.testutil.FakeFetcher
+import com.dropbox.android.external.store4.testutil.FakeFlowingFetcher
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asFlowable
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
@@ -274,7 +275,7 @@ class FlowStoreTest {
 
     @Test
     fun flowingFetcher() = testScope.runBlockingTest {
-        val fetcher = FlowingFakeFetcher(
+        val fetcher = FakeFlowingFetcher(
             3 to "three-1",
             3 to "three-2"
         )
@@ -640,22 +641,6 @@ class FlowStoreTest {
             refresh = false
         )
     )
-
-    private class FlowingFakeFetcher<Key, Output>(
-        vararg val responses: Pair<Key, Output>
-    ) {
-        fun createFlow(key: Key) = flow {
-            responses.filter {
-                it.first == key
-            }.forEach {
-                // we delay here to avoid collapsing fetcher values, otherwise, there is a
-                // possibility that consumer won't be fast enough to get both values before new
-                // value overrides the previous one.
-                delay(1)
-                emit(it.second)
-            }
-        }
-    }
 
     private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
         scope(testScope).build()

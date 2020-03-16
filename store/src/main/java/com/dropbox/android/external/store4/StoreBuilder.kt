@@ -95,10 +95,10 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcherTransformer used to translate your fetcher's return value to success value
          * or error in the case that your fetcher does not communicate errors through exceptions
          */
-        fun <Key : Any, RawInput : Any, Input : Any> fromNonFlow(
-            fetcher: suspend (key: Key) -> RawInput,
-            fetcherTransformer: (RawInput) -> FetcherResult<Input>
-        ): StoreBuilder<Key, Input> = from(
+        fun <Key : Any, RawOutput : Any, Output : Any> fromNonFlow(
+            fetcher: suspend (key: Key) -> RawOutput,
+            fetcherTransformer: (RawOutput) -> FetcherResult<Output>
+        ): StoreBuilder<Key, Output> = from(
             fetcher = fetcher.asFlow(),
             fetcherTransformer = fetcherTransformer
         )
@@ -173,10 +173,10 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcherTransformer used to translate your fetcher's return value to success value
          * or error in the case that your fetcher does not communicate errors through exceptions
          */
-        fun <Key : Any, RawInput : Any, Input : Any> from(
-            fetcher: (key: Key) -> Flow<RawInput>,
-            fetcherTransformer: (RawInput) -> FetcherResult<Input>
-        ): StoreBuilder<Key, Input> = RealStoreBuilder(
+        fun <Key : Any, RawOutput : Any, Output : Any> from(
+            fetcher: (key: Key) -> Flow<RawOutput>,
+            fetcherTransformer: (RawOutput) -> FetcherResult<Output>
+        ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher = fetcher,
             fetcherTransformer = fetcherTransformer
         )

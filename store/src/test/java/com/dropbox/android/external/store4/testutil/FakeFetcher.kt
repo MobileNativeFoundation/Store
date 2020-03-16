@@ -16,6 +16,8 @@
 package com.dropbox.android.external.store4.testutil
 
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
 
 class FakeFetcher<Key, Output>(
     vararg val responses: Pair<Key, Output>
@@ -31,3 +33,20 @@ class FakeFetcher<Key, Output>(
         return pair.second
     }
 }
+
+class FakeFlowingFetcher<Key, Output>(
+    vararg val responses: Pair<Key, Output>
+) {
+    fun createFlow(key: Key) = flow {
+        responses.filter {
+            it.first == key
+        }.forEach {
+            // we delay here to avoid collapsing fetcher values, otherwise, there is a
+            // possibility that consumer won't be fast enough to get both values before new
+            // value overrides the previous one.
+            delay(1)
+            emit(it.second)
+        }
+    }
+}
+

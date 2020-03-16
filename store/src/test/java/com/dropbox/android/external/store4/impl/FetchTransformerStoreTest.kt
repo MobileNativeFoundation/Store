@@ -48,7 +48,7 @@ class FetchTransformerStoreTest {
         }
 
     @Test
-    fun `GIVEN transformer WHEN error value THEN error returned to user AND error isn't cached`() =
+    fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             val fetcher = FakeFetcher(
                 3 to -1,
@@ -88,7 +88,48 @@ class FetchTransformerStoreTest {
         }
 
     @Test
-    fun `GIVEN transformer WHEN error excetion THEN error returned to user AND error isn't cached`() =
+    fun `GIVEN transformer WHEN error exception THEN error returned to user AND error isn't cached`() =
+        testScope.runBlockingTest {
+            val e = Exception()
+            val fetcher = FakeFetcher(
+                3 to -1,
+                3 to 1
+            )
+            val pipeline = StoreBuilder
+                .fromNonFlow(
+                    fetcher = fetcher::fetch,
+                    fetcherTransformer = {
+                        if (it > 0) {
+                            FetcherResult.Data("three-$it")
+                        } else {
+                            FetcherResult.Error.Exception<String>(e)
+                        }
+                    })
+                .buildWithTestScope()
+
+            assertThat(pipeline.stream(StoreRequest.fresh(3)))
+                .emitsExactly(
+                    StoreResponse.Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ), StoreResponse.Error.Exception(
+                        error = e,
+                        origin = ResponseOrigin.Fetcher
+                    )
+                )
+            assertThat(
+                pipeline.stream(StoreRequest.cached(3, refresh = false))
+            ).emitsExactly(
+                StoreResponse.Loading(
+                    origin = ResponseOrigin.Fetcher
+                ), StoreResponse.Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        }
+
+    @Test
+    fun `GIVEN transformer WHEN exception thrown THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             var count = 0
             val e = Exception()

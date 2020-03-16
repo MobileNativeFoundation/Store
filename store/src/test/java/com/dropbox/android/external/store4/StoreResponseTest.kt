@@ -15,18 +15,29 @@ class StoreResponseTest {
     }
 
     @Test(expected = RuntimeException::class)
-    fun throwIfError() {
+    fun throwIfErrorException() {
         StoreResponse.Error.Exception<Any>(RuntimeException(), Fetcher).throwIfError()
     }
 
+    @Test(expected = IllegalStateException::class)
+    fun throwIfErrorMessage() {
+        StoreResponse.Error.Message<Any>("test error", Fetcher).throwIfError()
+    }
+
     @Test()
-    fun errorOrNull() {
+    fun errorMessageOrNull() {
         assertThat(
             StoreResponse.Error.Exception<Any>(
                 RuntimeException(),
                 Fetcher
             ).errorMessageOrNull()
         ).contains(RuntimeException::class.java.toString())
+        assertThat(
+            StoreResponse.Error.Message<Any>(
+                "test error message",
+                Fetcher
+            ).errorMessageOrNull()
+        ).isEqualTo("test error message")
         assertThat(StoreResponse.Loading<Any>(Fetcher).errorMessageOrNull()).isNull()
     }
 

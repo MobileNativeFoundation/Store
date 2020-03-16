@@ -145,7 +145,7 @@ internal class KeyTracker<Key> {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
+fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
     SimplePersisterAsFlowable(
         reader = this::read,
         writer = this::write
