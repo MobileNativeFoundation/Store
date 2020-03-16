@@ -11,6 +11,8 @@ import com.dropbox.store.rx2.fromFlowablePersister
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
+import io.reactivex.schedulers.TestScheduler
+import io.reactivex.subscribers.TestSubscriber
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import org.junit.Test
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @FlowPreview
 @ExperimentalCoroutinesApi
 class RxFlowableStoreTest {
+    private val testScheduler = TestScheduler()
     private val atomicInteger = AtomicInteger(0)
     private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
@@ -47,8 +50,12 @@ class RxFlowableStoreTest {
 
     @Test
     fun simpleTest() {
+        var testSubscriber = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.fresh(3))
-            .test()
+            .subscribeOn(testScheduler)
+            .subscribe(testSubscriber)
+        testScheduler.triggerActions()
+        testSubscriber
             .awaitCount(3)
             .assertValues(
                 StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
@@ -56,16 +63,24 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
+        testSubscriber = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.cached(3, false))
-            .test()
+            .subscribeOn(testScheduler)
+            .subscribe(testSubscriber)
+        testScheduler.triggerActions()
+        testSubscriber
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Cache),
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Persister)
             )
 
+        testSubscriber = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.fresh(3))
-            .test()
+            .subscribeOn(testScheduler)
+            .subscribe(testSubscriber)
+        testScheduler.triggerActions()
+        testSubscriber
             .awaitCount(3)
             .assertValues(
                 StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
@@ -73,8 +88,12 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
 
+        testSubscriber = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.cached(3, false))
-            .test()
+            .subscribeOn(testScheduler)
+            .subscribe(testSubscriber)
+        testScheduler.triggerActions()
+        testSubscriber
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Cache),
