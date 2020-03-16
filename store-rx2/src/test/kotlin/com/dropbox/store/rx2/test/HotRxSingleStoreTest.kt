@@ -23,7 +23,7 @@ class HotRxSingleStoreTest {
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
         testScope.runBlockingTest {
-            val fetcher = FakeFetcher(
+            val fetcher = FakeRxFetcher(
                 3 to "three-1",
                 3 to "three-2"
             )
@@ -62,7 +62,7 @@ class HotRxSingleStoreTest {
         }
 }
 
-class FakeFetcher<Key, Output>(
+class FakeRxFetcher<Key, Output>(
     vararg val responses: Pair<Key, Output>
 ) {
     private var index = 0
