@@ -49,4 +49,3 @@ class FakeFlowingFetcher<Key, Output>(
         }
     }
 }
-

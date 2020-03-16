@@ -58,7 +58,7 @@ fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, RawOutput : Any, Output: Any> StoreBuilder.Companion.fromFlowable(
+fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<RawOutput>,
     fetcherTransformer: (RawOutput) -> FetcherResult<Output>
 ): StoreBuilder<Key, Output> = from(
@@ -79,7 +79,7 @@ fun <Key : Any, RawOutput : Any, Output: Any> StoreBuilder.Companion.fromFlowabl
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, RawInput: Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
+fun <Key : Any, RawInput : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<RawInput>,
     fetcherTransformer: (RawInput) -> FetcherResult<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>
@@ -130,7 +130,7 @@ fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromSingle(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, RawOutput: Any, Output : Any> StoreBuilder.Companion.fromSingle(
+fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<RawOutput>,
     fetcherTransformer: (RawOutput) -> FetcherResult<Output>
 ): StoreBuilder<Key, Output> = from(

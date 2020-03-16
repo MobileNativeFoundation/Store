@@ -5,20 +5,10 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.android.external.store4.impl.SourceOfTruth
 import io.reactivex.Completable
 import io.reactivex.Flowable
-import io.reactivex.Maybe
-import io.reactivex.Scheduler
-import io.reactivex.Single
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.rx2.asCoroutineDispatcher
 import kotlinx.coroutines.rx2.asFlowable
-import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.rx2.rxCompletable
 
 /**
