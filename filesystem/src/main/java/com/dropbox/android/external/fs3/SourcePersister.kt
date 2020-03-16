@@ -4,7 +4,6 @@ import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.legacy.BarCode
 import okio.BufferedSource
-import javax.inject.Inject
 
 /**
  * Persister to be used when storing something to persister from a BufferedSource
@@ -15,8 +14,7 @@ import javax.inject.Inject
  * .parser(new GsonSourceParser<>(gson, BookResults.class))
  * .open();
  */
-open class SourcePersister @Inject
-constructor(fileSystem: FileSystem) : Persister<BufferedSource, BarCode> {
+open class SourcePersister(fileSystem: FileSystem) : Persister<BufferedSource, BarCode> {
 
     protected val sourceFileReader: SourceFileReader = SourceFileReader(fileSystem)
     protected val sourceFileWriter: SourceFileWriter = SourceFileWriter(fileSystem)

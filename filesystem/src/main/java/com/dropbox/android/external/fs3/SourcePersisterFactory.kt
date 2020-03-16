@@ -8,7 +8,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import okio.BufferedSource
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * Factory for [SourcePersister]
@@ -23,25 +24,25 @@ object SourcePersisterFactory {
      *
      * @throws IOException
      */
+    @ExperimentalTime
     @Throws(IOException::class)
     fun create(
         root: File,
-        expirationDuration: Long,
-        expirationUnit: TimeUnit
+        expirationDuration: Duration
     ): Persister<BufferedSource, BarCode> {
-        return RecordPersister.create(FileSystemFactory.create(root), expirationDuration, expirationUnit)
+        return RecordPersister.create(FileSystemFactory.create(root), expirationDuration)
     }
 
     /**
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
+    @ExperimentalTime
     fun create(
         fileSystem: FileSystem,
-        expirationDuration: Long,
-        expirationUnit: TimeUnit
+        expirationDuration: Duration
     ): Persister<BufferedSource, BarCode> {
-        return RecordPersister.create(fileSystem, expirationDuration, expirationUnit)
+        return RecordPersister.create(fileSystem, expirationDuration)
     }
 
     /**

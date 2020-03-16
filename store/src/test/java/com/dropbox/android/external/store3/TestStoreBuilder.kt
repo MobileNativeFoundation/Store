@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flow
 import kotlin.time.ExperimentalTime
 
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 data class TestStoreBuilder<Key : Any, Output : Any>(
     private val buildStore: () -> Store<Key, Output>

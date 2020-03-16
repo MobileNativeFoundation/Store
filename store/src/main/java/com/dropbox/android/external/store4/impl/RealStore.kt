@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.withIndex
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @FlowPreview
 internal class RealStore<Key : Any, Input : Any, Output : Any>(

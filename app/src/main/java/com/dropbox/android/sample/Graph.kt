@@ -31,7 +31,7 @@ import java.io.IOException
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class, ExperimentalStdlibApi::class)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
