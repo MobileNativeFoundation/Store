@@ -36,7 +36,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.withIndex
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -61,10 +63,10 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private val memCache = memoryPolicy?.let {
         Cache.Builder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
-                expireAfterAccess(memoryPolicy.expireAfterAccess, memoryPolicy.expireAfterTimeUnit)
+                expireAfterAccess(memoryPolicy.expireAfterAccess)
             }
             if (memoryPolicy.hasWritePolicy) {
-                expireAfterWrite(memoryPolicy.expireAfterWrite, memoryPolicy.expireAfterTimeUnit)
+                expireAfterWrite(memoryPolicy.expireAfterWrite)
             }
             if (memoryPolicy.hasMaxSize) {
                 maximumCacheSize(memoryPolicy.maxSize)

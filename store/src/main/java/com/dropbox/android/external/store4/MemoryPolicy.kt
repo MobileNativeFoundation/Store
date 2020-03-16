@@ -1,6 +1,7 @@
 package com.dropbox.android.external.store4
 
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * MemoryPolicy holds all required info to create MemoryCache
@@ -13,43 +14,38 @@ import java.util.concurrent.TimeUnit
  * MemoryPolicy is used by a [Store]
  * and defines the in-memory cache behavior.
  */
+@ExperimentalTime
 class MemoryPolicy internal constructor(
-    val expireAfterWrite: Long,
-    val expireAfterAccess: Long,
-    val expireAfterTimeUnit: TimeUnit,
+    val expireAfterWrite: Duration,
+    val expireAfterAccess: Duration,
     val maxSize: Long
 ) {
 
-    val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_POLICY
+    val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_DURATION_POLICY
 
-    val hasWritePolicy: Boolean = expireAfterWrite != DEFAULT_POLICY
+    val hasWritePolicy: Boolean = expireAfterWrite != DEFAULT_DURATION_POLICY
 
-    val hasAccessPolicy: Boolean = expireAfterAccess != DEFAULT_POLICY
+    val hasAccessPolicy: Boolean = expireAfterAccess != DEFAULT_DURATION_POLICY
 
-    val hasMaxSize: Boolean = maxSize != DEFAULT_POLICY
+    val hasMaxSize: Boolean = maxSize != DEFAULT_SIZE_POLICY
 
     class MemoryPolicyBuilder {
-        private var expireAfterWrite = DEFAULT_POLICY
-        private var expireAfterAccess = DEFAULT_POLICY
-        private var expireAfterTimeUnit = TimeUnit.SECONDS
+        private var expireAfterWrite = DEFAULT_DURATION_POLICY
+        private var expireAfterAccess = DEFAULT_DURATION_POLICY
         private var maxSize: Long = -1
 
-        fun setExpireAfterWrite(expireAfterWrite: Long): MemoryPolicyBuilder = apply {
-            check(expireAfterAccess == DEFAULT_POLICY) {
+        fun setExpireAfterWrite(expireAfterWrite: Duration): MemoryPolicyBuilder = apply {
+            check(expireAfterAccess == DEFAULT_DURATION_POLICY) {
                 "Cannot set expireAfterWrite with expireAfterAccess already set"
             }
             this.expireAfterWrite = expireAfterWrite
         }
 
-        fun setExpireAfterAccess(expireAfterAccess: Long): MemoryPolicyBuilder = apply {
-            check(expireAfterWrite == DEFAULT_POLICY) {
+        fun setExpireAfterAccess(expireAfterAccess: Duration): MemoryPolicyBuilder = apply {
+            check(expireAfterWrite == DEFAULT_DURATION_POLICY) {
                 "Cannot set expireAfterAccess with expireAfterWrite already set"
             }
             this.expireAfterAccess = expireAfterAccess
-        }
-
-        fun setExpireAfterTimeUnit(expireAfterTimeUnit: TimeUnit): MemoryPolicyBuilder = apply {
-            this.expireAfterTimeUnit = expireAfterTimeUnit
         }
 
         /**
@@ -66,13 +62,13 @@ class MemoryPolicy internal constructor(
         fun build() = MemoryPolicy(
             expireAfterWrite = expireAfterWrite,
             expireAfterAccess = expireAfterAccess,
-            expireAfterTimeUnit = expireAfterTimeUnit,
             maxSize = maxSize
         )
     }
 
     companion object {
-        const val DEFAULT_POLICY: Long = -1
+        val DEFAULT_DURATION_POLICY: Duration = Duration.INFINITE
+        const val DEFAULT_SIZE_POLICY: Long = -1
 
         fun builder(): MemoryPolicyBuilder = MemoryPolicyBuilder()
     }
