@@ -24,9 +24,11 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @FlowPreview
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
@@ -126,7 +128,7 @@ class StoreTest(
     fun testEquivalence() = testScope.runBlockingTest {
         val cache = Cache.Builder.newBuilder()
             .maximumCacheSize(1)
-            .expireAfterAccess(java.lang.Long.MAX_VALUE, TimeUnit.SECONDS)
+            .expireAfterAccess(Duration.INFINITE)
             .build<BarCode, String>()
 
         cache.put(barCode, MEMORY)
