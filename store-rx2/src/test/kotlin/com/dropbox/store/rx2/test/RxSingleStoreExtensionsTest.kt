@@ -2,9 +2,9 @@ package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.store.rx2.fresh
+import com.dropbox.store.rx2.freshSingle
 import com.dropbox.store.rx2.fromSingle
-import com.dropbox.store.rx2.get
+import com.dropbox.store.rx2.getSingle
 import com.dropbox.store.rx2.withScheduler
 import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Completable
@@ -52,25 +52,25 @@ class RxSingleStoreExtensionsTest {
     @Test
     fun `store rx extension tests`() {
         // Return from cache - after initial fetch
-        store.get(3)
+        store.getSingle(3)
             .test()
             .await()
             .assertValue("3 1")
 
         // Return from cache
-        store.get(3)
+        store.getSingle(3)
             .test()
             .await()
             .assertValue("3 1")
 
         // Return from fresh - forcing a new fetch
-        store.fresh(3)
+        store.freshSingle(3)
             .test()
             .await()
             .assertValue("3 2")
 
         // Return from cache - different to initial
-        store.get(3)
+        store.getSingle(3)
             .test()
             .await()
             .assertValue("3 2")

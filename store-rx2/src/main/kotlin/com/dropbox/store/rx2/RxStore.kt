@@ -154,9 +154,9 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withFlo
 /**
  * Helper factory that will return data as a [Single] for [key] if it is cached otherwise will return fresh/network data (updating your caches)
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = rxSingle { this@get.get(key) }
+fun <Key : Any, Output : Any> Store<Key, Output>.getSingle(key: Key) = rxSingle { this@getSingle.get(key) }
 
 /**
  * Helper factory that will return fresh data as a [Single] for [key] while updating your caches
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = rxSingle { this@fresh.fresh(key) }
+fun <Key : Any, Output : Any> Store<Key, Output>.freshSingle(key: Key) = rxSingle { this@freshSingle.fresh(key) }
