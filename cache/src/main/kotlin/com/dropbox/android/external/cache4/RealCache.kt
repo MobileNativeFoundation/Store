@@ -1,6 +1,7 @@
 package com.dropbox.android.external.cache4
 
 import java.util.Collections
+import java.util.Collections.unmodifiableMap
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -161,6 +162,10 @@ internal class RealCache<Key : Any, Value : Any>(
         cacheEntries.clear()
         writeQueue?.clear()
         accessQueue?.clear()
+    }
+
+    override fun asMap(): Map<in Key, Value> {
+        return Collections.unmodifiableMap(cacheEntries.mapValues { (_, entry) -> entry.value })
     }
 
     /**
