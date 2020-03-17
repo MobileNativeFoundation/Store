@@ -50,10 +50,9 @@ public final class com/dropbox/android/external/store4/FetcherResult$Error$Messa
 
 public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public static final field Companion Lcom/dropbox/android/external/store4/MemoryPolicy$Companion;
-	public static final field DEFAULT_POLICY J
-	public final fun getExpireAfterAccess ()J
-	public final fun getExpireAfterTimeUnit ()Ljava/util/concurrent/TimeUnit;
-	public final fun getExpireAfterWrite ()J
+	public static final field DEFAULT_SIZE_POLICY J
+	public final fun getExpireAfterAccess ()D
+	public final fun getExpireAfterWrite ()D
 	public final fun getHasAccessPolicy ()Z
 	public final fun getHasMaxSize ()Z
 	public final fun getHasWritePolicy ()Z
@@ -63,14 +62,14 @@ public final class com/dropbox/android/external/store4/MemoryPolicy {
 
 public final class com/dropbox/android/external/store4/MemoryPolicy$Companion {
 	public final fun builder ()Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun getDEFAULT_DURATION_POLICY ()D
 }
 
 public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder {
 	public fun <init> ()V
 	public final fun build ()Lcom/dropbox/android/external/store4/MemoryPolicy;
-	public final fun setExpireAfterAccess (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
-	public final fun setExpireAfterTimeUnit (Ljava/util/concurrent/TimeUnit;)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
-	public final fun setExpireAfterWrite (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setExpireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setExpireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setMemorySize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 }
 

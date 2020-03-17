@@ -2,28 +2,26 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.legacy.BarCode
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
-class RecordPersister @Inject
-constructor(
+@ExperimentalTime
+class RecordPersister(
     fileSystem: FileSystem,
-    private val expirationDuration: Long,
-    private val expirationUnit: TimeUnit
+    private val expirationDuration: Duration
 ) : SourcePersister(fileSystem), RecordProvider<BarCode> {
 
     override fun getRecordState(key: BarCode): RecordState {
-        return sourceFileReader.getRecordState(key, expirationUnit, expirationDuration)
+        return sourceFileReader.getRecordState(key, expirationDuration)
     }
 
     companion object {
 
         fun create(
             fileSystem: FileSystem,
-            expirationDuration: Long,
-            expirationUnit: TimeUnit
+            expirationDuration: Duration
         ): RecordPersister {
-            return RecordPersister(fileSystem, expirationDuration, expirationUnit)
+            return RecordPersister(fileSystem, expirationDuration)
         }
     }
 }

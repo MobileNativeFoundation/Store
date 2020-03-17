@@ -7,11 +7,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
 import okio.BufferedSource
 import java.io.FileNotFoundException
-import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
-class SourceAllPersister @Inject
-constructor(fileSystem: FileSystem) : AllPersister<BufferedSource, BarCode> {
+class SourceAllPersister(fileSystem: FileSystem) : AllPersister<BufferedSource, BarCode> {
 
     internal val sourceFileAllReader: FSAllReader = FSAllReader(fileSystem)
     internal val sourceFileAllEraser: FSAllEraser = FSAllEraser(fileSystem)

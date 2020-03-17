@@ -29,9 +29,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class, ExperimentalStdlibApi::class)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
@@ -111,9 +112,7 @@ object Graph {
                     }
                 ))
             .cachePolicy(
-                MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(
-                    TimeUnit.SECONDS
-                ).build()
+                MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
             )
             .build()
     }

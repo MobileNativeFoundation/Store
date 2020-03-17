@@ -24,11 +24,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlin.time.ExperimentalTime
 
 /**
  * Main entry point for creating a [Store].
  */
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
@@ -44,8 +46,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
      *  or size based eviction
-     *  Example: MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(TimeUnit.SECONDS).build()
+     *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
+    @ExperimentalTime
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
 
     /**
@@ -62,6 +65,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a function for fetching network records.
          */
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> fromNonFlow(
             fetcher: suspend (key: Key) -> Output
         ): StoreBuilder<Key, Output> = from(
@@ -138,6 +142,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a function for fetching a flow of network records.
          */
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Output>
         ): StoreBuilder<Key, Output> = RealStoreBuilder(
@@ -205,6 +210,8 @@ interface StoreBuilder<Key : Any, Output : Any> {
 }
 
 @FlowPreview
+@OptIn(ExperimentalTime::class)
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 private class RealStoreBuilder<Key : Any, RawInput : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<RawInput>,

@@ -39,6 +39,7 @@ import org.junit.runners.JUnit4
  * values as well.
  */
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class InfiniteMulticastTest {

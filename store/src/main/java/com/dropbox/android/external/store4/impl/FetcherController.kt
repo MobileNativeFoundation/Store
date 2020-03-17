@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.map
  * request.
  */
 @FlowPreview
+@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 internal class FetcherController<Key, Input, Output>(
     /**

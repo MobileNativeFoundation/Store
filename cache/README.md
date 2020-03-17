@@ -101,7 +101,7 @@ To set the maximum time an entry can live in the cache since the last access (al
 
 ```kotlin
 val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(24, TimeUnit.HOURS)
+            .expireAfterAccess(24.hours)
             .build<Long, String>()
 ```
 
@@ -113,7 +113,7 @@ To set the maximum time an entry can live in the cache since the last write (als
 
 ```kotlin
 val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .expireAfterWrite(30.minutes)
             .build<Long, String>()
 ```
 
@@ -161,9 +161,9 @@ To make it easier for testing logics that depend on cache expirations, `Cache.Bu
 First define a custom `Clock` implementation:
 
 ```kotlin
-class TestClock(var virtualTimeNanos: Long = -1) : Clock {
+class TestClock(var virtualDuration: Duration = Duration.INFINITE) : Clock {
     override val currentTimeNanos: Long
-        get() = virtualTimeNanos
+        get() = virtualDuration.toLongNanoseconds()
 }
 ```
 
@@ -172,23 +172,22 @@ Now you are able to test your logic that depends on cache expiration. A test mig
 ```kotlin
 @Test
 fun `cache entry gets evicted when expired after write`() {
-    private val clock = TestClock(virtualTimeNanos = 0)
-    val oneMinute = TimeUnit.MINUTES.toNanos(1)
+    private val clock = TestClock(virtualDuration = Duration.ZERO)
     val cache = Cache.Builder.newBuilder()
         .clock(clock)
-        .expireAfterWrite(oneMinute, TimeUnit.NANOSECONDS)
+        .expireAfterWrite(1.minutes)
         .build<Long, String>()
 
     cache.put(1, "dog")
 
     // just before expiry
-    clock.virtualTimeNanos = oneMinute - 1
+    clock.virtualTimeNanos = 1.minutes - 1.nanoseconds
 
     assertThat(cache.get(1))
         .isEqualTo("dog")
 
     // now expires
-    clock.virtualTimeNanos = oneMinute
+    clock.virtualDuration = 1.minutes
 
     assertThat(cache.get(1))
         .isNull()

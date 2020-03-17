@@ -14,7 +14,10 @@ import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
+import kotlin.time.microseconds
+import kotlin.time.minutes
 
 class SimpleTest {
 
@@ -51,14 +54,15 @@ class SimpleTest {
         assertThat(fileSystem.exists("/boo")).isFalse()
     }
 
+    @ExperimentalTime
     @Test
     @Throws(IOException::class)
     fun testIsRecordStale() {
         fileSystem.write("/boo", source(testString1))
         assertThat(fileSystem.read("/boo").readUtf8()).isEqualTo(testString1)
-        assertThat(fileSystem.getRecordState(TimeUnit.MINUTES, 1, "/boo")).isEqualTo(RecordState.FRESH)
-        assertThat(fileSystem.getRecordState(TimeUnit.MICROSECONDS, 1, "/boo")).isEqualTo(RecordState.STALE)
-        assertThat(fileSystem.getRecordState(TimeUnit.DAYS, 1, "/notfound")).isEqualTo(RecordState.MISSING)
+        assertThat(fileSystem.getRecordState(1.minutes, "/boo")).isEqualTo(RecordState.FRESH)
+        assertThat(fileSystem.getRecordState(1.microseconds, "/boo")).isEqualTo(RecordState.STALE)
+        assertThat(fileSystem.getRecordState(1.days, "/notfound")).isEqualTo(RecordState.MISSING)
     }
 
     @Test
