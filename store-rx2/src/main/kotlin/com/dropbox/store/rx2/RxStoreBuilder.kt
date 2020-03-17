@@ -3,7 +3,7 @@ package com.dropbox.store.rx2
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import io.reactivex.Single
@@ -24,6 +24,7 @@ import kotlinx.coroutines.rx2.asCoroutineDispatcher
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
+@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
 ): StoreBuilder<Key, Output> = from { key: Key ->
@@ -41,6 +42,7 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
+@ExperimentalStdlibApi
 fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>
@@ -58,6 +60,7 @@ fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
+@ExperimentalStdlibApi
 fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<RawOutput>,
     fetcherTransformer: (RawOutput) -> FetcherResult<Output>
@@ -79,6 +82,7 @@ fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromFlowab
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
+@ExperimentalStdlibApi
 fun <Key : Any, RawInput : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<RawInput>,
     fetcherTransformer: (RawInput) -> FetcherResult<Input>,
@@ -98,7 +102,8 @@ fun <Key : Any, RawInput : Any, Input : Any, Output : Any> StoreBuilder.Companio
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
+@ExperimentalStdlibApi
+fun <Key : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
     fetcher: (key: Key) -> Single<Output>
 ): StoreBuilder<Key, Output> =
     from { key: Key -> fetcher(key).toFlowable().asFlow() }
@@ -113,7 +118,8 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromSingle(
+@ExperimentalStdlibApi
+fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
     fetcher: (key: Key) -> Single<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>
 ): StoreBuilder<Key, Output> =
@@ -130,7 +136,8 @@ fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromSingle(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromSingle(
+@ExperimentalStdlibApi
+fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
     fetcher: (key: Key) -> Single<RawOutput>,
     fetcherTransformer: (RawOutput) -> FetcherResult<Output>
 ): StoreBuilder<Key, Output> = from(
@@ -150,7 +157,8 @@ fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromSingle
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Input : Any, RawInput : Any, Output : Any> StoreBuilder.Companion.fromSingle(
+@ExperimentalStdlibApi
+fun <Key : Any, Input : Any, RawInput : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
     fetcher: (key: Key) -> Single<RawInput>,
     fetcherTransformer: (RawInput) -> FetcherResult<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>
@@ -166,6 +174,7 @@ fun <Key : Any, Input : Any, RawInput : Any, Output : Any> StoreBuilder.Companio
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
+@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
     scheduler: Scheduler
 ): StoreBuilder<Key, Output> {

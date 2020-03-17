@@ -16,6 +16,7 @@
 package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ResponseOrigin
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +32,9 @@ import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Wraps a [SourceOfTruth] and blocks reads while a write is in progress.
+ *
+ * Used in the [com.dropbox.android.external.store4.impl.RealStore] implementation to avoid
+ * dispatching values to downstream while a write is in progress.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi

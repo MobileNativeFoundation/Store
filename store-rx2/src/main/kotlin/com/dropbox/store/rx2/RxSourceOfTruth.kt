@@ -1,7 +1,7 @@
 package com.dropbox.store.rx2
 
 import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -19,9 +19,9 @@ import kotlinx.coroutines.rx2.await
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromSinglePersister(
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
     reader: (Key) -> Maybe<Output>,
-    writer: (Key, Input) -> Single<Unit>,
+    writer: (Key, Input) -> Completable,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
 ): SourceOfTruth<Key, Input, Output> {
@@ -55,9 +55,9 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromSinglePer
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowablePersister(
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowable(
     reader: (Key) -> Flowable<Output>,
-    writer: (Key, Input) -> Single<Unit>,
+    writer: (Key, Input) -> Completable,
     delete: ((Key) -> Completable)? = null,
     deleteAll: (() -> Completable)? = null
 ): SourceOfTruth<Key, Input, Output> {

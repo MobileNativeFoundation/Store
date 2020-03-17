@@ -15,7 +15,7 @@
  */
 package com.dropbox.android.external.store4.testutil
 
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel

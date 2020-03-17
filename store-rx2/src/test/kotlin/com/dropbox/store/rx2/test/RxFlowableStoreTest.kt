@@ -4,10 +4,9 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.fromFlowable
-import com.dropbox.store.rx2.fromFlowablePersister
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -36,7 +35,7 @@ class RxFlowableStoreTest {
                 emitter.onComplete()
             }, BackpressureStrategy.LATEST)
         },
-            sourceOfTruth = SourceOfTruth.fromFlowablePersister(
+            sourceOfTruth = SourceOfTruth.fromFlowable(
                 reader = {
                     if (fakeDisk[it] != null)
                         Flowable.fromCallable { fakeDisk[it]!! }

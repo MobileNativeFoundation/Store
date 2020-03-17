@@ -15,7 +15,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers

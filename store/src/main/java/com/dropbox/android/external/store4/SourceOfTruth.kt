@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.android.external.store4.impl
+package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.Persister
-import com.dropbox.android.external.store4.ResponseOrigin
-import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.impl.PersistentNonFlowingSourceOfTruth
+import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 /**
  * Source of truth takes care of making any source (no matter if it has flowing reads or not) into
- * a common flowing API. Used w/ a [SourceOfTruthWithBarrier] in front of it in the
- * [RealStore] implementation to avoid dispatching values to downstream while
- * a write is in progress.
+ * a common flowing API.
  *
  * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
- * for waiting on network update before local modifications are available (via [Store.stream]).*
+ * for waiting on network update before local modifications are available (via [Store.stream]).
  */
 interface SourceOfTruth<Key, Input, Output> {
     val defaultOrigin: ResponseOrigin
@@ -54,7 +50,6 @@ interface SourceOfTruth<Key, Input, Output> {
             realWriter = writer,
             realDelete = delete,
             realDeleteAll = deleteAll
-
         )
 
         /**
@@ -107,46 +102,3 @@ interface SourceOfTruth<Key, Input, Output> {
     }
 }
 
-internal class PersistentSourceOfTruth<Key, Input, Output>(
-    private val realReader: (Key) -> Flow<Output?>,
-    private val realWriter: suspend (Key, Input) -> Unit,
-    private val realDelete: (suspend (Key) -> Unit)? = null,
-    private val realDeleteAll: (suspend () -> Unit)? = null
-) : SourceOfTruth<Key, Input, Output> {
-    override val defaultOrigin = ResponseOrigin.Persister
-
-    override fun reader(key: Key): Flow<Output?> = realReader(key)
-
-    override suspend fun write(key: Key, value: Input) = realWriter(key, value)
-
-    override suspend fun delete(key: Key) {
-        realDelete?.invoke(key)
-    }
-
-    override suspend fun deleteAll() {
-        realDeleteAll?.invoke()
-    }
-}
-
-internal class PersistentNonFlowingSourceOfTruth<Key, Input, Output>(
-    private val realReader: suspend (Key) -> Output?,
-    private val realWriter: suspend (Key, Input) -> Unit,
-    private val realDelete: (suspend (Key) -> Unit)? = null,
-    private val realDeleteAll: (suspend () -> Unit)?
-) : SourceOfTruth<Key, Input, Output> {
-    override val defaultOrigin = ResponseOrigin.Persister
-
-    override fun reader(key: Key): Flow<Output?> = flow {
-        emit(realReader(key))
-    }
-
-    override suspend fun write(key: Key, value: Input) = realWriter(key, value)
-
-    override suspend fun delete(key: Key) {
-        realDelete?.invoke(key)
-    }
-
-    override suspend fun deleteAll() {
-        realDeleteAll?.invoke()
-    }
-}

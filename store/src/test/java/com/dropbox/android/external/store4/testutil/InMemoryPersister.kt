@@ -1,6 +1,6 @@
 package com.dropbox.android.external.store4.testutil
 
-import com.dropbox.android.external.store4.impl.SourceOfTruth
+import com.dropbox.android.external.store4.SourceOfTruth
 
 /**
  * An in-memory non-flowing persister for testing.
