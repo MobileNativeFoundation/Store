@@ -6,6 +6,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.store.rx2.fromSingle
 import com.dropbox.store.rx2.fromMaybe
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
@@ -29,27 +30,20 @@ import java.util.concurrent.atomic.AtomicInteger
 @ExperimentalCoroutinesApi
 class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
-    private var fakeDisk = mutableMapOf<Int, String?>()
+    private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.fromMaybe(
+        StoreBuilder.fromSingle<Int, String, String>(
             fetcher = { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } },
-            sourceOfTruth = SourceOfTruth.fromMaybe<Int, String, String>(
-                reader = {
-                    if (fakeDisk[it] != null)
-                        Maybe.fromCallable { fakeDisk[it]!! }
-                    else
-                        Maybe.empty()
-                },
+            sourceOfTruth = SourceOfTruth.fromMaybe(
+                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
                 writer = { key, value ->
                     Completable.fromAction { fakeDisk[key] = value }
                 },
                 delete = { key ->
-                    fakeDisk[key] = null
-                    Completable.complete()
+                    Completable.fromAction { fakeDisk.remove(key) }
                 },
                 deleteAll = {
-                    fakeDisk.clear()
-                    Completable.complete()
+                    Completable.fromAction { fakeDisk.clear() }
                 }
             )
         )

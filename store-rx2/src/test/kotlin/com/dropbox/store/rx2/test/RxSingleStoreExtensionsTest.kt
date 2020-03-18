@@ -4,6 +4,7 @@ import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.store.rx2.freshSingle
+import com.dropbox.store.rx2.fromSingle
 import com.dropbox.store.rx2.fromMaybe
 import com.dropbox.store.rx2.getSingle
 import com.dropbox.store.rx2.withScheduler
@@ -25,29 +26,22 @@ import java.util.concurrent.atomic.AtomicInteger
 @ExperimentalCoroutinesApi
 class RxSingleStoreExtensionsTest {
     private val atomicInteger = AtomicInteger(0)
-    private var fakeDisk = mutableMapOf<Int, String?>()
+    private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.fromMaybe<Int, String, String>(
+        StoreBuilder.fromSingle<Int, String, String>(
             fetcher = { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } },
-            sourceOfTruth = SourceOfTruth.fromMaybe(
-                reader = {
-                    if (fakeDisk[it] != null)
-                        Maybe.fromCallable { fakeDisk[it]!! }
-                    else
-                        Maybe.empty()
-                },
-                writer = { key, value ->
-                    Completable.fromAction { fakeDisk[key] = value }
-                },
-                delete = { key ->
-                    fakeDisk[key] = null
-                    Completable.complete()
-                },
-                deleteAll = {
-                    fakeDisk.clear()
-                    Completable.complete()
-                }
-            )
+                sourceOfTruth = SourceOfTruth.fromMaybe(
+                    reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+                    writer = { key, value ->
+                        Completable.fromAction { fakeDisk[key] = value }
+                    },
+                    delete = { key ->
+                        Completable.fromAction { fakeDisk.remove(key) }
+                    },
+                    deleteAll = {
+                        Completable.fromAction { fakeDisk.clear() }
+                    }
+                )
             )
             .withScheduler(Schedulers.trampoline())
             .build()

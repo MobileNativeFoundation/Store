@@ -4,7 +4,7 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx2.fromMaybe
+import com.dropbox.store.rx2.fromSingle
 import com.google.common.truth.Truth.assertThat
 import io.reactivex.Single
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +28,7 @@ class HotRxSingleStoreTest {
                 3 to "three-1",
                 3 to "three-2"
             )
-            val pipeline = StoreBuilder.fromMaybe<Int, String> { fetcher.fetch(it) }
+            val pipeline = StoreBuilder.fromSingle<Int, String> { fetcher.fetch(it) }
                 .scope(testScope)
                 .build()
 

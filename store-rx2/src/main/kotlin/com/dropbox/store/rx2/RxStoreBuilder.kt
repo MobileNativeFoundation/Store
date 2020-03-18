@@ -103,7 +103,7 @@ fun <Key : Any, RawInput : Any, Input : Any, Output : Any> StoreBuilder.Companio
 @FlowPreview
 @ExperimentalCoroutinesApi
 @ExperimentalStdlibApi
-fun <Key : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
+fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
 ): StoreBuilder<Key, Output> =
     from { key: Key -> fetcher(key).toFlowable().asFlow() }
@@ -119,7 +119,7 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
 @FlowPreview
 @ExperimentalCoroutinesApi
 @ExperimentalStdlibApi
-fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
+fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>
 ): StoreBuilder<Key, Output> =
@@ -137,7 +137,7 @@ fun <Key : Any, Input : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
 @FlowPreview
 @ExperimentalCoroutinesApi
 @ExperimentalStdlibApi
-fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromMaybe(
+fun <Key : Any, RawOutput : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<RawOutput>,
     fetcherTransformer: (RawOutput) -> FetcherResult<Output>
 ): StoreBuilder<Key, Output> = from(
