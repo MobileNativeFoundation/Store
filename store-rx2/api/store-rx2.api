@@ -1,6 +1,8 @@
 public final class com/dropbox/store/rx2/RxStoreKt {
+	public static final fun freshSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/Single;
 	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public static final fun fromSingle (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
+	public static final fun getSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/Single;
 	public static final fun observe (Lcom/dropbox/android/external/store4/Store;Lcom/dropbox/android/external/store4/StoreRequest;)Lio/reactivex/Flowable;
 	public static final fun observeClear (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/Completable;
 	public static final fun observeClearAll (Lcom/dropbox/android/external/store4/Store;)Lio/reactivex/Completable;
