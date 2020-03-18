@@ -5,11 +5,14 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.fresh
+import com.dropbox.android.external.store4.get
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.rx2.asFlowable
 import kotlinx.coroutines.rx2.rxCompletable
+import kotlinx.coroutines.rx2.rxSingle
 
 /**
  * Return a [Flowable] for the given key
@@ -35,3 +38,13 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Complet
 @ExperimentalStoreApi
 fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable =
     rxCompletable { clearAll() }
+
+/**
+ * Helper factory that will return data as a [Single] for [key] if it is cached otherwise will return fresh/network data (updating your caches)
+ */
+fun <Key : Any, Output : Any> Store<Key, Output>.getSingle(key: Key) = rxSingle { this@getSingle.get(key) }
+
+/**
+ * Helper factory that will return fresh data as a [Single] for [key] while updating your caches
+ */
+fun <Key : Any, Output : Any> Store<Key, Output>.freshSingle(key: Key) = rxSingle { this@freshSingle.fresh(key) }

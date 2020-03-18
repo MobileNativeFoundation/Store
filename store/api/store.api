@@ -86,6 +86,23 @@ public final class com/dropbox/android/external/store4/ResponseOrigin : java/lan
 	public static fun values ()[Lcom/dropbox/android/external/store4/ResponseOrigin;
 }
 
+public abstract interface class com/dropbox/android/external/store4/SourceOfTruth {
+	public static final field Companion Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;
+	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getDefaultOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public abstract fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/dropbox/android/external/store4/SourceOfTruth$Companion {
+	public final fun from (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun from$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public final fun fromLegacyPresister (Lcom/dropbox/android/external/store4/Persister;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun fromNonFlow$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+}
+
 public abstract interface class com/dropbox/android/external/store4/Store {
 	public abstract fun clear (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -102,13 +119,13 @@ public abstract interface class com/dropbox/android/external/store4/StoreBuilder
 
 public final class com/dropbox/android/external/store4/StoreBuilder$Companion {
 	public final fun from (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public final fun from (Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/impl/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
+	public final fun from (Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public final fun from (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public final fun from (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/impl/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
+	public final fun from (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lcom/dropbox/android/external/store4/impl/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
+	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/impl/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
+	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
 }
 
 public final class com/dropbox/android/external/store4/StoreKt {
@@ -199,23 +216,6 @@ public final class com/dropbox/android/external/store4/StoreResponse$Loading : c
 
 public final class com/dropbox/android/external/store4/StoreResponseKt {
 	public static final fun doThrow (Lcom/dropbox/android/external/store4/StoreResponse$Error;)Ljava/lang/Void;
-}
-
-public abstract interface class com/dropbox/android/external/store4/impl/SourceOfTruth {
-	public static final field Companion Lcom/dropbox/android/external/store4/impl/SourceOfTruth$Companion;
-	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getDefaultOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
-	public abstract fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
-	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class com/dropbox/android/external/store4/impl/SourceOfTruth$Companion {
-	public final fun from (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/impl/SourceOfTruth;
-	public static synthetic fun from$default (Lcom/dropbox/android/external/store4/impl/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/impl/SourceOfTruth;
-	public final fun fromLegacyPresister (Lcom/dropbox/android/external/store4/Persister;)Lcom/dropbox/android/external/store4/impl/SourceOfTruth;
-	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/impl/SourceOfTruth;
-	public static synthetic fun fromNonFlow$default (Lcom/dropbox/android/external/store4/impl/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/impl/SourceOfTruth;
 }
 
 public final class com/dropbox/android/external/store4/legacy/BarCode {

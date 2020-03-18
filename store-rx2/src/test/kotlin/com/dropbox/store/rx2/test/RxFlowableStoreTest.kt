@@ -8,8 +8,8 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.fromFlowable
 import io.reactivex.BackpressureStrategy
+import io.reactivex.Completable
 import io.reactivex.Flowable
-import io.reactivex.Single
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subscribers.TestSubscriber
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,7 +43,7 @@ class RxFlowableStoreTest {
                         Flowable.empty<String>()
                 },
                 writer = { key, value ->
-                    Single.fromCallable { fakeDisk[key] = value }
+                    Completable.fromAction { fakeDisk[key] = value }
                 }
             ))
             .build()

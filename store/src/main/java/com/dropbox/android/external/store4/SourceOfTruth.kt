@@ -101,4 +101,3 @@ interface SourceOfTruth<Key, Input, Output> {
         )
     }
 }
-
