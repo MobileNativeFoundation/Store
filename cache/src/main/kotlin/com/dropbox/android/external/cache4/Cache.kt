@@ -2,6 +2,8 @@ package com.dropbox.android.external.cache4
 
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.TestTimeSource
+import kotlin.time.TimeSource
 
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
@@ -94,14 +96,15 @@ interface Cache<in Key : Any, Value : Any> {
         fun concurrencyLevel(concurrencyLevel: Int): Builder
 
         /**
-         * Specifies [Clock] for this cache.
+         * Specifies [TimeSource] for this cache.
          *
-         * This is useful for controlling time in tests
-         * where a fake [Clock] implementation can be provided.
+         * This is useful for programmatically updating the reading of a [TimeSource] in tests
+         * by specifying [TestTimeSource] as the time source.
          *
-         * A [SystemClock] will be used if not specified.
+         * A [TimeSource.Monotonic] will be used if not specified.
          */
-        fun clock(clock: Clock): Builder
+        @ExperimentalTime
+        fun timeSource(timeSource: TimeSource): Builder
 
         /**
          * Builds a new instance of [Cache] with the specified configurations.
@@ -125,11 +128,14 @@ internal class CacheBuilderImpl : Cache.Builder {
 
     @ExperimentalTime
     private var expireAfterWriteDuration = Duration.INFINITE
+
     @ExperimentalTime
     private var expireAfterAccessDuration = Duration.INFINITE
     private var maxSize = UNSET_LONG
     private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
-    private var clock: Clock? = null
+
+    @ExperimentalTime
+    private var timeSource: TimeSource? = null
 
     @ExperimentalTime
     override fun expireAfterWrite(duration: Duration): CacheBuilderImpl = apply {
@@ -161,8 +167,9 @@ internal class CacheBuilderImpl : Cache.Builder {
         this.concurrencyLevel = concurrencyLevel
     }
 
-    override fun clock(clock: Clock): CacheBuilderImpl = apply {
-        this.clock = clock
+    @ExperimentalTime
+    override fun timeSource(timeSource: TimeSource): CacheBuilderImpl = apply {
+        this.timeSource = timeSource
     }
 
     @ExperimentalTime
@@ -172,7 +179,7 @@ internal class CacheBuilderImpl : Cache.Builder {
             expireAfterAccessDuration,
             maxSize,
             concurrencyLevel,
-            clock ?: SystemClock
+            timeSource ?: TimeSource.Monotonic
         )
     }
 

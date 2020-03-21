@@ -7,6 +7,8 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.TestTimeSource
+import kotlin.time.TimeSource
 import kotlin.time.hours
 import kotlin.time.nanoseconds
 
@@ -155,14 +157,14 @@ class CacheBuilderTest {
     }
 
     @Test
-    fun `set clock`() {
-        val testClock = TestClock()
+    fun `set timeSource`() {
+        val testTimeSource = TestTimeSource()
         val cache = Cache.Builder.newBuilder()
-            .clock(testClock)
+            .timeSource(testTimeSource)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.clock)
-            .isEqualTo(testClock)
+        assertThat(cache.timeSource)
+            .isEqualTo(testTimeSource)
     }
 
     @Test
@@ -181,7 +183,7 @@ class CacheBuilderTest {
         assertThat(cache.concurrencyLevel)
             .isEqualTo(DEFAULT_CONCURRENCY_LEVEL)
 
-        assertThat(cache.clock)
-            .isEqualTo(SystemClock)
+        assertThat(cache.timeSource)
+            .isEqualTo(TimeSource.Monotonic)
     }
 }

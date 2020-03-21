@@ -11,6 +11,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 import kotlin.time.ExperimentalTime
+import kotlin.time.TestTimeSource
 import kotlin.time.minutes
 import kotlin.time.nanoseconds
 
@@ -21,7 +22,7 @@ class CacheLoaderTest {
     @JvmField
     val concurrencyTestRule = ConcurrencyTestRule()
 
-    private val clock = TestClock(virtualDuration = 0.nanoseconds)
+    private val timeSource = TestTimeSource()
     private val expiryDuration = 1.minutes
 
     @Test
@@ -44,13 +45,13 @@ class CacheLoaderTest {
     fun `get(key, loader) returns value from loader when an expired value with the associated key exists before executing the loader and none exists after executing the loader`() {
         val cache = Cache.Builder.newBuilder()
             .expireAfterWrite(expiryDuration)
-            .clock(clock)
+            .timeSource(timeSource)
             .build<Long, String>()
 
         cache.put(1, "cat")
 
         // now expires
-        clock.virtualDuration = expiryDuration
+        timeSource += expiryDuration
 
         val loader = createLoader("dog")
 
@@ -67,12 +68,13 @@ class CacheLoaderTest {
     fun `get(key, loader) returns existing value when an unexpired entry with the associated key exists before executing the loader`() {
         val cache = Cache.Builder.newBuilder()
             .expireAfterAccess(expiryDuration)
+            .timeSource(timeSource)
             .build<Long, String>()
 
         cache.put(1, "dog")
 
         // just before expiry
-        clock.virtualDuration = expiryDuration - 1.nanoseconds
+        timeSource += expiryDuration - 1.nanoseconds
 
         val loader = createLoader("cat")
 
@@ -145,7 +147,7 @@ class CacheLoaderTest {
             val cache = Cache.Builder.newBuilder()
                 .expireAfterWrite(expiryDuration)
                 .concurrencyLevel(2)
-                .clock(clock)
+                .timeSource(timeSource)
                 .build<Long, String>()
 
             val executionTime = 50L
@@ -163,7 +165,7 @@ class CacheLoaderTest {
                 cache.put(1, "cat")
 
                 // now expires
-                clock.virtualDuration = expiryDuration
+                timeSource += expiryDuration
             }
 
             delay(executionTime + 10)

@@ -156,38 +156,27 @@ cache.invalidateAll()
 
 ### Unit Testing Cache Expirations
 
-To make it easier for testing logics that depend on cache expirations, `Cache.Builder` provides an API for setting a fake implementation of `Clock` for controlling (virtual) time in tests.
-
-First define a custom `Clock` implementation:
-
-```kotlin
-class TestClock(var virtualDuration: Duration = Duration.INFINITE) : Clock {
-    override val currentTimeNanos: Long
-        get() = virtualDuration.toLongNanoseconds()
-}
-```
-
-Now you are able to test your logic that depends on cache expiration. A test might look like this:
+To test logic that depends on cache expiration, pass in a `TestTimeSource` when building a `Cache` so you can programmatically advance the reading of the time source:
 
 ```kotlin
 @Test
 fun `cache entry gets evicted when expired after write`() {
-    private val clock = TestClock(virtualDuration = Duration.ZERO)
+    private val timeSource = TestTimeSource()
     val cache = Cache.Builder.newBuilder()
-        .clock(clock)
+        .timeSource(timeSource)
         .expireAfterWrite(1.minutes)
         .build<Long, String>()
 
     cache.put(1, "dog")
 
     // just before expiry
-    clock.virtualTimeNanos = 1.minutes - 1.nanoseconds
+    timeSource += 1.minutes - 1.nanoseconds
 
     assertThat(cache.get(1))
         .isEqualTo("dog")
 
     // now expires
-    clock.virtualDuration = 1.minutes
+    timeSource += 1.nanoseconds
 
     assertThat(cache.get(1))
         .isNull()

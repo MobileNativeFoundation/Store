@@ -10,18 +10,14 @@ public abstract interface class com/dropbox/android/external/cache4/Cache {
 public abstract interface class com/dropbox/android/external/cache4/Cache$Builder {
 	public static final field Companion Lcom/dropbox/android/external/cache4/Cache$Builder$Companion;
 	public abstract fun build ()Lcom/dropbox/android/external/cache4/Cache;
-	public abstract fun clock (Lcom/dropbox/android/external/cache4/Clock;)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun concurrencyLevel (I)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun expireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun expireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun maximumCacheSize (J)Lcom/dropbox/android/external/cache4/Cache$Builder;
+	public abstract fun timeSource (Lkotlin/time/TimeSource;)Lcom/dropbox/android/external/cache4/Cache$Builder;
 }
 
 public final class com/dropbox/android/external/cache4/Cache$Builder$Companion {
 	public final fun newBuilder ()Lcom/dropbox/android/external/cache4/Cache$Builder;
-}
-
-public abstract interface class com/dropbox/android/external/cache4/Clock {
-	public abstract fun getCurrentTimeNanos ()J
 }
 

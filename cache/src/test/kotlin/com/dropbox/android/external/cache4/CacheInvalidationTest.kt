@@ -3,8 +3,8 @@ package com.dropbox.android.external.cache4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import kotlin.time.ExperimentalTime
+import kotlin.time.TestTimeSource
 import kotlin.time.minutes
-import kotlin.time.nanoseconds
 
 @ExperimentalTime
 class CacheInvalidationTest {
@@ -28,23 +28,23 @@ class CacheInvalidationTest {
 
     @Test
     fun `calling invalidate(key) also evicts all expired entries`() {
-        val clock = TestClock(virtualDuration = 0.nanoseconds)
+        val timeSource = TestTimeSource()
         val oneMinute = 1.minutes
 
         val cache = Cache.Builder.newBuilder()
-            .clock(clock)
+            .timeSource(timeSource)
             .expireAfterWrite(oneMinute)
             .build<Long, String>()
 
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        clock.virtualDuration = oneMinute / 2
+        timeSource += oneMinute / 2
 
         cache.put(3, "bird")
 
         // first 2 entries now expire
-        clock.virtualDuration = oneMinute
+        timeSource += oneMinute / 2
 
         cache.invalidate(3)
 

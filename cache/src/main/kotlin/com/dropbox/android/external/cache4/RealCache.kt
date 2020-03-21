@@ -4,7 +4,8 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.nanoseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * An implementation of [Cache] inspired by Guava Cache.
@@ -33,7 +34,7 @@ internal class RealCache<Key : Any, Value : Any>(
     val expireAfterAccessDuration: Duration,
     val maxSize: Long,
     val concurrencyLevel: Int,
-    val clock: Clock
+    val timeSource: TimeSource
 ) : Cache<Key, Value> {
 
     /**
@@ -91,15 +92,14 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun get(key: Key): Value? {
-        val nowNanos = clock.currentTimeNanos
         return cacheEntries[key]?.let {
-            if (it.isExpired(nowNanos)) {
+            if (it.isExpired()) {
                 // clean up expired entries and return null
-                expireEntries(nowNanos)
+                expireEntries()
                 null
             } else {
                 // update eviction metadata
-                recordRead(it, nowNanos)
+                recordRead(it)
                 it.value
             }
         }
@@ -107,15 +107,14 @@ internal class RealCache<Key : Any, Value : Any>(
 
     override fun get(key: Key, loader: () -> Value): Value {
         return loadersSynchronizer.synchronizedFor(key) {
-            val nowNanos = clock.currentTimeNanos
             cacheEntries[key]?.let {
-                if (it.isExpired(nowNanos)) {
+                if (it.isExpired()) {
                     // clean up expired entries
-                    expireEntries(nowNanos)
+                    expireEntries()
                     null
                 } else {
                     // update eviction metadata
-                    recordRead(it, nowNanos)
+                    recordRead(it)
                     it.value
                 }
             } ?: loader().let { loadedValue ->
@@ -133,18 +132,23 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun put(key: Key, value: Value) {
-        val nowNanos = clock.currentTimeNanos
-        expireEntries(nowNanos)
+        expireEntries()
 
         val existingEntry = cacheEntries[key]
         if (existingEntry != null) {
             // cache entry found
-            recordWrite(existingEntry, nowNanos)
+            recordWrite(existingEntry)
             existingEntry.value = value
         } else {
             // create a new cache entry
-            val newEntry = CacheEntry(key, value)
-            recordWrite(newEntry, nowNanos)
+            val nowTimeMark = timeSource.markNow()
+            val newEntry = CacheEntry(
+                key = key,
+                value = value,
+                accessTimeMark = nowTimeMark,
+                writeTimeMark = nowTimeMark
+            )
+            recordWrite(newEntry)
             cacheEntries[key] = newEntry
         }
 
@@ -152,9 +156,7 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun invalidate(key: Key) {
-        val nowNanos = clock.currentTimeNanos
-        expireEntries(nowNanos)
-
+        expireEntries()
         cacheEntries.remove(key)?.also {
             writeQueue?.remove(it)
             accessQueue?.remove(it)
@@ -174,7 +176,7 @@ internal class RealCache<Key : Any, Value : Any>(
     /**
      * Remove all expired entries.
      */
-    private fun expireEntries(nowNanos: Long) {
+    private fun expireEntries() {
         val queuesToProcess = listOfNotNull(
             if (expiresAfterWrite) writeQueue else null,
             if (expiresAfterAccess) accessQueue else null
@@ -189,7 +191,7 @@ internal class RealCache<Key : Any, Value : Any>(
             synchronized(queue) {
                 val iterator = queue.iterator()
                 for (entry in iterator) {
-                    if (entry.isExpired(nowNanos)) {
+                    if (entry.isExpired()) {
                         cacheEntries.remove(entry.key)
                         // remove the entry from the current queue
                         iterator.remove()
@@ -205,9 +207,12 @@ internal class RealCache<Key : Any, Value : Any>(
     /**
      * Check whether the [CacheEntry] has expired based on either access time or write time.
      */
-    private fun CacheEntry<Key, Value>.isExpired(nowNanos: Long): Boolean =
-        (expiresAfterAccess && (nowNanos - accessTimeNanos).nanoseconds >= expireAfterAccessDuration) ||
-            (expiresAfterWrite && (nowNanos - writeTimeNanos).nanoseconds >= expireAfterWriteDuration)
+    private fun CacheEntry<Key, Value>.isExpired(): Boolean {
+        val accessTimeMark = accessTimeMark
+        val writeTimeMark = writeTimeMark
+        return expiresAfterAccess && (accessTimeMark + expireAfterAccessDuration).hasPassedNow() ||
+            expiresAfterWrite && (writeTimeMark + expireAfterWriteDuration).hasPassedNow()
+    }
 
     /**
      * Evict least recently accessed entries until [cacheEntries] is no longer over capacity.
@@ -235,9 +240,10 @@ internal class RealCache<Key : Any, Value : Any>(
     /**
      * Update the eviction metadata on the [cacheEntry] which has just been read.
      */
-    private fun recordRead(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
+    private fun recordRead(cacheEntry: CacheEntry<Key, Value>) {
         if (expiresAfterAccess) {
-            cacheEntry.accessTimeNanos = nowNanos
+            val accessTimeMark = cacheEntry.accessTimeMark
+            cacheEntry.accessTimeMark = accessTimeMark + accessTimeMark.elapsedNow()
         }
         accessQueue?.add(cacheEntry)
     }
@@ -246,12 +252,14 @@ internal class RealCache<Key : Any, Value : Any>(
      * Update the eviction metadata on the [CacheEntry] which is about to be written.
      * Note that a write is also considered an access.
      */
-    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
+    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>) {
         if (expiresAfterAccess) {
-            cacheEntry.accessTimeNanos = nowNanos
+            val accessTimeMark = cacheEntry.accessTimeMark
+            cacheEntry.accessTimeMark = accessTimeMark + accessTimeMark.elapsedNow()
         }
         if (expiresAfterWrite) {
-            cacheEntry.writeTimeNanos = nowNanos
+            val writeTimeMark = cacheEntry.writeTimeMark
+            cacheEntry.writeTimeMark = writeTimeMark + writeTimeMark.elapsedNow()
         }
         accessQueue?.add(cacheEntry)
         writeQueue?.add(cacheEntry)
@@ -298,12 +306,13 @@ internal class RealCache<Key : Any, Value : Any>(
  * A cache entry holds the [key] and [value] pair,
  * along with the metadata needed to perform cache expiration and eviction.
  *
- * A cache entry can be reused by updating [value], [accessTimeNanos], or [writeTimeNanos],
+ * A cache entry can be reused by updating [value], [accessTimeMark], or [writeTimeMark],
  * as this allows us to avoid creating new instance of [CacheEntry] on every access and write.
  */
+@ExperimentalTime
 private data class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
     @Volatile var value: Value,
-    @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,
-    @Volatile var writeTimeNanos: Long = Long.MAX_VALUE
+    @Volatile var accessTimeMark: TimeMark,
+    @Volatile var writeTimeMark: TimeMark
 )
