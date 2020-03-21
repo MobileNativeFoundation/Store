@@ -101,8 +101,8 @@ To set the maximum time an entry can live in the cache since the last access (al
 
 ```kotlin
 val cache = Cache.Builder.newBuilder()
-            .expireAfterAccess(24.hours)
-            .build<Long, String>()
+    .expireAfterAccess(24.hours)
+    .build<Long, String>()
 ```
 
 An entry in this cache will be removed if it has not been read or replaced **after 24 hours** since it's been written into the cache.
@@ -113,8 +113,8 @@ To set the maximum time an entry can live in the cache since the last write (als
 
 ```kotlin
 val cache = Cache.Builder.newBuilder()
-            .expireAfterWrite(30.minutes)
-            .build<Long, String>()
+    .expireAfterWrite(30.minutes)
+    .build<Long, String>()
 ```
 
 An entry in this cache will be removed if it has not been replaced **after 30 minutes** since it's been written into the cache.
@@ -127,11 +127,28 @@ To set the the maximum number of entries to be kept in the cache:
 
 ```kotlin
 val cache = Cache.Builder.newBuilder()
-            .maximumCacheSize(100)
-            .build<Long, String>()
+    .maximumCacheSize(100)
+    .build<Long, String>()
 ```
 
 Once there are more than **100** entries in this cache, the **least recently used one** will be removed, where "used" means **reading the cache**, **adding a new cache entry**, or **replacing an existing entry with a new one**.
+
+### Getting all Cache Entries as a Map
+
+To get a copy of the current cache entries as a `Map`:
+
+```kotlin
+val cache = Cache.Builder.newBuilder()
+    .build<Long, String>()
+    
+cache.put(1, "dog")
+cache.put(2, "cat")
+
+assertThat(cache.asMap())
+    .isEqualTo(mapOf(1L to "dog", 2L to "cat"))
+```
+
+_Note that calling `asMap()` has no effect on the access expiry of the cache._
 
 ### Deleting Cache Entries
 
