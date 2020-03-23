@@ -118,13 +118,14 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching network records.
          */
         @OptIn(ExperimentalTime::class)
+        @Deprecated(message = "Creating a flow from a function is deprecated, use Fetcher",
+            replaceWith = ReplaceWith(
+                expression = "StoreBuilder.from(Fetcher.fromNonFlowingValueFetcher(fetcher))",
+                imports = ["com.dropbox.android.external.store4.Fetcher"]
+            ))
         fun <Key : Any, Output : Any> fromNonFlow(
             fetcher: suspend (key: Key) -> Output
-        ): StoreBuilder<Key, Output> = BuilderImpl { key: Key ->
-            flow {
-                emit(fetcher(key))
-            }
-        }
+        ): StoreBuilder<Key, Output> = BuilderImpl(Fetcher.fromNonFlowingValueFetcher(fetcher))
 
         /**
          * Creates a new [StoreBuilder] from a [Flow] fetcher.
@@ -135,9 +136,18 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching a flow of network records.
          */
         @OptIn(ExperimentalTime::class)
+        @Deprecated(message = "Creating a flow from a function is deprecated, use Fetcher",
+            replaceWith = ReplaceWith(
+                expression = "StoreBuilder.from(Fetcher.fromValueFetcher(fetcher))",
+                imports = ["com.dropbox.android.external.store4.Fetcher"]
+            ))
         fun <Key : Any, Output : Any> from(
             fetcher: (key: Key) -> Flow<Output>
-        ): StoreBuilder<Key, Output> = BuilderImpl(fetcher)
+        ): StoreBuilder<Key, Output> = BuilderImpl(Fetcher.fromValueFetcher(fetcher))
+
+        fun <Key : Any, Output : Any> from(
+            fetcher: Fetcher<Key, Output>
+        ) : StoreBuilder<Key, Output> = BuilderImpl(fetcher)
     }
 }
 
@@ -146,7 +156,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 private class BuilderImpl<Key : Any, Output : Any>(
-    private val fetcher: (key: Key) -> Flow<Output>
+    private val fetcher: Fetcher<Key, Output>
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
@@ -249,7 +259,7 @@ private class BuilderImpl<Key : Any, Output : Any>(
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
-    private val fetcher: (key: Key) -> Flow<Input>,
+    private val fetcher: Fetcher<Key, Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null

@@ -18,6 +18,7 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.CacheType
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
@@ -44,7 +45,7 @@ import kotlin.time.ExperimentalTime
 @FlowPreview
 internal class RealStore<Key : Any, Input : Any, Output : Any>(
     scope: CoroutineScope,
-    fetcher: (Key) -> Flow<Input>,
+    fetcher: Fetcher<Key, Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
     private val memoryPolicy: MemoryPolicy?
 ) : Store<Key, Output> {

@@ -6,7 +6,8 @@ package com.dropbox.android.external.store4
  * @param <Raw> data type before parsing
 </Raw> */
 @Deprecated("used in tests")
-interface Fetcher<Raw, Key> {
+// TODO cleanup
+interface FetcherStore3<Raw, Key> {
 
     /**
      * @param key Container with Key and Type used as a request param

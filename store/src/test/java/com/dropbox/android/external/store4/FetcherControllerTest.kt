@@ -15,7 +15,6 @@
  */
 package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.ResponseOrigin.Fetcher
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.impl.FetcherController
 import com.google.common.truth.Truth.assertThat
@@ -42,7 +41,7 @@ class FetcherControllerTest {
     fun simple() = testScope.runBlockingTest {
         val fetcherController = FetcherController<Int, Int, Int>(
                 scope = testScope,
-                realFetcher = { key: Int ->
+                realFetcher = Fetcher.fromValueFetcher{ key: Int ->
                     flow {
                         emit(key * key)
                     }
@@ -57,7 +56,7 @@ class FetcherControllerTest {
         assertThat(received).isEqualTo(
                 Data(
                         value = 9,
-                        origin = Fetcher
+                        origin = ResponseOrigin.Fetcher
                 )
         )
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
@@ -68,7 +67,7 @@ class FetcherControllerTest {
         var createdCnt = 0
         val fetcherController = FetcherController<Int, Int, Int>(
                 scope = testScope,
-                realFetcher = { key: Int ->
+                realFetcher = Fetcher.fromValueFetcher{ key: Int ->
                     createdCnt++
                     flow {
                         // make sure it takes time, otherwise, we may not share
@@ -93,7 +92,7 @@ class FetcherControllerTest {
             assertThat(it.await()).isEqualTo(
                     Data(
                             value = 9,
-                            origin = Fetcher
+                            origin = ResponseOrigin.Fetcher
                     )
             )
         }

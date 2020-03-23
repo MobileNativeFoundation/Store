@@ -1,6 +1,6 @@
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherStore3
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
@@ -32,7 +32,7 @@ class StreamOneKeyTest(
     private val storeType: TestStoreType
 ) {
 
-    val fetcher: Fetcher<String, BarCode> = mock()
+    val fetcher: FetcherStore3<String, BarCode> = mock()
     val persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")

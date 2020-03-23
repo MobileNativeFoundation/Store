@@ -15,8 +15,9 @@
  */
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.ResponseOrigin.Cache
-import com.dropbox.android.external.store4.ResponseOrigin.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
@@ -67,10 +68,10 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ), Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(
@@ -84,11 +85,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(
@@ -118,11 +119,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
@@ -142,11 +143,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
@@ -180,11 +181,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
@@ -199,11 +200,11 @@ class FlowStoreTest {
                     origin = Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -222,11 +223,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
@@ -237,11 +238,11 @@ class FlowStoreTest {
                     origin = Cache
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -260,22 +261,22 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
         assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -298,15 +299,15 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
@@ -316,15 +317,15 @@ class FlowStoreTest {
                     origin = Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -349,7 +350,7 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
@@ -383,7 +384,7 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
@@ -391,7 +392,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-2",
@@ -399,7 +400,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -423,11 +424,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 StoreResponse.Error(
                     error = exception,
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
@@ -441,11 +442,11 @@ class FlowStoreTest {
                     origin = Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 StoreResponse.Error(
                     error = exception,
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -488,7 +489,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
             collection.cancelAndJoin()
@@ -543,7 +544,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
             collection.cancelAndJoin()
@@ -571,29 +572,29 @@ class FlowStoreTest {
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
                     Data(origin = Cache, value = "three-1"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-2")
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
                     Data(origin = Cache, value = "three-2"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-3")
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-3")
                 )
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1"),
-                    Data(origin = Fetcher, value = "three-2"),
-                    Data(origin = Fetcher, value = "three-3")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-3")
                 )
             )
             fetcher1Job.cancelAndJoin()
@@ -619,22 +620,22 @@ class FlowStoreTest {
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
                     Data(origin = Cache, value = "three-1"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-2")
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1"),
-                    Data(origin = Fetcher, value = "three-2")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             )
             fetcher1Job.cancelAndJoin()
@@ -686,12 +687,16 @@ class FlowStoreTest {
         }
 
         return if (nonFlowingFetcher != null) {
-            StoreBuilder.fromNonFlow(
-                nonFlowingFetcher
+            StoreBuilder.from(
+                Fetcher.fromNonFlowingValueFetcher(
+                    nonFlowingFetcher
+                )
             )
         } else {
             StoreBuilder.from(
-                flowingFetcher!!
+                Fetcher.fromValueFetcher(
+                    flowingFetcher!!
+                )
             )
         }.scope(testScope)
             .let {

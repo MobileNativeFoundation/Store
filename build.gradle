@@ -9,7 +9,7 @@ buildscript {
     }
 
     ext.versions = [
-            androidGradlePlugin         : '4.0.0-beta01',
+            androidGradlePlugin         : '3.6.1',
             kotlin                      : '1.3.70',
             dokkaGradlePlugin           : '0.10.0',
             ktlintGradle                : '9.1.1',
