@@ -11,7 +11,7 @@ ext.versions = [
 
         // Others.
         coroutines        : '1.3.5',
-        retrofit          : '2.8.0',
+        retrofit          : '2.8.1',
         okHttp            : '4.4.1',
         okio              : '2.4.3',
         moshi             : '1.9.2',
