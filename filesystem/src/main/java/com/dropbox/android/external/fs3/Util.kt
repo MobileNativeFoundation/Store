@@ -18,7 +18,7 @@ object Util {
 
         fillStack(arr, stack)
 
-        if (emptyStack(stack)) {
+        if (stack.isEmpty()) {
             return "/"
         }
 
@@ -29,10 +29,6 @@ object Util {
         }
 
         return sb.toString()
-    }
-
-    private fun emptyStack(stack: Stack<String>): Boolean {
-        return stack.isEmpty()
     }
 
     private fun fillStack(arr: Array<String>, stack: Stack<String>) {
