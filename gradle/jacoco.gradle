@@ -6,12 +6,11 @@
 apply plugin: "jacoco"
 // Android Gradle Plugin out of the box supports only code coverage for instrumentation tests.
 // Creates a task that will merge coverage for all projects
-project.afterEvaluate {
-    def testTaskName = "test"
-    def coverageTaskName = "${testTaskName}Coverage"
+project.tasks.withType(org.gradle.api.tasks.testing.Test) { testTask ->
+    def coverageTaskName = "${testTask.name}Coverage"
 
     // Create coverage task of form 'testFlavorTypeUnitTestCoverage' depending on 'testFlavorTypeUnitTest'
-    task "${coverageTaskName}"(type: JacocoReport, dependsOn: "$testTaskName") {
+    task "${coverageTaskName}"(type: JacocoReport, dependsOn: "$testTask.name") {
         group = 'Reporting'
         description = "Generate Jacoco coverage reports for the build."
 

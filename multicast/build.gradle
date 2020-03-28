@@ -1,33 +1,52 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.dokka'
     id 'kotlinx-atomicfu'
 }
 
-dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.coroutinesCore
-    testImplementation libraries.coroutinesTest
-    testImplementation libraries.kotlinTest
-    testImplementation libraries.kotlinTestJunit
+kotlin {
+    jvm {
+        compilations.main.kotlinOptions {
+            // Setup the Kotlin compiler options for the 'main' compilation:
+            jvmTarget = "1.8"
+        }
+        compilations.test.kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs += [
+                    '-Xopt-in=kotlin.RequiresOptIn',
+            ]
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation kotlin("stdlib-common")
+                implementation libraries.coroutinesCommon
+            }
+        }
+
+        jvmMain {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(kotlin("stdlib"))
+                implementation libraries.coroutinesCore
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation libraries.coroutinesTest
+                implementation libraries.kotlinTest
+                implementation libraries.kotlinTestJunit
+            }
+        }
+    }
 }
+
 group = GROUP
 version = VERSION_NAME
-apply from: rootProject.file("gradle/maven-push.gradle")
+//apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                '-Xopt-in=kotlin.RequiresOptIn',
-        ]
-    }
-}

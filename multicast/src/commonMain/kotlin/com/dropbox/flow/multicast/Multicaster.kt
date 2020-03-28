@@ -109,9 +109,9 @@ class Multicaster<T>(
                         channel.close()
                     }
                 }
-                .transform {
-                    emit(it.value)
-                    it.delivered.complete(Unit)
+                .transform { value: ChannelManager.Message.Dispatch.Value<T> ->
+                    emit(value.value)
+                    value.delivered.complete(Unit)
                 }.onCompletion {
                     try {
                         channelManager.removeDownstream(channel)
@@ -125,8 +125,8 @@ class Multicaster<T>(
 
     /**
      * Closes the [Multicaster]. All current collectors on the [flow] will complete and any new
-     * collector will receive 0 values and immediately close even if the [bufferSize] is set to a
-     * positive value.
+     * collector will receive 0 values and immediately close even if the [ChannelManager.bufferSize]
+     * is set to a positive value.
      *
      * This is an idempotent operation.
      */

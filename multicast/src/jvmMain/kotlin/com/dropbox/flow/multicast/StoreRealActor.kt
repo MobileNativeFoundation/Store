@@ -29,7 +29,7 @@ import kotlinx.coroutines.channels.actor
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
 @ExperimentalCoroutinesApi
-internal abstract class StoreRealActor<T>(
+internal actual abstract class StoreRealActor<T> actual constructor(
     scope: CoroutineScope
 ) {
     private val inboundChannel: SendChannel<Any?>
@@ -67,15 +67,15 @@ internal abstract class StoreRealActor<T>(
         }
     }
 
-    open fun onClosed() = Unit
+    actual open fun onClosed() = Unit
 
-    abstract suspend fun handle(msg: T)
+    actual abstract suspend fun handle(msg: T)
 
-    suspend fun send(msg: T) {
+    actual suspend fun send(msg: T) {
         inboundChannel.send(msg)
     }
 
-    suspend fun close() {
+    actual suspend fun close() {
         try {
             // using a custom token to close so that we can gracefully close the downstream
             inboundChannel.send(CLOSE_TOKEN)
