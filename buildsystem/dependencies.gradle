@@ -70,5 +70,7 @@ ext.libraries = [
         coroutinesRx          : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$versions.coroutines",
         coroutinesReactive    : "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:$versions.coroutines",
         coroutinesAndroid     : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines",
-        coroutinesTest        : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines"
+        coroutinesTest        : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines",
+        kotlinTest            : "org.jetbrains.kotlin:kotlin-test:$versions.kotlin",
+        kotlinTestJunit       : "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin",
 ]

@@ -22,15 +22,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
-@RunWith(JUnit4::class)
 class StoreRealActorTest {
 
     /**
@@ -52,7 +50,7 @@ class StoreRealActorTest {
             }
 
             override fun onClosed() {
-                assertThat(active.get()).isFalse()
+                assertFalse(active.get())
                 didClose.set(true)
             }
         }
@@ -71,6 +69,6 @@ class StoreRealActorTest {
             actor.close()
             sender.join()
         }
-        assertThat(didClose.get()).isTrue()
+        assertTrue(didClose.get())
     }
 }
