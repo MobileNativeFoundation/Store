@@ -15,12 +15,13 @@
  */
 package com.dropbox.flow.multicast
 
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalStdlibApi::class)
 class SharedFlowProducerTest {
@@ -43,24 +44,24 @@ class SharedFlowProducerTest {
         scope.pauseDispatcher()
         producer.start()
         producer.cancel()
-        assertThat(upstreamMessages).isEmpty()
+        assertTrue(upstreamMessages.isEmpty())
     }
 
     @Test
     fun `Producer forwards all values from source when acked`() {
         val producer = createProducer(flowOf("a", "b", "c"))
-        assertThat(upstreamMessages).isEmpty()
+        assertTrue(upstreamMessages.isEmpty())
         producer.start()
-        assertThat(upstreamMessages).containsExactly("a", "b", "c")
+        assertEquals(listOf("a", "b", "c"), upstreamMessages)
     }
 
     @Test
     fun `Calling start should be idempotent`() {
         val producer = createProducer(flowOf("a", "b", "c"))
-        assertThat(upstreamMessages).isEmpty()
+        assertTrue(upstreamMessages.isEmpty())
         producer.start()
         producer.start()
         producer.start()
-        assertThat(upstreamMessages).containsExactly("a", "b", "c")
+        assertEquals(listOf("a", "b", "c"), upstreamMessages)
     }
 }
