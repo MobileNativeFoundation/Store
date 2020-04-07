@@ -1,7 +1,6 @@
 package com.dropbox.android.external.cache4
 
 import java.util.Collections
-import java.util.Collections.unmodifiableMap
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -169,7 +168,7 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun asMap(): Map<in Key, Value> {
-        return Collections.unmodifiableMap(cacheEntries.mapValues { (_, entry) -> entry.value })
+        return cacheEntries.mapValues { (_, entry) -> entry.value }
     }
 
     /**
