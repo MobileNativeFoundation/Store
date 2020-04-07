@@ -168,7 +168,6 @@ class DefaultCacheTest {
         assertThat(cache.asMap())
             .isEqualTo(mapOf(1L to "dog", 2L to "cat"))
     }
-    
     @Test
     fun `asMap() creates a defensive copy`() {
         val cache = Cache.Builder.newBuilder()
