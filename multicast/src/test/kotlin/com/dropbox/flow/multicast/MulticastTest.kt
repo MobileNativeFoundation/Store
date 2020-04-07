@@ -15,7 +15,6 @@
  */
 package com.dropbox.flow.multicast
 
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -39,14 +38,15 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
 
 @FlowPreview
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
-@RunWith(JUnit4::class)
 class MulticastTest {
     private val testScope = TestCoroutineScope()
 
@@ -77,10 +77,8 @@ class MulticastTest {
                 }
             }
         )
-        assertThat(activeFlow.newDownstream().toList())
-            .isEqualTo(listOf("a", "b", "c"))
-        assertThat(activeFlow.newDownstream().toList())
-            .isEqualTo(listOf("d", "e", "f"))
+        assertEquals(listOf("a", "b", "c"), activeFlow.newDownstream().toList())
+        assertEquals(listOf("d", "e", "f"), activeFlow.newDownstream().toList())
     }
 
     @Test
@@ -101,10 +99,8 @@ class MulticastTest {
                 delay(200)
             }.toList()
         }
-        assertThat(c1.await())
-            .isEqualTo(listOf("a", "b", "c"))
-        assertThat(c2.await())
-            .isEqualTo(listOf("a", "b", "c"))
+        assertEquals(listOf("a", "b", "c"), c1.await())
+        assertEquals(listOf("a", "b", "c"), c2.await())
     }
 
     @Test
@@ -120,8 +116,8 @@ class MulticastTest {
         val c2 = async {
             activeFlow.newDownstream().toList()
         }
-        assertThat(c1.await()).isEqualTo(listOf("a", "b", "c"))
-        assertThat(c2.await()).isEqualTo(listOf("a", "b", "c"))
+        assertEquals(listOf("a", "b", "c"), c1.await())
+        assertEquals(listOf("a", "b", "c"), c2.await())
     }
 
     @Test
@@ -139,8 +135,8 @@ class MulticastTest {
                 delay(110)
             }.toList()
         }
-        assertThat(c1.await()).isEqualTo(listOf("a", "b", "c"))
-        assertThat(c2.await()).isEqualTo(listOf("a", "b", "c"))
+        assertEquals(listOf("a", "b", "c"), c1.await())
+        assertEquals(listOf("a", "b", "c"), c2.await())
     }
 
     @Test
@@ -175,9 +171,9 @@ class MulticastTest {
         val lists = listOf(c1, c2, c3).map {
             it.await()
         }
-        assertThat(lists[0]).isEqualTo(listOf("a_0", "b_0"))
-        assertThat(lists[1]).isEqualTo(listOf("b_0"))
-        assertThat(lists[2]).isEqualTo(listOf("a_1", "b_1"))
+        assertEquals(listOf("a_0", "b_0"), lists[0])
+        assertEquals(listOf("b_0"), lists[1])
+        assertEquals(listOf("a_1", "b_1"), lists[2])
     }
 
     @Test
@@ -204,9 +200,9 @@ class MulticastTest {
                 }
                 receivedError.complete(it)
             }.toList()
-        assertThat(receivedValue.await()).isEqualTo("a")
+        assertEquals("a", receivedValue.await())
         val error = receivedError.await()
-        assertThat(error).isEqualTo(exception)
+        assertEquals(exception, error)
     }
 
     @Test
@@ -244,9 +240,9 @@ class MulticastTest {
                 receivedError.complete(it)
             }.toList()
         val error = receivedError.await()
-        assertThat(error).isEqualTo(exception)
+        assertEquals(exception, error)
         // test sanity, second collector never receives a value
-        assertThat(receivedValue.isActive).isTrue()
+        assertTrue(receivedValue.isActive)
     }
 
     @Test
@@ -275,11 +271,11 @@ class MulticastTest {
             // this will come in a new channel
             activeFlow.newDownstream().take(2).toList()
         }
-        assertThat(firstCollector.await()).isEqualTo(listOf("a_1", "b_1"))
-        assertThat(secondCollector.await()).isEqualTo(listOf("a_2", "b_2"))
-        assertThat(collectedCount).isEqualTo(2)
+        assertEquals(listOf("a_1", "b_1"), firstCollector.await())
+        assertEquals(listOf("a_2", "b_2"), secondCollector.await())
+        assertEquals(2, collectedCount)
         delay(200)
-        assertThat(didntFinish).isEqualTo(false)
+        assertFalse(didntFinish)
     }
 
     @Test
@@ -317,11 +313,11 @@ class MulticastTest {
         val c4 = async {
             activeFlow.newDownstream().toList()
         }
-        assertThat(c1.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
-        assertThat(c2.await()).isEqualTo(listOf("a", "b", "c", "d", "e"))
-        assertThat(c3.await()).isEqualTo(listOf("c", "d", "e"))
-        assertThat(c4.await()).isEqualTo(listOf("d", "e"))
-        assertThat(collectedCount).isEqualTo(1)
+        assertEquals(listOf("a", "b", "c", "d", "e"), c1.await())
+        assertEquals(listOf("a", "b", "c", "d", "e"), c2.await())
+        assertEquals(listOf("c", "d", "e"), c3.await())
+        assertEquals(listOf("d", "e"), c4.await())
+        assertEquals(1, collectedCount)
     }
 
     @Test
@@ -332,8 +328,8 @@ class MulticastTest {
             source = flowOf(1, 2, 3),
             onEach = {}
         )
-        assertThat(activeFlow.newDownstream().toList()).isEqualTo(listOf(1, 2, 3))
-        assertThat(activeFlow.newDownstream().toList()).isEqualTo(listOf(1, 2, 3))
+        assertEquals(listOf(1, 2, 3), activeFlow.newDownstream().toList())
+        assertEquals(listOf(1, 2, 3), activeFlow.newDownstream().toList())
     }
 
     @Test
@@ -355,8 +351,8 @@ class MulticastTest {
             activeFlow.newDownstream().toList()
         }
         testScope.runCurrent()
-        assertThat(c2.isActive).isFalse()
-        assertThat(c2.await()).isEqualTo(listOf("b_0", "c_0"))
+        assertFalse(c2.isActive)
+        assertEquals(listOf("b_0", "c_0"), c2.await())
         unlockC1.complete(Unit)
     }
 
@@ -379,8 +375,8 @@ class MulticastTest {
             activeFlow.newDownstream().toList()
         }
         testScope.runCurrent()
-        assertThat(c2.isActive).isFalse()
-        assertThat(c2.await()).isEqualTo(listOf("a_0", "b_0", "c_0"))
+        assertFalse(c2.isActive)
+        assertEquals(listOf("a_0", "b_0", "c_0"), c2.await())
         unlockC1.complete(Unit)
     }
 
@@ -402,8 +398,8 @@ class MulticastTest {
             activeFlow.newDownstream().toList()
         }
         testScope.runCurrent()
-        assertThat(c2.isActive).isFalse()
-        assertThat(c2.await()).isEqualTo(listOf("a_1"))
+        assertFalse(c2.isActive)
+        assertEquals(listOf("a_1"), c2.await())
         unlockC1.complete(Unit)
     }
 
@@ -420,11 +416,11 @@ class MulticastTest {
             multicaster.newDownstream().toList()
         }
         runCurrent()
-        assertThat(collection.isActive).isTrue()
+        assertTrue(collection.isActive)
         multicaster.close()
         runCurrent()
-        assertThat(collection.isCompleted).isTrue()
-        assertThat(collection.await()).isEqualTo(listOf(1))
+        assertTrue(collection.isCompleted)
+        assertEquals(listOf(1), collection.await())
     }
 
     @Test
@@ -443,8 +439,8 @@ class MulticastTest {
             multicaster.newDownstream().toList()
         }
         runCurrent()
-        assertThat(collection.isActive).isFalse()
-        assertThat(collection.await()).isEmpty()
+        assertFalse(collection.isActive)
+        assertTrue(collection.await().isEmpty())
     }
 
     @Test
@@ -472,8 +468,8 @@ class MulticastTest {
             multicaster.newDownstream().toList()
         }
         runCurrent()
-        assertThat(collection2.isActive).isFalse()
-        assertThat(collection2.await()).isEmpty()
+        assertFalse(collection2.isActive)
+        assertTrue(collection2.await().isEmpty())
     }
 
     @Test
@@ -489,25 +485,28 @@ class MulticastTest {
             val piggybackDownstream = multicaster.newDownstream(piggybackOnly = true)
             val piggybackValue = testScope.async { piggybackDownstream.first() }
             testScope.advanceUntilIdle()
-            assertThat(createCount).isEqualTo(0)
-            assertThat(piggybackValue.isCompleted).isEqualTo(false)
+            assertEquals(0, createCount)
+            assertFalse(piggybackValue.isCompleted)
 
             val downstream = multicaster.newDownstream(piggybackOnly = false)
             val value = testScope.async { downstream.first() }
             testScope.advanceUntilIdle()
-            assertThat(createCount).isEqualTo(1)
-            assertThat(piggybackValue.isCompleted).isEqualTo(true)
-            assertThat(piggybackValue.getCompleted()).isEqualTo("value")
-            assertThat(value.isCompleted).isEqualTo(true)
-            assertThat(value.getCompleted()).isEqualTo("value")
+            assertEquals(1, createCount)
+            assertTrue(piggybackValue.isCompleted)
+            assertEquals("value", piggybackValue.getCompleted())
+            assertTrue(value.isCompleted)
+            assertEquals("value", value.getCompleted())
         }
 
-    @Test(expected = IllegalStateException::class)
-    fun `GIVEN no piggybackDownstream WHEN adding a piggybackOnly downstream THEN throws IllegalStateException`() =
-        testScope.runBlockingTest {
-            val multicaster = createMulticaster(flowOf("a"), piggybackDownstream = false)
-            multicaster.newDownstream(piggybackOnly = true)
+    @Test
+    fun `GIVEN no piggybackDownstream WHEN adding a piggybackOnly downstream THEN throws IllegalStateException`() {
+        assertFailsWith(IllegalStateException::class, "Must fail with IllegalStateException") {
+            testScope.runBlockingTest {
+                val multicaster = createMulticaster(flowOf("a"), piggybackDownstream = false)
+                multicaster.newDownstream(piggybackOnly = true)
+            }
         }
+    }
 
     private fun versionedMulticaster(
         bufferSize: Int = 0,
@@ -520,7 +519,7 @@ class MulticastTest {
             bufferSize = bufferSize,
             source = flow<String> {
                 val id = counter++
-                assertThat(counter).isAtMost(collectionLimit)
+                assertTrue(counter <= collectionLimit)
                 emitAll(values.asFlow().map {
                     "${it}_$id"
                 })

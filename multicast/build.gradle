@@ -6,9 +6,9 @@ plugins {
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
-    testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
-    testImplementation libraries.truth
+    testImplementation libraries.kotlinTest
+    testImplementation libraries.kotlinTestJunit
 }
 group = GROUP
 version = VERSION_NAME
