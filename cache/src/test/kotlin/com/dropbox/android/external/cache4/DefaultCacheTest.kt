@@ -1,7 +1,8 @@
 package com.dropbox.android.external.cache4
 
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.Test
 
 class DefaultCacheTest {
 
@@ -10,8 +11,7 @@ class DefaultCacheTest {
         val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -22,11 +22,9 @@ class DefaultCacheTest {
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
     }
 
     @Test
@@ -39,11 +37,9 @@ class DefaultCacheTest {
         val value1 = cache.get(1)
         val value2 = cache.get(1)
 
-        assertThat(value1)
-            .isEqualTo("dog")
+        assertEquals("dog", value1)
 
-        assertThat(value2)
-            .isEqualTo("dog")
+        assertEquals("dog", value2)
     }
 
     @Test
@@ -55,11 +51,9 @@ class DefaultCacheTest {
         cache.put(2, "cat")
         cache.put(1, "bird")
 
-        assertThat(cache.get(1))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
     }
 
     @Test
@@ -70,11 +64,9 @@ class DefaultCacheTest {
         cache.put(1, TypeWithHashCode("dog", 10))
         cache.put(2, TypeWithHashCode("cat", 15))
 
-        assertThat(cache.get(1))
-            .isEqualTo(TypeWithHashCode("dog", 10))
+        assertEquals(TypeWithHashCode("dog", 10), cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo(TypeWithHashCode("cat", 15))
+        assertEquals(TypeWithHashCode("cat", 15), cache.get(2))
     }
 
     @Test
@@ -86,14 +78,9 @@ class DefaultCacheTest {
 
         val value = cache.get(1)
 
-        assertThat(value)
-            .isNotEqualTo(TypeWithHashCode("dog", 10))
+        assertEquals("dog", value?.x)
 
-        assertThat(value?.x)
-            .isEqualTo("dog")
-
-        assertThat(value?.y)
-            .isEqualTo(10)
+        assertEquals(10, value?.y)
     }
 
     @Test
@@ -105,8 +92,7 @@ class DefaultCacheTest {
 
         val value = cache.get(TypeWithHashCode("a", 1))
 
-        assertThat(value)
-            .isEqualTo("dog")
+        assertEquals("dog", value)
     }
 
     @Test
@@ -121,11 +107,9 @@ class DefaultCacheTest {
         val value1 = cache.get(TypeWithoutHashCode("a", 1))
         val value2 = cache.get(key)
 
-        assertThat(value1)
-            .isNull()
+        assertNull(value1)
 
-        assertThat(value2)
-            .isEqualTo("dog")
+        assertEquals("dog", value2)
     }
 
     @Test
@@ -138,11 +122,9 @@ class DefaultCacheTest {
         cache.put(1, valueToCache)
         cache.put(2, valueToCache)
 
-        assertThat(cache.get(1))
-            .isEqualTo(valueToCache)
+        assertEquals(valueToCache, cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo(valueToCache)
+        assertEquals(valueToCache, cache.get(2))
     }
 
     @Test
@@ -153,8 +135,7 @@ class DefaultCacheTest {
         cache.put(Unit, "dog")
         cache.put(Unit, "cat")
 
-        assertThat(cache.get(Unit))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(Unit))
     }
 
     @Test
@@ -165,9 +146,9 @@ class DefaultCacheTest {
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        assertThat(cache.asMap())
-            .isEqualTo(mapOf(1L to "dog", 2L to "cat"))
+        assertEquals(mapOf(1L to "dog", 2L to "cat"), cache.asMap())
     }
+
     @Test
     fun `asMap() creates a defensive copy`() {
         val cache = Cache.Builder.newBuilder()
@@ -179,6 +160,6 @@ class DefaultCacheTest {
         val map = cache.asMap() as MutableMap
         map[3] = "bird"
 
-        assertThat(cache.get(3)).isNull()
+        assertNull(cache.get(3))
     }
 }

@@ -1,7 +1,8 @@
 package com.dropbox.android.external.cache4
 
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 import kotlin.time.nanoseconds
@@ -19,11 +20,9 @@ class CacheInvalidationTest {
 
         cache.invalidate(2)
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
     }
 
     @Test
@@ -49,14 +48,11 @@ class CacheInvalidationTest {
         cache.invalidate(3)
 
         // all 3 entries should have been evicted
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
 
-        assertThat(cache.get(3))
-            .isNull()
+        assertNull(cache.get(3))
     }
 
     @Test
@@ -68,24 +64,18 @@ class CacheInvalidationTest {
         cache.put(2, "cat")
         cache.put(3, "bird")
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
         cache.invalidateAll()
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
 
-        assertThat(cache.get(3))
-            .isNull()
+        assertNull(cache.get(3))
     }
 }

@@ -1,25 +1,20 @@
 package com.dropbox.android.external.cache4
 
-import com.dropbox.android.external.cache4.testutil.ConcurrencyTest
-import com.dropbox.android.external.cache4.testutil.ConcurrencyTestRule
-import com.google.common.truth.Truth.assertThat
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertThrows
-import org.junit.Rule
-import org.junit.Test
-import java.io.IOException
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
+import kotlin.test.Test
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 import kotlin.time.nanoseconds
 
 @ExperimentalTime
 class CacheLoaderTest {
-
-    @Rule
-    @JvmField
-    val concurrencyTestRule = ConcurrencyTestRule()
 
     private val clock = TestClock(virtualDuration = 0.nanoseconds)
     private val expiryDuration = 1.minutes
@@ -33,11 +28,9 @@ class CacheLoaderTest {
 
         val value = cache.get(1, loader)
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(1)
+        assertEquals(1, loader.invokeCount)
 
-        assertThat(value)
-            .isEqualTo("dog")
+        assertEquals("dog", value)
     }
 
     @Test
@@ -56,11 +49,9 @@ class CacheLoaderTest {
 
         val value = cache.get(1, loader)
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(1)
+        assertEquals(1, loader.invokeCount)
 
-        assertThat(value)
-            .isEqualTo("dog")
+        assertEquals("dog", value)
     }
 
     @Test
@@ -78,15 +69,12 @@ class CacheLoaderTest {
 
         val value = cache.get(1, loader)
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(0)
+        assertEquals(0, loader.invokeCount)
 
-        assertThat(value)
-            .isEqualTo("dog")
+        assertEquals("dog", value)
     }
 
     @Test
-    @ConcurrencyTest
     fun `get(key, loader) returns existing value when an entry with the associated key is absent initially but present after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -99,27 +87,25 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(newSingleThreadDispatcher()) {
+            val loaderJob = launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(newSingleThreadDispatcher()) {
-                delay(1)
+            val putJob = launch(newSingleThreadDispatcher()) {
+                delay(10)
                 cache.put(1, "cat")
             }
 
-            delay(executionTime + 10)
+            loaderJob.join()
+            putJob.join()
 
-            assertThat(loader.invokeCount)
-                .isEqualTo(1)
+            assertEquals(1, loader.invokeCount)
 
             // entry from loader should not be cached as an entry already exists
             // by the time loader returns
-            assertThat(value)
-                .isEqualTo("cat")
+            assertEquals("cat", value)
 
-            assertThat(cache.get(1))
-                .isEqualTo("cat")
+            assertEquals("cat", cache.get(1))
         }
 
     @Test
@@ -131,15 +117,12 @@ class CacheLoaderTest {
 
         cache.get(1, loader)
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(1)
+        assertEquals(1, loader.invokeCount)
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
     }
 
     @Test
-    @ConcurrencyTest
     fun `value returned by loader is cached when value associated with the key is present but expired after executing the loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -154,29 +137,27 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(newSingleThreadDispatcher()) {
+            val loaderJob = launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(newSingleThreadDispatcher()) {
-                delay(1)
+            val putJob = launch(newSingleThreadDispatcher()) {
+                delay(10)
                 cache.put(1, "cat")
 
                 // now expires
                 clock.virtualDuration = expiryDuration
             }
 
-            delay(executionTime + 10)
+            loaderJob.join()
+            putJob.join()
 
-            assertThat(loader.invokeCount)
-                .isEqualTo(1)
+            assertEquals(1, loader.invokeCount)
 
             // entry from loader should be cached as the existing one has expired.
-            assertThat(value)
-                .isEqualTo("dog")
+            assertEquals("dog", value)
 
-            assertThat(cache.get(1))
-                .isEqualTo("dog")
+            assertEquals("dog", cache.get(1))
         }
 
     @Test
@@ -190,15 +171,12 @@ class CacheLoaderTest {
 
         cache.get(1, loader)
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(0)
+        assertEquals(0, loader.invokeCount)
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
     }
 
     @Test
-    @ConcurrencyTest
     fun `value returned by loader is cached when an existing value was invalidated while executing loader`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -211,33 +189,30 @@ class CacheLoaderTest {
 
             var value: String? = null
 
-            launch(newSingleThreadDispatcher()) {
+            val loaderJob = launch(newSingleThreadDispatcher()) {
                 value = cache.get(1, loader)
             }
 
-            launch(newSingleThreadDispatcher()) {
-                delay(1)
+            val putJob = launch(newSingleThreadDispatcher()) {
+                delay(10)
                 cache.put(1, "cat")
 
                 // invalidate the entry
                 cache.invalidate(1)
             }
 
-            delay(executionTime + 10)
+            loaderJob.join()
+            putJob.join()
 
-            assertThat(loader.invokeCount)
-                .isEqualTo(1)
+            assertEquals(1, loader.invokeCount)
 
             // entry from loader should be cached as previous one had been invalidated.
-            assertThat(value)
-                .isEqualTo("dog")
+            assertEquals("dog", value)
 
-            assertThat(cache.get(1))
-                .isEqualTo("dog")
+            assertEquals("dog", cache.get(1))
         }
 
     @Test
-    @ConcurrencyTest
     fun `only 1 loader is executed for multiple concurrent get(key, loader) calls with the same key`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -248,24 +223,19 @@ class CacheLoaderTest {
 
             val loader = createSlowLoader("cat", executionTime)
 
-            repeat(3) {
+            (0 until 3).map {
                 launch(newSingleThreadDispatcher()) {
                     // all calls use the same key
                     cache.get(1, loader)
                 }
-            }
+            }.joinAll()
 
-            delay(executionTime * 3 + 10)
+            assertEquals(1, loader.invokeCount)
 
-            assertThat(loader.invokeCount)
-                .isEqualTo(1)
-
-            assertThat(cache.get(1))
-                .isEqualTo("cat")
+            assertEquals("cat", cache.get(1))
         }
 
     @Test
-    @ConcurrencyTest
     fun `each loader is executed for multiple concurrent get(key, loader) calls with different keys`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -276,20 +246,16 @@ class CacheLoaderTest {
 
             val loader = createSlowLoader("cat", executionTime)
 
-            repeat(3) {
+            (0 until 3).map {
                 launch(newSingleThreadDispatcher()) {
                     // each call uses a different key
                     cache.get(it.toLong(), loader)
                 }
-            }
+            }.joinAll()
 
-            delay(executionTime * 3 + 10)
+            assertEquals(3, loader.invokeCount)
 
-            assertThat(loader.invokeCount)
-                .isEqualTo(3)
-
-            assertThat(cache.get(1))
-                .isEqualTo("cat")
+            assertEquals("cat", cache.get(1))
         }
 
     @Test
@@ -297,21 +263,19 @@ class CacheLoaderTest {
         val cache = Cache.Builder.newBuilder()
             .build<Long, String>()
 
-        val loader = createFailingLoader(IOException())
+        val loader = createFailingLoader(TestLoaderException())
 
-        assertThrows(IOException::class.java) {
+        assertFailsWith(TestLoaderException::class) {
             cache.get(1, loader)
         }
 
-        assertThat(loader.invokeCount)
-            .isEqualTo(1)
+        // loader shouldn't complete as it throws an exception during invocation
+        assertEquals(0, loader.invokeCount)
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
-    @ConcurrencyTest
     fun `a blocked concurrent get(key, loader) call is unblocked and executes its own loader after the loader from an earlier concurrent call throws an exception`() =
         runBlocking {
             val cache = Cache.Builder.newBuilder()
@@ -320,42 +284,42 @@ class CacheLoaderTest {
 
             val executionTime = 50L
 
-            val loader1 = createSlowFailingLoader(IOException(), executionTime)
+            val loader1 = createSlowFailingLoader(TestLoaderException(), executionTime)
             val loader2 = createLoader("cat")
 
             var value: String? = null
 
-            launch(newSingleThreadDispatcher()) {
+            val loader1Job = launch(newSingleThreadDispatcher()) {
                 runCatching {
                     cache.get(1, loader1)
                 }
             }
 
-            launch(newSingleThreadDispatcher()) {
-                delay(1)
+            val loader2Job = launch(newSingleThreadDispatcher()) {
+                delay(10)
                 value = cache.get(1, loader2)
             }
 
-            delay(executionTime * 2)
+            loader1Job.join()
+            loader2Job.join()
 
-            assertThat(loader1.invokeCount)
-                .isEqualTo(1)
-            assertThat(loader2.invokeCount)
-                .isEqualTo(1)
+            // loader1 shouldn't complete as it throws an exception during invocation
+            assertEquals(0, loader1.invokeCount)
+            assertEquals(1, loader2.invokeCount)
 
-            assertThat(value)
-                .isEqualTo("cat")
+            assertEquals("cat", value)
 
-            assertThat(cache.get(1))
-                .isEqualTo("cat")
+            assertEquals("cat", cache.get(1))
         }
 }
 
 private class TestLoader<Value>(private val block: () -> Value) : () -> Value {
-    var invokeCount = 0
+    private val _invokeCount = atomic(0)
+    val invokeCount get() = _invokeCount.value
     override operator fun invoke(): Value {
-        invokeCount++
-        return block()
+        val result = block()
+        _invokeCount.incrementAndGet()
+        return result
     }
 }
 

@@ -1,7 +1,8 @@
 package com.dropbox.android.external.cache4
 
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
@@ -23,11 +24,9 @@ class CacheExpirationTest {
 
         clock.virtualDuration = Duration.INFINITE
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
     }
 
     @Test
@@ -42,14 +41,12 @@ class CacheExpirationTest {
         // just before expiry
         clock.virtualDuration = 1.minutes - 1.nanoseconds
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         // now expires
         clock.virtualDuration = 1.minutes
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -70,14 +67,12 @@ class CacheExpirationTest {
         // should not expire yet as cache was just updated
         clock.virtualDuration = 1.minutes
 
-        assertThat(cache.get(1))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(1))
 
         // should now expire
         clock.virtualDuration = 1.minutes * 2 - 1.nanoseconds
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -93,14 +88,12 @@ class CacheExpirationTest {
         clock.virtualDuration = 1.minutes - 1.nanoseconds
 
         // read cache before expected write expiry
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         // should expire despite cache just being read
         clock.virtualDuration = 1.minutes
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -113,14 +106,12 @@ class CacheExpirationTest {
         cache.put(1, "dog")
 
         // read cache immediately
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         // now expires
         clock.virtualDuration = 2.minutes
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -141,14 +132,12 @@ class CacheExpirationTest {
         // should not expire yet as cache was just updated (accessed)
         clock.virtualDuration = 2.minutes
 
-        assertThat(cache.get(1))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(1))
 
         // should now expire
         clock.virtualDuration = 2.minutes * 2
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -164,20 +153,17 @@ class CacheExpirationTest {
         clock.virtualDuration = 2.minutes - 1.nanoseconds
 
         // read cache before expected access expiry
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         // should not expire yet as cache was just read (accessed)
         clock.virtualDuration = 2.minutes
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         // should now expire
         clock.virtualDuration = 2.minutes * 2
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -193,8 +179,7 @@ class CacheExpirationTest {
         // expires due to access expiry
         clock.virtualDuration = 1.minutes
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
         // cache a new value
         cache.put(1, "cat")
@@ -203,14 +188,12 @@ class CacheExpirationTest {
         clock.virtualDuration = 2.minutes - 1.nanoseconds
 
         // this should resets access expiry time but not write expiry time
-        assertThat(cache.get(1))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(1))
 
         // should now expire due to write expiry
         clock.virtualDuration = (1.minutes + 2.minutes - 1.nanoseconds)
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
     }
 
     @Test
@@ -230,26 +213,21 @@ class CacheExpirationTest {
         // now first 2 entries should expire, 3rd entry should not expire yet
         clock.virtualDuration = 1.minutes
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
         // just before 3rd entry expires
         clock.virtualDuration = 1.minutes + 1.minutes / 2 - 1.nanoseconds
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
         // 3rd entry should now expire
         clock.virtualDuration = 1.minutes + 1.minutes / 2
 
-        assertThat(cache.get(3))
-            .isNull()
+        assertNull(cache.get(3))
     }
 
     @Test
@@ -269,13 +247,10 @@ class CacheExpirationTest {
 
         // first entry should be evicted despite not being expired
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
     }
 }

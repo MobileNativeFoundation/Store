@@ -2,9 +2,9 @@ package com.dropbox.android.external.cache4
 
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.DEFAULT_CONCURRENCY_LEVEL
 import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.UNSET_LONG
-import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.hours
@@ -15,15 +15,13 @@ class CacheBuilderTest {
 
     @Test
     fun `set expireAfterWrite with zero duration`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .expireAfterWrite(0.nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterWrite duration must be positive"
-        )
+        assertEquals("expireAfterWrite duration must be positive", exception.message)
     }
 
     @Test
@@ -32,34 +30,29 @@ class CacheBuilderTest {
             .expireAfterWrite(24.hours)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterWriteDuration)
-            .isEqualTo(24.hours)
+        assertEquals(24.hours, cache.expireAfterWriteDuration)
     }
 
     @Test
     fun `set expireAfterWrite with negative duration`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .expireAfterWrite((-1).nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterWrite duration must be positive"
-        )
+        assertEquals("expireAfterWrite duration must be positive", exception.message)
     }
 
     @Test
     fun `set expireAfterAccess with zero duration`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .expireAfterAccess(0.nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterAccess duration must be positive"
-        )
+        assertEquals("expireAfterAccess duration must be positive", exception.message)
     }
 
     @Test
@@ -68,21 +61,18 @@ class CacheBuilderTest {
             .expireAfterAccess(24.hours)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterAccessDuration)
-            .isEqualTo(24.hours)
+        assertEquals(24.hours, cache.expireAfterAccessDuration)
     }
 
     @Test
     fun `set expireAfterAccess with negative duration`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .expireAfterAccess((-1).nanoseconds)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "expireAfterAccess duration must be positive"
-        )
+        assertEquals("expireAfterAccess duration must be positive", exception.message)
     }
 
     @Test
@@ -91,8 +81,7 @@ class CacheBuilderTest {
             .maximumCacheSize(0)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.maxSize)
-            .isEqualTo(0)
+        assertEquals(0, cache.maxSize)
     }
 
     @Test
@@ -101,21 +90,18 @@ class CacheBuilderTest {
             .maximumCacheSize(10)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.maxSize)
-            .isEqualTo(10)
+        assertEquals(10, cache.maxSize)
     }
 
     @Test
     fun `set maximumCacheSize to negative value`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .maximumCacheSize(-1)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "maximum size must not be negative"
-        )
+        assertEquals("maximum size must not be negative", exception.message)
     }
 
     @Test
@@ -124,34 +110,29 @@ class CacheBuilderTest {
             .concurrencyLevel(8)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.concurrencyLevel)
-            .isEqualTo(8)
+        assertEquals(8, cache.concurrencyLevel)
     }
 
     @Test
     fun `set concurrencyLevel to 0`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .concurrencyLevel(0)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "concurrency level must be positive"
-        )
+        assertEquals("concurrency level must be positive", exception.message)
     }
 
     @Test
     fun `set concurrencyLevel to negative value`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
+        val exception = assertFailsWith(IllegalArgumentException::class) {
             Cache.Builder.newBuilder()
                 .concurrencyLevel(-1)
                 .build<Any, Any>() as RealCache
         }
 
-        assertThat(exception).hasMessageThat().isEqualTo(
-            "concurrency level must be positive"
-        )
+        assertEquals("concurrency level must be positive", exception.message)
     }
 
     @Test
@@ -161,27 +142,21 @@ class CacheBuilderTest {
             .clock(testClock)
             .build<Any, Any>() as RealCache
 
-        assertThat(cache.clock)
-            .isEqualTo(testClock)
+        assertEquals(testClock, cache.clock)
     }
 
     @Test
     fun `build cache with defaults`() {
         val cache = Cache.Builder.newBuilder().build<Any, Any>() as RealCache
 
-        assertThat(cache.expireAfterWriteDuration)
-            .isEqualTo(Duration.INFINITE)
+        assertEquals(Duration.INFINITE, cache.expireAfterWriteDuration)
 
-        assertThat(cache.expireAfterAccessDuration)
-            .isEqualTo(Duration.INFINITE)
+        assertEquals(Duration.INFINITE, cache.expireAfterAccessDuration)
 
-        assertThat(cache.maxSize)
-            .isEqualTo(UNSET_LONG)
+        assertEquals(UNSET_LONG, cache.maxSize)
 
-        assertThat(cache.concurrencyLevel)
-            .isEqualTo(DEFAULT_CONCURRENCY_LEVEL)
+        assertEquals(DEFAULT_CONCURRENCY_LEVEL, cache.concurrencyLevel)
 
-        assertThat(cache.clock)
-            .isEqualTo(SystemClock)
+        assertEquals(SystemClock, cache.clock)
     }
 }

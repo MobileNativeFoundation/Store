@@ -1,7 +1,9 @@
 package com.dropbox.android.external.cache4
 
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class ReorderingLinkedHashSetTest {
 
@@ -12,8 +14,7 @@ class ReorderingLinkedHashSetTest {
         set.add("a")
         set.add("b")
 
-        assertThat(set.toList())
-            .isEqualTo(listOf("a", "b"))
+        assertEquals(listOf("a", "b"), set.toList())
     }
 
     @Test
@@ -22,17 +23,13 @@ class ReorderingLinkedHashSetTest {
         set.add("b")
         set.add("a")
 
-        assertThat(set.toList())
-            .isEqualTo(listOf("b", "a"))
+        assertEquals(listOf("b", "a"), set.toList())
     }
 
     @Test
     fun `calling add(element) returns true if ReorderingLinkedHashSet did not already contain the element`() {
-        assertThat(set.add("a"))
-            .isTrue()
-        assertThat(set.add("b"))
-            .isTrue()
-        assertThat(set.add("a"))
-            .isFalse()
+        assertTrue(set.add("a"))
+        assertTrue(set.add("b"))
+        assertFalse(set.add("a"))
     }
 }

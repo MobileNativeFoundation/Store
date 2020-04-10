@@ -1,9 +1,10 @@
 package com.dropbox.android.external.cache4
 
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 
@@ -22,29 +23,22 @@ class CacheEvictionTest {
         // this exceeds the max size limit
         cache.put(3, "bird")
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
         // this exceeds the max size limit again
         cache.put(4, "dinosaur")
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
-        assertThat(cache.get(4))
-            .isEqualTo("dinosaur")
+        assertEquals("dinosaur", cache.get(4))
     }
 
     @Test
@@ -60,11 +54,9 @@ class CacheEvictionTest {
         cache.put(2, "bird")
         cache.put(2, "dinosaur")
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("dinosaur")
+        assertEquals("dinosaur", cache.get(2))
     }
 
     @Test
@@ -84,17 +76,13 @@ class CacheEvictionTest {
         cache.put(4, "dinosaur")
 
         // 2nd entry should be evicted
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
 
-        assertThat(cache.get(3))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(3))
 
-        assertThat(cache.get(4))
-            .isEqualTo("dinosaur")
+        assertEquals("dinosaur", cache.get(4))
     }
 
     @Test
@@ -117,17 +105,13 @@ class CacheEvictionTest {
         cache.put(4, "dinosaur")
 
         // 3rd entry should be evicted
-        assertThat(cache.get(1))
-            .isEqualTo("rabbit")
+        assertEquals("rabbit", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("fish")
+        assertEquals("fish", cache.get(2))
 
-        assertThat(cache.get(3))
-            .isNull()
+        assertNull(cache.get(3))
 
-        assertThat(cache.get(4))
-            .isEqualTo("dinosaur")
+        assertEquals("dinosaur", cache.get(4))
     }
 
     @Test
@@ -138,24 +122,19 @@ class CacheEvictionTest {
 
         cache.put(1, "dog")
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
         cache.put(2, "cat")
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("cat")
+        assertEquals("cat", cache.get(2))
 
         cache.put(1, "dog")
 
-        assertThat(cache.get(1))
-            .isEqualTo("dog")
+        assertEquals("dog", cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
     }
 
     @Test
@@ -167,11 +146,9 @@ class CacheEvictionTest {
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isNull()
+        assertNull(cache.get(2))
     }
 
     @Test
@@ -206,13 +183,10 @@ class CacheEvictionTest {
         // evict again
         cache.put(2, "bird")
 
-        assertThat(cache.get(0))
-            .isNull()
+        assertNull(cache.get(0))
 
-        assertThat(cache.get(1))
-            .isNull()
+        assertNull(cache.get(1))
 
-        assertThat(cache.get(2))
-            .isEqualTo("bird")
+        assertEquals("bird", cache.get(2))
     }
 }

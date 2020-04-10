@@ -1,25 +1,18 @@
 package com.dropbox.android.external.cache4
 
-import com.dropbox.android.external.cache4.testutil.ConcurrencyTest
-import com.dropbox.android.external.cache4.testutil.ConcurrencyTestRule
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Rule
-import org.junit.Test
-import java.io.IOException
+import kotlin.test.assertTrue
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class KeyedSynchronizerTest {
-
-    @Rule
-    @JvmField
-    val concurrencyTestRule = ConcurrencyTestRule()
 
     private val synchronizer = KeyedSynchronizer<String>()
 
     @Test
-    @ConcurrencyTest
     fun `actions associated with the same key are mutually exclusive`() = runBlocking {
         val key = "a"
         var action1Started = false
@@ -48,32 +41,27 @@ class KeyedSynchronizerTest {
             }
         }
 
-        delay(10)
+        delay(20)
 
-        // action 1 starts immediately
-        assertThat(action1Started).isTrue()
-        assertThat(action2Started).isFalse()
-        assertThat(action3Started).isFalse()
+        // One action has started
+        assertEquals(1, countTrue(action1Started, action2Started, action3Started))
 
         delay(actionTime + 10)
 
-        // action 1 completes, action 2 starts
-        assertThat(action2Started).isTrue()
-        assertThat(action3Started).isFalse()
+        // Two actions have started
+        assertEquals(2, countTrue(action1Started, action2Started, action3Started))
 
         delay(actionTime + 10)
 
-        // action 2 completes, action 3 starts
-        assertThat(action3Started).isTrue()
+        // Three actions have started
+        assertEquals(3, countTrue(action1Started, action2Started, action3Started))
     }
 
     @Test
-    @ConcurrencyTest
     fun `actions associated with different keys can run concurrently`() = runBlocking {
         var action1Started = false
         var action2Started = false
         var action3Started = false
-
         val actionTime = 50L
 
         // run action with synchronizer using different keys on 3 different threads concurrently
@@ -96,16 +84,15 @@ class KeyedSynchronizerTest {
             }
         }
 
-        delay(10)
+        delay(20)
 
         // all 3 actions should have started
-        assertThat(action1Started).isTrue()
-        assertThat(action2Started).isTrue()
-        assertThat(action3Started).isTrue()
+        assertTrue(action1Started)
+        assertTrue(action2Started)
+        assertTrue(action3Started)
     }
 
     @Test
-    @ConcurrencyTest
     fun `a new action is queued after existing blocked actions using the same key from different thread`() =
         runBlocking {
             val key = "a"
@@ -133,6 +120,8 @@ class KeyedSynchronizerTest {
                 }
             }
             launch(newSingleThreadDispatcher()) {
+                delay(10)
+
                 // 2nd action
                 synchronizer.synchronizedFor(key) {
                     action2Started = true
@@ -140,27 +129,26 @@ class KeyedSynchronizerTest {
                 }
             }
 
-            delay(10)
+            delay(20)
 
             // action 1 starts immediately
-            assertThat(action1Started).isTrue()
-            assertThat(action2Started).isFalse()
-            assertThat(action3Started).isFalse()
+            assertTrue(action1Started)
+            assertFalse(action2Started)
+            assertFalse(action3Started)
 
             delay(actionTime + 10)
 
             // action 1 completes, action 2 starts, action 3 is blocked
-            assertThat(action2Started).isTrue()
-            assertThat(action3Started).isFalse()
+            assertTrue(action2Started)
+            assertFalse(action3Started)
 
             delay(actionTime + 10)
 
             // action 2 completes, action 3 starts
-            assertThat(action3Started).isTrue()
+            assertTrue(action3Started)
         }
 
     @Test
-    @ConcurrencyTest
     fun `the next blocked action is unblocked when an action using the same key from another thread throws an exception`() =
         runBlocking {
             val key = "a"
@@ -177,7 +165,7 @@ class KeyedSynchronizerTest {
                     synchronizer.synchronizedFor<String>(key) {
                         action1Started = true
                         runBlocking { delay(actionTime) }
-                        throw IOException()
+                        throw Exception()
                     }
                 }
 
@@ -191,6 +179,8 @@ class KeyedSynchronizerTest {
                 }
             }
             launch(newSingleThreadDispatcher()) {
+                delay(10)
+
                 // 2nd action
                 synchronizer.synchronizedFor(key) {
                     action2Started = true
@@ -198,22 +188,24 @@ class KeyedSynchronizerTest {
                 }
             }
 
-            delay(10)
+            delay(20)
 
             // action 1 starts immediately
-            assertThat(action1Started).isTrue()
-            assertThat(action2Started).isFalse()
-            assertThat(action3Started).isFalse()
+            assertTrue(action1Started)
+            assertFalse(action2Started)
+            assertFalse(action3Started)
 
             delay(actionTime + 10)
 
             // action 1 completes (failed), action 2 starts, action 3 is blocked
-            assertThat(action2Started).isTrue()
-            assertThat(action3Started).isFalse()
+            assertTrue(action2Started)
+            assertFalse(action3Started)
 
             delay(actionTime + 10)
 
             // action 2 completes, action 3 starts
-            assertThat(action3Started).isTrue()
+            assertTrue(action3Started)
         }
+
+    private fun countTrue(vararg actions: Boolean) = actions.count { it }
 }
