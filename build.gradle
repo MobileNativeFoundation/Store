@@ -16,6 +16,7 @@ buildscript {
             spotlessGradlePlugin        : '3.26.1',
             jacocoGradlePlugin          : '0.8.5',
             binaryCompatibilityValidator: '0.2.1',
+            atomicFuPlugin              : '0.14.2',
     ]
 
     dependencies {
@@ -26,6 +27,7 @@ buildscript {
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
         classpath "org.jacoco:org.jacoco.core:${versions.jacocoGradlePlugin}"
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:${versions.atomicFuPlugin}"
     }
 }
 
