@@ -39,21 +39,11 @@ repositories {
 }
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                '-Xopt-in=kotlin.Experimental',
-        ]
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
         freeCompilerArgs += [
                 '-Xopt-in=kotlin.RequiresOptIn',
         ]
     }
 }
-
 
 dokka {
     outputFormat = 'javadoc'

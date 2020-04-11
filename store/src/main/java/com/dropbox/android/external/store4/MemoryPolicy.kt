@@ -1,7 +1,6 @@
 package com.dropbox.android.external.store4
 
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * MemoryPolicy holds all required info to create MemoryCache
@@ -14,7 +13,6 @@ import kotlin.time.ExperimentalTime
  * MemoryPolicy is used by a [Store]
  * and defines the in-memory cache behavior.
  */
-@ExperimentalTime
 class MemoryPolicy internal constructor(
     val expireAfterWrite: Duration,
     val expireAfterAccess: Duration,

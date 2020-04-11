@@ -3,11 +3,9 @@ package com.dropbox.android.external.cache4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 import kotlin.time.nanoseconds
 
-@ExperimentalTime
 class CacheExpirationTest {
 
     private val clock = TestClock(virtualDuration = 0.nanoseconds)

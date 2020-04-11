@@ -10,11 +10,9 @@ import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
-import kotlin.time.ExperimentalTime
 import kotlin.time.minutes
 import kotlin.time.nanoseconds
 
-@ExperimentalTime
 class CacheLoaderTest {
 
     @Rule

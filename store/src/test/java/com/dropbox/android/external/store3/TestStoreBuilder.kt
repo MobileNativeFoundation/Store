@@ -27,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
-import kotlin.time.ExperimentalTime
 
 @FlowPreview
 @ExperimentalStdlibApi
@@ -39,7 +38,6 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
         TestStoreType.FlowStore -> buildStore()
     }
 
-    @OptIn(ExperimentalTime::class)
     companion object {
 
         fun <Key : Any, Output : Any> from(

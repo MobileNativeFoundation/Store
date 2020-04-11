@@ -8,12 +8,10 @@ import okio.BufferedSource
 import java.io.File
 import java.io.IOException
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * Factory for [RecordPersister]
  */
-@ExperimentalTime
 object RecordPersisterFactory {
 
     /**

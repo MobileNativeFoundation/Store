@@ -36,9 +36,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.withIndex
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @FlowPreview

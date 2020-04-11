@@ -1,10 +1,8 @@
 package com.dropbox.android.external.store4
 
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.hours
 
-@ExperimentalTime
 internal object StoreDefaults {
 
     /**

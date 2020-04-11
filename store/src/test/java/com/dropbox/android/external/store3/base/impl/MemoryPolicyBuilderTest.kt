@@ -1,14 +1,10 @@
 package com.dropbox.android.external.store3.base.impl
 
 import com.dropbox.android.external.store4.MemoryPolicy
-
-import org.junit.Test
-
 import com.google.common.truth.Truth.assertThat
-import kotlin.time.ExperimentalTime
+import org.junit.Test
 import kotlin.time.seconds
 
-@ExperimentalTime
 class MemoryPolicyBuilderTest {
 
     @Test

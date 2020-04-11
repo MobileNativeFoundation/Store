@@ -3,7 +3,6 @@ package com.dropbox.android.external.cache4
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.nanoseconds
 
 /**
@@ -27,7 +26,6 @@ import kotlin.time.nanoseconds
  * Size-based evictions are enabled by specifying [maxSize]. When the size of the cache entries grows
  * beyond [maxSize], least recently accessed entries will be evicted.
  */
-@ExperimentalTime
 internal class RealCache<Key : Any, Value : Any>(
     val expireAfterWriteDuration: Duration,
     val expireAfterAccessDuration: Duration,

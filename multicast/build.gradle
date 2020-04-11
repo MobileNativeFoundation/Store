@@ -18,16 +18,8 @@ apply from: rootProject.file("gradle/jacoco.gradle")
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
 compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                '-Xopt-in=kotlin.RequiresOptIn',
-        ]
+        freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
     }
 }

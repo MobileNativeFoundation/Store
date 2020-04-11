@@ -26,9 +26,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
 @FlowPreview
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi

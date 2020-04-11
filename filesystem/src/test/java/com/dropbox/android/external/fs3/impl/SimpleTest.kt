@@ -5,16 +5,15 @@ import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
+import com.google.common.truth.Truth.assertThat
 import okio.BufferedSource
 import okio.buffer
 import okio.source
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
-import kotlin.time.ExperimentalTime
 import kotlin.time.days
 import kotlin.time.microseconds
 import kotlin.time.minutes
@@ -54,7 +53,6 @@ class SimpleTest {
         assertThat(fileSystem.exists("/boo")).isFalse()
     }
 
-    @ExperimentalTime
     @Test
     @Throws(IOException::class)
     fun testIsRecordStale() {

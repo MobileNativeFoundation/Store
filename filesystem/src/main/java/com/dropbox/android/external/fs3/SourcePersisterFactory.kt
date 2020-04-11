@@ -9,7 +9,6 @@ import okio.BufferedSource
 import java.io.File
 import java.io.IOException
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * Factory for [SourcePersister]
@@ -24,7 +23,6 @@ object SourcePersisterFactory {
      *
      * @throws IOException
      */
-    @ExperimentalTime
     @Throws(IOException::class)
     fun create(
         root: File,
@@ -37,7 +35,6 @@ object SourcePersisterFactory {
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
-    @ExperimentalTime
     fun create(
         fileSystem: FileSystem,
         expirationDuration: Duration

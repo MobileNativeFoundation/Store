@@ -4,7 +4,6 @@ import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.store4.Persister
 import okio.BufferedSource
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * FileSystemRecordPersister is used when persisting to/from file system while being stale aware
@@ -13,7 +12,6 @@ import kotlin.time.ExperimentalTime
  *
  * @param <Key> key type
 </Key> */
-@ExperimentalTime
 class FileSystemRecordPersister<Key> private constructor(
     private val fileSystem: FileSystem,
     private val pathResolver: PathResolver<Key>,

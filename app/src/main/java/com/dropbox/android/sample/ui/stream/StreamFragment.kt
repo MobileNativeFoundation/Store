@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
 @ExperimentalCoroutinesApi
@@ -41,7 +40,6 @@ class StreamFragment : Fragment(), CoroutineScope {
         return inflater.inflate(R.layout.fragment_stream, container, false)
     }
 
-    @ExperimentalTime
     @ExperimentalStdlibApi
     @InternalCoroutinesApi
     @FlowPreview

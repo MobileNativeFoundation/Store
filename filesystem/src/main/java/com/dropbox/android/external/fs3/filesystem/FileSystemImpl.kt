@@ -8,7 +8,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * implements a [FileSystem] as regular files on disk in a specific document root (kind of like a root jail)
@@ -63,7 +62,6 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         return getFile(file)!!.exists()
     }
 
-    @ExperimentalTime
     override fun getRecordState(
         expirationDuration: Duration,
         path: String
