@@ -9,6 +9,30 @@ public abstract interface class com/dropbox/android/external/store4/DiskWrite {
 public abstract interface annotation class com/dropbox/android/external/store4/ExperimentalStoreApi : java/lang/annotation/Annotation {
 }
 
+public abstract interface class com/dropbox/android/external/store4/Fetcher {
+	public static final field Companion Lcom/dropbox/android/external/store4/Fetcher$Companion;
+	public abstract fun invoke (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/dropbox/android/external/store4/Fetcher$Companion {
+	public final fun fromNonFlowingFetcher (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun fromNonFlowingValueFetcher (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun fromValueFetcher (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+}
+
+public abstract class com/dropbox/android/external/store4/FetcherResponse {
+}
+
+public final class com/dropbox/android/external/store4/FetcherResponse$Error : com/dropbox/android/external/store4/FetcherResponse {
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun getError ()Ljava/lang/Throwable;
+}
+
+public final class com/dropbox/android/external/store4/FetcherResponse$Value : com/dropbox/android/external/store4/FetcherResponse {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun getValue ()Ljava/lang/Object;
+}
+
 public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public static final field Companion Lcom/dropbox/android/external/store4/MemoryPolicy$Companion;
 	public static final field DEFAULT_SIZE_POLICY J
@@ -65,6 +89,7 @@ public abstract interface class com/dropbox/android/external/store4/StoreBuilder
 }
 
 public final class com/dropbox/android/external/store4/StoreBuilder$Companion {
+	public final fun from (Lcom/dropbox/android/external/store4/Fetcher;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public final fun from (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public final fun fromNonFlow (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/StoreBuilder;
 }
