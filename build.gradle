@@ -1,9 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
+        gradlePluginPortal()
         google()
         jcenter()
     }
@@ -80,10 +78,6 @@ ext {
     POM_DEVELOPER_NAME = "Dropbox"
 }
 
-
-// From command line use: -PdisablePreDex to disable it: primarily for jenkins
-project.ext.preDexLibs = !project.hasProperty('disablePreDex')
-
 subprojects {
     apply plugin: 'com.diffplug.gradle.spotless'
     spotless {
@@ -92,18 +86,12 @@ subprojects {
         }
     }
 
-    def preDexClosure = {
-        project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-    }
-
-    project.plugins.withType(com.android.build.gradle.AppPlugin).whenPluginAdded(preDexClosure)
-    project.plugins.withType(com.android.build.gradle.LibraryPlugin).whenPluginAdded(preDexClosure)
-
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
         kotlinOptions {
             jvmTarget = "1.8"
             freeCompilerArgs += '-Xopt-in=kotlin.time.ExperimentalTime'
         }
     }
+
 }
 
