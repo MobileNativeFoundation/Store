@@ -37,7 +37,6 @@ import kotlin.test.assertEquals
  * values as well.
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class InfiniteMulticastTest {
     private val testScope = TestCoroutineScope()

@@ -57,7 +57,6 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable 
  * @param fetcher a function for fetching a flow of network records.
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<Output>
@@ -73,7 +72,6 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromFlowable(
  * @param fetcher a function for fetching a [Single] network response for a [Key]
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
     fetcher: (key: Key) -> Single<Output>
@@ -85,7 +83,6 @@ fun <Key : Any, Output : Any> StoreBuilder.Companion.fromSingle(
  * if a scheduler is not set Store will use [GlobalScope]
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
     scheduler: Scheduler
@@ -100,7 +97,6 @@ fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
  * @see com.dropbox.android.external.store4.StoreBuilder.persister
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSinglePersister(
     reader: (Key) -> Maybe<NewOutput>,
@@ -137,7 +133,6 @@ fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withSin
  *
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any, NewOutput : Any> StoreBuilder<Key, Output>.withFlowablePersister(
     reader: (Key) -> Flowable<NewOutput>,

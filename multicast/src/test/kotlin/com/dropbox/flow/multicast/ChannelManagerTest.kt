@@ -37,7 +37,6 @@ import kotlin.test.fail
 import kotlin.test.Test
 
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()

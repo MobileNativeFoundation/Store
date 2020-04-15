@@ -45,7 +45,6 @@ import kotlin.test.assertTrue
 import kotlin.test.assertFailsWith
 
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class MulticastTest {
     private val testScope = TestCoroutineScope()
