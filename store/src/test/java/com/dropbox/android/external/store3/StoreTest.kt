@@ -1,7 +1,7 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.cache4.Cache
-import com.dropbox.android.external.store4.FetcherStore3
+import com.dropbox.android.external.store4.Store3Fetcher
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
@@ -38,7 +38,7 @@ class StoreTest(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: FetcherStore3<String, BarCode> = mock()
+    private val fetcher: Store3Fetcher<String, BarCode> = mock()
     private var persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
 

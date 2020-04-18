@@ -71,7 +71,7 @@ class FakeFlowFetcher<Key, Output>(
     @Suppress("RedundantSuspendModifier") // needed for function reference
     fun fetch(key: Key): Flow<Output> {
         if (index >= responses.size) {
-            throw AssertionError("unexpected fetch request $index")
+            throw AssertionError("unexpected fetch request")
         }
         val pair = responses[index++]
         assertThat(pair.first).isEqualTo(key)

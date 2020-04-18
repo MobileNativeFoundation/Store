@@ -17,7 +17,7 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store3.util.KeyParser
 import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.FetcherStore3
+import com.dropbox.android.external.store4.Store3Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
@@ -45,7 +45,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
 
         fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
-            fetcher: FetcherStore3<Output, Key>,
+            fetcher: Store3Fetcher<Output, Key>,
             persister: Persister<Output, Key>? = null,
             inflight: Boolean = true
         ): TestStoreBuilder<Key, Output> = from(
@@ -69,7 +69,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
             cached = cached,
             cacheMemoryPolicy = cacheMemoryPolicy,
             persister = persister,
-            fetcher = object : FetcherStore3<Output, Key> {
+            fetcher = object : Store3Fetcher<Output, Key> {
                 override suspend fun invoke(key: Key): Output = fetcher(key)
             }
         )
@@ -85,7 +85,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
             fetchParser: KeyParser<Key, Output, Output>? = null,
             // parser that runs after get from db
             postParser: KeyParser<Key, Output, Output>? = null,
-            fetcher: FetcherStore3<Output, Key>
+            fetcher: Store3Fetcher<Output, Key>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
