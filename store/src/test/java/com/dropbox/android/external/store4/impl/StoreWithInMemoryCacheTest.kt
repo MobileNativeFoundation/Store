@@ -17,10 +17,10 @@ import kotlin.time.minutes
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
-class ConcurrentStoreRequestTest {
+class StoreWithInMemoryCacheTest {
 
     @Test
-    fun `concurrent store requests can complete when loaded data exceeds maximum in-memory cache size`() {
+    fun `store requests can complete when its in-memory cache (with access expiry) is at the maximum size`() {
         val store = StoreBuilder
             .fromNonFlow { _: Int -> "result" }
             .cachePolicy(
