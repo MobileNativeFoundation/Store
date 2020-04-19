@@ -129,7 +129,7 @@ interface Cache<in Key : Any, Value : Any> {
 /**
  * A default implementation of [Cache.Builder].
  */
-internal open class CacheBuilderImpl : Cache.Builder {
+internal class CacheBuilderImpl : Cache.Builder {
 
     @ExperimentalTime
     override var expireAfterWriteDuration = Duration.INFINITE
