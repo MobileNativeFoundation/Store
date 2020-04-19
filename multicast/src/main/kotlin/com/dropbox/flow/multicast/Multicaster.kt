@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.transform
  * is empty.
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 class Multicaster<T>(
     /**
