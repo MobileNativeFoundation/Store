@@ -42,7 +42,6 @@ class StreamFragment : Fragment(), CoroutineScope {
     }
 
     @ExperimentalTime
-    @ExperimentalStdlibApi
     @InternalCoroutinesApi
     @FlowPreview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

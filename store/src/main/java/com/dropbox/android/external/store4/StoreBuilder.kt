@@ -31,7 +31,6 @@ import kotlin.time.ExperimentalTime
  * Main entry point for creating a [Store].
  */
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
@@ -143,7 +142,6 @@ interface StoreBuilder<Key : Any, Output : Any> {
 
 @FlowPreview
 @OptIn(ExperimentalTime::class)
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 private class BuilderImpl<Key : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Output>
@@ -246,7 +244,6 @@ private class BuilderImpl<Key : Any, Output : Any>(
 
 @FlowPreview
 @OptIn(ExperimentalTime::class)
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 private class BuilderWithSourceOfTruth<Key : Any, Input : Any, Output : Any>(
     private val fetcher: (key: Key) -> Flow<Input>,

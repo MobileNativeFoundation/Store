@@ -3,6 +3,17 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-alpha05 *(2020-04-03)*
+----------------------------
+
+**Bug Fixes and Stability Improvements**
+* Contain @ExperimentalStdlibApi within relevant scope. (#154)
+* Use AtomicFu to replace Java's AtomicBoolean and ReentrantLock (#147)
+* migrate Multicast to Kotlin Test (#146)
+* Remove Collections.unmodifiableMap (#145)
+* Update AGP version (#143)
+* Remove some unneeded java.util packages (#141)
+
 Version 4.0.0-alpha04 *(2020-04-03)*
 ----------------------------
 
