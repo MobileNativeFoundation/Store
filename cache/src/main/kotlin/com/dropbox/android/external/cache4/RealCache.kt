@@ -1,5 +1,6 @@
 package com.dropbox.android.external.cache4
 
+import com.dropbox.android.external.cache4.CacheBuilderImpl.Companion.UNSET_LONG
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
@@ -33,7 +34,9 @@ internal class RealCache<Key : Any, Value : Any>(
     val expireAfterAccessDuration: Duration,
     val maxSize: Long,
     val concurrencyLevel: Int,
-    val clock: Clock
+    val clock: Clock,
+    val weigher: Weigher<Key, Value> = OneWeigher(),
+    val maxWeight: Long = UNSET_LONG
 ) : Cache<Key, Value> {
 
     /**
@@ -77,6 +80,8 @@ internal class RealCache<Key : Any, Value : Any>(
      * A key-based synchronizer for running cache loaders.
      */
     private val loadersSynchronizer = KeyedSynchronizer<Key>()
+
+    private var totalWeight = 0;
 
     init {
         // writeQueue is required if write expiry is enabled
@@ -139,12 +144,16 @@ internal class RealCache<Key : Any, Value : Any>(
         val existingEntry = cacheEntries[key]
         if (existingEntry != null) {
             // cache entry found
-            recordWrite(existingEntry, nowNanos)
+            val weight = weigher.weigh(key, value)
+            recordWrite(existingEntry, nowNanos, weight)
+
             existingEntry.value = value
+            existingEntry.weight = weight
         } else {
             // create a new cache entry
-            val newEntry = CacheEntry(key, value)
-            recordWrite(newEntry, nowNanos)
+            val weight = weigher.weigh(key, value)
+            val newEntry = CacheEntry(key, value, weight)
+            recordWrite(newEntry, nowNanos, weight)
             cacheEntries[key] = newEntry
         }
 
@@ -158,6 +167,7 @@ internal class RealCache<Key : Any, Value : Any>(
         cacheEntries.remove(key)?.also {
             writeQueue?.remove(it)
             accessQueue?.remove(it)
+            totalWeight -= it.weight
         }
     }
 
@@ -165,6 +175,7 @@ internal class RealCache<Key : Any, Value : Any>(
         cacheEntries.clear()
         writeQueue?.clear()
         accessQueue?.clear()
+        totalWeight = 0
     }
 
     override fun asMap(): Map<in Key, Value> {
@@ -191,6 +202,8 @@ internal class RealCache<Key : Any, Value : Any>(
                 for (entry in iterator) {
                     if (entry.isExpired(nowNanos)) {
                         cacheEntries.remove(entry.key)
+                        //TODO MIKE do we need to subtract here?
+                        totalWeight -= entry.weight
                         // remove the entry from the current queue
                         iterator.remove()
                     } else {
@@ -222,12 +235,13 @@ internal class RealCache<Key : Any, Value : Any>(
         // address any inconsistencies between the queues and map before eviction.
         cleanUpDeadEntries()
 
-        while (cacheEntries.size > maxSize) {
+        while (totalWeight > maxWeight) {
             val entryToEvict = synchronized(accessQueue) { accessQueue.firstOrNull() }
             entryToEvict?.run {
                 cacheEntries.remove(entryToEvict.key)
                 writeQueue?.remove(entryToEvict)
                 accessQueue.remove(entryToEvict)
+                totalWeight -= entryToEvict.weight
             }
         }
     }
@@ -246,7 +260,12 @@ internal class RealCache<Key : Any, Value : Any>(
      * Update the eviction metadata on the [CacheEntry] which is about to be written.
      * Note that a write is also considered an access.
      */
-    private fun recordWrite(cacheEntry: CacheEntry<Key, Value>, nowNanos: Long) {
+    private fun recordWrite(
+        cacheEntry: CacheEntry<Key, Value>,
+        nowNanos: Long,
+        weight: Int
+    ) {
+        totalWeight += weight
         if (expiresAfterAccess) {
             cacheEntry.accessTimeNanos = nowNanos
         }
@@ -304,6 +323,7 @@ internal class RealCache<Key : Any, Value : Any>(
 private class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
     @Volatile var value: Value,
+    @Volatile var weight: Int,
     @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,
     @Volatile var writeTimeNanos: Long = Long.MAX_VALUE
 )

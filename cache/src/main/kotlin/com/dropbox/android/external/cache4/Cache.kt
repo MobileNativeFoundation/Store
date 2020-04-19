@@ -54,6 +54,14 @@ interface Cache<in Key : Any, Value : Any> {
      */
     interface Builder {
 
+        @ExperimentalTime
+        var expireAfterWriteDuration: Duration
+        @ExperimentalTime
+        var expireAfterAccessDuration: Duration
+        var maxSize: Long
+        var concurrencyLevel: Int
+        var clock: Clock?
+
         /**
          * Specifies that each entry should be automatically removed from the cache once a fixed duration
          * has elapsed after the entry's creation or the most recent replacement of its value.
@@ -121,15 +129,15 @@ interface Cache<in Key : Any, Value : Any> {
 /**
  * A default implementation of [Cache.Builder].
  */
-internal class CacheBuilderImpl : Cache.Builder {
+internal open class CacheBuilderImpl : Cache.Builder {
 
     @ExperimentalTime
-    private var expireAfterWriteDuration = Duration.INFINITE
+    override var expireAfterWriteDuration = Duration.INFINITE
     @ExperimentalTime
-    private var expireAfterAccessDuration = Duration.INFINITE
-    private var maxSize = UNSET_LONG
-    private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
-    private var clock: Clock? = null
+    override var expireAfterAccessDuration = Duration.INFINITE
+    override var maxSize = UNSET_LONG
+    override var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
+    override var clock: Clock? = null
 
     @ExperimentalTime
     override fun expireAfterWrite(duration: Duration): CacheBuilderImpl = apply {
