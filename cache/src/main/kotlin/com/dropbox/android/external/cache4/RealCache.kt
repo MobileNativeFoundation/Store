@@ -301,7 +301,7 @@ internal class RealCache<Key : Any, Value : Any>(
  * A cache entry can be reused by updating [value], [accessTimeNanos], or [writeTimeNanos],
  * as this allows us to avoid creating new instance of [CacheEntry] on every access and write.
  */
-private data class CacheEntry<Key : Any, Value : Any>(
+private class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
     @Volatile var value: Value,
     @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,

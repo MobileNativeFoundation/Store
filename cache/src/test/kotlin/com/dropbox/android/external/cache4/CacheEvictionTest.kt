@@ -4,7 +4,10 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import kotlin.time.ExperimentalTime
+import kotlin.time.minutes
 
+@ExperimentalTime
 class CacheEvictionTest {
 
     @Test
@@ -183,5 +186,33 @@ class CacheEvictionTest {
                 cache.put(it.toLong(), "value for $it")
             }
         }
+    }
+
+    @Test
+    fun `size-based eviction can complete when expireAfterWrite is set`() {
+        val cache = Cache.Builder.newBuilder()
+            .expireAfterAccess(1.minutes)
+            .maximumCacheSize(1)
+            .build<Int, String>()
+
+        cache.put(0, "dog")
+
+        // accessing cache
+        cache.get(0)
+
+        // evict
+        cache.put(1, "cat")
+
+        // evict again
+        cache.put(2, "bird")
+
+        assertThat(cache.get(0))
+            .isNull()
+
+        assertThat(cache.get(1))
+            .isNull()
+
+        assertThat(cache.get(2))
+            .isEqualTo("bird")
     }
 }
