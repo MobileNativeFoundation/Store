@@ -1,9 +1,11 @@
 package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
+import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
@@ -30,7 +32,7 @@ class ClearAllStoreTest {
     private val value1 = 1
     private val value2 = 2
 
-    private val fetcher: suspend (key: String) -> Int = { key: String ->
+    private val fetcher = Fetcher.exceptionsAsErrorsNonFlow { key: String ->
         when (key) {
             key1 -> value1
             key2 -> value2
@@ -43,7 +45,7 @@ class ClearAllStoreTest {
     @Test
     fun `calling clearAll() on store with persister (no in-memory cache) deletes all entries from the persister`() =
         testScope.runBlockingTest {
-            val store = StoreBuilder.fromNonFlow(
+            val store = StoreBuilder.from(
                 fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
@@ -109,7 +111,7 @@ class ClearAllStoreTest {
     @Test
     fun `calling clearAll() on store with in-memory cache (no persister) deletes all entries from the in-memory cache`() =
         testScope.runBlockingTest {
-            val store = StoreBuilder.fromNonFlow(
+            val store = StoreBuilder.from(
                 fetcher = fetcher
             ).scope(testScope).build()
 

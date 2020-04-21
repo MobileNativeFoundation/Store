@@ -1,3 +1,10 @@
+public final class com/dropbox/store/rx2/RxFetcherKt {
+	public static final fun exceptionAsErrorsFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun exceptionAsErrorsSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun fromSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+}
+
 public final class com/dropbox/store/rx2/RxSourceOfTruthKt {
 	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 	public static synthetic fun fromFlowable$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
@@ -6,14 +13,6 @@ public final class com/dropbox/store/rx2/RxSourceOfTruthKt {
 }
 
 public final class com/dropbox/store/rx2/RxStoreBuilderKt {
-	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromMaybe (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromSingle (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromSingle (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
-	public static final fun fromSingle (Lcom/dropbox/android/external/store4/StoreBuilder$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/StoreBuilder;
 	public static final fun withScheduler (Lcom/dropbox/android/external/store4/StoreBuilder;Lio/reactivex/Scheduler;)Lcom/dropbox/android/external/store4/StoreBuilder;
 }
 

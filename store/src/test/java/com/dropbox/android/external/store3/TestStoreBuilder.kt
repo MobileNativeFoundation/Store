@@ -15,7 +15,6 @@
  */
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.store3.util.KeyParser
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
@@ -41,68 +40,20 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
 
     @OptIn(ExperimentalTime::class)
     companion object {
-
         fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
-            fetcher: Fetcher<Output, Key>,
-            persister: Persister<Output, Key>? = null,
-            inflight: Boolean = true
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            persister = persister,
-            fetcher = { fetcher.invoke(it) }
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        fun <Key : Any, Output : Any> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
             cached: Boolean = false,
             cacheMemoryPolicy: MemoryPolicy? = null,
             persister: Persister<Output, Key>? = null,
-            fetcher: suspend (Key) -> Output
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            cached = cached,
-            cacheMemoryPolicy = cacheMemoryPolicy,
-            persister = persister,
-            fetcher = object : Fetcher<Output, Key> {
-                override suspend fun invoke(key: Key): Output = fetcher(key)
-            }
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        fun <Key : Any, Output : Any> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
-            persister: Persister<Output, Key>? = null,
-            // parser that runs after fetch
-            fetchParser: KeyParser<Key, Output, Output>? = null,
-            // parser that runs after get from db
-            postParser: KeyParser<Key, Output, Output>? = null,
-            fetcher: Fetcher<Output, Key>
+            fetcher: Fetcher<Key, Output>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
-                    val realFetcher = { key: Key ->
-                        flow {
-                            val value = fetcher.invoke(key = key)
-                            if (fetchParser != null) {
-                                emit(fetchParser.apply(key, value))
-                            } else {
-                                emit(value)
-                            }
-                        }
-                    }
                     StoreBuilder.let {
                         if (persister == null) {
-                            it.from(realFetcher)
+                            it.from<Key, Output>(fetcher)
                         } else {
-                            it.from(realFetcher, sourceOfTruthFromLegacy(persister, postParser))
+                            it.from(fetcher, sourceOfTruthFromLegacy(persister))
                         }
                     }
                         .scope(scope)
@@ -123,21 +74,12 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
         }
 
         internal fun <Key, Output> sourceOfTruthFromLegacy(
-            persister: Persister<Output, Key>,
-            // parser that runs after get from db
-            postParser: KeyParser<Key, Output, Output>? = null
+            persister: Persister<Output, Key>
         ): SourceOfTruth<Key, Output, Output> {
             return PersistentSourceOfTruth(
                 realReader = { key ->
                     flow {
-                        if (postParser == null) {
-                            emit(persister.read(key))
-                        } else {
-                            persister.read(key)?.let {
-                                val postParsed = postParser.apply(key, it)
-                                emit(postParsed)
-                            } ?: emit(null)
-                        }
+                        emit(persister.read(key))
                     }
                 },
                 realWriter = { key, value ->

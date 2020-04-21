@@ -15,15 +15,15 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.ResponseOrigin.Cache
-import com.dropbox.android.external.store4.ResponseOrigin.Fetcher
-import com.dropbox.android.external.store4.ResponseOrigin.Persister
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
+import com.dropbox.android.external.store4.exceptionsAsErrors
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.dropbox.android.external.store4.testutil.FakeFlowingFetcher
@@ -31,6 +31,7 @@ import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asFlowable
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.assertThat
+import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -62,16 +63,16 @@ class FlowStoreTest {
             3 to "three-2"
         )
         val pipeline = StoreBuilder
-            .fromNonFlow(fetcher::fetch)
+            .from(fetcher)
             .buildWithTestScope()
 
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ), Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(
@@ -79,17 +80,17 @@ class FlowStoreTest {
         ).emitsExactly(
             Data(
                 value = "three-1",
-                origin = Cache
+                origin = ResponseOrigin.Cache
             )
         )
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(
@@ -98,7 +99,7 @@ class FlowStoreTest {
             .emitsExactly(
                 Data(
                     value = "three-2",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 )
             )
     }
@@ -110,54 +111,54 @@ class FlowStoreTest {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-        val pipeline = StoreBuilder.fromNonFlow(
-            fetcher = fetcher::fetch,
+        val pipeline = StoreBuilder.from(
+            fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
 
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 // note that we still get the data from persister as well as we don't listen to
                 // the persister for the cached items unless there is an active stream, which
                 // means cache can go out of sync w/ the persister
                 Data(
                     value = "three-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
             .emitsExactly(
                 Data(
                     value = "three-2",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Data(
                     value = "three-2",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
     }
@@ -170,19 +171,19 @@ class FlowStoreTest {
         )
         val persister = InMemoryPersister<Int, String>()
 
-        val pipeline = StoreBuilder.fromNonFlow(
-            fetcher = fetcher::fetch,
+        val pipeline = StoreBuilder.from(
+            fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
 
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
@@ -190,18 +191,18 @@ class FlowStoreTest {
             .emitsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Data(
                     value = "three-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -212,17 +213,17 @@ class FlowStoreTest {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.fromNonFlow(fetcher = fetcher::fetch)
+        val pipeline = StoreBuilder.from(fetcher = fetcher)
             .buildWithTestScope()
 
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
@@ -230,14 +231,14 @@ class FlowStoreTest {
             .emitsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -248,28 +249,28 @@ class FlowStoreTest {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.fromNonFlow(fetcher = fetcher::fetch)
+        val pipeline = StoreBuilder.from(fetcher = fetcher)
             .buildWithTestScope()
 
         assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
 
         assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -283,7 +284,7 @@ class FlowStoreTest {
         val persister = InMemoryPersister<Int, String>()
 
         val pipeline = StoreBuilder.from(
-            fetcher = fetcher::createFlow,
+            fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         )
             .disableCache()
@@ -292,33 +293,33 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Data(
                     value = "three-2",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -327,10 +328,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            fetcher = {
-                flow {
-                }
-            },
+            Fetcher.exceptionsAsErrors { flow {} },
             sourceOfTruth = persister.asSourceOfTruth()
         )
             .disableCache()
@@ -343,11 +341,11 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
     }
@@ -356,7 +354,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            fetcher = {
+            fetcher = Fetcher.exceptionsAsErrors {
                 flow {
                     delay(10)
                     emit("three-1")
@@ -378,23 +376,23 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Data(
                     value = "three-1",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-2",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -403,8 +401,8 @@ class FlowStoreTest {
     fun errorTest() = testScope.runBlockingTest {
         val exception = IllegalArgumentException("wow")
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.fromNonFlow(
-            fetcher = {
+        val pipeline = StoreBuilder.from(
+            Fetcher.exceptionsAsErrorsNonFlow {
                 throw exception
             },
             sourceOfTruth = persister.asSourceOfTruth()
@@ -419,29 +417,29 @@ class FlowStoreTest {
         assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
             .emitsExactly(
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 StoreResponse.Error.Exception(
                     error = exception,
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
             .emitsExactly(
                 Data(
                     value = "local-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Loading(
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 ),
                 StoreResponse.Error.Exception(
                     error = exception,
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
     }
@@ -453,7 +451,7 @@ class FlowStoreTest {
                 3 to "three-1",
                 3 to "three-2"
             )
-            val store = StoreBuilder.fromNonFlow(fetcher = fetcher::fetch)
+            val store = StoreBuilder.from(fetcher = fetcher)
                 .buildWithTestScope()
 
             val firstFetch = store.fresh(3)
@@ -468,7 +466,7 @@ class FlowStoreTest {
             assertThat(secondCollect).containsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 )
             )
             // trigger another fetch from network
@@ -479,11 +477,11 @@ class FlowStoreTest {
             assertThat(secondCollect).containsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
             collection.cancelAndJoin()
@@ -497,8 +495,8 @@ class FlowStoreTest {
                 3 to "three-2"
             )
             val persister = InMemoryPersister<Int, String>()
-            val pipeline = StoreBuilder.fromNonFlow(
-                fetcher = fetcher::fetch,
+            val pipeline = StoreBuilder.from(
+                fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             ).buildWithTestScope()
 
@@ -514,11 +512,11 @@ class FlowStoreTest {
             assertThat(secondCollect).containsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Data(
                     value = "three-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 )
             )
             // trigger another fetch from network
@@ -529,15 +527,15 @@ class FlowStoreTest {
             assertThat(secondCollect).containsExactly(
                 Data(
                     value = "three-1",
-                    origin = Cache
+                    origin = ResponseOrigin.Cache
                 ),
                 Data(
                     value = "three-1",
-                    origin = Persister
+                    origin = ResponseOrigin.Persister
                 ),
                 Data(
                     value = "three-2",
-                    origin = Fetcher
+                    origin = ResponseOrigin.Fetcher
                 )
             )
             collection.cancelAndJoin()
@@ -551,8 +549,8 @@ class FlowStoreTest {
                 3 to "three-2",
                 3 to "three-3"
             )
-            val pipeline = StoreBuilder.fromNonFlow(
-                fetcher = fetcher::fetch
+            val pipeline = StoreBuilder.from(
+                fetcher = fetcher
             ).buildWithTestScope()
 
             val fetcher1Collected = mutableListOf<StoreResponse<String>>()
@@ -565,29 +563,29 @@ class FlowStoreTest {
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
-                    Data(origin = Cache, value = "three-1"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-2")
+                    Data(origin = ResponseOrigin.Cache, value = "three-1"),
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
-                    Data(origin = Cache, value = "three-2"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-3")
+                    Data(origin = ResponseOrigin.Cache, value = "three-2"),
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-3")
                 )
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1"),
-                    Data(origin = Fetcher, value = "three-2"),
-                    Data(origin = Fetcher, value = "three-3")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-3")
                 )
             )
             fetcher1Job.cancelAndJoin()
@@ -600,7 +598,7 @@ class FlowStoreTest {
                 3 to "three-1",
                 3 to "three-2"
             )
-            val pipeline = StoreBuilder.fromNonFlow(fetcher = fetcher::fetch)
+            val pipeline = StoreBuilder.from(fetcher = fetcher)
                 .buildWithTestScope()
 
             val fetcher1Collected = mutableListOf<StoreResponse<String>>()
@@ -612,22 +610,22 @@ class FlowStoreTest {
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
                 .emitsExactly(
-                    Data(origin = Cache, value = "three-1"),
-                    Loading(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-2")
+                    Data(origin = ResponseOrigin.Cache, value = "three-1"),
+                    Loading(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = Fetcher),
-                    Data(origin = Fetcher, value = "three-1"),
-                    Data(origin = Fetcher, value = "three-2")
+                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
+                    Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )
             )
             fetcher1Job.cancelAndJoin()

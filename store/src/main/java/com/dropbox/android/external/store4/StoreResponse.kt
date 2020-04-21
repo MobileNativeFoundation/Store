@@ -110,21 +110,23 @@ enum class ResponseOrigin {
      * [StoreResponse] is sent from the cache
      */
     Cache,
+
     /**
      * [StoreResponse] is sent from the persister
      */
     Persister,
+
     /**
      * [StoreResponse] is sent from a fetcher,
      */
     Fetcher
 }
 
-sealed class FetcherResult<T> {
-    data class Data<T>(val value: T) : FetcherResult<T>()
-    sealed class Error<T> : FetcherResult<T>() {
-        data class Exception<T>(val error: Throwable) : Error<T>()
-        data class Message<T>(val message: String) : Error<T>()
+sealed class FetcherResult<T : Any> {
+    data class Data<T : Any>(val value: T) : FetcherResult<T>()
+    sealed class Error<T : Any> : FetcherResult<T>() {
+        data class Exception<T : Any>(val error: Throwable) : Error<T>()
+        data class Message<T : Any>(val message: String) : Error<T>()
     }
 }
 

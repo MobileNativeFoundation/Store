@@ -1,6 +1,8 @@
 package com.dropbox.android.external.store3
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,9 +23,11 @@ class NoNetworkTest(
     storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
-    private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(testScope) {
-        throw EXCEPTION
-    }.build(storeType)
+    private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(
+        testScope,
+        fetcher = Fetcher.exceptionsAsErrorsNonFlow {
+            throw EXCEPTION
+        }).build(storeType)
 
     @Test
     fun testNoNetwork() = testScope.runBlockingTest {

@@ -11,12 +11,14 @@ import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,15 +34,20 @@ import java.io.IOException
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class, ExperimentalStdlibApi::class)
+@OptIn(
+    FlowPreview::class,
+    ExperimentalCoroutinesApi::class,
+    ExperimentalTime::class,
+    ExperimentalStdlibApi::class
+)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
     fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow(
-                fetcher = { key: String ->
+            .from(
+                Fetcher.exceptionsAsErrorsNonFlow { key: String ->
                     provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
                 },
                 sourceOfTruth = SourceOfTruth.from(
@@ -56,8 +63,8 @@ object Graph {
     fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow<Pair<String, RedditConfig>, List<Post>, List<Post>>(
-                fetcher = { (query, config) ->
+            .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
+                Fetcher.exceptionsAsErrorsNonFlow { (query, config) ->
                     provideRetrofit().fetchSubreddit(query, config.limit)
                         .data.children.map(::toPosts)
                 },
@@ -92,10 +99,11 @@ object Graph {
             })
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
-            .fromNonFlow<Unit, RedditConfig, RedditConfig> (fetcher = {
-                delay(500)
-                RedditConfig(10)
-            },
+            .from<Unit, RedditConfig, RedditConfig>(
+                Fetcher.exceptionsAsErrorsNonFlow {
+                    delay(500)
+                    RedditConfig(10)
+                },
                 sourceOfTruth = SourceOfTruth.fromNonFlow(
                     reader = {
                         runCatching {

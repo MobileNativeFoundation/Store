@@ -21,8 +21,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlin.time.ExperimentalTime
 
 /**
@@ -56,82 +54,6 @@ interface StoreBuilder<Key : Any, Output : Any> {
     fun disableCache(): StoreBuilder<Key, Output>
 
     companion object {
-        /**
-         * Creates a new [StoreBuilder] from a non-[Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an HTTP-like single response per
-         * request protocol.
-         *
-         * @param fetcher a function for fetching network records.
-         */
-        @OptIn(ExperimentalTime::class)
-        fun <Key : Any, Output : Any> fromNonFlow(
-            fetcher: suspend (key: Key) -> Output
-        ): StoreBuilder<Key, Output> = from(
-            fetcher = fetcher.asFlow()
-        )
-
-        /**
-         * Creates a new [StoreBuilder] from a non-[Flow] fetcher and a [SourceOfTruth].
-         *
-         * Use when creating a [Store] that fetches objects in an HTTP-like single response per
-         * request protocol.
-         *
-         * @param fetcher a function for fetching network records.
-         * @param sourceOfTruth a [SourceOfTruth] for the store.
-         */
-        fun <Key : Any, Input : Any, Output : Any> fromNonFlow(
-            fetcher: suspend (key: Key) -> Input,
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = from(
-            fetcher = fetcher.asFlow(),
-            sourceOfTruth = sourceOfTruth
-        )
-
-        /**
-         * Creates a new [StoreBuilder] from a non-[Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an HTTP-like single response per
-         * request protocol.
-         *
-         * @param fetcher a function for fetching network records.
-         * @param fetcherTransformer used to translate your fetcher's return value to success value
-         * or error in the case that your fetcher does not communicate errors through exceptions
-         */
-        fun <Key : Any, RawOutput : Any, Output : Any> fromNonFlow(
-            fetcher: suspend (key: Key) -> RawOutput,
-            fetcherTransformer: (RawOutput) -> FetcherResult<Output>
-        ): StoreBuilder<Key, Output> = from(
-            fetcher = fetcher.asFlow(),
-            fetcherTransformer = fetcherTransformer
-        )
-
-        /**
-         * Creates a new [StoreBuilder] from a non-[Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an HTTP-like single response per
-         * request protocol.
-         *
-         * @param fetcher a function for fetching network records.
-         * @param fetcherTransformer used to translate your fetcher's return value to success value
-         * or error in the case that your fetcher does not communicate errors through exceptions
-         * @param sourceOfTruth a [SourceOfTruth] for the store.
-         */
-        fun <Key : Any, RawInput : Any, Input : Any, Output : Any> fromNonFlow(
-            fetcher: suspend (key: Key) -> RawInput,
-            fetcherTransformer: (RawInput) -> FetcherResult<Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = from(
-            fetcher = fetcher.asFlow(),
-            fetcherTransformer = fetcherTransformer,
-            sourceOfTruth = sourceOfTruth
-        )
-
-        private fun <Key, Value> (suspend (key: Key) -> Value).asFlow() = { key: Key ->
-            flow {
-                emit(invoke(key))
-            }
-        }
 
         /**
          * Creates a new [StoreBuilder] from a [Flow] fetcher.
@@ -143,11 +65,8 @@ interface StoreBuilder<Key : Any, Output : Any> {
          */
         @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
-            fetcher: (key: Key) -> Flow<Output>
-        ): StoreBuilder<Key, Output> = RealStoreBuilder(
-            fetcher,
-            fetcherTransformer = { FetcherResult.Data(it) }
-        )
+            fetcher: Fetcher<Key, Output>
+        ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Flow] fetcher.
@@ -159,50 +78,10 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
         fun <Key : Any, Input : Any, Output : Any> from(
-            fetcher: (key: Key) -> Flow<Input>,
+            fetcher: Fetcher<Key, Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
         ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher = fetcher,
-            fetcherTransformer = { FetcherResult.Data(it) },
-            sourceOfTruth = sourceOfTruth
-        )
-
-        /**
-         * Creates a new [StoreBuilder] from a [Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
-         * per request protocol.
-         *
-         * @param fetcher a function for fetching a flow of network records.
-         * @param fetcherTransformer used to translate your fetcher's return value to success value
-         * or error in the case that your fetcher does not communicate errors through exceptions
-         */
-        fun <Key : Any, RawOutput : Any, Output : Any> from(
-            fetcher: (key: Key) -> Flow<RawOutput>,
-            fetcherTransformer: (RawOutput) -> FetcherResult<Output>
-        ): StoreBuilder<Key, Output> = RealStoreBuilder(
-            fetcher = fetcher,
-            fetcherTransformer = fetcherTransformer
-        )
-
-        /**
-         * Creates a new [StoreBuilder] from a [Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
-         * per request protocol.
-         *
-         * @param fetcher a function for fetching a flow of network records.
-         * @param fetcherTransformer used to translate your fetcher's return value to success value
-         * or error in the case that your fetcher does not communicate errors through exceptions
-         * @param sourceOfTruth a [SourceOfTruth] for the store.
-         */
-        fun <Key : Any, RawInput : Any, Input : Any, Output : Any> from(
-            fetcher: (key: Key) -> Flow<RawInput>,
-            fetcherTransformer: (RawInput) -> FetcherResult<Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = RealStoreBuilder(
-            fetcher = fetcher,
-            fetcherTransformer = fetcherTransformer,
             sourceOfTruth = sourceOfTruth
         )
     }
@@ -212,25 +91,24 @@ interface StoreBuilder<Key : Any, Output : Any> {
 @OptIn(ExperimentalTime::class)
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
-private class RealStoreBuilder<Key : Any, RawInput : Any, Input : Any, Output : Any>(
-    private val fetcher: (key: Key) -> Flow<RawInput>,
-    private val fetcherTransformer: (RawInput) -> FetcherResult<Input>,
+private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
+    private val fetcher: Fetcher<Key, Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
 
-    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, RawInput, Input, Output> {
+    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy?): RealStoreBuilder<Key, RawInput, Input, Output> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy?): RealStoreBuilder<Key, Input, Output> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): RealStoreBuilder<Key, RawInput, Input, Output> {
+    override fun disableCache(): RealStoreBuilder<Key, Input, Output> {
         cachePolicy = null
         return this
     }
@@ -240,7 +118,7 @@ private class RealStoreBuilder<Key : Any, RawInput : Any, Input : Any, Output : 
         return RealStore(
             scope = scope ?: GlobalScope,
             sourceOfTruth = sourceOfTruth,
-            fetcher = { fetcher(it).map { fetcherTransformer(it) } },
+            fetcher = fetcher,
             memoryPolicy = cachePolicy
         )
     }
