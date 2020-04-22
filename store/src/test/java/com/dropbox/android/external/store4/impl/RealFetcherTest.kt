@@ -18,7 +18,6 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import java.lang.Exception
 
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @FlowPreview
 class RealFetcherTest {

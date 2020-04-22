@@ -1,22 +1,12 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
+        gradlePluginPortal()
         google()
         jcenter()
     }
 
-    ext.versions = [
-            androidGradlePlugin         : '3.6.0',
-            kotlin                      : '1.3.70',
-            dokkaGradlePlugin           : '0.10.0',
-            ktlintGradle                : '9.1.1',
-            spotlessGradlePlugin        : '3.26.1',
-            jacocoGradlePlugin          : '0.8.5',
-            binaryCompatibilityValidator: '0.2.1',
-    ]
+    apply from: 'buildsystem/dependencies.gradle'
 
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.androidGradlePlugin}"
@@ -26,6 +16,7 @@ buildscript {
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
         classpath "org.jacoco:org.jacoco.core:${versions.jacocoGradlePlugin}"
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:${versions.atomicFuPlugin}"
     }
 }
 
@@ -78,10 +69,6 @@ ext {
     POM_DEVELOPER_NAME = "Dropbox"
 }
 
-
-// From command line use: -PdisablePreDex to disable it: primarily for jenkins
-project.ext.preDexLibs = !project.hasProperty('disablePreDex')
-
 subprojects {
     apply plugin: 'com.diffplug.gradle.spotless'
     spotless {
@@ -89,12 +76,5 @@ subprojects {
             target 'src/**/*.kt'
         }
     }
-
-    def preDexClosure = {
-        project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-    }
-
-    project.plugins.withType(com.android.build.gradle.AppPlugin).whenPluginAdded(preDexClosure)
-    project.plugins.withType(com.android.build.gradle.LibraryPlugin).whenPluginAdded(preDexClosure)
 }
 

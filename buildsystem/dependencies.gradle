@@ -3,24 +3,33 @@ ext.versions = [
         targetSdk         : 29,
         compileSdk        : 29,
         buildTools        : '29.0.3',
-        kotlin            : '1.3.70',
+        kotlin            : '1.3.71',
         ktlint            : '0.36.0',
+
+        // Plugins
+        androidGradlePlugin         : '4.0.0-beta04',
+        dokkaGradlePlugin           : '0.10.0',
+        ktlintGradle                : '9.1.1',
+        spotlessGradlePlugin        : '3.26.1',
+        jacocoGradlePlugin          : '0.8.5',
+        binaryCompatibilityValidator: '0.2.1',
+        atomicFuPlugin              : '0.14.2',
 
         // UI libs.
         picasso           : '2.5.2',
 
         // Others.
-        coroutines        : '1.3.4',
-        retrofit          : '2.7.2',
-        okHttp            : '4.4.0',
+        coroutines        : '1.3.5',
+        retrofit          : '2.8.1',
+        okHttp            : '4.5.0',
         okio              : '2.4.3',
         moshi             : '1.9.2',
         appCompat         : '1.1.0',
-        fragment          : '1.2.2',
+        fragment          : '1.2.4',
         recyclerView      : '1.1.0',
         swipeRefreshLayout: '1.0.0',
         material          : '1.1.0',
-        room              : '2.2.4',
+        room              : '2.2.5',
         coreKtx           : '1.2.0',
         lifecycle         : '2.2.0',
         navigation        : '2.2.1',
@@ -70,5 +79,7 @@ ext.libraries = [
         coroutinesRx          : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$versions.coroutines",
         coroutinesReactive    : "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:$versions.coroutines",
         coroutinesAndroid     : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines",
-        coroutinesTest        : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines"
+        coroutinesTest        : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines",
+        kotlinTest            : "org.jetbrains.kotlin:kotlin-test:$versions.kotlin",
+        kotlinTestJunit       : "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin",
 ]

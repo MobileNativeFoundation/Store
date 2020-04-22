@@ -14,7 +14,6 @@ import kotlinx.coroutines.rx2.asCoroutineDispatcher
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
     scheduler: Scheduler
 ): StoreBuilder<Key, Output> {

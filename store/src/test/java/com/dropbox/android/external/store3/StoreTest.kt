@@ -31,7 +31,6 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreTest(

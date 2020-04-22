@@ -1,7 +1,6 @@
 package com.dropbox.android.external.cache4
 
 import java.util.Collections
-import java.util.Collections.unmodifiableMap
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -169,7 +168,7 @@ internal class RealCache<Key : Any, Value : Any>(
     }
 
     override fun asMap(): Map<in Key, Value> {
-        return Collections.unmodifiableMap(cacheEntries.mapValues { (_, entry) -> entry.value })
+        return cacheEntries.mapValues { (_, entry) -> entry.value }
     }
 
     /**
@@ -302,7 +301,7 @@ internal class RealCache<Key : Any, Value : Any>(
  * A cache entry can be reused by updating [value], [accessTimeNanos], or [writeTimeNanos],
  * as this allows us to avoid creating new instance of [CacheEntry] on every access and write.
  */
-private data class CacheEntry<Key : Any, Value : Any>(
+private class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
     @Volatile var value: Value,
     @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,

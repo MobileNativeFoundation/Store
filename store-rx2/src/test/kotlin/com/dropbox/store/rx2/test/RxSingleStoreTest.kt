@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
-@ExperimentalStdlibApi
 @ExperimentalStoreApi
 @RunWith(JUnit4::class)
 @FlowPreview

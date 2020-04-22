@@ -16,7 +16,6 @@
 package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -32,15 +31,13 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import org.junit.Assert.fail
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.fail
+import kotlin.test.Test
 
 @FlowPreview
-@ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
-@RunWith(JUnit4::class)
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()
     private val upstream: Channel<String> = Channel(Channel.UNLIMITED)
@@ -67,7 +64,7 @@ class ChannelManagerTest {
             upstream.send("a")
             upstream.send("b")
             upstream.close()
-            assertThat(collection.await()).isEqualTo(listOf("a", "b"))
+            assertEquals(listOf("a", "b"), collection.await())
         }
 
     @Test(expected = TestException::class)
@@ -106,8 +103,8 @@ class ChannelManagerTest {
             // give the upstream a chance to finish and check that downstream finished.
             // does not await on downstream to avoid the test hanging in case of a bug.
             delay(100)
-            assertThat(collection.isCompleted).isTrue()
-            assertThat(collection.getCompleted()).isEmpty()
+            assertTrue(collection.isCompleted)
+            assertTrue(collection.getCompleted().isEmpty())
         }
 
     @Test
@@ -141,8 +138,8 @@ class ChannelManagerTest {
             upstream.send("b")
             upstream.close()
 
-            assertThat(collection1.await()).isEqualTo(listOf("a", "b"))
-            assertThat(collection2.await()).isEqualTo(listOf("a", "b"))
+            assertEquals(listOf("a", "b"), collection1.await())
+            assertEquals(listOf("a", "b"), collection2.await())
         }
 
     @Test
@@ -152,7 +149,7 @@ class ChannelManagerTest {
                 `consume two non-overlapping downstreams and count upstream creations`(
                     keepUpstreamAlive = false
                 )
-            assertThat(upstreamCreateCount).isEqualTo(2)
+            assertEquals(2, upstreamCreateCount)
         }
 
     @Test
@@ -162,7 +159,7 @@ class ChannelManagerTest {
                 `consume two non-overlapping downstreams and count upstream creations`(
                     keepUpstreamAlive = true
                 )
-            assertThat(upstreamCreateCount).isEqualTo(1)
+            assertEquals(1, upstreamCreateCount)
         }
 
     private suspend fun `consume two non-overlapping downstreams and count upstream creations`(
@@ -202,8 +199,8 @@ class ChannelManagerTest {
 
         // get value and make sure first downstream is closed
         upstreamChannel.send("a")
-        assertThat(s1.await()).isEqualTo("a")
-        assertThat(downstream1.isClosedForReceive)
+        assertEquals("a", s1.await())
+        assertTrue(downstream1.isClosedForReceive)
 
         val downstream2 =
             Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
@@ -219,7 +216,7 @@ class ChannelManagerTest {
         // get the final value
         upstreamChannel.send("b")
         upstreamChannel.close()
-        assertThat(s2.await()).isEqualTo(listOf("a", "b")) // buffer=1 so 'a' should be sent as well
+        assertEquals(listOf("a", "b"), s2.await()) // buffer=1 so 'a' should be sent as well
 
         return@coroutineScope upstreamCreateCount
     }
@@ -246,7 +243,7 @@ class ChannelManagerTest {
             upstream.send("c")
             upstream.close()
 
-            assertThat(s2.await()).isEqualTo(listOf("b", "c"))
+            assertEquals(listOf("b", "c"), s2.await())
         }
 
     @Test
@@ -267,7 +264,7 @@ class ChannelManagerTest {
                     it.value
                 }
             }
-            assertThat(pending.await()).isEqualTo("b")
+            assertEquals("b", pending.await())
 
             val downstream3 = Channel<Dispatch.Value<String>>(Channel.UNLIMITED)
             manager.addDownstream(downstream3)
@@ -279,7 +276,7 @@ class ChannelManagerTest {
             }
             upstream.close()
 
-            assertThat(collection.await()).isEqualTo(listOf("b"))
+            assertEquals(listOf("b"), collection.await())
         }
 
     @Test
@@ -304,7 +301,7 @@ class ChannelManagerTest {
             // get the final value
             upstream.send("c")
             upstream.close()
-            assertThat(s2.await()).isEqualTo(listOf("b", "c"))
+            assertEquals(listOf("b", "c"), s2.await())
         }
 
     @Test
@@ -330,7 +327,7 @@ class ChannelManagerTest {
             // get the final value
             upstream.send("c")
             upstream.close()
-            assertThat(collection.await()).isEqualTo(listOf("a", "b", "c"))
+            assertEquals(listOf("a", "b", "c"), collection.await())
         }
 
     private suspend fun newManagerInKeepAliveModeWithPendingFetch(
@@ -364,8 +361,8 @@ class ChannelManagerTest {
 
         // get value and make sure first downstream is closed
         upstream.send(firstValue)
-        assertThat(value.await()).isEqualTo(firstValue)
-        assertThat(downstream.isClosedForReceive)
+        assertEquals(firstValue, value.await())
+        assertTrue(downstream.isClosedForReceive)
 
         // emit with no downstreams
         upstream.send(pendingValue)
@@ -390,11 +387,11 @@ class ChannelManagerTest {
             upstream.send("a")
         }
         manager.close()
-        assertThat(downstream1.isClosedForSend).isTrue()
-        assertThat(downstream2.isClosedForSend).isTrue()
+        assertTrue(downstream1.isClosedForSend)
+        assertTrue(downstream2.isClosedForSend)
         // it can be open for receive if and only if we've already sent a value
-        assertThat(downstream1.isClosedForReceive).isEqualTo(!dispatchValue)
-        assertThat(downstream2.isClosedForReceive).isEqualTo(!dispatchValue)
+        assertEquals(!dispatchValue, downstream1.isClosedForReceive)
+        assertEquals(!dispatchValue, downstream2.isClosedForReceive)
     }
 
     @Test
@@ -404,7 +401,7 @@ class ChannelManagerTest {
             manager.addDownstream(downstream)
             manager.close()
             manager.close()
-            assertThat(downstream.isClosedForSend).isTrue()
+            assertTrue(downstream.isClosedForSend)
         }
 }
 

@@ -20,7 +20,6 @@ package com.dropbox.android.external.fs3.filesystem
 // package org.jpublish.util;
 
 import java.io.File
-import java.util.NoSuchElementException
 import java.util.Stack
 
 /**

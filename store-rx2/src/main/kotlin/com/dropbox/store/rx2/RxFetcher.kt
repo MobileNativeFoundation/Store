@@ -20,7 +20,6 @@ import kotlinx.coroutines.reactive.asFlow
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
     fetcher: (key: Key) -> Flowable<FetcherResult<Output>>
 ): Fetcher<Key, Output> = from { key: Key -> fetcher(key).asFlow() }
@@ -35,7 +34,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsFlowable(
     fetcher: (key: Key) -> Flowable<Output>
 ): Fetcher<Key, Output> = exceptionsAsErrors { key: Key -> fetcher(key).asFlow() }
@@ -49,7 +47,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> Fetcher.Companion.fromSingle(
     fetcher: (key: Key) -> Single<FetcherResult<Output>>
 ): Fetcher<Key, Output> =
@@ -66,7 +63,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromSingle(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@ExperimentalStdlibApi
 fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsSingle(
     fetcher: (key: Key) -> Single<Output>
 ): Fetcher<Key, Output> = exceptionAsErrorsFlowable { key: Key -> fetcher(key).toFlowable() }
