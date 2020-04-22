@@ -1,0 +1,58 @@
+// Merge of
+// https://github.com/mgouline/android-samples/blob/master/jacoco/app/build.gradle
+// and https://github.com/pushtorefresh/storio/blob/master/gradle/jacoco-android.gradle
+
+// Enables code coverage for JVM tests.
+apply plugin: "jacoco"
+// Android Gradle Plugin out of the box supports only code coverage for instrumentation tests.
+// Creates a task that will merge coverage for all projects
+project.afterEvaluate {
+    def testTaskName = "test"
+    def coverageTaskName = "${testTaskName}Coverage"
+
+    // Create coverage task of form 'testFlavorTypeUnitTestCoverage' depending on 'testFlavorTypeUnitTest'
+    task "${coverageTaskName}"(type: JacocoReport, dependsOn: "$testTaskName") {
+        group = 'Reporting'
+        description = "Generate Jacoco coverage reports for the build."
+
+        List<String> fileFilter = ['**/R.class',
+                                   '**/R$*.class',
+                                   '**/*$ViewInjector*.*',
+                                   '**/*$ViewBinder*.*',
+                                   '**/BuildConfig.*',
+                                   '**/Manifest*.*',
+                                   '**/*$Lambda$*.*', // Jacoco can not handle several "$" in class name.
+                                   '**/*$inlined$*.*', // Kotlin specific, Jacoco can not handle several "$" in class name.
+                                   '**/*Module.*', // Modules for Dagger.
+                                   '**/*Dagger*.*', // Dagger auto-generated code.
+                                   '**/*MembersInjector*.*', // Dagger auto-generated code.
+                                   '**/*_Provide*Factory*.*', // Dagger auto-generated code.
+                                   '**/atomicfu', // AtomicFU auto-generated code.
+                                   '**/test/**/*.*', // Test code
+        ]
+        def kotlinFileTree = fileTree(
+                dir: "${project.buildDir}/classes",
+                excludes: fileFilter)
+        logger.debug("Kotlin classes dirs: " + kotlinFileTree)
+
+        classDirectories.setFrom kotlinFileTree
+
+        def coverageSourceDirs = new File(project.projectDir, "src/main/java")
+        def coverageData = fileTree(dir: new File(project.buildDir, 'jacoco'), include: '*.exec')
+
+        logger.debug("Coverage source dirs: " + coverageSourceDirs)
+        logger.debug("Coverage execution data: " + executionData)
+
+        additionalSourceDirs.setFrom files(coverageSourceDirs)
+        sourceDirectories.setFrom files(coverageSourceDirs)
+        executionData.setFrom files(coverageData)
+
+        reports {
+            xml.enabled = true
+            xml.destination = file("${buildDir}/reports/jacoco/report.xml")
+            html.enabled = true
+        }
+    }
+
+    check.dependsOn "${coverageTaskName}"
+}

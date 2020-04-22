@@ -1,19 +1,20 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.dokka'
+    id 'kotlinx-atomicfu'
 }
 
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
-    testImplementation libraries.junit
     testImplementation libraries.coroutinesTest
-    testImplementation libraries.truth
+    testImplementation libraries.kotlinTest
+    testImplementation libraries.kotlinTestJunit
 }
 group = GROUP
 version = VERSION_NAME
 apply from: rootProject.file("gradle/maven-push.gradle")
-
+apply from: rootProject.file("gradle/jacoco.gradle")
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
@@ -25,5 +26,8 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += [
+                '-Xopt-in=kotlin.RequiresOptIn',
+        ]
     }
 }

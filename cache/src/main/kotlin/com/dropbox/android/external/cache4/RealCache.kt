@@ -2,6 +2,9 @@ package com.dropbox.android.external.cache4
 
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.nanoseconds
 
 /**
  * An implementation of [Cache] inspired by Guava Cache.
@@ -11,11 +14,11 @@ import java.util.concurrent.ConcurrentHashMap
  * 1. Time-based evictions (expiration)
  * 2. Size-based evictions
  *
- * Time-based evictions are enabled by specifying [expireAfterWriteNanos] and/or [expireAfterAccessNanos].
- * When [expireAfterWriteNanos] is specified, entries will be automatically removed from the cache
+ * Time-based evictions are enabled by specifying [expireAfterWriteDuration] and/or [expireAfterAccessDuration].
+ * When [expireAfterWriteDuration] is specified, entries will be automatically removed from the cache
  * once a fixed duration has elapsed after the entry's creation
  * or most recent replacement of its value.
- * When [expireAfterAccessNanos] is specified, entries will be automatically removed from the cache
+ * When [expireAfterAccessDuration] is specified, entries will be automatically removed from the cache
  * once a fixed duration has elapsed after the entry's creation,
  * the most recent replacement of its value, or its last access.
  *
@@ -24,9 +27,10 @@ import java.util.concurrent.ConcurrentHashMap
  * Size-based evictions are enabled by specifying [maxSize]. When the size of the cache entries grows
  * beyond [maxSize], least recently accessed entries will be evicted.
  */
+@ExperimentalTime
 internal class RealCache<Key : Any, Value : Any>(
-    val expireAfterWriteNanos: Long,
-    val expireAfterAccessNanos: Long,
+    val expireAfterWriteDuration: Duration,
+    val expireAfterAccessDuration: Duration,
     val maxSize: Long,
     val concurrencyLevel: Int,
     val clock: Clock
@@ -62,12 +66,12 @@ internal class RealCache<Key : Any, Value : Any>(
     /**
      * Whether to perform write-time based expiration.
      */
-    private val expiresAfterWrite = expireAfterWriteNanos > 0
+    private val expiresAfterWrite = expireAfterWriteDuration.isFinite()
 
     /**
      * Whether to perform access-time (both read and write) based expiration.
      */
-    private val expiresAfterAccess = expireAfterAccessNanos > 0
+    private val expiresAfterAccess = expireAfterAccessDuration.isFinite()
 
     /**
      * A key-based synchronizer for running cache loaders.
@@ -163,6 +167,10 @@ internal class RealCache<Key : Any, Value : Any>(
         accessQueue?.clear()
     }
 
+    override fun asMap(): Map<in Key, Value> {
+        return cacheEntries.mapValues { (_, entry) -> entry.value }
+    }
+
     /**
      * Remove all expired entries.
      */
@@ -198,8 +206,8 @@ internal class RealCache<Key : Any, Value : Any>(
      * Check whether the [CacheEntry] has expired based on either access time or write time.
      */
     private fun CacheEntry<Key, Value>.isExpired(nowNanos: Long): Boolean =
-        (expiresAfterAccess && nowNanos - accessTimeNanos >= expireAfterAccessNanos) ||
-            (expiresAfterWrite && nowNanos - writeTimeNanos >= expireAfterWriteNanos)
+        (expiresAfterAccess && (nowNanos - accessTimeNanos).nanoseconds >= expireAfterAccessDuration) ||
+            (expiresAfterWrite && (nowNanos - writeTimeNanos).nanoseconds >= expireAfterWriteDuration)
 
     /**
      * Evict least recently accessed entries until [cacheEntries] is no longer over capacity.
@@ -293,7 +301,7 @@ internal class RealCache<Key : Any, Value : Any>(
  * A cache entry can be reused by updating [value], [accessTimeNanos], or [writeTimeNanos],
  * as this allows us to avoid creating new instance of [CacheEntry] on every access and write.
  */
-private data class CacheEntry<Key : Any, Value : Any>(
+private class CacheEntry<Key : Any, Value : Any>(
     val key: Key,
     @Volatile var value: Value,
     @Volatile var accessTimeNanos: Long = Long.MAX_VALUE,

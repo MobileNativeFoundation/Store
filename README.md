@@ -2,7 +2,9 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/)
 
-Store is a Kotlin library for effortless data loading.
+[![codecov](https://codecov.io/gh/dropbox/Store/branch/master/graph/badge.svg)](https://codecov.io/gh/dropbox/Store)
+
+Store is a Kotlin library for loading data from remote and local sources.
 
 ### The Problems:
 
@@ -27,13 +29,13 @@ Artifacts are hosted on **Maven Central**.
 ###### Latest version:
 
 ```groovy
-def store_version = "4.0.0-alpha02"
+def store_version = "4.0.0-alpha05"
 ```
 
 ###### Add the dependency to your `build.gradle`:
 
 ```groovy
-implementation 'com.dropbox.mobile.store:store4:${store_version}'
+implementation "com.dropbox.mobile.store:store4:${store_version}"
 ```
 
 ###### Set the source & target compatibilities to `1.8`
@@ -214,8 +216,7 @@ StoreBuilder
     }.cachePolicy(
         MemoryPolicy.builder()
             .setMemorySize(10)
-            .setExpireAfterAccess(10) // or setExpireAfterWrite(10)
-            .setExpireAfterTimeUnit(TimeUnit.MINUTES)
+            .setExpireAfterAccess(10.minutes) // or setExpireAfterWrite(10.minutes)
             .build()
     ).persister(
         reader = db.postDao()::loadPosts,
@@ -226,9 +227,8 @@ StoreBuilder
 ```
 
 * `setMemorySize(maxSize: Long)` sets the maximum number of entries to be kept in the cache before starting to evict the least recently used items.
-* `setExpireAfterAccess(expireAfterAccess: Long)` sets the maximum time an entry can live in the cache since the last access, where "access" means reading the cache, adding a new cache entry, and replacing an existing entry with a new one. This duration is also known as **time-to-idle (TTI)**.
-* `setExpireAfterWrite(expireAfterWrite: Long)` sets the maximum time an entry can live in the cache since the last write, where "write" means adding a new cache entry and replacing an existing entry with a new one. This duration is also known as **time-to-live (TTL)**.
-* `setExpireAfterTimeUnit(expireAfterTimeUnit: TimeUnit)` sets the time unit used when setting `expireAfterAccess` or `expireAfterWrite`. Default unit is `TimeUnit.SECONDS`.
+* `setExpireAfterAccess(expireAfterAccess: Duration)` sets the maximum time an entry can live in the cache since the last access, where "access" means reading the cache, adding a new cache entry, and replacing an existing entry with a new one. This duration is also known as **time-to-idle (TTI)**.
+* `setExpireAfterWrite(expireAfterWrite: Duration)` sets the maximum time an entry can live in the cache since the last write, where "write" means adding a new cache entry and replacing an existing entry with a new one. This duration is also known as **time-to-live (TTL)**.
 
 Note that `setExpireAfterAccess` and `setExpireAfterWrite` **cannot** both be set at the same time.
 

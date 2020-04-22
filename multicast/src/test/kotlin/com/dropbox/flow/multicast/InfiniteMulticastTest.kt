@@ -28,10 +28,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlin.test.assertEquals
 
 /**
  * Multicaster tests where downstream is not closed even when upstream is closed.
@@ -40,7 +38,6 @@ import org.junit.runners.JUnit4
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-@RunWith(JUnit4::class)
 class InfiniteMulticastTest {
     private val testScope = TestCoroutineScope()
     private val dispatchLog = mutableListOf<String>()
@@ -82,13 +79,10 @@ class InfiniteMulticastTest {
         delay(10_000)
         // add another
         val c3 = activeFlow.newDownstream().take(3).toList()
-        assertThat(c1.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
-        assertThat(c2.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
-        assertThat(c3)
-            .isEqualTo(listOf("a1", "b1", "c1"))
-        assertThat(createdCount).isEqualTo(2)
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1", "c1"), c1.await())
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1", "c1"), c2.await())
+        assertEquals(listOf("a1", "b1", "c1"), c3)
+        assertEquals(2, createdCount)
     }
 
     @Test
@@ -117,13 +111,10 @@ class InfiniteMulticastTest {
         delay(10_000)
         // add another
         val c3 = activeFlow.newDownstream().take(1).toList()
-        assertThat(c1.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
-        assertThat(c2.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1", "c1"))
-        assertThat(c3)
-            .isEqualTo(listOf("a1"))
-        assertThat(createdCount).isEqualTo(2)
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1", "c1"), c1.await())
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1", "c1"), c2.await())
+        assertEquals(listOf("a1"), c3)
+        assertEquals(2, createdCount)
     }
 
     @Test
@@ -152,13 +143,10 @@ class InfiniteMulticastTest {
         delay(10_000)
         // add another
         val c3 = activeFlow.newDownstream().take(3).toList()
-        assertThat(c1.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1"))
-        assertThat(c2.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1"))
-        assertThat(c3)
-            .isEqualTo(listOf("a1", "b1", "c1"))
-        assertThat(createdCount).isEqualTo(2)
+        assertEquals(listOf("a0", "b0", "c0", "a1"), c1.await())
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1"), c2.await())
+        assertEquals(listOf("a1", "b1", "c1"), c3)
+        assertEquals(2, createdCount)
     }
 
     @Test
@@ -188,16 +176,11 @@ class InfiniteMulticastTest {
         delay(10_000)
         // add another
         val c3 = activeFlow.newDownstream().take(1).toList()
-        assertThat(c1.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1"))
-        assertThat(c2.await())
-            .isEqualTo(listOf("a0", "b0", "c0", "a1", "b1"))
-        assertThat(c3)
-            .isEqualTo(listOf("a1"))
-        assertThat(createdCount).isEqualTo(2)
+        assertEquals(listOf("a0", "b0", "c0", "a1"), c1.await())
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1"), c2.await())
+        assertEquals(listOf("a1"), c3)
+        assertEquals(2, createdCount)
         // make sure we didn't keep upsteam too long
-        assertThat(dispatchLog).containsExactly(
-            "a0", "b0", "c0", "a1", "b1"
-        )
+        assertEquals(listOf("a0", "b0", "c0", "a1", "b1"), dispatchLog)
     }
 }

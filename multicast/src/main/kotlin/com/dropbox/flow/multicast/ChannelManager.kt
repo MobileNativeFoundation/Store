@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@file:OptIn(ExperimentalStdlibApi::class)
 package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CompletableDeferred
@@ -21,8 +21,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
-import java.util.ArrayDeque
-import java.util.Collections
 
 /**
  * Tracks active downstream channels and dispatches incoming upstream values to each of them in
@@ -375,7 +373,7 @@ private interface Buffer<T> {
 @ExperimentalCoroutinesApi
 private class NoBuffer<T> : Buffer<T> {
     override val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
-        get() = Collections.emptyList()
+        get() = emptyList()
 
     // ignore
     override fun add(item: ChannelManager.Message.Dispatch.Value<T>) = Unit
@@ -401,9 +399,9 @@ private class BufferImpl<T>(private val limit: Int) :
     override val items = ArrayDeque<ChannelManager.Message.Dispatch.Value<T>>(limit.coerceAtMost(10))
     override fun add(item: ChannelManager.Message.Dispatch.Value<T>) {
         while (items.size >= limit) {
-            items.pollFirst()
+            items.removeFirst()
         }
-        items.offerLast(item)
+        items.addLast(item)
     }
 }
 

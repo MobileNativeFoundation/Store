@@ -31,8 +31,6 @@ internal interface SourceOfTruth<Key, Input, Output> {
     suspend fun write(key: Key, value: Input)
     suspend fun delete(key: Key)
     suspend fun deleteAll()
-    // for testing
-    suspend fun getSize(): Int
 }
 
 internal class PersistentSourceOfTruth<Key, Input, Output>(
@@ -53,11 +51,6 @@ internal class PersistentSourceOfTruth<Key, Input, Output>(
 
     override suspend fun deleteAll() {
         realDeleteAll?.invoke()
-    }
-
-    // for testing
-    override suspend fun getSize(): Int {
-        throw UnsupportedOperationException("not supported for persistent")
     }
 }
 
@@ -81,10 +74,5 @@ internal class PersistentNonFlowingSourceOfTruth<Key, Input, Output>(
 
     override suspend fun deleteAll() {
         realDeleteAll?.invoke()
-    }
-
-    // for testing
-    override suspend fun getSize(): Int {
-        throw UnsupportedOperationException("not supported for persistent")
     }
 }

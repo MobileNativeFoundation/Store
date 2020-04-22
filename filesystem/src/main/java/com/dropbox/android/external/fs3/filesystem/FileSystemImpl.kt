@@ -7,9 +7,8 @@ import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.lang.String.format
-import java.util.ArrayList
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * implements a [FileSystem] as regular files on disk in a specific document root (kind of like a root jail)
@@ -64,9 +63,9 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         return getFile(file)!!.exists()
     }
 
+    @ExperimentalTime
     override fun getRecordState(
-        expirationUnit: TimeUnit,
-        expirationDuration: Long,
+        expirationDuration: Duration,
         path: String
     ): RecordState {
         val file = getFile(path)
@@ -74,7 +73,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
             return RecordState.MISSING
         }
         val now = System.currentTimeMillis()
-        val cuttOffPoint = now - TimeUnit.MILLISECONDS.convert(expirationDuration, expirationUnit)
+        val cuttOffPoint = now - expirationDuration.toLongMilliseconds()
         return if (file.lastModified() < cuttOffPoint) {
             RecordState.STALE
         } else {
@@ -94,12 +93,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
     private fun findFiles(path: String): Collection<FSFile> {
         val searchRoot = File(root, Util.simplifyPath(path))
         if (searchRoot.exists() && searchRoot.isFile) {
-            throw FileNotFoundException(
-                format(
-                    "expecting a directory at %s, instead found a file",
-                    path
-                )
-            )
+            throw FileNotFoundException("expecting a directory at $path, instead found a file")
         }
 
         val foundFiles = ArrayList<FSFile>()

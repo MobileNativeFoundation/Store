@@ -37,7 +37,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     kotlinOptions {
         jvmTarget = "1.8"
         freeCompilerArgs += [
-                '-Xuse-experimental=kotlin.Experimental',
+                '-Xopt-in=kotlin.Experimental',
         ]
     }
 }
@@ -47,16 +47,19 @@ dependencies {
     testImplementation libraries.junit
     testImplementation libraries.mockito
     testImplementation libraries.coroutinesTest
-    implementation libraries.supportRecyclerView
-    implementation libraries.supportAppCompat
-    implementation libraries.supportFragments
-    implementation libraries.supportLifecycle
-    implementation libraries.supportCardView
-    implementation libraries.supportDesign
+    implementation libraries.recyclerView
+    implementation libraries.swipeRefreshLayout
+    implementation libraries.appCompat
+    implementation libraries.fragment
+    implementation libraries.lifecycle
+    implementation libraries.material
     implementation libraries.retrofit
     implementation libraries.roomRuntime
     implementation libraries.coreKtx
     implementation libraries.lifecycleExtensions
+    implementation libraries.navigationFragment
+    implementation libraries.navigationUi
+    implementation libraries.constraintLayout
 
     implementation libraries.picasso
     implementation libraries.moshi

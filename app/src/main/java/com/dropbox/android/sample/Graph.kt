@@ -17,18 +17,21 @@ import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import okio.Buffer
 import okio.BufferedSource
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
-@UseExperimental(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class, ExperimentalStdlibApi::class)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
@@ -94,15 +97,16 @@ object Graph {
                         source?.let { adapter.fromJson(it) }
                     }.getOrNull()
                 },
-                writer = { _, _ ->
+                writer = { _, config ->
                     val buffer = Buffer()
+                    withContext(Dispatchers.IO) {
+                        adapter.toJson(buffer, config)
+                    }
                     fileSystemPersister.write(Unit, buffer)
                 }
             )
             .cachePolicy(
-                MemoryPolicy.builder().setExpireAfterWrite(10).setExpireAfterTimeUnit(
-                    TimeUnit.SECONDS
-                ).build()
+                MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
             )
             .build()
     }

@@ -15,6 +15,7 @@
  */
 package com.dropbox.flow.multicast
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,16 +23,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import com.google.common.truth.Truth.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
-@RunWith(JUnit4::class)
 class StoreRealActorTest {
+    private val didClose = atomic<Boolean>(false)
 
     /**
      * Intentionally not using test scope here to use real coroutines to ensure we don't get into
@@ -39,21 +38,20 @@ class StoreRealActorTest {
      */
     @Test
     fun closeOrder() {
-        val didClose = AtomicBoolean(false)
         val actor = object : StoreRealActor<String>(CoroutineScope(EmptyCoroutineContext)) {
-            var active = AtomicBoolean(false)
+            val active = atomic<Boolean>(false)
             override suspend fun handle(msg: String) {
                 try {
-                    active.set(true)
+                    active.value = true
                     delay(100)
                 } finally {
-                    active.set(false)
+                    active.value = false
                 }
             }
 
             override fun onClosed() {
-                assertThat(active.get()).isFalse()
-                didClose.set(true)
+                assertFalse(active.value)
+                didClose.value = true
             }
         }
         runBlocking {
@@ -71,6 +69,6 @@ class StoreRealActorTest {
             actor.close()
             sender.join()
         }
-        assertThat(didClose.get()).isTrue()
+        assertTrue(didClose.value)
     }
 }
