@@ -1,5 +1,7 @@
 package com.dropbox.store.rx2.test
 
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -21,14 +23,15 @@ import org.junit.runners.JUnit4
 @ExperimentalCoroutinesApi
 class HotRxSingleStoreTest {
     private val testScope = TestCoroutineScope()
+
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
         testScope.runBlockingTest {
-            val fetcher = FakeRxFetcher(
-                3 to "three-1",
-                3 to "three-2"
+            val fetcher: FakeRxFetcher<Int, FetcherResult<String>> = FakeRxFetcher(
+                3 to FetcherResult.Data("three-1"),
+                3 to FetcherResult.Data("three-2")
             )
-            val pipeline = StoreBuilder.fromSingle<Int, String> { fetcher.fetch(it) }
+            val pipeline = StoreBuilder.from(Fetcher.fromSingle<Int, String> { fetcher.fetch(it) })
                 .scope(testScope)
                 .build()
 
@@ -67,6 +70,7 @@ class FakeRxFetcher<Key, Output>(
     vararg val responses: Pair<Key, Output>
 ) {
     private var index = 0
+
     @Suppress("RedundantSuspendModifier") // needed for function reference
     fun fetch(key: Key): Single<Output> {
         // will throw if fetcher called more than twice

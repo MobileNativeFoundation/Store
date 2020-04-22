@@ -1,6 +1,8 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -32,8 +34,10 @@ class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.fromSingle<Int, String, String>(
-            fetcher = { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } },
+        StoreBuilder.from<Int, String, String>(
+            fetcher = Fetcher.fromSingle {
+                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
+            },
             sourceOfTruth = SourceOfTruth.fromMaybe(
                 reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
                 writer = { key, value ->
