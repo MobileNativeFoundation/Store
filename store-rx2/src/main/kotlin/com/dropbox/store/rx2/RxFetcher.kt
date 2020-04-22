@@ -3,7 +3,7 @@ package com.dropbox.store.rx2
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.exceptionsAsErrors
+import com.dropbox.android.external.store4.valueFetcher
 import io.reactivex.Flowable
 import io.reactivex.Single
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,9 +20,9 @@ import kotlinx.coroutines.reactive.asFlow
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
+fun <Key : Any, Output : Any> flowableFetcher(
     fetcher: (key: Key) -> Flowable<FetcherResult<Output>>
-): Fetcher<Key, Output> = from { key: Key -> fetcher(key).asFlow() }
+): Fetcher<Key, Output> = { key: Key -> fetcher(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [Flowable] fetcher.
@@ -34,9 +34,9 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsFlowable(
+fun <Key : Any, Output : Any> flowableValueFetcher(
     fetcher: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = exceptionsAsErrors { key: Key -> fetcher(key).asFlow() }
+): Fetcher<Key, Output> = valueFetcher { key: Key -> fetcher(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [Single] fetcher.
@@ -47,10 +47,9 @@ fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsFlowable(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.fromSingle(
+fun <Key : Any, Output : Any> singleFetcher(
     fetcher: (key: Key) -> Single<FetcherResult<Output>>
-): Fetcher<Key, Output> =
-    from { key: Key -> fetcher(key).toFlowable().asFlow() }
+): Fetcher<Key, Output> = { key: Key -> fetcher(key).toFlowable().asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [Single] fetcher.
@@ -63,6 +62,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromSingle(
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.exceptionAsErrorsSingle(
+fun <Key : Any, Output : Any> singleValueFetcher(
     fetcher: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = exceptionAsErrorsFlowable { key: Key -> fetcher(key).toFlowable() }
+): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> fetcher(key).toFlowable() }

@@ -1,14 +1,13 @@
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
-import com.dropbox.android.external.store4.RealFetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.TransformingFetcher
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.assertThat
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flowOf
@@ -16,18 +15,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
-import java.lang.Exception
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class RealFetcherTest {
+class TransformingFetcherTest {
 
     private val testScope = TestCoroutineScope()
 
     @Test
     fun `GIVEN transformer WHEN raw value THEN unwrapped value returned AND value is cached`() =
         testScope.runBlockingTest {
-            val fetcher = RealFetcher<Int, Int, String>(
+            val fetcher = TransformingFetcher<Int, Int, String>(
                 doFetch = { flowOf(it * it) },
                 doTransform = { flow -> flow.map { FetcherResult.Data("$it") } }
             )
@@ -57,7 +55,7 @@ class RealFetcherTest {
     fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             var count = 0
-            val fetcher = RealFetcher<Int, Int, String>(
+            val fetcher = TransformingFetcher<Int, Int, String>(
                 doFetch = { flowOf(count++) },
                 doTransform = {
                     it.map { i: Int ->
@@ -98,7 +96,7 @@ class RealFetcherTest {
         testScope.runBlockingTest {
             val e = Exception()
             var count = 0
-            val fetcher = RealFetcher<Int, Int, String>(
+            val fetcher = TransformingFetcher<Int, Int, String>(
                 doFetch = { flowOf(count++) },
                 doTransform = {
                     it.map { i: Int ->
@@ -140,7 +138,7 @@ class RealFetcherTest {
         testScope.runBlockingTest {
             var count = 0
             val e = Exception()
-            val fetcher = Fetcher.exceptionsAsErrorsNonFlow<Int, Int> {
+            val fetcher = nonFlowValueFetcher<Int, Int> {
                 count++
                 if (count == 1) {
                     throw e

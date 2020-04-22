@@ -1,9 +1,8 @@
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -23,7 +22,7 @@ class StoreWithInMemoryCacheTest {
     @Test
     fun `store requests can complete when its in-memory cache (with access expiry) is at the maximum size`() {
         val store = StoreBuilder
-            .from(Fetcher.exceptionsAsErrorsNonFlow { _: Int -> "result" })
+            .from(nonFlowValueFetcher { _: Int -> "result" })
             .cachePolicy(
                 MemoryPolicy
                     .builder()

@@ -1,11 +1,10 @@
 package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
@@ -31,7 +30,7 @@ class ClearAllStoreTest {
     private val value1 = 1
     private val value2 = 2
 
-    private val fetcher = Fetcher.exceptionsAsErrorsNonFlow { key: String ->
+    private val fetcher = nonFlowValueFetcher { key: String ->
         when (key) {
             key1 -> value1
             key2 -> value2

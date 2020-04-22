@@ -15,7 +15,6 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
@@ -23,15 +22,15 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.StoreResponse.Loading
-import com.dropbox.android.external.store4.exceptionsAsErrors
 import com.dropbox.android.external.store4.fresh
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.dropbox.android.external.store4.testutil.FakeFlowingFetcher
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asFlowable
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.assertThat
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
+import com.dropbox.android.external.store4.valueFetcher
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -327,7 +326,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            Fetcher.exceptionsAsErrors { flow {} },
+            valueFetcher { flow {} },
             sourceOfTruth = persister.asSourceOfTruth()
         )
             .disableCache()
@@ -353,7 +352,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            fetcher = Fetcher.exceptionsAsErrors {
+            fetcher = valueFetcher {
                 flow {
                     delay(10)
                     emit("three-1")
@@ -401,7 +400,7 @@ class FlowStoreTest {
         val exception = IllegalArgumentException("wow")
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            Fetcher.exceptionsAsErrorsNonFlow {
+            nonFlowValueFetcher {
                 throw exception
             },
             sourceOfTruth = persister.asSourceOfTruth()

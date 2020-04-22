@@ -5,37 +5,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import java.util.concurrent.CancellationException
 
-interface Fetcher<Key : Any, Output : Any> {
-    operator fun invoke(key: Key): Flow<FetcherResult<Output>>
+typealias Fetcher<Key, Output> = (key: Key) -> Flow<FetcherResult<Output>>
 
-    companion object {
-        fun <Key : Any, Output : Any> from(
-            doFetch: (Key) -> Flow<FetcherResult<Output>>
-        ): Fetcher<Key, Output> = RealFetcher(
-            doFetch = doFetch,
-            doTransform = { it }
-        )
+fun <Key : Any, Output : Any> fetcher(
+    doFetch: (Key) -> Flow<FetcherResult<Output>>
+): Fetcher<Key, Output> = doFetch
 
-        fun <Key : Any, Output : Any> fromNonFlow(
-            doFetch: suspend (key: Key) -> FetcherResult<Output>
-        ): Fetcher<Key, Output> = RealFetcher(
-            doFetch = doFetch.asFlow(),
-            doTransform = { it }
-        )
-    }
-}
+fun <Key : Any, Output : Any> nonFlowFetcher(
+    doFetch: suspend (Key) -> FetcherResult<Output>
+): Fetcher<Key, Output> = doFetch.asFlow()
 
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.exceptionsAsErrors(
+fun <Key : Any, Output : Any> valueFetcher(
     doFetch: (Key) -> Flow<Output>
-): Fetcher<Key, Output> = RealFetcher(doFetch, ::exceptionsAsErrors)
+): Fetcher<Key, Output> = TransformingFetcher(doFetch, ::exceptionsAsErrors)
 
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Fetcher.Companion.exceptionsAsErrorsNonFlow(
+fun <Key : Any, Output : Any> nonFlowValueFetcher(
     doFetch: suspend (key: Key) -> Output
-): Fetcher<Key, Output> = exceptionsAsErrors(doFetch.asFlow())
+): Fetcher<Key, Output> = valueFetcher(doFetch.asFlow())
 
 private fun <Key, Value> (suspend (key: Key) -> Value).asFlow() = { key: Key ->
     flow {
@@ -48,13 +37,10 @@ private fun <Input : Any> exceptionsAsErrors(input: Flow<Input>): Flow<FetcherRe
     input
         .map { FetcherResult.Data(it) as FetcherResult<Input> }
         .catch { th: Throwable ->
-            if (th is CancellationException) {
-                throw th
-            }
             emit(FetcherResult.Error.Exception(th))
         }
 
-internal class RealFetcher<Key : Any, Input : Any, Output : Any>(
+internal class TransformingFetcher<Key : Any, Input : Any, Output : Any>(
     private val doFetch: (Key) -> Flow<Input>,
     private val doTransform: (Flow<Input>) -> Flow<FetcherResult<Output>>
 ) : Fetcher<Key, Output> {

@@ -1,10 +1,9 @@
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
@@ -32,7 +31,7 @@ class ClearStoreByKeyTest {
             val key = "key"
             val value = 1
             val store = StoreBuilder.from(
-                fetcher = Fetcher.exceptionsAsErrorsNonFlow { value },
+                fetcher = nonFlowValueFetcher { value },
                 sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
                 .disableCache()
@@ -77,7 +76,7 @@ class ClearStoreByKeyTest {
             val key = "key"
             val value = 1
             val store = StoreBuilder.from<String, Int>(
-                fetcher = Fetcher.exceptionsAsErrorsNonFlow { value }
+                fetcher = nonFlowValueFetcher { value }
             ).scope(testScope).build()
 
             // should receive data from network first time
@@ -119,7 +118,7 @@ class ClearStoreByKeyTest {
             val value1 = 1
             val value2 = 2
             val store = StoreBuilder.from(
-                fetcher = Fetcher.exceptionsAsErrorsNonFlow { key ->
+                fetcher = nonFlowValueFetcher { key ->
                     when (key) {
                         key1 -> value1
                         key2 -> value2

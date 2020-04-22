@@ -1,8 +1,8 @@
 public final class com/dropbox/store/rx2/RxFetcherKt {
-	public static final fun exceptionAsErrorsFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
-	public static final fun exceptionAsErrorsSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
-	public static final fun fromFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
-	public static final fun fromSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun flowableFetcher (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
+	public static final fun flowableValueFetcher (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
+	public static final fun singleFetcher (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
+	public static final fun singleValueFetcher (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
 }
 
 public final class com/dropbox/store/rx2/RxSourceOfTruthKt {

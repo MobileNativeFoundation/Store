@@ -1,9 +1,8 @@
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.exceptionsAsErrorsNonFlow
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -26,7 +25,7 @@ class SequentialTest(
     private val store = TestStoreBuilder.from<BarCode, Int>(
         scope = testScope,
         cached = true,
-    fetcher = Fetcher.exceptionsAsErrorsNonFlow {
+    fetcher = nonFlowValueFetcher {
         networkCalls++
     }).build(storeType)
 
