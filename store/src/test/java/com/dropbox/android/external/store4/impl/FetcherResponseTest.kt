@@ -5,30 +5,69 @@ import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.android.external.store4.TransformingFetcher
+import com.dropbox.android.external.store4.nonFlowFetcher
 import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.assertThat
+import com.dropbox.android.external.store4.valueFetcher
+import com.google.common.truth.Truth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class TransformingFetcherTest {
-
+class FetcherResponseTest {
     private val testScope = TestCoroutineScope()
+
+    @Test
+    fun `GIVEN a Fetcher that throws an exception in invoke WHEN streaming THEN the exceptions should not be caught`() {
+        val result = kotlin.runCatching {
+            testScope.runBlockingTest {
+                val store = StoreBuilder.from<Int, Int>(
+                    nonFlowFetcher {
+                        throw RuntimeException("don't catch me")
+                    }
+                ).buildWithTestScope()
+
+                val result = store.stream(StoreRequest.fresh(1)).toList()
+                Truth.assertThat(result).isEmpty()
+            }
+        }
+        Truth.assertThat(result.isFailure).isTrue()
+        Truth.assertThat(result.exceptionOrNull()).hasMessageThat().contains(
+            "don't catch me"
+        )
+    }
+
+    @Test
+    fun `GIVEN a Fetcher that emits Error and Data WHEN steaming THEN it can emit value after an error`() {
+        val exception = RuntimeException("first error")
+        testScope.runBlockingTest {
+            val store = StoreBuilder.from<Int, String> { key: Int ->
+                flowOf(
+                    FetcherResult.Error.Exception(exception),
+                    FetcherResult.Data("$key")
+                )
+            }.buildWithTestScope()
+
+            assertThat(store.stream(StoreRequest.fresh(1)))
+                .emitsExactly(
+                    StoreResponse.Loading(ResponseOrigin.Fetcher),
+                    StoreResponse.Error.Exception(exception, ResponseOrigin.Fetcher),
+                    StoreResponse.Data("1", ResponseOrigin.Fetcher)
+                )
+        }
+    }
 
     @Test
     fun `GIVEN transformer WHEN raw value THEN unwrapped value returned AND value is cached`() =
         testScope.runBlockingTest {
-            val fetcher = TransformingFetcher<Int, Int, String>(
-                doFetch = { flowOf(it * it) },
-                doTransform = { flow -> flow.map { FetcherResult.Data("$it") } }
-            )
+            val fetcher = valueFetcher<Int, Int> { flowOf(it * it) }
             val pipeline = StoreBuilder
                 .from(fetcher).buildWithTestScope()
 
@@ -37,7 +76,7 @@ class TransformingFetcherTest {
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
                     ), StoreResponse.Data(
-                        value = "9",
+                        value = 9,
                         origin = ResponseOrigin.Fetcher
                     )
                 )
@@ -45,7 +84,7 @@ class TransformingFetcherTest {
                 pipeline.stream(StoreRequest.cached(3, refresh = false))
             ).emitsExactly(
                 StoreResponse.Data(
-                    value = "9",
+                    value = 9,
                     origin = ResponseOrigin.Cache
                 )
             )
@@ -55,18 +94,15 @@ class TransformingFetcherTest {
     fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             var count = 0
-            val fetcher = TransformingFetcher<Int, Int, String>(
-                doFetch = { flowOf(count++) },
-                doTransform = {
-                    it.map { i: Int ->
-                        if (i > 0) {
-                            FetcherResult.Data("positive($i)")
-                        } else {
-                            FetcherResult.Error.Message<String>("zero")
-                        }
+            val fetcher = { _: Int ->
+                flowOf(count++).map {
+                    if (it > 0) {
+                        FetcherResult.Data(it)
+                    } else {
+                        FetcherResult.Error.Message<Int>("zero")
                     }
                 }
-            )
+            }
             val pipeline = StoreBuilder.from(fetcher)
                 .buildWithTestScope()
 
@@ -85,7 +121,7 @@ class TransformingFetcherTest {
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
                 ), StoreResponse.Data(
-                    value = "positive(1)",
+                    value = 1,
                     origin = ResponseOrigin.Fetcher
                 )
             )
@@ -96,18 +132,15 @@ class TransformingFetcherTest {
         testScope.runBlockingTest {
             val e = Exception()
             var count = 0
-            val fetcher = TransformingFetcher<Int, Int, String>(
-                doFetch = { flowOf(count++) },
-                doTransform = {
-                    it.map { i: Int ->
-                        if (i > 0) {
-                            FetcherResult.Data("$i")
-                        } else {
-                            FetcherResult.Error.Exception<String>(e)
-                        }
+            val fetcher = { _: Int ->
+                flowOf(count++).map {
+                    if (it > 0) {
+                        FetcherResult.Data(it)
+                    } else {
+                        FetcherResult.Error.Exception<Int>(e)
                     }
                 }
-            )
+            }
             val pipeline = StoreBuilder
                 .from(fetcher)
                 .buildWithTestScope()
@@ -127,7 +160,7 @@ class TransformingFetcherTest {
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
                 ), StoreResponse.Data(
-                    value = "1",
+                    value = 1,
                     origin = ResponseOrigin.Fetcher
                 )
             )

@@ -20,17 +20,68 @@ import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import kotlinx.coroutines.flow.Flow
 
 /**
+ *
+ * [SourceOfTruth], as name implies, is the persistence API which [Store] uses to serve values to
+ * the collectors. If provided, [Store] will only return values received from [SourceOfTruth] back
+ * to the collectors.
+ *
+ * In other words, values coming from the [Fetcher] will always be sent to the [SourceOfTruth]
+ * and will be read back via [reader] to be returned to the collector.
+ *
+ * This round-trip ensures the data is consistent across the application in case the [Fetcher] may
+ * not return all fields or return a different class type than the app uses. It is particularly
+ * useful if your application has a local observable database which is directly modified by the app
+ * as Store can observe these changes and update the collectors even before value is synced to the
+ * backend.
+ *
  * Source of truth takes care of making any source (no matter if it has flowing reads or not) into
  * a common flowing API.
  *
  * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
  * for waiting on network update before local modifications are available (via [Store.stream]).
+ *
+ * For maximal flexibility, [writer]'s record type ([Input]] and [reader]'s record type
+ * ([Output]) are not identical. This allows us to read one type of objects from network and
+ * transform them to another type when placing them in local storage.
+ *
+ * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
+ * for waiting on network update before local modifications are available (via [Store.stream]).
+ *
+
  */
 interface SourceOfTruth<Key, Input, Output> {
     val defaultOrigin: ResponseOrigin
+
+    /**
+     * Used by store to Reads records from the source of truth.
+     *
+     * @param key The key to read for.
+     */
     fun reader(key: Key): Flow<Output?>
+
+    /**
+     * Used by [Store] to writes records **coming in from the fetcher (network)** to the source of
+     * truth.
+     *
+     * **Note:** [Store] currently does not support updating the source of truth with local user
+     * updates (i.e writing record of type [Output]). However, any changes in the local database
+     * will still be visible via [Store.stream] APIs as long as you are using a local storage that
+     * supports observability (e.g. Room, SQLDelight, Realm).
+     *
+     * @param key The key to update for.
+     */
     suspend fun write(key: Key, value: Input)
+
+    /**
+     * Used by [Store] to delete records in the source of truth for the give key.
+     *
+     * @param key The key to delete for.
+     */
     suspend fun delete(key: Key)
+
+    /**
+     * Used by [Store] to delete all records in the source of truth.
+     */
     suspend fun deleteAll()
 
     companion object {
@@ -38,7 +89,10 @@ interface SourceOfTruth<Key, Input, Output> {
          * Creates a (non-[Flow]) source of truth that is accessible via [reader], [writer],
          * [delete], and [deleteAll].
          *
-         * @see persister
+         * @param reader function for reading records from the source of truth
+         * @param writer function for writing updates to the backing source of truth
+         * @param delete function for deleting records in the source of truth for the give key
+         * @param deleteAll function for deleting all records in the source of truth
          */
         fun <Key : Any, Input : Any, Output : Any> fromNonFlow(
             reader: suspend (Key) -> Output?,
@@ -53,20 +107,12 @@ interface SourceOfTruth<Key, Input, Output> {
         )
 
         /**
-         * Creates a ([kotlinx.coroutines.flow.Flow]) source of truth that is accessed via [reader], [writer] and [delete].
+         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer] and [delete].
          *
-         * For maximal flexibility, [writer]'s record type ([Output]] and [reader]'s record type
-         * ([NewOutput]) are not identical. This allows us to read one type of objects from network and
-         * transform them to another type when placing them in local storage.
-         *
-         * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
-         * for waiting on network update before local modifications are available (via [Store.stream]).
-         *
-         * @param reader reads records from the source of truth
-         * @param writer writes records **coming in from the fetcher (network)** to the source of truth.
-         * Writing local user updates to the source of truth via [Store] is currently not supported.
-         * @param delete deletes records in the source of truth for the give key
-         * @param deleteAll deletes all records in the source of truth
+         * @param reader function for reading records from the source of truth
+         * @param writer function for writing updates to the backing source of truth
+         * @param delete function for deleting records in the source of truth for the give key
+         * @param deleteAll function for deleting all records in the source of truth
          *
          */
         fun <Key : Any, Input : Any, Output : Any> from(

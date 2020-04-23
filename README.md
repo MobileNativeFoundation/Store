@@ -55,14 +55,15 @@ Let's start by looking at what a fully configured Store looks like. We will then
 
 ```kotlin
 StoreBuilder
-  .fromNonFlow {
-      api.fetchSubreddit(it, "10").data.children.map(::toPosts)
-  }.persister(
-      reader = db.postDao()::loadPosts,
-      writer = db.postDao()::insertPosts,
-      delete = db.postDao()::clearFeed,
-      deleteAll = db.postDao()::clearAllFeeds
-  ).build()
+    .from(
+        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        sourceOfTruth = SourceOfTrue.from(
+            reader = db.postDao()::loadPosts,
+            writer = db.postDao()::insertPosts,
+            delete = db.postDao()::clearFeed,
+            deleteAll = db.postDao()::clearAllFeeds
+        )
+    ).build()
 ```
 
 With the above setup you have:
@@ -75,12 +76,12 @@ And now for the details:
 
 ### Creating a Store
 
-You create a Store using a builder. The only requirement is to include a function that returns a `Flow<ReturnType>` or a `suspend` function that returns a `ReturnType`.
+You create a Store using a builder. The only requirement is to include a `Fetcher` which is just a `typealias` to a  function that returns a `Flow<FetcherResult<ReturnType>>`.
 
 
 ```kotlin
 val store = StoreBuilder
-        .from { articleId -> api.getArticle(articleId) } // api returns Flow<Article>
+        .from(valueFetcher { articleId -> api.getArticle(articleId) }) // api returns Flow<Article>
         .build()
 ```
 
@@ -126,8 +127,8 @@ lifecycleScope.launchWhenStarted {
 
 For convenience, there are `Store.get(key)` and `Store.fresh(key)` extension functions.
 
-* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the persister. An error will be thrown if no value is available in either the `cache` or `persister`, and the `fetcher` fails to load the data from the network.
-* `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher. An error will be thrown if the `fetcher` fails to load the data from the network, regardless of whether any value is available in the `cache` or `persister`.
+* `suspend fun Store.get(key: Key): Value`: This method returns a single value for the given key. If available, it will be returned from the in memory cache or the sourceOfTruth. An error will be thrown if no value is available in either the `cache` or `sourceOfTruth`, and the `fetcher` fails to load the data from the network.
+* `suspend fun Store.fresh(key: Key): Value`: This method returns a single value for the given key that is obtained by querying the fetcher. An error will be thrown if the `fetcher` fails to load the data from the network, regardless of whether any value is available in the `cache` or `sourceOfTruth`.
 
 ```kotlin
 lifecycleScope.launchWhenStarted {
@@ -136,7 +137,7 @@ lifecycleScope.launchWhenStarted {
 }
 ```
 
-The first time you call to `suspend store.get(key)`, the response will be stored in an in-memory cache and in the persister, if provided.
+The first time you call to `suspend store.get(key)`, the response will be stored in an in-memory cache and in the sourceOfTruth, if provided.
 All subsequent calls to `store.get(key)` with the same `Key` will retrieve the cached version of the data, minimizing unnecessary data calls. This prevents your app from fetching fresh data over the network (or from another external data source) in situations when doing so would unnecessarily waste bandwidth and battery. A great use case is any time your views are recreated after a rotation, they will be able to request the cached data from your Store. Having this data available can help you avoid the need to retain this in the view layer.
 
 By default, 100 items will be cached in memory for 24 hours. You may [pass in your own memory policy to override the default policy](#Configuring-In-memory-Cache).
@@ -171,10 +172,10 @@ To prevent duplicate requests for the same data, Store offers an inflight deboun
 
 ### Disk as Cache
 
-Stores can enable disk caching by passing a `Persister` into the builder. Whenever a new network request is made, the Store will first write to the disk cache and then read from the disk cache.
+Stores can enable disk caching by passing a `SourceOfTruth` into the builder. Whenever a new network request is made, the Store will first write to the disk cache and then read from the disk cache.
 
 ### Disk as Single Source of Truth
-Providing `persister` whose `read` function can return a `Flow<Value>` allows you to make Store treat your disk as source of truth.
+Providing `sourceOfTruth` whose `reader` function can return a `Flow<Value?>` allows you to make Store treat your disk as source of truth.
 Any changes made on disk, even if it is not made by Store, will update the active `Store` streams.
 
 This feature, combined with persistence libraries that provide observable queries ([Jetpack Room](https://developer.android.com/jetpack/androidx/releases/room), [SQLDelight](https://github.com/cashapp/sqldelight) or [Realm](https://realm.io/products/realm-database/))
@@ -184,16 +185,18 @@ allows you to create offline first applications that can be used without an acti
 
 ```kotlin
 StoreBuilder
-  .fromNonFlow {
-    api.fetchSubreddit(it, "10").data.children.map(::toPosts)
-  }.persister(
-    reader = db.postDao()::loadPosts,
-    writer = db.postDao()::insertPosts,
-    delete = db.postDao()::clearFeed
-  ).build()
+    .from(
+        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        sourceOfTruth = SourceOfTrue.from(
+            reader = db.postDao()::loadPosts,
+            writer = db.postDao()::insertPosts,
+            delete = db.postDao()::clearFeed,
+            deleteAll = db.postDao()::clearAllFeeds
+        )
+    ).build()
 ```
 
-Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in-memory cache for the “persister” implementation and instead have two levels of in-memory caching--one with inflated and one with deflated models, allowing for sharing of the “persister” cache data between stores.
+Stores don’t care how you’re storing or retrieving your data from disk. As a result, you can use Stores with object storage or any database (Realm, SQLite, CouchDB, Firebase etc). Technically, there is nothing stopping you from implementing an in-memory cache for the "sourceOfTruth" implementation and instead have two levels of in-memory caching--one with inflated and one with deflated models, allowing for sharing of the “sourceOfTruth” cache data between stores.
 
 If using SQLite we recommend working with [Room](https://developer.android.com/topic/libraries/architecture/room) which returns a `Flow` from a query
 
@@ -211,18 +214,19 @@ You can configure in-memory cache with the `MemoryPolicy`:
 
 ```kotlin
 StoreBuilder
-    .fromNonFlow {
-        api.fetchSubreddit(it, "10").data.children.map(::toPosts)
-    }.cachePolicy(
+    .from(
+        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        sourceOfTruth = SourceOfTrue.from(
+            reader = db.postDao()::loadPosts,
+            writer = db.postDao()::insertPosts,
+            delete = db.postDao()::clearFeed,
+            deleteAll = db.postDao()::clearAllFeeds
+        )
+    ).cachePolicy(
         MemoryPolicy.builder()
             .setMemorySize(10)
             .setExpireAfterAccess(10.minutes) // or setExpireAfterWrite(10.minutes)
             .build()
-    ).persister(
-        reader = db.postDao()::loadPosts,
-        writer = db.postDao()::insertPosts,
-        delete = db.postDao()::clearFeed,
-        deleteAll = db.postDao()::clearAllFeeds
     ).build()
 ```
 
@@ -236,7 +240,7 @@ Note that `setExpireAfterAccess` and `setExpireAfterWrite` **cannot** both be se
 
 You can delete a specific entry by key from a store, or clear all entries in a store.
 
-#### Store with no persister
+#### Store with no sourceOfTruth
 
 ```kotlin
 val store = StoreBuilder
@@ -257,29 +261,30 @@ The following will clear all entries from the in-memory cache:
 store.clearAll()
 ```
 
-#### Store with persister
+#### Store with sourceOfTruth
 
-When store has a persister (source of truth), you'll need to provide the `delete` and `deleteAll` functions for `clear(key)` and `clearAll()` to work:
+When store has a sourceOfTruth, you'll need to provide the `delete` and `deleteAll` functions for `clear(key)` and `clearAll()` to work:
 
 ```kotlin
 StoreBuilder
-  .fromNonFlow<String, Int> { key: String ->
-      api.fetchData(key)
-  }.persister(
-      reader = dao::loadData,
-      writer = dao::writeData,
-      delete = dao::clearDataByKey,
-      deleteAll = dao::clearAllData
-  ).build()
+    .from(
+        fetcher = nonFlowValueFetcher { api.fetchData(key) },
+        sourceOfTruth = SourceOfTrue.from(
+            reader = dao::loadData,
+            writer = dao::writeData,
+            delete = dao::clearDataByKey,
+            deleteAll = dao::clearAllData
+        )
+    ).build()
 ```
 
-The following will clear the entry associated with the key from both the in-memory cache and the persister (source of truth):
+The following will clear the entry associated with the key from both the in-memory cache and the sourceOfTruth:
 
 ```kotlin
 store.clear("10")
 ```
 
-The following will clear all entries from both the in-memory cache and the persister (source of truth):
+The following will clear all entries from both the in-memory cache and the sourceOfTruth:
 
 ```kotlin
 store.clearAll()

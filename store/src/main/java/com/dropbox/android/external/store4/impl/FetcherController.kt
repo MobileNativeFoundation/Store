@@ -80,9 +80,6 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                             origin = ResponseOrigin.Fetcher
                         )
                     }
-                // }.catch {
-                //     // Should we remove this?
-                //     emit(StoreResponse.Error.Exception(it, origin = ResponseOrigin.Fetcher))
                 },
                 piggybackingDownstream = enablePiggyback,
                 onEach = { response ->

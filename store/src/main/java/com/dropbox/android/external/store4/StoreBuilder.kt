@@ -20,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
 import kotlin.time.ExperimentalTime
 
 /**
@@ -55,12 +54,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
     companion object {
 
         /**
-         * Creates a new [StoreBuilder] from a [Flow] fetcher.
+         * Creates a new [StoreBuilder] from a [Fetcher].
          *
-         * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
-         * per request protocol.
-         *
-         * @param fetcher a function for fetching a flow of network records.
+         * @param fetcher a [Fetcher] flow of network records.
          */
         @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
@@ -68,10 +64,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
         ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher)
 
         /**
-         * Creates a new [StoreBuilder] from a [Flow] fetcher.
-         *
-         * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
-         * per request protocol.
+         * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
          *
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.

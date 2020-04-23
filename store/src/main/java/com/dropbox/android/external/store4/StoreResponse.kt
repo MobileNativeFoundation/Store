@@ -98,7 +98,7 @@ sealed class StoreResponse<out T> {
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> this as Error<R>
         is Loading -> this as Loading<R>
-        is Data -> throw IllegalStateException("cannot swap type for StoreResponse.Data")
+        is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
     }
 }
 
@@ -122,15 +122,7 @@ enum class ResponseOrigin {
     Fetcher
 }
 
-sealed class FetcherResult<T : Any> {
-    data class Data<T : Any>(val value: T) : FetcherResult<T>()
-    sealed class Error<T : Any> : FetcherResult<T>() {
-        data class Exception<T : Any>(val error: Throwable) : Error<T>()
-        data class Message<T : Any>(val message: String) : Error<T>()
-    }
-}
-
 fun <T> StoreResponse.Error<T>.doThrow(): Nothing = when (this) {
     is StoreResponse.Error.Exception -> throw error
-    is StoreResponse.Error.Message -> throw IllegalStateException(message)
+    is StoreResponse.Error.Message -> throw RuntimeException(message)
 }
