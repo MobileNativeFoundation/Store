@@ -12,6 +12,6 @@ Releasing
  11. Create a PR with these 2 commits.
      * **IMPORTANT** Add this comment to your PR "This is a release PR, it must be merged as individual commits. Do not squash commits on merge"
      * Longer explanation: we release automatically through Travis CI. When Travis builds on master a script is run to send either a new shapshot or a new release version to Maven. If you squash the commits in the PR, Travis will only see what's left at the end, which is your commit to change back to `SNAPSHOT` release. Thus, Travis will not end up sending a release version to Maven. If you land as multiple commits, Travis will build both and send a release build to Maven for the commit where you bumped the version to a new release version.
- 11. Update the sample module to point to the newly released version. (May take 2 hours)
+ 11. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
 
 If step 5 or 6 fails, drop the Sonatype repo, fix the problem, commit, and start again at step 5.

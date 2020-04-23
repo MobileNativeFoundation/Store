@@ -42,7 +42,15 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     }
 }
 
+ext.storeRelease = [
+    version : '4.0.0-alpha05',
+    group   : 'com.dropbox.mobile.store'
+]
+
 dependencies {
+    implementation "${storeRelease.group}:store4:${storeRelease.version}"
+    implementation "${storeRelease.group}:cache4:${storeRelease.version}"
+    implementation "${storeRelease.group}:filesystem4:${storeRelease.version}"
 
     testImplementation libraries.junit
     testImplementation libraries.mockito
@@ -66,9 +74,6 @@ dependencies {
     implementation libraries.retrofitMoshiConverter
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
-    implementation project(':store')
-    implementation project(':cache')
-    implementation project(':filesystem')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 
     implementation libraries.coroutinesCore
