@@ -81,7 +81,7 @@ internal class RealCache<Key : Any, Value : Any>(
      */
     private val loadersSynchronizer = KeyedSynchronizer<Key>()
 
-    private var totalWeight = 0;
+    private val totalWeight = atomic(0)
 
     init {
         // writeQueue is required if write expiry is enabled
