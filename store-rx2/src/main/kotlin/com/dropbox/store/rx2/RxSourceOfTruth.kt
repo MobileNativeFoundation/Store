@@ -10,12 +10,12 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
 
 /**
- * Creates a [Maybe] source of truth that is accessible via [reader], [writer],
- * [delete], and [deleteAll].
+ * Creates a [Maybe] source of truth that is accessible via [reader], [writer], [delete] and
+ * [deleteAll].
  *
  * @param reader function for reading records from the source of truth
  * @param writer function for writing updates to the backing source of truth
- * @param delete function for deleting records in the source of truth for the give key
+ * @param delete function for deleting records in the source of truth for the given key
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
@@ -39,11 +39,12 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
 }
 
 /**
- * Creates a ([Flowable]) source of truth that is accessed via [reader], [writer] and [delete].
+ * Creates a ([Flowable]) source of truth that is accessed via [reader], [writer], [delete] and
+ * [deleteAll].
  *
  * @param reader function for reading records from the source of truth
  * @param writer function for writing updates to the backing source of truth
- * @param delete function for deleting records in the source of truth for the give key
+ * @param delete function for deleting records in the source of truth for the given key
  * @param deleteAll function for deleting all records in the source of truth
  *
  */

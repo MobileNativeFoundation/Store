@@ -50,7 +50,7 @@ class ClearStoreByKeyTest {
             assertThat(store.getData(key))
                 .isEqualTo(
                     Data(
-                        origin = ResponseOrigin.Persister,
+                        origin = ResponseOrigin.SourceOfTruth,
                         value = value
                     )
                 )

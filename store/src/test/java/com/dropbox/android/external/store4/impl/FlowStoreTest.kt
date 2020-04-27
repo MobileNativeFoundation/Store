@@ -135,7 +135,7 @@ class FlowStoreTest {
                 // means cache can go out of sync w/ the persister
                 Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 )
             )
         assertThat(pipeline.stream(StoreRequest.fresh(3)))
@@ -156,7 +156,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 )
             )
     }
@@ -193,7 +193,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Loading(
                     origin = ResponseOrigin.Fetcher
@@ -306,7 +306,7 @@ class FlowStoreTest {
             .emitsExactly(
                 Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Loading(
                     origin = ResponseOrigin.Fetcher
@@ -343,7 +343,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 )
             )
     }
@@ -378,7 +378,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Data(
                     value = "three-1",
@@ -386,7 +386,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-2",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Data(
                     value = "three-2",
@@ -423,14 +423,14 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 )
             )
         assertThat(pipeline.stream(StoreRequest.cached(key = 3, refresh = true)))
             .emitsExactly(
                 Data(
                     value = "local-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Loading(
                     origin = ResponseOrigin.Fetcher
@@ -514,7 +514,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 )
             )
             // trigger another fetch from network
@@ -529,7 +529,7 @@ class FlowStoreTest {
                 ),
                 Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Persister
+                    origin = ResponseOrigin.SourceOfTruth
                 ),
                 Data(
                     value = "three-2",

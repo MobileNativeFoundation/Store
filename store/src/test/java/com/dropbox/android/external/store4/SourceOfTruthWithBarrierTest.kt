@@ -59,7 +59,7 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "a")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(delegate.defaultOrigin, null),
+                DataWithOrigin(ResponseOrigin.SourceOfTruth, null),
                 DataWithOrigin(ResponseOrigin.Fetcher, "a")
             )
         )
@@ -93,7 +93,7 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "b")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(delegate.defaultOrigin, "a"),
+                DataWithOrigin(ResponseOrigin.SourceOfTruth, "a"),
                 DataWithOrigin(ResponseOrigin.Fetcher, "b")
             )
         )

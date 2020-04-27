@@ -74,7 +74,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     )
                                 } else {
                                     DataWithOrigin(
-                                        origin = delegate.defaultOrigin,
+                                        origin = ResponseOrigin.SourceOfTruth,
                                         value = output
                                     )
                                 }

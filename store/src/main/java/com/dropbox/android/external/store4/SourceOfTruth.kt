@@ -47,20 +47,18 @@ import kotlinx.coroutines.flow.Flow
  * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
  * for waiting on network update before local modifications are available (via [Store.stream]).
  *
-
  */
 interface SourceOfTruth<Key, Input, Output> {
-    val defaultOrigin: ResponseOrigin
 
     /**
-     * Used by store to Reads records from the source of truth.
+     * Used by [Store] to read records from the source of truth.
      *
      * @param key The key to read for.
      */
     fun reader(key: Key): Flow<Output?>
 
     /**
-     * Used by [Store] to writes records **coming in from the fetcher (network)** to the source of
+     * Used by [Store] to write records **coming in from the fetcher (network)** to the source of
      * truth.
      *
      * **Note:** [Store] currently does not support updating the source of truth with local user
@@ -73,7 +71,7 @@ interface SourceOfTruth<Key, Input, Output> {
     suspend fun write(key: Key, value: Input)
 
     /**
-     * Used by [Store] to delete records in the source of truth for the give key.
+     * Used by [Store] to delete records in the source of truth for the given key.
      *
      * @param key The key to delete for.
      */
@@ -87,11 +85,11 @@ interface SourceOfTruth<Key, Input, Output> {
     companion object {
         /**
          * Creates a (non-[Flow]) source of truth that is accessible via [reader], [writer],
-         * [delete], and [deleteAll].
+         * [delete] and [deleteAll].
          *
          * @param reader function for reading records from the source of truth
          * @param writer function for writing updates to the backing source of truth
-         * @param delete function for deleting records in the source of truth for the give key
+         * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
         fun <Key : Any, Input : Any, Output : Any> fromNonFlow(
@@ -107,11 +105,12 @@ interface SourceOfTruth<Key, Input, Output> {
         )
 
         /**
-         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer] and [delete].
+         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer], [delete] and
+         * [deleteAll].
          *
          * @param reader function for reading records from the source of truth
          * @param writer function for writing updates to the backing source of truth
-         * @param delete function for deleting records in the source of truth for the give key
+         * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          *
          */

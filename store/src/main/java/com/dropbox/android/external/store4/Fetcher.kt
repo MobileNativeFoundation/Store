@@ -17,29 +17,39 @@ sealed class FetcherResult<T : Any> {
 /**
  * Fetcher is used by [Store] to fetch network records for a given key. The return type is [Flow] to
  * allow for multiple result per request.
- * See [nonFlowFetcher] for easily translating from a regular
- * `suspend` function.
- * See [valueFetcher], [nonFlowValueFetcher] for easily translating to [FetcherResult]
+ *
+ * Note: If Store does not catch exceptions thrown by a [Fetcher]. This is done in order to avoid
+ * silently swallowing NPEs and such. Use [FetcherResult.Error] to communicate expected errors.
+ *
+ * See [nonFlowFetcher] for easily translating from a regular `suspend` function.
+ * See [valueFetcher], [nonFlowValueFetcher] for easily translating to [FetcherResult] (and
+ * automatically transforming exceptions into [FetcherResult.Error].
  */
 typealias Fetcher<Key, Output> = (key: Key) -> Flow<FetcherResult<Output>>
 
 /**
- * "Creates" a [Fetcher] from a [Flow] source.
+ * "Creates" a [Fetcher] from a [flowFactory].
  *
  * Use when creating a [Store] that fetches objects in a multiple responses per request
  * network protocol (e.g Web Sockets).
  *
- * @param doFetch a source of network records.
+ * [Store] does not catch exception thrown in [flowFactory] or in the returned [Flow]. These
+ * exception will be propagated to the caller.
+ *
+ * @param flowFactory a factory for a [Flow]ing source of network records.
  */
 fun <Key : Any, Output : Any> fetcher(
-    doFetch: (Key) -> Flow<FetcherResult<Output>>
-): Fetcher<Key, Output> = doFetch
+    flowFactory: (Key) -> Flow<FetcherResult<Output>>
+): Fetcher<Key, Output> = flowFactory
 
 /**
  * "Creates" a [Fetcher] from a non-[Flow] source.
  *
- * Use when creating a [Store] that fetches objects in a single response per request
- * network protocol (e.g Http).
+ * Use when creating a [Store] that fetches objects in a single response per request network
+ * protocol (e.g Http).
+ *
+ * [Store] does not catch exception thrown in [doFetch]. These exception will be propagated to the
+ * caller.
  *
  * @param doFetch a source of network records.
  */
@@ -48,21 +58,22 @@ fun <Key : Any, Output : Any> nonFlowFetcher(
 ): Fetcher<Key, Output> = doFetch.asFlow()
 
 /**
- * "Creates" a [Fetcher] from a [Flow] source and translate the results to a [FetcherResult].
+ * "Creates" a [Fetcher] from a [flowFactory] and translate the results to a [FetcherResult].
  *
  * Emitted values will be wrapped in [FetcherResult.Data]. if an exception disrupts the flow then
- * it will be wrapped in [FetcherResult.Error]
+ * it will be wrapped in [FetcherResult.Error]. Exceptions thrown in [flowFactory] itself are not
+ * caught and will be returned to the caller.
  *
  * Use when creating a [Store] that fetches objects in a multiple responses per request
  * network protocol (e.g Web Sockets).
  *
- * @param doFetch a source of network records.
+ * @param flowFactory a factory for a [Flow]ing source of network records.
  */
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> valueFetcher(
-    doFetch: (Key) -> Flow<Output>
+    flowFactory: (Key) -> Flow<Output>
 ): Fetcher<Key, Output> = { key: Key ->
-    doFetch(key).map { FetcherResult.Data(it) as FetcherResult<Output> }
+    flowFactory(key).map { FetcherResult.Data(it) as FetcherResult<Output> }
     .catch { th: Throwable ->
         emit(FetcherResult.Error.Exception(th))
     }

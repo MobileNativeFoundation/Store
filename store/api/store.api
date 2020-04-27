@@ -88,7 +88,7 @@ public abstract interface class com/dropbox/android/external/store4/Persister : 
 public final class com/dropbox/android/external/store4/ResponseOrigin : java/lang/Enum {
 	public static final field Cache Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public static final field Fetcher Lcom/dropbox/android/external/store4/ResponseOrigin;
-	public static final field Persister Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public static final field SourceOfTruth Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public static fun valueOf (Ljava/lang/String;)Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public static fun values ()[Lcom/dropbox/android/external/store4/ResponseOrigin;
 }
@@ -97,7 +97,6 @@ public abstract interface class com/dropbox/android/external/store4/SourceOfTrut
 	public static final field Companion Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;
 	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getDefaultOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public abstract fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

@@ -114,7 +114,7 @@ enum class ResponseOrigin {
     /**
      * [StoreResponse] is sent from the persister
      */
-    Persister,
+    SourceOfTruth,
 
     /**
      * [StoreResponse] is sent from a fetcher,

@@ -70,14 +70,14 @@ class ClearAllStoreTest {
             assertThat(store.getData(key1))
                 .isEqualTo(
                     Data(
-                        origin = ResponseOrigin.Persister,
+                        origin = ResponseOrigin.SourceOfTruth,
                         value = value1
                     )
                 )
             assertThat(store.getData(key2))
                 .isEqualTo(
                     Data(
-                        origin = ResponseOrigin.Persister,
+                        origin = ResponseOrigin.SourceOfTruth,
                         value = value2
                     )
                 )

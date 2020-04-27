@@ -1,7 +1,6 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
-import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
@@ -68,7 +67,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 1", ResponseOrigin.Cache),
-                StoreResponse.Data("3 1", ResponseOrigin.Persister)
+                StoreResponse.Data("3 1", ResponseOrigin.SourceOfTruth)
             )
 
         store.observe(StoreRequest.fresh(3))
@@ -84,7 +83,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 2", ResponseOrigin.Cache),
-                StoreResponse.Data("3 2", ResponseOrigin.Persister)
+                StoreResponse.Data("3 2", ResponseOrigin.SourceOfTruth)
             )
     }
 

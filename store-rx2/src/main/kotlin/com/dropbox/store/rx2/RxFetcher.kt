@@ -11,57 +11,71 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.reactive.asFlow
 
 /**
- * Creates a new [Fetcher] from a [Flowable] fetcher.
+ * Creates a new [Fetcher] from a [flowableFactory].
  *
- * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
- * per request protocol.
+ * [Store] does not catch exception thrown in [flowableFactory] or in the returned [Flowable]. These
+ * exception will be propagated to the caller.
  *
- * @param fetcher a function for fetching a flow of network records.
+ * Use when creating a [Store] that fetches objects in a multiple responses per request
+ * network protocol (e.g Web Sockets).
+ *
+ * @param flowableFactory a factory for a [Flowable] source of network records.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> flowableFetcher(
-    fetcher: (key: Key) -> Flowable<FetcherResult<Output>>
-): Fetcher<Key, Output> = { key: Key -> fetcher(key).asFlow() }
+    flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
+): Fetcher<Key, Output> = { key: Key -> flowableFactory(key).asFlow() }
 
 /**
- * Creates a new [Fetcher] from a [Flowable] fetcher.
+ * "Creates" a [Fetcher] from a [singleFactory].
  *
- * Use when creating a [Store] that fetches objects in an websocket-like multiple responses
- * per request protocol.
+ * [Store] does not catch exception thrown in [singleFactory] or in the returned [Single]. These
+ * exception will be propagated to the caller.
  *
- * @param fetcher a function for fetching a flow of network records.
- */
-@FlowPreview
-@ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> flowableValueFetcher(
-    fetcher: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = valueFetcher { key: Key -> fetcher(key).asFlow() }
-
-/**
- * Creates a new [Fetcher] from a [Single] fetcher.
+ * Use when creating a [Store] that fetches objects in a single response per request network
+ * protocol (e.g Http).
  *
- * Use when creating a [Store] that fetches objects from a [Single] source that emits one response
- *
- * @param fetcher a function for fetching a [Single] network response for a [Key]
+ * @param singleFactory a factory for a [Single] source of network records.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> singleFetcher(
-    fetcher: (key: Key) -> Single<FetcherResult<Output>>
-): Fetcher<Key, Output> = { key: Key -> fetcher(key).toFlowable().asFlow() }
+    singleFactory: (key: Key) -> Single<FetcherResult<Output>>
+): Fetcher<Key, Output> = { key: Key -> singleFactory(key).toFlowable().asFlow() }
 
 /**
- * Creates a new [Fetcher] from a [Single] fetcher.
+ * "Creates" a [Fetcher] from a [flowableFactory] and translate the results to a [FetcherResult].
  *
- * Use when creating a [Store] that fetches objects from a [Single] source that emits one response
+ * Emitted values will be wrapped in [FetcherResult.Data]. if an exception disrupts the stream then
+ * it will be wrapped in [FetcherResult.Error]. Exceptions thrown in [flowableFactory] itself are
+ * not caught and will be returned to the caller.
  *
- * @param fetcher a function for fetching a [Single] network response for a [Key]
- * @param fetcherTransformer used to translate your fetcher's return value to success value
- * or error in the case that your fetcher does not communicate errors through exceptions
+ * Use when creating a [Store] that fetches objects in a multiple responses per request
+ * network protocol (e.g Web Sockets).
+ *
+ * @param flowFactory a factory for a [Flowable] source of network records.
+ */
+@FlowPreview
+@ExperimentalCoroutinesApi
+fun <Key : Any, Output : Any> flowableValueFetcher(
+    flowableFactory: (key: Key) -> Flowable<Output>
+): Fetcher<Key, Output> = valueFetcher { key: Key -> flowableFactory(key).asFlow() }
+
+/**
+ * Creates a new [Fetcher] from a [singleFactory] and translate the results to a [FetcherResult].
+ *
+ * The emitted value will be wrapped in [FetcherResult.Data]. if an exception is returned then
+ * it will be wrapped in [FetcherResult.Error]. Exceptions thrown in [singleFactory] itself are
+ * not caught and will be returned to the caller.
+ *
+ * Use when creating a [Store] that fetches objects in a single response per request network
+ * protocol (e.g Http).
+ *
+ * @param singleFactory a factory for a [Single] source of network records.
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> singleValueFetcher(
-    fetcher: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> fetcher(key).toFlowable() }
+    singleFactory: (key: Key) -> Single<Output>
+): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> singleFactory(key).toFlowable() }
