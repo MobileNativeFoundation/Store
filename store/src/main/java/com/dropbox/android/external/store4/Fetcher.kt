@@ -18,7 +18,7 @@ sealed class FetcherResult<T : Any> {
  * Fetcher is used by [Store] to fetch network records for a given key. The return type is [Flow] to
  * allow for multiple result per request.
  *
- * Note: If Store does not catch exceptions thrown by a [Fetcher]. This is done in order to avoid
+ * Note: Store does not catch exceptions thrown by a [Fetcher]. This is done in order to avoid
  * silently swallowing NPEs and such. Use [FetcherResult.Error] to communicate expected errors.
  *
  * See [nonFlowFetcher] for easily translating from a regular `suspend` function.
