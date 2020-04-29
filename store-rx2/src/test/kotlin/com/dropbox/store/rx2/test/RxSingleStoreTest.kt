@@ -1,16 +1,18 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx2.fromSingle
+import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.store.rx2.fromMaybe
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
 import com.dropbox.store.rx2.observeClearAll
+import com.dropbox.store.rx2.singleFetcher
 import com.dropbox.store.rx2.withScheduler
-import com.dropbox.store.rx2.withSinglePersister
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -28,28 +30,25 @@ import java.util.concurrent.atomic.AtomicInteger
 @ExperimentalCoroutinesApi
 class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
-    private var fakeDisk = mutableMapOf<Int, String?>()
+    private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.fromSingle<Int, String> { Single.fromCallable { "$it ${atomicInteger.incrementAndGet()}" } }
-            .withSinglePersister(
-                reader = {
-                    if (fakeDisk[it] != null)
-                        Maybe.fromCallable { fakeDisk[it]!! }
-                    else
-                        Maybe.empty()
-                },
+        StoreBuilder.from<Int, String, String>(
+            fetcher = singleFetcher {
+                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
+            },
+            sourceOfTruth = SourceOfTruth.fromMaybe(
+                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
                 writer = { key, value ->
-                    Single.fromCallable { fakeDisk[key] = value }
+                    Completable.fromAction { fakeDisk[key] = value }
                 },
                 delete = { key ->
-                    fakeDisk[key] = null
-                    Completable.complete()
+                    Completable.fromAction { fakeDisk.remove(key) }
                 },
                 deleteAll = {
-                    fakeDisk.clear()
-                    Completable.complete()
+                    Completable.fromAction { fakeDisk.clear() }
                 }
             )
+        )
             .withScheduler(Schedulers.trampoline())
             .build()
 
@@ -68,7 +67,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 1", ResponseOrigin.Cache),
-                StoreResponse.Data("3 1", ResponseOrigin.Persister)
+                StoreResponse.Data("3 1", ResponseOrigin.SourceOfTruth)
             )
 
         store.observe(StoreRequest.fresh(3))
@@ -84,7 +83,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 2", ResponseOrigin.Cache),
-                StoreResponse.Data("3 2", ResponseOrigin.Persister)
+                StoreResponse.Data("3 2", ResponseOrigin.SourceOfTruth)
             )
     }
 

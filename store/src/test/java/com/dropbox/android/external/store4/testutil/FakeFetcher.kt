@@ -15,19 +15,40 @@
  */
 package com.dropbox.android.external.store4.testutil
 
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 
-class FakeFetcher<Key, Output>(
-    vararg val responses: Pair<Key, Output>
-) {
+class FakeFetcher<Key : Any, Output : Any>(
+    private vararg val responses: Pair<Key, Output>
+) : Fetcher<Key, Output> {
     private var index = 0
-    @Suppress("RedundantSuspendModifier") // needed for function reference
-    suspend fun fetch(key: Key): Output {
+    override operator fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }
         val pair = responses[index++]
         assertThat(pair.first).isEqualTo(key)
-        return pair.second
+        return flowOf(FetcherResult.Data(pair.second))
+    }
+}
+
+class FakeFlowingFetcher<Key : Any, Output : Any>(
+    private vararg val responses: Pair<Key, Output>
+) : Fetcher<Key, Output> {
+    override operator fun invoke(key: Key) = flow {
+        responses.filter {
+            it.first == key
+        }.forEach {
+            // we delay here to avoid collapsing fetcher values, otherwise, there is a
+            // possibility that consumer won't be fast enough to get both values before new
+            // value overrides the previous one.
+            delay(1)
+            emit(FetcherResult.Data(it.second))
+        }
     }
 }

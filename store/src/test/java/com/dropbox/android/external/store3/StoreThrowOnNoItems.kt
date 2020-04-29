@@ -25,7 +25,7 @@ class StoreThrowOnNoItems(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: Fetcher<String, BarCode> = mock()
+    private val fetcher: Fetcher<BarCode, String> = mock()
     private var persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
 

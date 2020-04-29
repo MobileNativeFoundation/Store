@@ -1,9 +1,11 @@
 package com.dropbox.android.external.store4.testutil
 
+import com.dropbox.android.external.store4.SourceOfTruth
+
 /**
  * An in-memory non-flowing persister for testing.
  */
-class InMemoryPersister<Key, Output> {
+class InMemoryPersister<Key : Any, Output : Any> {
     private val data = mutableMapOf<Key, Output>()
 
     @Suppress("RedundantSuspendModifier") // for function reference
@@ -28,3 +30,11 @@ class InMemoryPersister<Key, Output> {
         return data[key]
     }
 }
+
+fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asSourceOfTruth() =
+    SourceOfTruth.fromNonFlow(
+        reader = ::read,
+        writer = ::write,
+        delete = ::deleteByKey,
+        deleteAll = ::deleteAll
+    )
