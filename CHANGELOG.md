@@ -3,6 +3,17 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-alpha06 *(2020-04-29)*
+----------------------------
+**Major API change!** (#123)
+
+This release introduces a major change to `StoreBuilder`'s API. This should be the LAST major API change to store before we'll move to beta.
+* The typealias `Fetcher` was added to standardize the input type for a `StoreBuilder`
+* `SourceOfTruth` in now a top level interface and part of `Store`'s public API
+* `StoreBuilder` can now only be created using a `Fetcher` and optionally a `SourceOfTruth`
+* All the overloads for creating a `StoreBuilder` were moved to `Fetcher` and `SourceOfTruth` as appropriate.
+* Rx artifacts were updated accordingly to match main artifacts.
+
 Version 4.0.0-alpha05 *(2020-04-03)*
 ----------------------------
 
