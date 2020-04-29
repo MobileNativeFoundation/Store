@@ -2,12 +2,13 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.dropbox.android.external.store4.nonFlowValueFetcher
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -23,10 +24,10 @@ class SequentialTest(
     var networkCalls = 0
     private val store = TestStoreBuilder.from<BarCode, Int>(
         scope = testScope,
-        cached = true
-    ) {
+        cached = true,
+    fetcher = nonFlowValueFetcher {
         networkCalls++
-    }.build(storeType)
+    }).build(storeType)
 
     @Test
     fun sequentially() = testScope.runBlockingTest {

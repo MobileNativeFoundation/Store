@@ -41,8 +41,17 @@ sealed class StoreResponse<out T> {
     /**
      * Error dispatched by a pipeline
      */
-    data class Error<T>(val error: Throwable, override val origin: ResponseOrigin) :
-        StoreResponse<T>()
+    sealed class Error<T> : StoreResponse<T>() {
+        data class Exception<T>(
+            val error: Throwable,
+            override val origin: ResponseOrigin
+        ) : Error<T>()
+
+        data class Message<T>(
+            val message: String,
+            override val origin: ResponseOrigin
+        ) : Error<T>()
+    }
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
@@ -50,7 +59,7 @@ sealed class StoreResponse<out T> {
     fun requireData(): T {
         return when (this) {
             is Data -> value
-            is Error -> throw error
+            is Error -> this.doThrow()
             else -> throw NullPointerException("there is no data in $this")
         }
     }
@@ -61,7 +70,7 @@ sealed class StoreResponse<out T> {
      */
     fun throwIfError() {
         if (this is Error) {
-            throw error
+            this.doThrow()
         }
     }
 
@@ -69,8 +78,12 @@ sealed class StoreResponse<out T> {
      * If this [StoreResponse] is of type [StoreResponse.Error], returns the available error
      * from it. Otherwise, returns `null`.
      */
-    fun errorOrNull(): Throwable? {
-        return (this as? Error)?.error
+    fun errorMessageOrNull(): String? {
+        return when (this) {
+            is Error.Message -> message
+            is Error.Exception -> error.localizedMessage ?: "exception: ${error.javaClass}"
+            else -> null
+        }
     }
 
     /**
@@ -81,10 +94,11 @@ sealed class StoreResponse<out T> {
         else -> null
     }
 
+    @Suppress("UNCHECKED_CAST")
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
-        is Error -> Error(error, origin)
-        is Loading -> Loading(origin)
-        is Data -> throw IllegalStateException("cannot swap type for StoreResponse.Data")
+        is Error -> this as Error<R>
+        is Loading -> this as Loading<R>
+        is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
     }
 }
 
@@ -96,12 +110,19 @@ enum class ResponseOrigin {
      * [StoreResponse] is sent from the cache
      */
     Cache,
+
     /**
      * [StoreResponse] is sent from the persister
      */
-    Persister,
+    SourceOfTruth,
+
     /**
      * [StoreResponse] is sent from a fetcher,
      */
     Fetcher
+}
+
+fun <T> StoreResponse.Error<T>.doThrow(): Nothing = when (this) {
+    is StoreResponse.Error.Exception -> throw error
+    is StoreResponse.Error.Message -> throw RuntimeException(message)
 }

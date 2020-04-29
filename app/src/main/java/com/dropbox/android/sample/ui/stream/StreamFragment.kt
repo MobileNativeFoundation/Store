@@ -10,6 +10,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
+import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.sample.R
 import kotlinx.android.synthetic.main.fragment_stream.*
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +51,9 @@ class StreamFragment : Fragment(), CoroutineScope {
         var counter = 0
 
         val store = StoreBuilder
-            .fromNonFlow { key: Int -> (key * 1000 + counter++).also { delay(1_000) } }
+            .from(nonFlowValueFetcher { key: Int ->
+                (key * 1000 + counter++).also { delay(1_000) }
+            })
             .cachePolicy(
                 MemoryPolicy
                     .builder()

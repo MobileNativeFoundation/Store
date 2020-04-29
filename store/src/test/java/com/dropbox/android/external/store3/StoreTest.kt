@@ -2,6 +2,7 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
@@ -9,7 +10,6 @@ import com.dropbox.android.external.store4.legacy.BarCode
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
@@ -18,6 +18,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.fail
@@ -37,7 +38,7 @@ class StoreTest(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: Fetcher<String, BarCode> = mock()
+    private val fetcher: Fetcher<BarCode, String> = mock()
     private var persister: Persister<String, BarCode> = mock()
     private val barCode = BarCode("key", "value")
 
@@ -50,7 +51,7 @@ class StoreTest(
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode))
-            .thenReturn(NETWORK)
+            .thenReturn(flowOf(FetcherResult.Data(NETWORK)))
 
         whenever(persister.read(barCode))
             .thenReturn(null)
@@ -77,9 +78,9 @@ class StoreTest(
         whenever(fetcher.invoke(barCode))
             .thenAnswer {
                 if (counter.incrementAndGet() == 1) {
-                    NETWORK
+                    flowOf(FetcherResult.Data(NETWORK))
                 } else {
-                    throw RuntimeException("Yo Dawg your inflight is broken")
+                    flowOf(FetcherResult.Error.Message<String>("Yo Dawg your inflight is broken"))
                 }
             }
 
@@ -109,7 +110,7 @@ class StoreTest(
         simpleStore.clear(barCode)
 
         whenever(fetcher.invoke(barCode))
-            .thenReturn(NETWORK)
+            .thenReturn(flowOf(FetcherResult.Data(NETWORK)))
 
         whenever(persister.read(barCode))
             .thenReturn(null)
@@ -146,7 +147,8 @@ class StoreTest(
             persister = persister
         ).build(storeType)
 
-        whenever(fetcher.invoke(barCode)) doThrow RuntimeException(ERROR)
+        whenever(fetcher.invoke(barCode)) doReturn
+            flowOf(FetcherResult.Error.Message(ERROR))
 
         whenever(persister.read(barCode)) doReturn DISK
 

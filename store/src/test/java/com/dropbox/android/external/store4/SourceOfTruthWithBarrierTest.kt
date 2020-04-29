@@ -17,7 +17,6 @@ package com.dropbox.android.external.store4
 
 import com.dropbox.android.external.store4.impl.DataWithOrigin
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
-import com.dropbox.android.external.store4.impl.SourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.google.common.truth.Truth.assertThat
@@ -60,7 +59,7 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "a")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(delegate.defaultOrigin, null),
+                DataWithOrigin(ResponseOrigin.SourceOfTruth, null),
                 DataWithOrigin(ResponseOrigin.Fetcher, "a")
             )
         )
@@ -94,7 +93,7 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "b")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(delegate.defaultOrigin, "a"),
+                DataWithOrigin(ResponseOrigin.SourceOfTruth, "a"),
                 DataWithOrigin(ResponseOrigin.Fetcher, "b")
             )
         )

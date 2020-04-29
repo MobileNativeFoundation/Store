@@ -15,14 +15,16 @@
  */
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -37,7 +39,7 @@ import kotlinx.coroutines.flow.map
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class FetcherController<Key, Input, Output>(
+internal class FetcherController<Key : Any, Input : Any, Output : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher
      */
@@ -45,7 +47,7 @@ internal class FetcherController<Key, Input, Output>(
     /**
      * The function that provides the actualy fetcher flow when needed
      */
-    private val realFetcher: (Key) -> Flow<Input>,
+    private val realFetcher: Fetcher<Key, Input>,
     /**
      * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
      * no [SourceOfTruth] is available.
@@ -64,12 +66,20 @@ internal class FetcherController<Key, Input, Output>(
                 scope = scope,
                 bufferSize = 0,
                 source = flow { emitAll(realFetcher(key)) }.map {
-                    StoreResponse.Data(
-                        it,
-                        origin = ResponseOrigin.Fetcher
-                    ) as StoreResponse<Input>
-                }.catch {
-                    emit(StoreResponse.Error(it, origin = ResponseOrigin.Fetcher))
+                    when (it) {
+                        is FetcherResult.Data -> StoreResponse.Data(
+                            it.value,
+                            origin = ResponseOrigin.Fetcher
+                        ) as StoreResponse<Input>
+                        is FetcherResult.Error.Message -> StoreResponse.Error.Message(
+                            it.message,
+                            origin = ResponseOrigin.Fetcher
+                        )
+                        is FetcherResult.Error.Exception -> StoreResponse.Error.Exception(
+                            it.error,
+                            origin = ResponseOrigin.Fetcher
+                        )
+                    }
                 },
                 piggybackingDownstream = enablePiggyback,
                 onEach = { response ->

@@ -1,5 +1,7 @@
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -21,6 +23,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class HotFlowStoreTest {
     private val testScope = TestCoroutineScope()
+
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
         testScope.runBlockingTest {
@@ -28,7 +31,8 @@ class HotFlowStoreTest {
                 3 to "three-1",
                 3 to "three-2"
             )
-            val pipeline = StoreBuilder.from<Int, String> { fetcher.fetch(it) }
+            val pipeline = StoreBuilder
+                .from(fetcher)
                 .scope(testScope)
                 .build()
 
@@ -63,17 +67,18 @@ class HotFlowStoreTest {
         }
 }
 
-class FakeFlowFetcher<Key, Output>(
+class FakeFlowFetcher<Key : Any, Output : Any>(
     vararg val responses: Pair<Key, Output>
-) {
+) : Fetcher<Key, Output> {
     private var index = 0
+
     @Suppress("RedundantSuspendModifier") // needed for function reference
-    fun fetch(key: Key): Flow<Output> {
+    override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }
         val pair = responses[index++]
         assertThat(pair.first).isEqualTo(key)
-        return flowOf(pair.second)
+        return flowOf(FetcherResult.Data(pair.second))
     }
 }

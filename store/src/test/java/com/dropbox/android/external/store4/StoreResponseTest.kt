@@ -3,6 +3,7 @@ package com.dropbox.android.external.store4
 import com.dropbox.android.external.store4.ResponseOrigin.Fetcher
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import java.io.IOException
 
 class StoreResponseTest {
 
@@ -14,23 +15,34 @@ class StoreResponseTest {
         StoreResponse.Loading<Any>(Fetcher).requireData()
     }
 
+    @Test(expected = IOException::class)
+    fun throwIfErrorException() {
+        StoreResponse.Error.Exception<Any>(IOException(), Fetcher).throwIfError()
+    }
+
     @Test(expected = RuntimeException::class)
-    fun throwIfError() {
-        StoreResponse.Error<Any>(RuntimeException(), Fetcher).throwIfError()
+    fun throwIfErrorMessage() {
+        StoreResponse.Error.Message<Any>("test error", Fetcher).throwIfError()
     }
 
     @Test()
-    fun errorOrNull() {
+    fun errorMessageOrNull() {
         assertThat(
-            StoreResponse.Error<Any>(
-                RuntimeException(),
+            StoreResponse.Error.Exception<Any>(
+                IOException(),
                 Fetcher
-            ).errorOrNull()
-        ).isInstanceOf(RuntimeException::class.java)
-        assertThat(StoreResponse.Loading<Any>(Fetcher).errorOrNull()).isNull()
+            ).errorMessageOrNull()
+        ).contains(IOException::class.java.toString())
+        assertThat(
+            StoreResponse.Error.Message<Any>(
+                "test error message",
+                Fetcher
+            ).errorMessageOrNull()
+        ).isEqualTo("test error message")
+        assertThat(StoreResponse.Loading<Any>(Fetcher).errorMessageOrNull()).isNull()
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test(expected = RuntimeException::class)
     fun swapType() {
         StoreResponse.Data("Foo", Fetcher).swapType<String>()
     }
