@@ -1,6 +1,5 @@
 package com.dropbox.android.external.store4
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -69,7 +68,6 @@ fun <Key : Any, Output : Any> nonFlowFetcher(
  *
  * @param flowFactory a factory for a [Flow]ing source of network records.
  */
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> valueFetcher(
     flowFactory: (Key) -> Flow<Output>
 ): Fetcher<Key, Output> = { key: Key ->
@@ -90,7 +88,6 @@ fun <Key : Any, Output : Any> valueFetcher(
  *
  * @param doFetch a source of network records.
  */
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> nonFlowValueFetcher(
     doFetch: suspend (key: Key) -> Output
 ): Fetcher<Key, Output> = valueFetcher(doFetch.asFlow())
