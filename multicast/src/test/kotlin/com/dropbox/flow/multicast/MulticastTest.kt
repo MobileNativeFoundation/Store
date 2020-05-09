@@ -17,7 +17,6 @@ package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -40,11 +39,10 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
-@FlowPreview
 @ExperimentalCoroutinesApi
 class MulticastTest {
     private val testScope = TestCoroutineScope()

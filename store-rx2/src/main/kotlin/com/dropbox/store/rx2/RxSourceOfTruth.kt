@@ -4,8 +4,6 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx2.await
 
@@ -19,8 +17,6 @@ import kotlinx.coroutines.rx2.await
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
     reader: (Key) -> Maybe<Output>,
     writer: (Key, Input) -> Completable,
@@ -48,8 +44,6 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowable(
     reader: (Key) -> Flowable<Output>,
     writer: (Key, Input) -> Completable,

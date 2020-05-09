@@ -6,8 +6,6 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.valueFetcher
 import io.reactivex.Flowable
 import io.reactivex.Single
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.reactive.asFlow
 
 /**
@@ -21,8 +19,6 @@ import kotlinx.coroutines.reactive.asFlow
  *
  * @param flowableFactory a factory for a [Flowable] source of network records.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> flowableFetcher(
     flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
 ): Fetcher<Key, Output> = { key: Key -> flowableFactory(key).asFlow() }
@@ -38,8 +34,6 @@ fun <Key : Any, Output : Any> flowableFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> singleFetcher(
     singleFactory: (key: Key) -> Single<FetcherResult<Output>>
 ): Fetcher<Key, Output> = { key: Key -> singleFactory(key).toFlowable().asFlow() }
@@ -56,8 +50,6 @@ fun <Key : Any, Output : Any> singleFetcher(
  *
  * @param flowFactory a factory for a [Flowable] source of network records.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> flowableValueFetcher(
     flowableFactory: (key: Key) -> Flowable<Output>
 ): Fetcher<Key, Output> = valueFetcher { key: Key -> flowableFactory(key).asFlow() }
@@ -74,8 +66,6 @@ fun <Key : Any, Output : Any> flowableValueFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> singleValueFetcher(
     singleFactory: (key: Key) -> Single<Output>
 ): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> singleFactory(key).toFlowable() }

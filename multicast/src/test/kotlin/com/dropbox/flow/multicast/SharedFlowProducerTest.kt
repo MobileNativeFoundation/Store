@@ -23,11 +23,11 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalStdlibApi::class)
+@ExperimentalCoroutinesApi
 class SharedFlowProducerTest {
     private val scope = TestCoroutineScope()
     private val upstreamMessages = mutableListOf<String>()
-    private fun createProducer(flow: Flow<String>) = SharedFlowProducer<String>(
+    private fun createProducer(flow: Flow<String>) = SharedFlowProducer(
         scope = scope,
         src = flow,
         sendUpsteamMessage = {
