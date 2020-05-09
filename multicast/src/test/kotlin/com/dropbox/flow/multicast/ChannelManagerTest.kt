@@ -17,7 +17,6 @@ package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -31,12 +30,11 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import kotlin.test.Test
 
-@FlowPreview
 @ExperimentalCoroutinesApi
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()

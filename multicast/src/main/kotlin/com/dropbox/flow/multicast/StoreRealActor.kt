@@ -18,7 +18,6 @@ package com.dropbox.flow.multicast
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
@@ -28,7 +27,6 @@ import kotlinx.coroutines.channels.actor
  * It also enforces a 0 capacity buffer.
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
-@ExperimentalCoroutinesApi
 internal abstract class StoreRealActor<T>(
     scope: CoroutineScope
 ) {
