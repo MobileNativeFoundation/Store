@@ -1,9 +1,9 @@
 package com.dropbox.android.external.store3
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
-import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -23,7 +23,7 @@ class NoNetworkTest(
     private val testScope = TestCoroutineScope()
     private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(
         testScope,
-        fetcher = nonFlowValueFetcher {
+        fetcher = Fetcher.fromNonFlowValueFetcher {
             throw EXCEPTION
         }).build(storeType)
 

@@ -1,6 +1,7 @@
 package com.dropbox.store.rx2.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
@@ -33,7 +34,7 @@ class RxSingleStoreTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = singleFetcher {
+            fetcher = Fetcher.singleFetcher {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },
             sourceOfTruth = SourceOfTruth.fromMaybe(
@@ -58,7 +59,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
 
@@ -74,7 +75,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 2", ResponseOrigin.Fetcher)
             )
 
@@ -97,7 +98,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
     }
@@ -113,7 +114,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
 
@@ -121,7 +122,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("4 2", ResponseOrigin.Fetcher)
             )
     }

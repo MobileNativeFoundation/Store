@@ -1,5 +1,6 @@
 package com.dropbox.store.rx2.test
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
@@ -30,7 +31,7 @@ class RxFlowableStoreTest {
     private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            flowableFetcher {
+            Fetcher.flowableFetcher {
                 Flowable.create({ emitter ->
                     emitter.onNext(
                         FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
@@ -64,12 +65,12 @@ class RxFlowableStoreTest {
         testSubscriber
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        testSubscriber = TestSubscriber()
         store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
             .subscribe(testSubscriber)
@@ -81,7 +82,7 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.SourceOfTruth)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        testSubscriber = TestSubscriber()
         store.observe(StoreRequest.fresh(3))
             .subscribeOn(testScheduler)
             .subscribe(testSubscriber)
@@ -89,12 +90,12 @@ class RxFlowableStoreTest {
         testSubscriber
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 3 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        testSubscriber = TestSubscriber()
         store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
             .subscribe(testSubscriber)

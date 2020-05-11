@@ -30,7 +30,7 @@ class HotRxSingleStoreTest {
                 3 to FetcherResult.Data("three-1"),
                 3 to FetcherResult.Data("three-2")
             )
-            val pipeline = StoreBuilder.from(singleFetcher<Int, String> { fetcher.fetch(it) })
+            val pipeline = StoreBuilder.from(Fetcher.singleFetcher<Int, String> { fetcher.fetch(it) })
                 .scope(testScope)
                 .build()
 
