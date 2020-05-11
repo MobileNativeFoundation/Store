@@ -18,7 +18,7 @@ import kotlinx.coroutines.reactive.asFlow
  *
  * @param flowableFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.flowableFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowableFetcher(
     flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
 ): Fetcher<Key, Output> = Fetcher.from { key: Key -> flowableFactory(key).asFlow() }
 
@@ -33,7 +33,7 @@ fun <Key : Any, Output : Any> Fetcher.Companion.flowableFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.singleFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.fromSingleFetcher(
     singleFactory: (key: Key) -> Single<FetcherResult<Output>>
 ): Fetcher<Key, Output> = Fetcher.from { key: Key -> singleFactory(key).toFlowable().asFlow() }
 
@@ -49,7 +49,7 @@ fun <Key : Any, Output : Any> Fetcher.Companion.singleFetcher(
  *
  * @param flowFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.flowableValueFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowableValueFetcher(
     flowableFactory: (key: Key) -> Flowable<Output>
 ): Fetcher<Key, Output> = Fetcher.fromValueFetcher { key: Key -> flowableFactory(key).asFlow() }
 
@@ -65,6 +65,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.flowableValueFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.singleValueFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.fromSingleValueFetcher(
     singleFactory: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> singleFactory(key).toFlowable() }
+): Fetcher<Key, Output> = fromFlowableValueFetcher { key: Key -> singleFactory(key).toFlowable() }

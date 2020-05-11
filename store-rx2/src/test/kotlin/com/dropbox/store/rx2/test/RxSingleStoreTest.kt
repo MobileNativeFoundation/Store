@@ -12,7 +12,7 @@ import com.dropbox.store.rx2.fromMaybe
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
 import com.dropbox.store.rx2.observeClearAll
-import com.dropbox.store.rx2.singleFetcher
+import com.dropbox.store.rx2.fromSingleFetcher
 import com.dropbox.store.rx2.withScheduler
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -34,7 +34,7 @@ class RxSingleStoreTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = Fetcher.singleFetcher {
+            fetcher = Fetcher.fromSingleFetcher {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },
             sourceOfTruth = SourceOfTruth.fromMaybe(
