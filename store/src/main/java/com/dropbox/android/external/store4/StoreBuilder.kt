@@ -47,7 +47,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
     fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
 
     /**
-     * by default a Store caches in memory with a default policy of max items = 16
+     * by default a Store caches in memory with a default policy of max items = 100
      */
     fun disableCache(): StoreBuilder<Key, Output>
 
