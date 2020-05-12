@@ -72,7 +72,7 @@ class FakeFlowFetcher<Key : Any, Output : Any>(
 ) : Fetcher<Key, Output> {
     private var index = 0
 
-    override fun fetch(key: Key): Flow<FetcherResult<Output>> {
+    override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }

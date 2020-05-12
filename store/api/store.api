@@ -11,7 +11,6 @@ public abstract interface annotation class com/dropbox/android/external/store4/E
 
 public abstract interface class com/dropbox/android/external/store4/Fetcher {
 	public static final field Companion Lcom/dropbox/android/external/store4/Fetcher$Companion;
-	public abstract fun fetch (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun invoke (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
@@ -20,10 +19,6 @@ public final class com/dropbox/android/external/store4/Fetcher$Companion {
 	public final fun fromFetcherResult (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
 	public final fun fromFetcherResultStream (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
 	public final fun fromStream (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
-}
-
-public final class com/dropbox/android/external/store4/Fetcher$DefaultImpls {
-	public static fun invoke (Lcom/dropbox/android/external/store4/Fetcher;Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract class com/dropbox/android/external/store4/FetcherResult {

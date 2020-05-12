@@ -28,13 +28,10 @@ sealed class FetcherResult<T : Any> {
  * automatically transforming exceptions into [FetcherResult.Error].
  */
 interface Fetcher<Key, Output : Any> {
+    operator fun invoke(key: Key): Flow<FetcherResult<Output>>
     /**
      * Returns a flow of the item represented by the given [key].
      */
-    fun fetch(key: Key): Flow<FetcherResult<Output>>
-
-    operator fun invoke(key: Key) = fetch(key)
-
     companion object {
         /**
          * "Creates" a [Fetcher] from a [flowFactory].
@@ -111,7 +108,7 @@ interface Fetcher<Key, Output : Any> {
         private class FactoryFetcher<Key, Output : Any>(
             private val factory: (Key) -> Flow<FetcherResult<Output>>
         ) : Fetcher<Key, Output> {
-            override fun fetch(key: Key): Flow<FetcherResult<Output>> = factory(key)
+            override fun invoke(key: Key): Flow<FetcherResult<Output>> = factory(key)
         }
     }
 }
