@@ -46,7 +46,7 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from(
-                Fetcher.fromNonFlowValueFetcher { key: String ->
+                Fetcher.from { key: String ->
                     provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
                 },
                 sourceOfTruth = SourceOfTruth.from(
@@ -63,7 +63,7 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
-                Fetcher.fromNonFlowValueFetcher { (query, config) ->
+                Fetcher.from { (query, config) ->
                     provideRetrofit().fetchSubreddit(query, config.limit)
                         .data.children.map(::toPosts)
                 },
@@ -99,7 +99,7 @@ object Graph {
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
-                Fetcher.fromNonFlowValueFetcher {
+                Fetcher.from {
                     delay(500)
                     RedditConfig(10)
                 },

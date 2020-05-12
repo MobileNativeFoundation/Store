@@ -16,10 +16,10 @@ public abstract interface class com/dropbox/android/external/store4/Fetcher {
 }
 
 public final class com/dropbox/android/external/store4/Fetcher$Companion {
-	public final fun from (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
-	public final fun fromNonFlowFetcher (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
-	public final fun fromNonFlowValueFetcher (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
-	public final fun fromValueFetcher (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun from (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun fromFetcherResult (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun fromFetcherResultStream (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public final fun fromStream (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
 }
 
 public final class com/dropbox/android/external/store4/Fetcher$DefaultImpls {

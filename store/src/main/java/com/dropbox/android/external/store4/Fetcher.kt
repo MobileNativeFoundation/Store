@@ -1,8 +1,8 @@
 package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.Fetcher.Companion.fromNonFlowFetcher
-import com.dropbox.android.external.store4.Fetcher.Companion.fromNonFlowValueFetcher
-import com.dropbox.android.external.store4.Fetcher.Companion.fromValueFetcher
+import com.dropbox.android.external.store4.Fetcher.Companion.fromFetcherResult
+import com.dropbox.android.external.store4.Fetcher.Companion.from
+import com.dropbox.android.external.store4.Fetcher.Companion.fromStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -23,8 +23,8 @@ sealed class FetcherResult<T : Any> {
  * Note: Store does not catch exceptions thrown by a [Fetcher]. This is done in order to avoid
  * silently swallowing NPEs and such. Use [FetcherResult.Error] to communicate expected errors.
  *
- * See [fromNonFlowFetcher] for easily translating from a regular `suspend` function.
- * See [fromValueFetcher], [fromNonFlowValueFetcher] for easily translating to [FetcherResult] (and
+ * See [fromFetcherResult] for easily translating from a regular `suspend` function.
+ * See [fromStream], [from] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error].
  */
 interface Fetcher<Key, Output : Any> {
@@ -47,7 +47,7 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Output : Any> from(
+        fun <Key : Any, Output : Any> fromFetcherResultStream(
             flowFactory: (Key) -> Flow<FetcherResult<Output>>
         ): Fetcher<Key, Output> = FactoryFetcher(flowFactory)
 
@@ -62,7 +62,7 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param doFetch a source of network records.
          */
-        fun <Key : Any, Output : Any> fromNonFlowFetcher(
+        fun <Key : Any, Output : Any> fromFetcherResult(
             doFetch: suspend (Key) -> FetcherResult<Output>
         ): Fetcher<Key, Output> = FactoryFetcher(doFetch.asFlow())
 
@@ -78,7 +78,7 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Output : Any> fromValueFetcher(
+        fun <Key : Any, Output : Any> fromStream(
             flowFactory: (Key) -> Flow<Output>
         ): Fetcher<Key, Output> = FactoryFetcher { key: Key ->
             flowFactory(key).map { FetcherResult.Data(it) as FetcherResult<Output> }
@@ -98,9 +98,9 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param doFetch a source of network records.
          */
-        fun <Key : Any, Output : Any> fromNonFlowValueFetcher(
+        fun <Key : Any, Output : Any> from(
             doFetch: suspend (key: Key) -> Output
-        ): Fetcher<Key, Output> = fromValueFetcher(doFetch.asFlow())
+        ): Fetcher<Key, Output> = fromStream(doFetch.asFlow())
 
         private fun <Key, Value> (suspend (key: Key) -> Value).asFlow() = { key: Key ->
             flow {

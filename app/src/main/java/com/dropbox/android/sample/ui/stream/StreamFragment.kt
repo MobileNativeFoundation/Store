@@ -51,7 +51,7 @@ class StreamFragment : Fragment(), CoroutineScope {
         var counter = 0
 
         val store = StoreBuilder
-            .from(Fetcher.fromNonFlowValueFetcher { key: Int ->
+            .from(Fetcher.from { key: Int ->
                 (key * 1000 + counter++).also { delay(1_000) }
             })
             .cachePolicy(

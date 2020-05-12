@@ -56,7 +56,7 @@ Let's start by looking at what a fully configured Store looks like. We will then
 ```kotlin
 StoreBuilder
     .from(
-        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
@@ -81,7 +81,7 @@ You create a Store using a builder. The only requirement is to include a `Fetche
 
 ```kotlin
 val store = StoreBuilder
-        .from(valueFetcher { articleId -> api.getArticle(articleId) }) // api returns Flow<Article>
+        .from(Fetcher.fromStream { articleId -> api.getArticle(articleId) }) // api returns Flow<Article>
         .build()
 ```
 
@@ -186,7 +186,7 @@ allows you to create offline first applications that can be used without an acti
 ```kotlin
 StoreBuilder
     .from(
-        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
@@ -215,7 +215,7 @@ You can configure in-memory cache with the `MemoryPolicy`:
 ```kotlin
 StoreBuilder
     .from(
-        fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
+        fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
@@ -244,8 +244,9 @@ You can delete a specific entry by key from a store, or clear all entries in a s
 
 ```kotlin
 val store = StoreBuilder
-    .from(nonFlowValueFetcher { api.fetchData(key) })
-    .build()
+  .from(Fetcher.from { key: String ->
+      api.fetchData(key)
+  }).build()
 ```
 
 The following will clear the entry associated with the key from the in-memory cache:
@@ -267,7 +268,7 @@ When store has a sourceOfTruth, you'll need to provide the `delete` and `deleteA
 ```kotlin
 StoreBuilder
     .from(
-        fetcher = nonFlowValueFetcher { api.fetchData(key) },
+        fetcher = Fetcher.from { api.fetchData(key) },
         sourceOfTruth = SourceOfTrue.from(
             reader = dao::loadData,
             writer = dao::writeData,

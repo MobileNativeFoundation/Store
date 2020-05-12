@@ -25,7 +25,7 @@ class SequentialTest(
     private val store = TestStoreBuilder.from<BarCode, Int>(
         scope = testScope,
         cached = true,
-    fetcher = Fetcher.fromNonFlowValueFetcher {
+    fetcher = Fetcher.from {
         networkCalls++
     }).build(storeType)
 

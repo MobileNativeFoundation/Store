@@ -30,7 +30,7 @@ class ClearAllStoreTest {
     private val value1 = 1
     private val value2 = 2
 
-    private val fetcher = Fetcher.fromNonFlowValueFetcher { key: String ->
+    private val fetcher = Fetcher.from { key: String ->
         when (key) {
             key1 -> value1
             key2 -> value2
