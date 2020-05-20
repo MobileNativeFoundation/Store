@@ -244,9 +244,8 @@ You can delete a specific entry by key from a store, or clear all entries in a s
 
 ```kotlin
 val store = StoreBuilder
-  .fromNonFlow<String, Int> { key: String ->
-      api.fetchData(key)
-  }.build()
+    .from(nonFlowValueFetcher { api.fetchData(key) })
+    .build()
 ```
 
 The following will clear the entry associated with the key from the in-memory cache:
