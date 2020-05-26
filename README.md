@@ -58,7 +58,7 @@ StoreBuilder
     .from(
         fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
-            reader = db.postDao()::loadPosts,
+            flowReader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -81,7 +81,7 @@ You create a Store using a builder. The only requirement is to include a `Fetche
 
 ```kotlin
 val store = StoreBuilder
-        .from(Fetcher.fromStream { articleId -> api.getArticle(articleId) }) // api returns Flow<Article>
+        .from(Fetcher.fromFlow { articleId -> api.getArticle(articleId) }) // api returns Flow<Article>
         .build()
 ```
 
@@ -188,7 +188,7 @@ StoreBuilder
     .from(
         fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
-            reader = db.postDao()::loadPosts,
+            flowReader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -217,7 +217,7 @@ StoreBuilder
     .from(
         fetcher = Fetcher.from { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
         sourceOfTruth = SourceOfTrue.from(
-            reader = db.postDao()::loadPosts,
+            flowReader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -270,7 +270,7 @@ StoreBuilder
     .from(
         fetcher = Fetcher.from { api.fetchData(key) },
         sourceOfTruth = SourceOfTrue.from(
-            reader = dao::loadData,
+            flowReader = dao::loadData,
             writer = dao::writeData,
             delete = dao::clearDataByKey,
             deleteAll = dao::clearAllData

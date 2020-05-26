@@ -41,7 +41,7 @@ class FetcherControllerTest {
     fun simple() = testScope.runBlockingTest {
         val fetcherController = FetcherController<Int, Int, Int>(
             scope = testScope,
-            realFetcher = Fetcher.fromFetcherResultStream { key: Int ->
+            realFetcher = Fetcher.fromFetcherResultFlow { key: Int ->
                 flow {
                     emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
                 }
@@ -67,7 +67,7 @@ class FetcherControllerTest {
         var createdCnt = 0
         val fetcherController = FetcherController<Int, Int, Int>(
             scope = testScope,
-            realFetcher = Fetcher.fromFetcherResultStream{ key: Int ->
+            realFetcher = Fetcher.fromFetcherResultFlow{ key: Int ->
                 createdCnt++
                 flow {
                     // make sure it takes time, otherwise, we may not share

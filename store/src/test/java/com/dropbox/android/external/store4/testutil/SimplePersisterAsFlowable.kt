@@ -63,7 +63,7 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
 @ExperimentalCoroutinesApi
 fun <Key : Any, Input : Any, Output : Any> SimplePersisterAsFlowable<Key, Input, Output>.asSourceOfTruth() =
     SourceOfTruth.from(
-        reader = ::flowReader,
+        flowReader = ::flowReader,
         writer = ::flowWriter,
         delete = ::flowDelete.takeIf { supportsDelete }
     )

@@ -92,7 +92,7 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, Input : Any, Output : Any> fromNonFlow(
+        fun <Key : Any, Input : Any, Output : Any> from(
             reader: suspend (Key) -> Output?,
             writer: suspend (Key, Input) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
@@ -105,22 +105,22 @@ interface SourceOfTruth<Key, Input, Output> {
         )
 
         /**
-         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer], [delete] and
-         * [deleteAll].
+         * Creates a ([Flow]) source of truth that is accessed via [flowReader], [writer],
+         * [delete] and [deleteAll].
          *
-         * @param reader function for reading records from the source of truth
+         * @param flowReader function for reading records from the source of truth
          * @param writer function for writing updates to the backing source of truth
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
-         *
          */
+        @JvmName("fromFlow")
         fun <Key : Any, Input : Any, Output : Any> from(
-            reader: (Key) -> Flow<Output?>,
+            flowReader: (Key) -> Flow<Output?>,
             writer: suspend (Key, Input) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
         ): SourceOfTruth<Key, Input, Output> = PersistentSourceOfTruth(
-            realReader = reader,
+            realReader = flowReader,
             realWriter = writer,
             realDelete = delete,
             realDeleteAll = deleteAll

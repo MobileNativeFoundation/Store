@@ -325,7 +325,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            Fetcher.fromStream { flow {} },
+            Fetcher.fromFlow { flow {} },
             sourceOfTruth = persister.asSourceOfTruth()
         )
             .disableCache()
@@ -351,7 +351,7 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            fetcher = Fetcher.fromStream {
+            fetcher = Fetcher.fromFlow {
                 flow {
                     delay(10)
                     emit("three-1")

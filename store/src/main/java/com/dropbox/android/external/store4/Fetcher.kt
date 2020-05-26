@@ -2,7 +2,7 @@ package com.dropbox.android.external.store4
 
 import com.dropbox.android.external.store4.Fetcher.Companion.fromFetcherResult
 import com.dropbox.android.external.store4.Fetcher.Companion.from
-import com.dropbox.android.external.store4.Fetcher.Companion.fromStream
+import com.dropbox.android.external.store4.Fetcher.Companion.fromFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -24,7 +24,7 @@ sealed class FetcherResult<T : Any> {
  * silently swallowing NPEs and such. Use [FetcherResult.Error] to communicate expected errors.
  *
  * See [fromFetcherResult] for easily translating from a regular `suspend` function.
- * See [fromStream], [from] for easily translating to [FetcherResult] (and
+ * See [fromFlow], [from] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error].
  */
 interface Fetcher<Key, Output : Any> {
@@ -44,7 +44,7 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Output : Any> fromFetcherResultStream(
+        fun <Key : Any, Output : Any> fromFetcherResultFlow(
             flowFactory: (Key) -> Flow<FetcherResult<Output>>
         ): Fetcher<Key, Output> = FactoryFetcher(flowFactory)
 
@@ -75,7 +75,7 @@ interface Fetcher<Key, Output : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Output : Any> fromStream(
+        fun <Key : Any, Output : Any> fromFlow(
             flowFactory: (Key) -> Flow<Output>
         ): Fetcher<Key, Output> = FactoryFetcher { key: Key ->
             flowFactory(key).map { FetcherResult.Data(it) as FetcherResult<Output> }
@@ -97,7 +97,7 @@ interface Fetcher<Key, Output : Any> {
          */
         fun <Key : Any, Output : Any> from(
             doFetch: suspend (key: Key) -> Output
-        ): Fetcher<Key, Output> = fromStream(doFetch.asFlow())
+        ): Fetcher<Key, Output> = fromFlow(doFetch.asFlow())
 
         private fun <Key, Value> (suspend (key: Key) -> Value).asFlow() = { key: Key ->
             flow {

@@ -20,7 +20,7 @@ class ValueFetcherTest {
     @Test
     fun `GIVEN valueFetcher WHEN invoke THEN result is wrapped`() =
         testScope.runBlockingTest {
-            val fetcher = Fetcher.fromStream<Int, Int> { flowOf(it * it) }
+            val fetcher = Fetcher.fromFlow<Int, Int> { flowOf(it * it) }
 
             assertThat(fetcher(3))
                 .emitsExactly(FetcherResult.Data(value = 9))
@@ -30,7 +30,7 @@ class ValueFetcherTest {
     fun `GIVEN valueFetcher WHEN exception in flow THEN exception returned as result`() =
         testScope.runBlockingTest {
             val e = Exception()
-            val fetcher = Fetcher.fromStream<Int, Int> {
+            val fetcher = Fetcher.fromFlow<Int, Int> {
                 flow {
                     throw e
                 }

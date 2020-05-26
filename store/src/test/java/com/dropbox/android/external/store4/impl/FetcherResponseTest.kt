@@ -47,7 +47,7 @@ class FetcherResponseTest {
         val exception = RuntimeException("first error")
         testScope.runBlockingTest {
             val store = StoreBuilder.from(
-                fetcher =  Fetcher.fromFetcherResultStream{ key: Int ->
+                fetcher =  Fetcher.fromFetcherResultFlow{ key: Int ->
                     flowOf<FetcherResult<String>>(
                         FetcherResult.Error.Exception(exception),
                         FetcherResult.Data("$key")
@@ -67,7 +67,7 @@ class FetcherResponseTest {
     @Test
     fun `GIVEN transformer WHEN raw value THEN unwrapped value returned AND value is cached`() =
         testScope.runBlockingTest {
-            val fetcher = Fetcher.fromStream<Int, Int> { flowOf(it * it) }
+            val fetcher = Fetcher.fromFlow<Int, Int> { flowOf(it * it) }
             val pipeline = StoreBuilder
                 .from(fetcher).buildWithTestScope()
 
@@ -94,7 +94,7 @@ class FetcherResponseTest {
     fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             var count = 0
-            val fetcher = Fetcher.fromFetcherResultStream { _: Int ->
+            val fetcher = Fetcher.fromFetcherResultFlow { _: Int ->
                 flowOf(count++).map {
                     if (it > 0) {
                         FetcherResult.Data(it)
@@ -132,7 +132,7 @@ class FetcherResponseTest {
         testScope.runBlockingTest {
             val e = Exception()
             var count = 0
-            val fetcher = Fetcher.fromFetcherResultStream { _: Int ->
+            val fetcher = Fetcher.fromFetcherResultFlow { _: Int ->
                 flowOf(count++).map {
                     if (it > 0) {
                         FetcherResult.Data(it)

@@ -50,7 +50,7 @@ object Graph {
                     provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
                 },
                 sourceOfTruth = SourceOfTruth.from(
-                    reader = db.postDao()::loadPosts,
+                    flowReader = db.postDao()::loadPosts,
                     writer = db.postDao()::insertPosts,
                     delete = db.postDao()::clearFeedBySubredditName,
                     deleteAll = db.postDao()::clearAllFeeds
@@ -68,7 +68,7 @@ object Graph {
                         .data.children.map(::toPosts)
                 },
                 sourceOfTruth = SourceOfTruth.from(
-                    reader = { (query, _) -> db.postDao().loadPosts(query) },
+                    flowReader = { (query, _) -> db.postDao().loadPosts(query) },
                     writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
                     delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
                     deleteAll = db.postDao()::clearAllFeeds
@@ -103,7 +103,7 @@ object Graph {
                     delay(500)
                     RedditConfig(10)
                 },
-                sourceOfTruth = SourceOfTruth.fromNonFlow(
+                sourceOfTruth = SourceOfTruth.from(
                     reader = {
                         runCatching {
                             val source = fileSystemPersister.read(Unit)
