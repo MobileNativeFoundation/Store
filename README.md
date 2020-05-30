@@ -57,7 +57,7 @@ Let's start by looking at what a fully configured Store looks like. We will then
 StoreBuilder
     .from(
         fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.from(
+        sourceOfTruth = SourceOfTruth.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
@@ -187,7 +187,7 @@ allows you to create offline first applications that can be used without an acti
 StoreBuilder
     .from(
         fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.from(
+        sourceOfTruth = SourceOfTruth.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
@@ -216,7 +216,7 @@ You can configure in-memory cache with the `MemoryPolicy`:
 StoreBuilder
     .from(
         fetcher = nonFlowValueFetcher { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.from(
+        sourceOfTruth = SourceOfTruth.from(
             reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
@@ -268,7 +268,7 @@ When store has a sourceOfTruth, you'll need to provide the `delete` and `deleteA
 StoreBuilder
     .from(
         fetcher = nonFlowValueFetcher { api.fetchData(key) },
-        sourceOfTruth = SourceOfTrue.from(
+        sourceOfTruth = SourceOfTruth.from(
             reader = dao::loadData,
             writer = dao::writeData,
             delete = dao::clearDataByKey,
