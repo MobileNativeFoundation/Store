@@ -46,10 +46,10 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from(
-                Fetcher.from { key: String ->
+                Fetcher.of { key: String ->
                     provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
                 },
-                sourceOfTruth = SourceOfTruth.from(
+                sourceOfTruth = SourceOfTruth.of(
                     flowReader = db.postDao()::loadPosts,
                     writer = db.postDao()::insertPosts,
                     delete = db.postDao()::clearFeedBySubredditName,
@@ -63,11 +63,11 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
-                Fetcher.from { (query, config) ->
+                Fetcher.of { (query, config) ->
                     provideRetrofit().fetchSubreddit(query, config.limit)
                         .data.children.map(::toPosts)
                 },
-                sourceOfTruth = SourceOfTruth.from(
+                sourceOfTruth = SourceOfTruth.of(
                     flowReader = { (query, _) -> db.postDao().loadPosts(query) },
                     writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
                     delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
@@ -99,11 +99,11 @@ object Graph {
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
-                Fetcher.from {
+                Fetcher.of {
                     delay(500)
                     RedditConfig(10)
                 },
-                sourceOfTruth = SourceOfTruth.from(
+                sourceOfTruth = SourceOfTruth.of(
                     reader = {
                         runCatching {
                             val source = fileSystemPersister.read(Unit)

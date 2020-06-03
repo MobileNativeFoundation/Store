@@ -23,7 +23,7 @@ class NoNetworkTest(
     private val testScope = TestCoroutineScope()
     private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(
         testScope,
-        fetcher = Fetcher.from {
+        fetcher = Fetcher.of {
             throw EXCEPTION
         }).build(storeType)
 

@@ -92,7 +92,7 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, Input : Any, Output : Any> from(
+        fun <Key : Any, Input : Any, Output : Any> of(
             reader: suspend (Key) -> Output?,
             writer: suspend (Key, Input) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
@@ -114,7 +114,7 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param deleteAll function for deleting all records in the source of truth
          */
         @JvmName("fromFlow")
-        fun <Key : Any, Input : Any, Output : Any> from(
+        fun <Key : Any, Input : Any, Output : Any> of(
             flowReader: (Key) -> Flow<Output?>,
             writer: suspend (Key, Input) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,

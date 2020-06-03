@@ -22,7 +22,7 @@ class StoreWithInMemoryCacheTest {
     @Test
     fun `store requests can complete when its in-memory cache (with access expiry) is at the maximum size`() {
         val store = StoreBuilder
-            .from(Fetcher.from { _: Int -> "result" })
+            .from(Fetcher.of { _: Int -> "result" })
             .cachePolicy(
                 MemoryPolicy
                     .builder()

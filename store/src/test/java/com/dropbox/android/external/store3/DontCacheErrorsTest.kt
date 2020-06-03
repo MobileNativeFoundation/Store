@@ -25,7 +25,7 @@ class DontCacheErrorsTest(
     // TODO move to test coroutine scope
     private val store = TestStoreBuilder.from<BarCode, Int>(
         testScope,
-        fetcher = Fetcher.from {
+        fetcher = Fetcher.of {
             if (shouldThrow) {
                 throw RuntimeException()
             } else {

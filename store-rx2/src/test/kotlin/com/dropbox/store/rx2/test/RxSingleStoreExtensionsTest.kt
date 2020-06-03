@@ -8,7 +8,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.store.rx2.freshSingle
 import com.dropbox.store.rx2.fromMaybe
 import com.dropbox.store.rx2.getSingle
-import com.dropbox.store.rx2.fromSingleFetcherResult
+import com.dropbox.store.rx2.ofResultSingle
 import com.dropbox.store.rx2.withScheduler
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -30,7 +30,7 @@ class RxSingleStoreExtensionsTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = Fetcher.fromSingleFetcherResult {
+            fetcher = Fetcher.ofResultSingle {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },
             sourceOfTruth = SourceOfTruth.fromMaybe(

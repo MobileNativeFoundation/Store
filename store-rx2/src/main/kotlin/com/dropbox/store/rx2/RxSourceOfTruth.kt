@@ -26,7 +26,7 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
     val deleteFun: (suspend (Key) -> Unit)? =
         if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
-    return from(
+    return of(
         reader = { key -> reader.invoke(key).await() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = deleteFun,
@@ -44,7 +44,7 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowable(
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.ofFlowable(
     reader: (Key) -> Flowable<Output>,
     writer: (Key, Input) -> Completable,
     delete: ((Key) -> Completable)? = null,
@@ -53,7 +53,7 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromFlowable(
     val deleteFun: (suspend (Key) -> Unit)? =
         if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
-    return from(
+    return of(
         flowReader = { key -> reader.invoke(key).asFlow() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = deleteFun,

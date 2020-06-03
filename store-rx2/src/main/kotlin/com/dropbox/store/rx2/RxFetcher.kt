@@ -18,9 +18,9 @@ import kotlinx.coroutines.reactive.asFlow
  *
  * @param flowableFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.fromFetcherResultFlowable(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
     flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
-): Fetcher<Key, Output> = Fetcher.fromFetcherResultFlow { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = Fetcher.ofResultFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * "Creates" a [Fetcher] from a [singleFactory].
@@ -33,9 +33,9 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromFetcherResultFlowable(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.fromSingleFetcherResult(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
     singleFactory: (key: Key) -> Single<FetcherResult<Output>>
-): Fetcher<Key, Output> = Fetcher.fromFetcherResultFlow { key: Key -> singleFactory(key).toFlowable().asFlow() }
+): Fetcher<Key, Output> = Fetcher.ofResultFlow { key: Key -> singleFactory(key).toFlowable().asFlow() }
 
 /**
  * "Creates" a [Fetcher] from a [flowableFactory] and translate the results to a [FetcherResult].
@@ -49,9 +49,9 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromSingleFetcherResult(
  *
  * @param flowFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(
     flowableFactory: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = Fetcher.fromFlow { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = Fetcher.ofFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [singleFactory] and translate the results to a [FetcherResult].
@@ -65,6 +65,6 @@ fun <Key : Any, Output : Any> Fetcher.Companion.fromFlowable(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.from(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofSingle(
     singleFactory: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = fromFlowable { key: Key -> singleFactory(key).toFlowable() }
+): Fetcher<Key, Output> = ofFlowable { key: Key -> singleFactory(key).toFlowable() }
