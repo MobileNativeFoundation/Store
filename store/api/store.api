@@ -107,10 +107,10 @@ public abstract interface class com/dropbox/android/external/store4/SourceOfTrut
 }
 
 public final class com/dropbox/android/external/store4/SourceOfTruth$Companion {
-	public final fun fromFlow (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/SourceOfTruth;
-	public static synthetic fun fromFlow$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 	public final fun of (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 	public static synthetic fun of$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public final fun ofFlow (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun ofFlow$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 }
 
 public abstract interface class com/dropbox/android/external/store4/Store {
