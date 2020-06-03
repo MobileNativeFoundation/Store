@@ -8,7 +8,7 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.SourceOfTruth
-import com.dropbox.store.rx2.fromMaybe
+import com.dropbox.store.rx2.ofMaybe
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
 import com.dropbox.store.rx2.observeClearAll
@@ -37,7 +37,7 @@ class RxSingleStoreTest {
             fetcher = Fetcher.ofResultSingle {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },
-            sourceOfTruth = SourceOfTruth.fromMaybe(
+            sourceOfTruth = SourceOfTruth.ofMaybe(
                 reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
                 writer = { key, value ->
                     Completable.fromAction { fakeDisk[key] = value }

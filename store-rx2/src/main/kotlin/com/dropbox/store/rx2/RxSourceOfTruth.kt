@@ -17,7 +17,7 @@ import kotlinx.coroutines.rx2.await
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.fromMaybe(
+fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.ofMaybe(
     reader: (Key) -> Maybe<Output>,
     writer: (Key, Input) -> Completable,
     delete: ((Key) -> Completable)? = null,
