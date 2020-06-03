@@ -1,8 +1,8 @@
 package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.Fetcher.Companion.ofResult
 import com.dropbox.android.external.store4.Fetcher.Companion.of
 import com.dropbox.android.external.store4.Fetcher.Companion.ofFlow
+import com.dropbox.android.external.store4.Fetcher.Companion.ofResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -29,6 +29,7 @@ sealed class FetcherResult<T : Any> {
  */
 interface Fetcher<Key, Output : Any> {
     operator fun invoke(key: Key): Flow<FetcherResult<Output>>
+
     /**
      * Returns a flow of the item represented by the given [key].
      */
@@ -105,7 +106,7 @@ interface Fetcher<Key, Output : Any> {
             }
         }
 
-        private class FactoryFetcher<Key, Output : Any>(
+        private class FactoryFetcher<Key : Any, Output : Any>(
             private val factory: (Key) -> Flow<FetcherResult<Output>>
         ) : Fetcher<Key, Output> {
             override fun invoke(key: Key): Flow<FetcherResult<Output>> = factory(key)

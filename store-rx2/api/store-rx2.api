@@ -6,10 +6,10 @@ public final class com/dropbox/store/rx2/RxFetcherKt {
 }
 
 public final class com/dropbox/store/rx2/RxSourceOfTruthKt {
-	public static final fun fromMaybe (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
-	public static synthetic fun fromMaybe$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 	public static final fun ofFlowable (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 	public static synthetic fun ofFlowable$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static final fun ofMaybe (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun ofMaybe$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 }
 
 public final class com/dropbox/store/rx2/RxStoreBuilderKt {
