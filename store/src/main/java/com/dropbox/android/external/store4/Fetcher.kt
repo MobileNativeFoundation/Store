@@ -27,7 +27,7 @@ sealed class FetcherResult<T : Any> {
  * See [ofFlow], [of] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error].
  */
-interface Fetcher<Key, Output : Any> {
+interface Fetcher<Key : Any, Output : Any> {
     operator fun invoke(key: Key): Flow<FetcherResult<Output>>
 
     /**
@@ -62,7 +62,7 @@ interface Fetcher<Key, Output : Any> {
          */
         fun <Key : Any, Output : Any> ofResult(
             doFetch: suspend (Key) -> FetcherResult<Output>
-        ): Fetcher<Key, Output> = FactoryFetcher(doFetch.asFlow())
+        ): Fetcher<Key, Output> = ofResultFlow(doFetch.asFlow())
 
         /**
          * "Creates" a [Fetcher] from a [flowFactory] and translate the results to a [FetcherResult].
