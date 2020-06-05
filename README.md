@@ -57,8 +57,8 @@ Let's start by looking at what a fully configured Store looks like. We will then
 StoreBuilder
     .from(
         fetcher = Fetcher.of { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.of(
-            flowReader = db.postDao()::loadPosts,
+        sourceOfTruth = SourceOfTruth.of(
+            reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -187,8 +187,8 @@ allows you to create offline first applications that can be used without an acti
 StoreBuilder
     .from(
         fetcher = Fetcher.of { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.of(
-            flowReader = db.postDao()::loadPosts,
+        sourceOfTruth = SourceOfTruth.of(
+            reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -216,8 +216,8 @@ You can configure in-memory cache with the `MemoryPolicy`:
 StoreBuilder
     .from(
         fetcher = Fetcher.of { api.fetchSubreddit(it, "10").data.children.map(::toPosts) },
-        sourceOfTruth = SourceOfTrue.of(
-            flowReader = db.postDao()::loadPosts,
+        sourceOfTruth = SourceOfTruth.of(
+            reader = db.postDao()::loadPosts,
             writer = db.postDao()::insertPosts,
             delete = db.postDao()::clearFeed,
             deleteAll = db.postDao()::clearAllFeeds
@@ -270,8 +270,8 @@ When store has a sourceOfTruth, you'll need to provide the `delete` and `deleteA
 StoreBuilder
     .from(
         fetcher = Fetcher.of { api.fetchData(key) },
-        sourceOfTruth = SourceOfTrue.of(
-            flowReader = dao::loadData,
+        sourceOfTruth = SourceOfTruth.of(
+            reader = dao::loadData,
             writer = dao::writeData,
             delete = dao::clearDataByKey,
             deleteAll = dao::clearAllData
