@@ -47,7 +47,7 @@ class FetcherResponseTest {
         val exception = RuntimeException("first error")
         testScope.runBlockingTest {
             val store = StoreBuilder.from(
-                fetcher =  Fetcher.ofResultFlow{ key: Int ->
+                fetcher = Fetcher.ofResultFlow { key: Int ->
                     flowOf<FetcherResult<String>>(
                         FetcherResult.Error.Exception(exception),
                         FetcherResult.Data("$key")

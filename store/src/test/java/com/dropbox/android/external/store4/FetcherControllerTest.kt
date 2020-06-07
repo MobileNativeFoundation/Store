@@ -67,7 +67,7 @@ class FetcherControllerTest {
         var createdCnt = 0
         val fetcherController = FetcherController<Int, Int, Int>(
             scope = testScope,
-            realFetcher = Fetcher.ofResultFlow{ key: Int ->
+            realFetcher = Fetcher.ofResultFlow { key: Int ->
                 createdCnt++
                 flow {
                     // make sure it takes time, otherwise, we may not share

@@ -20,7 +20,7 @@ import kotlinx.coroutines.reactive.asFlow
  */
 fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
     flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
-): Fetcher<Key, Output> = Fetcher.ofResultFlow { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = ofResultFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * "Creates" a [Fetcher] from a [singleFactory].
@@ -35,7 +35,7 @@ fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
  */
 fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
     singleFactory: (key: Key) -> Single<FetcherResult<Output>>
-): Fetcher<Key, Output> = Fetcher.ofResultFlow { key: Key -> singleFactory(key).toFlowable().asFlow() }
+): Fetcher<Key, Output> = ofResultFlowable { key: Key -> singleFactory(key).toFlowable() }
 
 /**
  * "Creates" a [Fetcher] from a [flowableFactory] and translate the results to a [FetcherResult].
@@ -51,7 +51,7 @@ fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
  */
 fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(
     flowableFactory: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = Fetcher.ofFlow { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = ofFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [singleFactory] and translate the results to a [FetcherResult].
