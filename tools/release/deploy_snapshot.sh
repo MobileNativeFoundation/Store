@@ -7,7 +7,7 @@
 
 SLUG="dropbox/Store"
 JDK="oraclejdk8"
-BRANCH="master"
+BRANCH="main"
 
 set -e
 
