@@ -1,14 +1,12 @@
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.android.external.store4.nonFlowFetcher
-import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.assertThat
-import com.dropbox.android.external.store4.valueFetcher
 import com.google.common.truth.Truth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -29,7 +27,7 @@ class FetcherResponseTest {
         val result = kotlin.runCatching {
             testScope.runBlockingTest {
                 val store = StoreBuilder.from<Int, Int>(
-                    nonFlowFetcher {
+                    Fetcher.ofResult {
                         throw RuntimeException("don't catch me")
                     }
                 ).buildWithTestScope()
@@ -48,12 +46,14 @@ class FetcherResponseTest {
     fun `GIVEN a Fetcher that emits Error and Data WHEN steaming THEN it can emit value after an error`() {
         val exception = RuntimeException("first error")
         testScope.runBlockingTest {
-            val store = StoreBuilder.from<Int, String> { key: Int ->
-                flowOf(
-                    FetcherResult.Error.Exception(exception),
-                    FetcherResult.Data("$key")
-                )
-            }.buildWithTestScope()
+            val store = StoreBuilder.from(
+                fetcher = Fetcher.ofResultFlow { key: Int ->
+                    flowOf<FetcherResult<String>>(
+                        FetcherResult.Error.Exception(exception),
+                        FetcherResult.Data("$key")
+                    )
+                }
+            ).buildWithTestScope()
 
             assertThat(store.stream(StoreRequest.fresh(1)))
                 .emitsExactly(
@@ -67,7 +67,7 @@ class FetcherResponseTest {
     @Test
     fun `GIVEN transformer WHEN raw value THEN unwrapped value returned AND value is cached`() =
         testScope.runBlockingTest {
-            val fetcher = valueFetcher<Int, Int> { flowOf(it * it) }
+            val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
             val pipeline = StoreBuilder
                 .from(fetcher).buildWithTestScope()
 
@@ -94,7 +94,7 @@ class FetcherResponseTest {
     fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             var count = 0
-            val fetcher = { _: Int ->
+            val fetcher = Fetcher.ofResultFlow { _: Int ->
                 flowOf(count++).map {
                     if (it > 0) {
                         FetcherResult.Data(it)
@@ -132,7 +132,7 @@ class FetcherResponseTest {
         testScope.runBlockingTest {
             val e = Exception()
             var count = 0
-            val fetcher = { _: Int ->
+            val fetcher = Fetcher.ofResultFlow { _: Int ->
                 flowOf(count++).map {
                     if (it > 0) {
                         FetcherResult.Data(it)
@@ -171,7 +171,7 @@ class FetcherResponseTest {
         testScope.runBlockingTest {
             var count = 0
             val e = Exception()
-            val fetcher = nonFlowValueFetcher<Int, Int> {
+            val fetcher = Fetcher.of<Int, Int> {
                 count++
                 if (count == 1) {
                     throw e

@@ -72,7 +72,6 @@ class FakeFlowFetcher<Key : Any, Output : Any>(
 ) : Fetcher<Key, Output> {
     private var index = 0
 
-    @Suppress("RedundantSuspendModifier") // needed for function reference
     override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")

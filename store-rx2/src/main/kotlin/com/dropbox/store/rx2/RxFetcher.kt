@@ -3,7 +3,6 @@ package com.dropbox.store.rx2
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.valueFetcher
 import io.reactivex.Flowable
 import io.reactivex.Single
 import kotlinx.coroutines.reactive.asFlow
@@ -19,9 +18,9 @@ import kotlinx.coroutines.reactive.asFlow
  *
  * @param flowableFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> flowableFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
     flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
-): Fetcher<Key, Output> = { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = ofResultFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * "Creates" a [Fetcher] from a [singleFactory].
@@ -34,9 +33,9 @@ fun <Key : Any, Output : Any> flowableFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> singleFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
     singleFactory: (key: Key) -> Single<FetcherResult<Output>>
-): Fetcher<Key, Output> = { key: Key -> singleFactory(key).toFlowable().asFlow() }
+): Fetcher<Key, Output> = ofResultFlowable { key: Key -> singleFactory(key).toFlowable() }
 
 /**
  * "Creates" a [Fetcher] from a [flowableFactory] and translate the results to a [FetcherResult].
@@ -50,9 +49,9 @@ fun <Key : Any, Output : Any> singleFetcher(
  *
  * @param flowFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> flowableValueFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(
     flowableFactory: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = valueFetcher { key: Key -> flowableFactory(key).asFlow() }
+): Fetcher<Key, Output> = ofFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [singleFactory] and translate the results to a [FetcherResult].
@@ -66,6 +65,6 @@ fun <Key : Any, Output : Any> flowableValueFetcher(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> singleValueFetcher(
+fun <Key : Any, Output : Any> Fetcher.Companion.ofSingle(
     singleFactory: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = flowableValueFetcher { key: Key -> singleFactory(key).toFlowable() }
+): Fetcher<Key, Output> = ofFlowable { key: Key -> singleFactory(key).toFlowable() }

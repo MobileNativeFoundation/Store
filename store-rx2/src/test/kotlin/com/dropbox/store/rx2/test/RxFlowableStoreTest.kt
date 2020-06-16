@@ -1,14 +1,15 @@
 package com.dropbox.store.rx2.test
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx2.flowableFetcher
-import com.dropbox.store.rx2.fromFlowable
 import com.dropbox.store.rx2.observe
+import com.dropbox.store.rx2.ofFlowable
+import com.dropbox.store.rx2.ofResultFlowable
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -30,7 +31,7 @@ class RxFlowableStoreTest {
     private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            flowableFetcher {
+            Fetcher.ofResultFlowable {
                 Flowable.create({ emitter ->
                     emitter.onNext(
                         FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
@@ -41,7 +42,7 @@ class RxFlowableStoreTest {
                     emitter.onComplete()
                 }, BackpressureStrategy.LATEST)
             },
-            sourceOfTruth = SourceOfTruth.fromFlowable(
+            sourceOfTruth = SourceOfTruth.ofFlowable(
                 reader = {
                     if (fakeDisk[it] != null)
                         Flowable.fromCallable { fakeDisk[it]!! }
@@ -56,50 +57,50 @@ class RxFlowableStoreTest {
 
     @Test
     fun simpleTest() {
-        var testSubscriber = TestSubscriber<StoreResponse<String>>()
+        val testSubscriber1 = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.fresh(3))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber)
+            .subscribe(testSubscriber1)
         testScheduler.triggerActions()
-        testSubscriber
+        testSubscriber1
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        val testSubscriber2 = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber)
+            .subscribe(testSubscriber2)
         testScheduler.triggerActions()
-        testSubscriber
+        testSubscriber2
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Cache),
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.SourceOfTruth)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        val testSubscriber3 = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.fresh(3))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber)
+            .subscribe(testSubscriber3)
         testScheduler.triggerActions()
-        testSubscriber
+        testSubscriber3
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 3 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
 
-        testSubscriber = TestSubscriber<StoreResponse<String>>()
+        val testSubscriber4 = TestSubscriber<StoreResponse<String>>()
         store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber)
+            .subscribe(testSubscriber4)
         testScheduler.triggerActions()
-        testSubscriber
+        testSubscriber4
             .awaitCount(2)
             .assertValues(
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Cache),
