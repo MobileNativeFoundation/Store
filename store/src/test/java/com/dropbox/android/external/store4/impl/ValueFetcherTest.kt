@@ -1,9 +1,8 @@
 package com.dropbox.android.external.store4.impl
 
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
-import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.dropbox.android.external.store4.testutil.assertThat
-import com.dropbox.android.external.store4.valueFetcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
@@ -21,7 +20,7 @@ class ValueFetcherTest {
     @Test
     fun `GIVEN valueFetcher WHEN invoke THEN result is wrapped`() =
         testScope.runBlockingTest {
-            val fetcher = valueFetcher<Int, Int> { flowOf(it * it) }
+            val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
 
             assertThat(fetcher(3))
                 .emitsExactly(FetcherResult.Data(value = 9))
@@ -31,7 +30,7 @@ class ValueFetcherTest {
     fun `GIVEN valueFetcher WHEN exception in flow THEN exception returned as result`() =
         testScope.runBlockingTest {
             val e = Exception()
-            val fetcher = valueFetcher<Int, Int> {
+            val fetcher = Fetcher.ofFlow<Int, Int> {
                 flow {
                     throw e
                 }
@@ -43,7 +42,7 @@ class ValueFetcherTest {
     @Test
     fun `GIVEN nonFlowValueFetcher WHEN invoke THEN result is wrapped`() =
         testScope.runBlockingTest {
-            val fetcher = nonFlowValueFetcher<Int, Int> { it * it }
+            val fetcher = Fetcher.of<Int, Int> { it * it }
 
             assertThat(fetcher(3))
                 .emitsExactly(FetcherResult.Data(value = 9))
@@ -53,7 +52,7 @@ class ValueFetcherTest {
     fun `GIVEN nonFlowValueFetcher WHEN exception in flow THEN exception returned as result`() =
         testScope.runBlockingTest {
             val e = Exception()
-            val fetcher = nonFlowValueFetcher<Int, Int> {
+            val fetcher = Fetcher.of<Int, Int> {
                     throw e
             }
             assertThat(fetcher(3))

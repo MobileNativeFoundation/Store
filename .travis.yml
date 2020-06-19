@@ -11,7 +11,7 @@ android:
   licenses:
   - android-sdk-license-.+
 script:
-- "./gradlew check --stacktrace"
+- "./gradlew clean cleanBuildCache check --stacktrace"
 after_success:
 - tools/release/deploy_snapshot.sh
 - bash <(curl -s https://codecov.io/bash)

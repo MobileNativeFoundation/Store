@@ -1,17 +1,18 @@
 package com.dropbox.store.rx3.test
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx3.fromMaybe
+import com.dropbox.store.rx3.ofMaybe
 import com.dropbox.store.rx3.observe
 import com.dropbox.store.rx3.observeClear
 import com.dropbox.store.rx3.observeClearAll
-import com.dropbox.store.rx3.singleFetcher
+import com.dropbox.store.rx3.ofResultSingle
 import com.dropbox.store.rx3.withScheduler
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Maybe
@@ -33,10 +34,10 @@ class RxSingleStoreTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = singleFetcher {
+            fetcher = Fetcher.ofResultSingle {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },
-            sourceOfTruth = SourceOfTruth.fromMaybe(
+            sourceOfTruth = SourceOfTruth.ofMaybe(
                 reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
                 writer = { key, value ->
                     Completable.fromAction { fakeDisk[key] = value }

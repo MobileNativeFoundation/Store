@@ -32,8 +32,8 @@ class InMemoryPersister<Key : Any, Output : Any> {
 }
 
 fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asSourceOfTruth() =
-    SourceOfTruth.fromNonFlow(
-        reader = ::read,
+    SourceOfTruth.of(
+        nonFlowReader = ::read,
         writer = ::write,
         delete = ::deleteByKey,
         deleteAll = ::deleteAll

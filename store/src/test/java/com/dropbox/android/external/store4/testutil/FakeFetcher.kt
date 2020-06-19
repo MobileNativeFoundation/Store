@@ -27,7 +27,8 @@ class FakeFetcher<Key : Any, Output : Any>(
     private vararg val responses: Pair<Key, Output>
 ) : Fetcher<Key, Output> {
     private var index = 0
-    override operator fun invoke(key: Key): Flow<FetcherResult<Output>> {
+
+    override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }
@@ -40,7 +41,7 @@ class FakeFetcher<Key : Any, Output : Any>(
 class FakeFlowingFetcher<Key : Any, Output : Any>(
     private vararg val responses: Pair<Key, Output>
 ) : Fetcher<Key, Output> {
-    override operator fun invoke(key: Key) = flow {
+    override fun invoke(key: Key) = flow {
         responses.filter {
             it.first == key
         }.forEach {

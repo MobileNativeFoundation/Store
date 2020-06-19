@@ -11,13 +11,13 @@ import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.legacy.BarCode
-import com.dropbox.android.external.store4.nonFlowValueFetcher
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,10 +46,10 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from(
-                nonFlowValueFetcher { key: String ->
+                Fetcher.of { key: String ->
                     provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
                 },
-                sourceOfTruth = SourceOfTruth.from(
+                sourceOfTruth = SourceOfTruth.of(
                     reader = db.postDao()::loadPosts,
                     writer = db.postDao()::insertPosts,
                     delete = db.postDao()::clearFeedBySubredditName,
@@ -63,11 +63,11 @@ object Graph {
         val db = provideRoom(context)
         return StoreBuilder
             .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
-                nonFlowValueFetcher { (query, config) ->
+                Fetcher.of { (query, config) ->
                     provideRetrofit().fetchSubreddit(query, config.limit)
                         .data.children.map(::toPosts)
                 },
-                sourceOfTruth = SourceOfTruth.from(
+                sourceOfTruth = SourceOfTruth.of(
                     reader = { (query, _) -> db.postDao().loadPosts(query) },
                     writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
                     delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
@@ -99,12 +99,12 @@ object Graph {
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
-                nonFlowValueFetcher {
+                Fetcher.of {
                     delay(500)
                     RedditConfig(10)
                 },
-                sourceOfTruth = SourceOfTruth.fromNonFlow(
-                    reader = {
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = {
                         runCatching {
                             val source = fileSystemPersister.read(Unit)
                             source?.let { adapter.fromJson(it) }
