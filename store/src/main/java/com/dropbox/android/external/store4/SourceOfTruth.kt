@@ -126,4 +126,76 @@ interface SourceOfTruth<Key, Input, Output> {
             realDeleteAll = deleteAll
         )
     }
+
+    /**
+     * The exception provided when a Write operation fails in SourceOfTruth.
+     *
+     * see [StoreResponse.Error.Exception]
+     */
+    class WriteException(
+        /**
+         * The key for the failed write attempt
+         */
+        val key: Any?, // TODO why are we not marking keys non-null ?
+        /**
+         * The value for the failed write attempt
+         */
+        val value:Any?,
+        /**
+         * The exception thrown from the [SourceOfTruth]'s [write] method.
+         */
+        cause : Throwable
+    ) : RuntimeException(
+        "Failed to write value to Source of Truth. key: $key",
+        cause
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as WriteException
+
+            if (key != other.key) return false
+            if (value != other.value) return false
+            if (cause != other.cause) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = key.hashCode()
+            result = 31 * result + value.hashCode()
+            return result
+        }
+    }
+
+    /**
+     * Exception created when a [reader] throws an exception.
+     *
+     * see [StoreResponse.Error.Exception]
+     */
+    class ReadException(
+        /**
+         * The key for the failed write attempt
+         */
+        val key: Any?, // TODO shouldn't key be non-null?
+        cause: Throwable
+    ) : RuntimeException(
+        "Failed to read from Source of Truth. key: $key",
+        cause
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ReadException
+
+            if (key != other.key) return false
+            if (cause != other.cause) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return key.hashCode()
+        }
+    }
 }

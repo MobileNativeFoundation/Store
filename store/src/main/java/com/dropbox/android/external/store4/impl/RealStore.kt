@@ -197,12 +197,23 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                                 origin = diskData.origin
                             )
                         )
+                    } else if (diskData is StoreResponse.Error) {
+                        // disk sent an error, send it down as well
+                        emit(diskData.swapType())
                     }
 
                     // if this is the first disk value and it is null, we should enable fetcher
-                    // TODO should we ignore the index and always enable?
-                    if (index == 0 && (diskValue == null || request.refresh)) {
-                        networkLock.complete(Unit)
+                    // we should also allow fetcher if disk sent a read error but not if it is
+                    // a write error since we should always wait for the read attempt
+                    if (diskData is StoreResponse.Error.Exception) {
+                        if (diskData.error is SourceOfTruth.ReadException) {
+                            networkLock.complete(Unit)
+                        }
+                        // for other errors, don't do anything, wait for the read attempt
+                    } else if (diskData is StoreResponse.Data){
+                        if (request.refresh || diskValue == null) {
+                            networkLock.complete(Unit)
+                        }
                     }
                 }
             }

@@ -15,6 +15,8 @@
  */
 package com.dropbox.android.external.store4
 
+import com.dropbox.android.external.store4.SourceOfTruth.ReadException
+import com.dropbox.android.external.store4.SourceOfTruth.WriteException
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
@@ -28,10 +30,12 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.yield
 import org.junit.Test
 
 
@@ -124,7 +128,10 @@ class SourceOfTruthWithBarrierTest {
             ).emitsExactly(
                 StoreResponse.Error.Exception(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = exception
+                    error = ReadException(
+                        key = 1,
+                        cause = exception
+                    )
                 )
             )
         }
@@ -142,7 +149,7 @@ class SourceOfTruthWithBarrierTest {
                 value
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
-            val collected = mutableSetOf<StoreResponse<String?>>()
+            val collected = mutableListOf<StoreResponse<String?>>()
             val collection = async {
                 reader.collect {
                     collected.add(it)
@@ -152,7 +159,10 @@ class SourceOfTruthWithBarrierTest {
             assertThat(collected).containsExactly(
                 StoreResponse.Error.Exception<String?>(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = exception
+                    error = ReadException(
+                        key = 1,
+                        cause = exception
+                    )
                 )
             )
             // make sure it is not cancelled for the read error
@@ -163,7 +173,10 @@ class SourceOfTruthWithBarrierTest {
             assertThat(collected).containsExactly(
                 StoreResponse.Error.Exception<String?>(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = exception
+                    error = ReadException(
+                        key = 1,
+                        cause = exception
+                    )
                 ),
                 StoreResponse.Data(
                     // this is fetcher since we are using the write API
@@ -174,4 +187,48 @@ class SourceOfTruthWithBarrierTest {
             collection.cancelAndJoin()
         }
 
+    @Test
+    fun `Given Source Of Truth WHEN write fails THEN error should propogate`() {
+        testScope.runBlockingTest {
+            val exception = RuntimeException("write fails")
+            persister.preWriteCallback = { key, value ->
+                throw exception
+            }
+            val reader = source.reader(1, CompletableDeferred(Unit))
+            val collected = mutableListOf<StoreResponse<String?>>()
+            val collection = async {
+                reader.collect {
+                    collected.add(it)
+                }
+            }
+            advanceUntilIdle()
+            source.write(1, "will fail")
+            advanceUntilIdle()
+            // make sure collection does not cancel for a write error
+            assertThat(collection.isActive).isTrue()
+            assertThat(
+                collected
+            ).containsExactly(
+                StoreResponse.Data<String?>(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    value = null
+                ),
+                StoreResponse.Error.Exception<String?>(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    error = WriteException(
+                        key = 1,
+                        value = "will fail",
+                        cause = exception
+                    )
+                ),
+                StoreResponse.Data<String?>(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    value = null
+                )
+            )
+            advanceUntilIdle()
+            assertThat(collection.isActive).isTrue()
+            collection.cancelAndJoin()
+        }
+    }
 }
