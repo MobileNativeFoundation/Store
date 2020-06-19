@@ -183,7 +183,7 @@ class SourceOfTruthErrorsTest {
     fun `GIVEN Source of Truth with failing write WHEN a passive reader arrives THEN it should receive the new write error`() =
         testScope.runBlockingTest {
             val persister = InMemoryPersister<Int, String>()
-            val fetcher = Fetcher.ofFlow { _: Int->
+            val fetcher = Fetcher.ofFlow { _: Int ->
                 flowOf("a", "b", "c", "d")
             }
             val pipeline = StoreBuilder
@@ -348,7 +348,7 @@ class SourceOfTruthErrorsTest {
     fun `Given Source of Truth with read failure WHEN cached value reader arrives THEN fetcher should be called to get a new value`() {
         testScope.runBlockingTest {
             val persister = InMemoryPersister<Int, String>()
-            val fetcher = Fetcher.of { _:Int -> "a" }
+            val fetcher = Fetcher.of { _: Int -> "a" }
             val pipeline = StoreBuilder
                 .from(
                     fetcher = fetcher,

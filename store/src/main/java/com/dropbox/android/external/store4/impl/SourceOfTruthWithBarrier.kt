@@ -137,7 +137,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
             val writeError = try {
                 delegate.write(key, value)
                 null
-            } catch (throwable : Throwable) {
+            } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {
                     throwable
                 } else {
@@ -145,15 +145,17 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                 }
             }
 
-            barrier.send(BarrierMsg.Open(
-                version = versionCounter.incrementAndGet(),
-                writeError = writeError?.let {
-                    SourceOfTruth.WriteException(
-                        key = key,
-                        value = value,
-                        cause = writeError
-                    )
-                }))
+            barrier.send(
+                BarrierMsg.Open(
+                    version = versionCounter.incrementAndGet(),
+                    writeError = writeError?.let {
+                        SourceOfTruth.WriteException(
+                            key = key,
+                            value = value,
+                            cause = writeError
+                        )
+                    })
+            )
             if (writeError is CancellationException) {
                 // only throw if it failed because of cancelation.
                 // otherwise, we take care of letting downstream know that there was a write error

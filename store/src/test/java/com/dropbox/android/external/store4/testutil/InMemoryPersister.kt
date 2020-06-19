@@ -7,11 +7,11 @@ import com.dropbox.android.external.store4.SourceOfTruth
  */
 open class InMemoryPersister<Key : Any, Output : Any> {
     private val data = mutableMapOf<Key, Output>()
-    var preWriteCallback : (suspend (key:Key, value : Output) -> Output)? = null
-    var postReadCallback : (suspend (key : Key, value : Output?) -> Output?)? = null
+    var preWriteCallback: (suspend (key: Key, value: Output) -> Output)? = null
+    var postReadCallback: (suspend (key: Key, value: Output?) -> Output?)? = null
 
     @Suppress("RedundantSuspendModifier") // for function reference
-    suspend fun read(key: Key) :Output? {
+    suspend fun read(key: Key): Output? {
         val value = data[key]
         postReadCallback?.let {
             return it(key, value)

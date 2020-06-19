@@ -188,7 +188,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     }
                 } else if (it is Either.Right) {
                     // right, that is data from disk
-                    val (index, diskData) = it.value
+                    val (_, diskData) = it.value
                     val diskValue = diskData.dataOrNull()
                     if (diskValue != null) {
                         emit(
