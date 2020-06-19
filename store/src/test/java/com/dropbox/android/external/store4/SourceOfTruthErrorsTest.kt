@@ -99,7 +99,7 @@ class SourceOfTruthErrorsTest {
                 StoreResponse.Error.Exception(
                     error = ReadException(
                         key = 3,
-                        cause = TestException("a")
+                        cause = TestException("null")
                     ),
                     origin = ResponseOrigin.SourceOfTruth
                 ),
@@ -112,7 +112,7 @@ class SourceOfTruthErrorsTest {
                 StoreResponse.Error.Exception(
                     error = ReadException(
                         key = 3,
-                        cause = TestException("b")
+                        cause = TestException("a")
                     ),
                     origin = ResponseOrigin.SourceOfTruth
                 )
