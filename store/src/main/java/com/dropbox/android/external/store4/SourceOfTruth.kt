@@ -84,7 +84,28 @@ interface SourceOfTruth<Key, Input, Output> {
 
     companion object {
         /**
-         * Creates a (non-[Flow]) source of truth that is accessible via [reader], [writer],
+         * Creates a (non-[Flow]) source of truth that is accessible via [nonFlowReader], [writer],
+         * [delete] and [deleteAll].
+         *
+         * @param nonFlowReader function for reading records from the source of truth
+         * @param writer function for writing updates to the backing source of truth
+         * @param delete function for deleting records in the source of truth for the given key
+         * @param deleteAll function for deleting all records in the source of truth
+         */
+        fun <Key : Any, Input : Any, Output : Any> of(
+            nonFlowReader: suspend (Key) -> Output?,
+            writer: suspend (Key, Input) -> Unit,
+            delete: (suspend (Key) -> Unit)? = null,
+            deleteAll: (suspend () -> Unit)? = null
+        ): SourceOfTruth<Key, Input, Output> = PersistentNonFlowingSourceOfTruth(
+            realReader = nonFlowReader,
+            realWriter = writer,
+            realDelete = delete,
+            realDeleteAll = deleteAll
+        )
+
+        /**
+         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer],
          * [delete] and [deleteAll].
          *
          * @param reader function for reading records from the source of truth
@@ -92,29 +113,8 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, Input : Any, Output : Any> fromNonFlow(
-            reader: suspend (Key) -> Output?,
-            writer: suspend (Key, Input) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null,
-            deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Input, Output> = PersistentNonFlowingSourceOfTruth(
-            realReader = reader,
-            realWriter = writer,
-            realDelete = delete,
-            realDeleteAll = deleteAll
-        )
-
-        /**
-         * Creates a ([Flow]) source of truth that is accessed via [reader], [writer], [delete] and
-         * [deleteAll].
-         *
-         * @param reader function for reading records from the source of truth
-         * @param writer function for writing updates to the backing source of truth
-         * @param delete function for deleting records in the source of truth for the given key
-         * @param deleteAll function for deleting all records in the source of truth
-         *
-         */
-        fun <Key : Any, Input : Any, Output : Any> from(
+        @JvmName("ofFlow")
+        fun <Key : Any, Input : Any, Output : Any> of(
             reader: (Key) -> Flow<Output?>,
             writer: suspend (Key, Input) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,

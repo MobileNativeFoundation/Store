@@ -60,6 +60,7 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
      */
     private val enablePiggyback: Boolean = sourceOfTruth == null
 ) {
+    @Suppress("USELESS_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
         create = { key: Key ->
             Multicaster(
