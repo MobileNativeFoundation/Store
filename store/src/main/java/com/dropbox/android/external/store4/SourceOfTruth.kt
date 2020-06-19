@@ -140,11 +140,11 @@ interface SourceOfTruth<Key, Input, Output> {
         /**
          * The value for the failed write attempt
          */
-        val value:Any?,
+        val value: Any?,
         /**
          * The exception thrown from the [SourceOfTruth]'s [write] method.
          */
-        cause : Throwable
+        cause: Throwable
     ) : RuntimeException(
         "Failed to write value to Source of Truth. key: $key",
         cause

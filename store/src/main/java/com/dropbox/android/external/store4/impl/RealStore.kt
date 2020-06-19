@@ -210,7 +210,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             networkLock.complete(Unit)
                         }
                         // for other errors, don't do anything, wait for the read attempt
-                    } else if (diskData is StoreResponse.Data){
+                    } else if (diskData is StoreResponse.Data) {
                         if (request.refresh || diskValue == null) {
                             networkLock.complete(Unit)
                         }
