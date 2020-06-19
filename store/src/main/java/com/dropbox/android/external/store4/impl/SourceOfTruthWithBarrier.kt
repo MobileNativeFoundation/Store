@@ -17,6 +17,7 @@ package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +25,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -56,7 +58,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      */
     private val versionCounter = AtomicLong(0)
 
-    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<DataWithOrigin<Output>> {
+    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreResponse<Output?>> {
         return flow {
             val barrier = barriers.acquire(key)
             val readerVersion: Long = versionCounter.incrementAndGet()
@@ -68,16 +70,20 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                         when (it) {
                             is BarrierMsg.Open -> delegate.reader(key).mapIndexed { index, output ->
                                 if (index == 0 && messageArrivedAfterMe) {
-                                    DataWithOrigin(
+                                    StoreResponse.Data(
                                         origin = ResponseOrigin.Fetcher,
                                         value = output
                                     )
                                 } else {
-                                    DataWithOrigin(
+                                    StoreResponse.Data(
                                         origin = ResponseOrigin.SourceOfTruth,
                                         value = output
-                                    )
+                                    ) as StoreResponse<Output?>
                                 }
+                            }.catch {
+                                this.emit(StoreResponse.Error.Exception<Output>(
+                                    error = it,
+                                    origin = ResponseOrigin.SourceOfTruth))
                             }
                             is BarrierMsg.Blocked -> {
                                 flowOf()
@@ -129,8 +135,3 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
         private const val INITIAL_VERSION = -1L
     }
 }
-
-internal data class DataWithOrigin<T>(
-    val origin: ResponseOrigin,
-    val value: T?
-)

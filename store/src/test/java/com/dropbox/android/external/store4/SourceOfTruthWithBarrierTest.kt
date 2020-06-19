@@ -15,21 +15,25 @@
  */
 package com.dropbox.android.external.store4
 
-import com.dropbox.android.external.store4.impl.DataWithOrigin
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.assertThat
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
+
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -59,8 +63,12 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "a")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(ResponseOrigin.SourceOfTruth, null),
-                DataWithOrigin(ResponseOrigin.Fetcher, "a")
+                StoreResponse.Data(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    value = null),
+                StoreResponse.Data(
+                    origin = ResponseOrigin.Fetcher,
+                    value = "a")
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)
@@ -93,10 +101,77 @@ class SourceOfTruthWithBarrierTest {
         source.write(1, "b")
         assertThat(collector.await()).isEqualTo(
             listOf(
-                DataWithOrigin(ResponseOrigin.SourceOfTruth, "a"),
-                DataWithOrigin(ResponseOrigin.Fetcher, "b")
+                StoreResponse.Data(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    value = "a"),
+                StoreResponse.Data(
+                    origin = ResponseOrigin.Fetcher,
+                    value = "b")
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)
     }
+
+    @Test
+    fun `Given Source Of Truth WHEN read fails THEN error should propogate`() =
+        testScope.runBlockingTest {
+            val exception = RuntimeException("read fails")
+            persister.postReadCallback = { key, value ->
+                throw exception
+            }
+            assertThat(
+                source.reader(1, CompletableDeferred(Unit))
+            ).emitsExactly(
+                StoreResponse.Error.Exception(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    error = exception
+                )
+            )
+        }
+
+    @Test
+    fun `Given Source Of Truth WHEN read fails but then succeeds THEN error should propogate but also the value`() =
+        testScope.runBlockingTest {
+            var hasThrown = false
+            val exception = RuntimeException("read fails")
+            persister.postReadCallback = { _, value ->
+                if (!hasThrown) {
+                    hasThrown = true
+                    throw exception
+                }
+                value
+            }
+            val reader = source.reader(1, CompletableDeferred(Unit))
+            val collected = mutableSetOf<StoreResponse<String?>>()
+            val collection = async {
+                reader.collect {
+                    collected.add(it)
+                }
+            }
+            advanceUntilIdle()
+            assertThat(collected).containsExactly(
+                StoreResponse.Error.Exception<String?>(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    error = exception
+                )
+            )
+            // make sure it is not cancelled for the read error
+            assertThat(collection.isActive).isTrue()
+            // now insert another, it should trigger another read and emitted to the reader
+            source.write(1, "a")
+            advanceUntilIdle()
+            assertThat(collected).containsExactly(
+                StoreResponse.Error.Exception<String?>(
+                    origin = ResponseOrigin.SourceOfTruth,
+                    error = exception
+                ),
+                StoreResponse.Data(
+                    // this is fetcher since we are using the write API
+                    origin = ResponseOrigin.Fetcher,
+                    value = "a"
+                )
+            )
+            collection.cancelAndJoin()
+        }
+
 }

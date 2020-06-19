@@ -189,10 +189,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 } else if (it is Either.Right) {
                     // right, that is data from disk
                     val (index, diskData) = it.value
-                    if (diskData.value != null) {
+                    val diskValue = diskData.dataOrNull()
+                    if (diskValue != null) {
                         emit(
                             StoreResponse.Data(
-                                value = diskData.value,
+                                value = diskValue,
                                 origin = diskData.origin
                             )
                         )
@@ -200,7 +201,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
                     // if this is the first disk value and it is null, we should enable fetcher
                     // TODO should we ignore the index and always enable?
-                    if (index == 0 && (diskData.value == null || request.refresh)) {
+                    if (index == 0 && (diskValue == null || request.refresh)) {
                         networkLock.complete(Unit)
                     }
                 }
