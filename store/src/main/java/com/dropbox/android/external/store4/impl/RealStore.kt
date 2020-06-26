@@ -202,9 +202,12 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         emit(diskData.swapType())
                     }
 
-                    // if this is the first disk value and it is null, we should enable fetcher
-                    // we should also allow fetcher if disk sent a read error but not if it is
-                    // a write error since we should always wait for the read attempt
+                    // If this is the first disk value and it is null, we should allow fetcher
+                    // to start emitting values.
+                    // If disk sent a read error, we should allow fetcher to start emitting values
+                    // since there is nothing to read from disk.
+                    // If disk sent a write error, we should NOT allow fetcher to start emitting
+                    // values as we should always wait for the read attempt.
                     if (diskData is StoreResponse.Error.Exception) {
                         if (diskData.error is SourceOfTruth.ReadException) {
                             networkLock.complete(Unit)

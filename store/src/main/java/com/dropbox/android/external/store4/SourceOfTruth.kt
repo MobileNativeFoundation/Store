@@ -128,7 +128,7 @@ interface SourceOfTruth<Key, Input, Output> {
     }
 
     /**
-     * The exception provided when a Write operation fails in SourceOfTruth.
+     * The exception provided when a write operation fails in SourceOfTruth.
      *
      * see [StoreResponse.Error.Exception]
      */
