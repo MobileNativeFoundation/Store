@@ -113,6 +113,21 @@ public final class com/dropbox/android/external/store4/SourceOfTruth$Companion {
 	public static synthetic fun ofFlow$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
 }
 
+public final class com/dropbox/android/external/store4/SourceOfTruth$ReadException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/Object;
+	public fun hashCode ()I
+}
+
+public final class com/dropbox/android/external/store4/SourceOfTruth$WriteException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/Object;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+}
+
 public abstract interface class com/dropbox/android/external/store4/Store {
 	public abstract fun clear (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

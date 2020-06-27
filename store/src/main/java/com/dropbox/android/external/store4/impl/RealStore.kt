@@ -188,20 +188,35 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     }
                 } else if (it is Either.Right) {
                     // right, that is data from disk
-                    val (index, diskData) = it.value
-                    if (diskData.value != null) {
+                    val (_, diskData) = it.value
+                    val diskValue = diskData.dataOrNull()
+                    if (diskValue != null) {
                         emit(
                             StoreResponse.Data(
-                                value = diskData.value,
+                                value = diskValue,
                                 origin = diskData.origin
                             )
                         )
+                    } else if (diskData is StoreResponse.Error) {
+                        // disk sent an error, send it down as well
+                        emit(diskData.swapType())
                     }
 
-                    // if this is the first disk value and it is null, we should enable fetcher
-                    // TODO should we ignore the index and always enable?
-                    if (index == 0 && (diskData.value == null || request.refresh)) {
-                        networkLock.complete(Unit)
+                    // If this is the first disk value and it is null, we should allow fetcher
+                    // to start emitting values.
+                    // If disk sent a read error, we should allow fetcher to start emitting values
+                    // since there is nothing to read from disk.
+                    // If disk sent a write error, we should NOT allow fetcher to start emitting
+                    // values as we should always wait for the read attempt.
+                    if (diskData is StoreResponse.Error.Exception) {
+                        if (diskData.error is SourceOfTruth.ReadException) {
+                            networkLock.complete(Unit)
+                        }
+                        // for other errors, don't do anything, wait for the read attempt
+                    } else if (diskData is StoreResponse.Data) {
+                        if (request.refresh || diskValue == null) {
+                            networkLock.complete(Unit)
+                        }
                     }
                 }
             }

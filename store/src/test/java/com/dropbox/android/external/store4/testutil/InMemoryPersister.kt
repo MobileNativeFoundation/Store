@@ -5,15 +5,24 @@ import com.dropbox.android.external.store4.SourceOfTruth
 /**
  * An in-memory non-flowing persister for testing.
  */
-class InMemoryPersister<Key : Any, Output : Any> {
+open class InMemoryPersister<Key : Any, Output : Any> {
     private val data = mutableMapOf<Key, Output>()
+    var preWriteCallback: (suspend (key: Key, value: Output) -> Output)? = null
+    var postReadCallback: (suspend (key: Key, value: Output?) -> Output?)? = null
 
     @Suppress("RedundantSuspendModifier") // for function reference
-    suspend fun read(key: Key) = data[key]
+    suspend fun read(key: Key): Output? {
+        val value = data[key]
+        postReadCallback?.let {
+            return it(key, value)
+        }
+        return value
+    }
 
     @Suppress("RedundantSuspendModifier") // for function reference
-    suspend fun write(key: Key, output: Output) {
-        data[key] = output
+    open suspend fun write(key: Key, output: Output) {
+        val value = preWriteCallback?.invoke(key, output) ?: output
+        data[key] = value
     }
 
     @Suppress("RedundantSuspendModifier") // for function reference
