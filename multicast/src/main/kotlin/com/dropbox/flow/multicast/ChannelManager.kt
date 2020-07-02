@@ -16,6 +16,8 @@
 @file:OptIn(ExperimentalStdlibApi::class)
 package com.dropbox.flow.multicast
 
+import com.dropbox.flow.multicast.ChannelManager.Message
+import com.dropbox.flow.multicast.impl.operators.Notification
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,10 +69,10 @@ internal class ChannelManager<T>(
         }
     }
 
-    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>, piggybackOnly: Boolean = false) =
+    suspend fun addDownstream(channel: SendChannel<Message.Dispatch<T>>, piggybackOnly: Boolean = false) =
         actor.send(Message.AddChannel(channel, piggybackOnly))
 
-    suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
+    suspend fun removeDownstream(channel: SendChannel<Message.Dispatch<T>>) =
         actor.send(Message.RemoveChannel(channel))
 
     suspend fun close() = actor.close()
@@ -112,9 +114,7 @@ internal class ChannelManager<T>(
             when (msg) {
                 is Message.AddChannel -> doAdd(msg)
                 is Message.RemoveChannel -> doRemove(msg.channel)
-                is Message.Dispatch.Value -> doDispatchValue(msg)
-                is Message.Dispatch.Error -> doDispatchError(msg)
-                is Message.Dispatch.UpstreamFinished -> doHandleUpstreamClose(msg.producer)
+                is Message.Dispatch -> doDispatch(msg)
             }
         }
 
@@ -177,35 +177,54 @@ internal class ChannelManager<T>(
         /**
          * Dispatch value to all downstream collectors.
          */
-        private suspend fun doDispatchValue(msg: Message.Dispatch.Value<T>) {
-            onEach(msg.value)
-            buffer.add(msg)
-            dispatchedValue = true
-            if (buffer.isEmpty()) {
-                // if a new downstream arrives, we need to ack this so that it won't wait for
-                // values that it'll never receive
-                lastDeliveryAck = msg.delivered
+        private suspend fun doDispatch(msg: Message.Dispatch<T>) {
+            if (msg.notification is Notification.Value<T>) {
+                onEach(msg.notification.value)
+                buffer.add(msg)
             }
+            if (msg.notification !is Notification.Close) {
+                dispatchedValue = true
+            }
+
+            lastDeliveryAck = msg.delivered
+
             channels.forEach {
                 it.dispatchValue(msg)
             }
         }
 
-        /**
-         * Dispatch an upstream error to downstream collectors.
-         */
-        private fun doDispatchError(msg: Message.Dispatch.Error<T>) {
-            // dispatching error is as good as dispatching value
-            dispatchedValue = true
-            channels.forEach {
-                it.dispatchError(msg.error)
-            }
-        }
+        // /**
+        //  * Dispatch value to all downstream collectors.
+        //  */
+        // private suspend fun doDispatchValue(msg: Message.Dispatch<T>) {
+        //     onEach(msg.value)
+        //     buffer.add(msg)
+        //     dispatchedValue = true
+        //     if (buffer.isEmpty()) {
+        //         // if a new downstream arrives, we need to ack this so that it won't wait for
+        //         // values that it'll never receive
+        //         lastDeliveryAck = msg.delivered
+        //     }
+        //     channels.forEach {
+        //         it.dispatchValue(msg)
+        //     }
+        // }
+        //
+        // /**
+        //  * Dispatch an upstream error to downstream collectors.
+        //  */
+        // private fun doDispatchError(msg: Message.Dispatch<T>) {
+        //     // dispatching error is as good as dispatching value
+        //     dispatchedValue = true
+        //     channels.forEach {
+        //         it.dispatchError(msg.error)
+        //     }
+        // }
 
         /**
          * Remove a downstream collector.
          */
-        private suspend fun doRemove(channel: SendChannel<Message.Dispatch.Value<T>>) {
+        private suspend fun doRemove(channel: SendChannel<Message.Dispatch<T>>) {
             val index = channels.indexOfFirst {
                 it.hasChannel(channel)
             }
@@ -272,7 +291,7 @@ internal class ChannelManager<T>(
         /**
          * The channel used by the collector
          */
-        private val channel: SendChannel<Message.Dispatch.Value<T>>,
+        private val channel: SendChannel<Message.Dispatch<T>>,
         /**
          * Tracking whether this channel is a piggyback only channel that can be closed without ever
          * receiving a value or error.
@@ -284,15 +303,15 @@ internal class ChannelManager<T>(
         val awaitsDispatch
             get() = _awaitsDispatch
 
-        suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
+        suspend fun dispatchValue(value: Message.Dispatch<T>) {
             _awaitsDispatch = false
             channel.send(value)
         }
 
-        fun dispatchError(error: Throwable) {
-            _awaitsDispatch = false
-            channel.close(error)
-        }
+        // fun dispatchError(error: Throwable) {
+        //     _awaitsDispatch = false
+        //     channel.close(error)
+        // }
 
         fun close() {
             channel.close()
@@ -311,47 +330,29 @@ internal class ChannelManager<T>(
          * Add a new channel, that means a new downstream subscriber
          */
         class AddChannel<T>(
-            val channel: SendChannel<Dispatch.Value<T>>,
+            val channel: SendChannel<Dispatch<T>>,
             val piggybackOnly: Boolean = false
         ) : Message<T>()
 
         /**
          * Remove a downstream subscriber, that means it completed
          */
-        class RemoveChannel<T>(val channel: SendChannel<Dispatch.Value<T>>) : Message<T>()
+        class RemoveChannel<T>(val channel: SendChannel<Dispatch<T>>) : Message<T>()
 
-        sealed class Dispatch<T> : Message<T>() {
+        class Dispatch<T>(
+            val notification: Notification<T>,
+            val producer: SharedFlowProducer<T>
+        ) : Message<T>() {
+
+            /**
+             * Ack that is completed by all receiver. Upstream producer will await this before asking
+             * for a new value from upstream
+             */
+            val delivered = CompletableDeferred<Unit>()
+
             /**
              * Upstream dispatched a new value, send it to all downstream items
              */
-            class Value<T>(
-                /**
-                 * The value dispatched by the upstream
-                 */
-                val value: T,
-                /**
-                 * Ack that is completed by all receiver. Upstream producer will await this before asking
-                 * for a new value from upstream
-                 */
-                val delivered: CompletableDeferred<Unit>
-            ) : Dispatch<T>()
-
-            /**
-             * Upstream dispatched an error, send it to all downstream items
-             */
-            class Error<T>(
-                /**
-                 * The error sent by the upstream
-                 */
-                val error: Throwable
-            ) : Dispatch<T>()
-
-            class UpstreamFinished<T>(
-                /**
-                 * SharedFlowProducer finished emitting
-                 */
-                val producer: SharedFlowProducer<T>
-            ) : Dispatch<T>()
         }
     }
 }
@@ -360,20 +361,20 @@ internal class ChannelManager<T>(
  * Buffer implementation for any late arrivals.
  */
 private interface Buffer<T> {
-    fun add(item: ChannelManager.Message.Dispatch.Value<T>)
+    fun add(item: Message.Dispatch<T>)
     fun isEmpty() = items.isEmpty()
-    val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
+    val items: Collection<ChannelManager.Message.Dispatch<T>>
 }
 
 /**
  * Default implementation of buffer which does not buffer anything.
  */
 private class NoBuffer<T> : Buffer<T> {
-    override val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
+    override val items: Collection<Message.Dispatch<T>>
         get() = emptyList()
 
     // ignore
-    override fun add(item: ChannelManager.Message.Dispatch.Value<T>) = Unit
+    override fun add(item: Message.Dispatch<T>) = Unit
 }
 
 /**
@@ -391,8 +392,8 @@ private fun <T> Buffer(limit: Int): Buffer<T> = if (limit > 0) {
  */
 private class BufferImpl<T>(private val limit: Int) :
     Buffer<T> {
-    override val items = ArrayDeque<ChannelManager.Message.Dispatch.Value<T>>(limit.coerceAtMost(10))
-    override fun add(item: ChannelManager.Message.Dispatch.Value<T>) {
+    override val items = ArrayDeque<Message.Dispatch<T>>(limit.coerceAtMost(10))
+    override fun add(item: Message.Dispatch<T>) {
         while (items.size >= limit) {
             items.removeFirst()
         }
@@ -401,5 +402,5 @@ private class BufferImpl<T>(private val limit: Int) :
 }
 
 @ExperimentalCoroutinesApi
-internal fun <T> ChannelManager.Message.Dispatch.Value<T>.markDelivered() =
+internal fun <T> ChannelManager.Message.Dispatch<T>.markDelivered() =
     delivered.complete(Unit)

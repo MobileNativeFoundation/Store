@@ -16,6 +16,7 @@
 
 package com.dropbox.flow.multicast
 
+import com.dropbox.flow.multicast.impl.operators.Notification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -95,7 +96,7 @@ class Multicaster<T>(
             "cannot create a piggyback only flow when piggybackDownstream is disabled"
         }
         return flow {
-            val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
+            val channel = Channel<ChannelManager.Message.Dispatch<T>>(Channel.UNLIMITED)
             val subFlow = channel.consumeAsFlow()
                 .onStart {
                     try {
@@ -106,9 +107,15 @@ class Multicaster<T>(
                         channel.close()
                     }
                 }
-                .transform {
-                    emit(it.value)
-                    it.delivered.complete(Unit)
+                .transform<ChannelManager.Message.Dispatch<T>, Notification<T>> {
+                    try {
+                        when (it.notification) {
+                            is Notification.Value<T> -> emit(it.notification.value);
+                            is Notification.Error -> throw it.notification.error
+                        }
+                    } finally {
+                        it.delivered.complete(Unit)
+                    }
                 }.onCompletion {
                     try {
                         channelManager.removeDownstream(channel)

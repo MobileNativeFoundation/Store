@@ -505,6 +505,34 @@ class MulticastTest {
         }
     }
 
+    @Test
+    fun `GIVEN piggybackDownstream AND upsteams throws exception WHEN add downstream AND add downstream THEN downstream gets value`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val source = flow {
+                if(createCount++ == 0) {
+                    throw Exception()
+                } else {
+                    emit("value")
+
+                }
+            }
+            val multicaster =
+                createMulticaster(flow = source, piggybackDownstream = true)
+            val downstream1 = multicaster.newDownstream()
+            val value1 = testScope.async { downstream1.first() }
+            testScope.advanceUntilIdle()
+            assertFalse(value1.isCompleted)
+
+            val downstream2 = multicaster.newDownstream()
+            val value2 = testScope.async { downstream2.first() }
+            testScope.advanceUntilIdle()
+            assertTrue(value1.isCompleted)
+            assertEquals("value", value1.getCompleted())
+            assertTrue(value2.isCompleted)
+            assertEquals("value", value2.getCompleted())
+        }
+
     private fun versionedMulticaster(
         bufferSize: Int = 0,
         collectionLimit: Int,

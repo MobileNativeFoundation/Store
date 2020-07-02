@@ -15,14 +15,15 @@
  */
 package com.dropbox.flow.multicast
 
-import kotlinx.coroutines.CompletableDeferred
+import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
+import com.dropbox.flow.multicast.impl.operators.materialize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -36,25 +37,19 @@ import kotlinx.coroutines.launch
  * Cancellation of the collection might be triggered by both this producer (e.g. upstream completes)
  * or the [ChannelManager] (e.g. all active collectors complete).
  */
+@ExperimentalCoroutinesApi
 internal class SharedFlowProducer<T>(
     private val scope: CoroutineScope,
     private val src: Flow<T>,
-    private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit
+    private val sendUpsteamMessage: suspend (Dispatch<T>) -> Unit
 ) {
     private val collectionJob: Job = scope.launch(start = CoroutineStart.LAZY) {
         try {
-            src.catch {
-                sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
-            }.collect {
-                val ack = CompletableDeferred<Unit>()
-                sendUpsteamMessage(
-                    ChannelManager.Message.Dispatch.Value(
-                        it,
-                        ack
-                    )
-                )
+            src.materialize().collect {
+                val msg =   Dispatch(it, this@SharedFlowProducer)
+                sendUpsteamMessage(msg)
                 // suspend until at least 1 receives the new value
-                ack.await()
+                msg.delivered.await()
             }
         } catch (closed: ClosedSendChannelException) {
             // ignore. if consumers are gone, it might close itself.
@@ -66,19 +61,9 @@ internal class SharedFlowProducer<T>(
      */
     fun start() {
         scope.launch {
-            try {
-                // trigger start of the collection and wait until collection ends, either due to an
-                // error or ordered by the channel manager
-                collectionJob.join()
-            } finally {
-                // cleanup the channel manager so that downstreams can be closed if they are not
-                // closed already and leftovers can be moved to a new producer if necessary.
-                try {
-                    sendUpsteamMessage(ChannelManager.Message.Dispatch.UpstreamFinished(this@SharedFlowProducer))
-                } catch (closed: ClosedSendChannelException) {
-                    // it might close before us, its fine.
-                }
-            }
+            // trigger start of the collection and wait until collection ends, either due to an
+            // error or ordered by the channel manager
+            collectionJob.join()
         }
     }
 
