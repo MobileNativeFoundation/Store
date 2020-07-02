@@ -107,7 +107,7 @@ class Multicaster<T>(
                         channel.close()
                     }
                 }
-                .transform<ChannelManager.Message.Dispatch<T>, Notification<T>> {
+                .transform<ChannelManager.Message.Dispatch<T>, T> {
                     try {
                         when (it.notification) {
                             is Notification.Value<T> -> emit(it.notification.value);

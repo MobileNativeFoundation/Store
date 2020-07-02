@@ -191,6 +191,10 @@ internal class ChannelManager<T>(
             channels.forEach {
                 it.dispatchValue(msg)
             }
+
+            if (msg.notification is Notification.Close<T>) {
+                doHandleUpstreamClose(msg.producer)
+            }
         }
 
         // /**
@@ -317,7 +321,7 @@ internal class ChannelManager<T>(
             channel.close()
         }
 
-        fun hasChannel(channel: SendChannel<Message.Dispatch.Value<T>>) = this.channel === channel
+        fun hasChannel(channel: SendChannel<Message.Dispatch<T>>) = this.channel === channel
 
         fun hasChannel(entry: ChannelEntry<T>) = this.channel === entry.channel
     }
