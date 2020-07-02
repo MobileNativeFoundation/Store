@@ -34,6 +34,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
@@ -161,7 +162,10 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     ): Flow<StoreResponse<Output>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
-        val networkFlow = createNetworkFlow(request, networkLock)
+        val networkFlow = createNetworkFlow(request, networkLock).onCompletion {
+            // if network finishes, always unlock the disk to let the rest of the machinery continue
+            diskLock.complete(Unit)
+        }
         if (!request.shouldSkipCache(CacheType.DISK)) {
             diskLock.complete(Unit)
         }

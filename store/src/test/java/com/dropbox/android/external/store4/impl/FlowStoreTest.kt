@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -627,6 +628,32 @@ class FlowStoreTest {
             )
             fetcher1Job.cancelAndJoin()
         }
+
+    @Test
+    fun `GIVEN Flow Fetcher WHEN it completes with 0 emissions THEN SourceOfTruth should load`() {
+        // see https://github.com/dropbox/Store/issues/185
+        testScope.runBlockingTest {
+            val persister = InMemoryPersister<Int, String>()
+            persister.write(3, "local")
+            val pipeline = StoreBuilder.from(
+                    fetcher = Fetcher.ofFlow {
+                        flowOf<String>()
+                    },
+                    sourceOfTruth = persister.asSourceOfTruth()
+            ).build()
+            assertThat(pipeline.stream(
+                    StoreRequest.fresh(3)
+            )).emitsExactly(
+                    StoreResponse.Loading(
+                            origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.Data(
+                            origin = ResponseOrigin.SourceOfTruth,
+                            value = "local"
+                    )
+            )
+        }
+    }
 
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
