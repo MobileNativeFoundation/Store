@@ -148,6 +148,9 @@ internal class RealCache<Key : Any, Value : Any>(
         val existingEntry = cacheEntries[key]
         if (existingEntry != null) {
             // cache entry found
+            //remove the weight of the current entry
+            totalWeight -= existingEntry.weight
+            //weigh new entry
             val weight = weigher.weigh(key, value)
             recordWrite(existingEntry, nowNanos, weight)
 

@@ -14,7 +14,17 @@ public abstract interface class com/dropbox/android/external/cache4/Cache$Builde
 	public abstract fun concurrencyLevel (I)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun expireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
 	public abstract fun expireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
+	public abstract fun getClock ()Lcom/dropbox/android/external/cache4/Clock;
+	public abstract fun getConcurrencyLevel ()I
+	public abstract fun getExpireAfterAccessDuration ()D
+	public abstract fun getExpireAfterWriteDuration ()D
+	public abstract fun getMaxSize ()J
 	public abstract fun maximumCacheSize (J)Lcom/dropbox/android/external/cache4/Cache$Builder;
+	public abstract fun setClock (Lcom/dropbox/android/external/cache4/Clock;)V
+	public abstract fun setConcurrencyLevel (I)V
+	public abstract fun setExpireAfterAccessDuration-LRDsOJo (D)V
+	public abstract fun setExpireAfterWriteDuration-LRDsOJo (D)V
+	public abstract fun setMaxSize (J)V
 }
 
 public final class com/dropbox/android/external/cache4/Cache$Builder$Companion {
@@ -23,5 +33,13 @@ public final class com/dropbox/android/external/cache4/Cache$Builder$Companion {
 
 public abstract interface class com/dropbox/android/external/cache4/Clock {
 	public abstract fun getCurrentTimeNanos ()J
+}
+
+public abstract interface class com/dropbox/android/external/cache4/Weigher {
+	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
+}
+
+public final class com/dropbox/android/external/cache4/WeighingBuilderKt {
+	public static final fun buildWithWeigher (Lcom/dropbox/android/external/cache4/Cache$Builder;Lcom/dropbox/android/external/cache4/Weigher;J)Lcom/dropbox/android/external/cache4/Cache;
 }
 
