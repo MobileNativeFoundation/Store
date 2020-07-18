@@ -26,8 +26,11 @@ import kotlin.time.ExperimentalTime
  * <p>This feature cannot be used in conjunction with {@link #maximumSize}.
  */
 @ExperimentalTime
-fun <Key:Any, Value:Any> Cache.Builder.buildWithWeigher(weigher: Weigher<Key, Value>, maxWeight:Long) : Cache<Key, Value> {
-     require(maxSize == CacheBuilderImpl.UNSET_LONG) { "maximum size can not be combined with weigher" }
+fun <Key : Any, Value : Any> Cache.Builder.buildWithWeigher(
+    weigher: Weigher<Key, Value>,
+    maxWeight: Long
+): Cache<Key, Value> {
+    require(maxSize == CacheBuilderImpl.UNSET_LONG) { "maximum size can not be combined with weigher" }
     return RealCache(
         expireAfterWriteDuration,
         expireAfterAccessDuration,

@@ -93,8 +93,8 @@ internal class RealCache<Key : Any, Value : Any>(
         accessQueue = takeIf { expiresAfterAccess || evictsBySize }?.let {
             Collections.synchronizedSet(ReorderingLinkedHashSet())
         }
-        if(maxSize!= UNSET_LONG){
-            require(weigher is OneWeigher) {"We cannot have a weigher when setting max size"}
+        if (maxSize != UNSET_LONG) {
+            require(weigher is OneWeigher) { "We cannot have a weigher when setting max size" }
             maxWeight = maxSize
         }
     }
@@ -148,9 +148,9 @@ internal class RealCache<Key : Any, Value : Any>(
         val existingEntry = cacheEntries[key]
         if (existingEntry != null) {
             // cache entry found
-            //remove the weight of the current entry
+            // remove the weight of the current entry
             totalWeight -= existingEntry.weight
-            //weigh new entry
+            // weigh new entry
             val weight = weigher.weigh(key, value)
             recordWrite(existingEntry, nowNanos, weight)
 
