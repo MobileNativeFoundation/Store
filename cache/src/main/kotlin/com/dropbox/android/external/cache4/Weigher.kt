@@ -10,6 +10,6 @@ interface Weigher<K : Any, V : Any> {
     fun weigh(key: K, value: V): Int
 }
 
-class OneWeigher<K : Any, V : Any> : Weigher<K, V> {
+internal class OneWeigher<K : Any, V : Any> : Weigher<K, V> {
     override fun weigh(key: K, value: V): Int = 1
 }

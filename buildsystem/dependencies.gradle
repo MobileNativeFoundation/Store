@@ -8,7 +8,6 @@ ext.versions = [
 
         // Plugins
         androidGradlePlugin         : '4.0.0',
-        androidGradlePlugin         : '4.0.0-beta05',
         dokkaGradlePlugin           : '0.10.0',
         ktlintGradle                : '9.1.1',
         spotlessGradlePlugin        : '3.26.1',

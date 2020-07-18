@@ -185,7 +185,7 @@ internal class CacheBuilderImpl : Cache.Builder {
     }
 
     companion object {
-        internal const val UNSET_LONG: Long = -1
+        internal const val UNSET_LONG: Long = Long.MAX_VALUE
         internal const val DEFAULT_CONCURRENCY_LEVEL = 16
     }
 }

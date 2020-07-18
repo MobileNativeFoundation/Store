@@ -36,7 +36,7 @@ internal class RealCache<Key : Any, Value : Any>(
     val concurrencyLevel: Int,
     val clock: Clock,
     val weigher: Weigher<Key, Value> = OneWeigher(),
-    val maxWeight: Long = UNSET_LONG
+    var maxWeight: Long = UNSET_LONG
 ) : Cache<Key, Value> {
 
     /**
@@ -81,7 +81,7 @@ internal class RealCache<Key : Any, Value : Any>(
      */
     private val loadersSynchronizer = KeyedSynchronizer<Key>()
 
-    private val totalWeight = atomic(0)
+    private var totalWeight = 0L
 
     init {
         // writeQueue is required if write expiry is enabled
@@ -92,6 +92,10 @@ internal class RealCache<Key : Any, Value : Any>(
         // accessQueue is required if either read expiry is enabled or size-based eviction is enabled
         accessQueue = takeIf { expiresAfterAccess || evictsBySize }?.let {
             Collections.synchronizedSet(ReorderingLinkedHashSet())
+        }
+        if(maxSize!= UNSET_LONG){
+            require(weigher is OneWeigher) {"We cannot have a weigher when setting max size"}
+            maxWeight = maxSize
         }
     }
 
@@ -202,7 +206,6 @@ internal class RealCache<Key : Any, Value : Any>(
                 for (entry in iterator) {
                     if (entry.isExpired(nowNanos)) {
                         cacheEntries.remove(entry.key)
-                        //TODO MIKE do we need to subtract here?
                         totalWeight -= entry.weight
                         // remove the entry from the current queue
                         iterator.remove()
