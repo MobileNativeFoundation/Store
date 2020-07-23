@@ -206,7 +206,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             if (request.refresh || diskData.value == null) {
                                 networkLock.complete(Unit)
                             }
-
                         }
                         is StoreResponse.Error -> {
                             // disk sent an error, send it down as well
