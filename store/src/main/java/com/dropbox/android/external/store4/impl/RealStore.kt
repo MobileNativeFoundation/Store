@@ -179,13 +179,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value !is StoreResponse.Data) {
-                        emit(it.value.swapType())
-                    }
-                    if (it.value is StoreResponse.Data) {
-                        // unlocking disk only if network sent data so that fresh data request never
-                        // receives disk data by mistake
-                        diskLock.complete(Unit)
+                    when (it.value) {
+                        is StoreResponse.Data ->
+                            // unlocking disk only if network sent data so that fresh data request
+                            // never receives disk data by mistake
+                            diskLock.complete(Unit)
+                        else ->
+                            emit(it.value.swapType())
                     }
                 }
                 is Either.Right -> {
