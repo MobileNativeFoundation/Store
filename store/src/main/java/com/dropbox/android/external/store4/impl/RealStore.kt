@@ -220,6 +220,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                                 diskData.error is SourceOfTruth.ReadException) {
                                 networkLock.complete(Unit)
                             }
+                            // for other errors, don't do anything, wait for the read attempt
                         }
                     }
                 }
