@@ -1,7 +1,9 @@
 package com.dropbox.android.external.store4
 
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.toDuration
 
 /**
  * MemoryPolicy holds all required info to create MemoryCache
@@ -67,7 +69,10 @@ class MemoryPolicy internal constructor(
     }
 
     companion object {
-        val DEFAULT_DURATION_POLICY: Duration = Duration.INFINITE
+        // Ideally this would be set to Duration.INFINITE, but this breaks consumers compiling with
+        // Kotlin 1.4-M3 (not sure why).
+        // TODO: revert back to using Duration.INFINITE once Store is compiled with Kotlin 1.4
+        val DEFAULT_DURATION_POLICY: Duration = Double.POSITIVE_INFINITY.toDuration(TimeUnit.SECONDS)
         const val DEFAULT_SIZE_POLICY: Long = -1
 
         fun builder(): MemoryPolicyBuilder = MemoryPolicyBuilder()
