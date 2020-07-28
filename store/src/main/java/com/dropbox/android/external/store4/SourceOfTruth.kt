@@ -44,9 +44,6 @@ import kotlinx.coroutines.flow.Flow
  * ([Output]) are not identical. This allows us to read one type of objects from network and
  * transform them to another type when placing them in local storage.
  *
- * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
- * for waiting on network update before local modifications are available (via [Store.stream]).
- *
  */
 interface SourceOfTruth<Key, Input, Output> {
 
