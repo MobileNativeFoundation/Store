@@ -3,7 +3,7 @@ ext.versions = [
         targetSdk         : 29,
         compileSdk        : 29,
         buildTools        : '29.0.3',
-        kotlin            : '1.3.72',
+        kotlin            : '1.4.0-rc',
         ktlint            : '0.36.0',
 
         // Plugins
@@ -19,7 +19,7 @@ ext.versions = [
         picasso           : '2.5.2',
 
         // Others.
-        coroutines        : '1.3.6',
+        coroutines        : '1.3.8-1.4.0-rc',
         retrofit          : '2.8.1',
         okHttp            : '4.6.0',
         okio              : '2.6.0',
