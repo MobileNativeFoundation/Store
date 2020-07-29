@@ -65,7 +65,7 @@ interface Store<Key : Any, Output : Any> {
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
     StoreRequest.cached(key, refresh = false)
 ).filterNot {
-    it is StoreResponse.Loading
+    it is StoreResponse.Loading || it is StoreResponse.NoNewData
 }.first().requireData()
 
 /**
@@ -74,5 +74,5 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = stream(
     StoreRequest.fresh(key)
 ).filterNot {
-    it is StoreResponse.Loading
+    it is StoreResponse.Loading || it is StoreResponse.NoNewData
 }.first().requireData()

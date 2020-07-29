@@ -179,13 +179,27 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    when (it.value) {
-                        is StoreResponse.Data ->
-                            // unlocking disk only if network sent data so that fresh data request
-                            // never receives disk data by mistake
-                            diskLock.complete(Unit)
-                        else ->
-                            emit(it.value.swapType())
+                    if (it.value is StoreResponse.Data || it.value is StoreResponse.NoNewData) {
+                        // unlocking disk only if network sent data or reported no new data
+                        // so that fresh data request never receives new fetcher data after
+                        // cached disk data
+                        diskLock.complete(Unit)
+                    }
+
+                    if (it.value !is StoreResponse.Data) {
+                        emit(it.value.swapType())
+                    }
+
+                    if (it.value is StoreResponse.NoNewData &&
+                        request.shouldSkipCache(CacheType.MEMORY)) {
+                        // In the special case where the request is skipping memory cache but the
+                        // fetcher returned no new data we actaully want to serve cache and SoT
+                        // data. In this case we do check the cache. If the request did not skip
+                        // memory and no new data was returned from the fetcher we do not emit
+                        // from cache again to avoid a emitting twice from the cache.
+                        memCache?.get(request.key)?.let {
+                            emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                        }
                     }
                 }
                 is Either.Right -> {
@@ -194,12 +208,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         is StoreResponse.Data -> {
                             val diskValue = diskData.value
                             if (diskValue != null) {
-                                emit(
-                                    StoreResponse.Data(
-                                        value = diskValue,
-                                        origin = diskData.origin
-                                    )
-                                )
+                                @Suppress("UNCHECKED_CAST")
+                                emit(diskData as StoreResponse<Output>)
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.

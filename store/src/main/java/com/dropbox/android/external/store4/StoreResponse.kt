@@ -39,6 +39,11 @@ sealed class StoreResponse<out T> {
     data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
+     * No new data event dispatched by a Pipeline
+     */
+    data class NoNewData<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
+
+    /**
      * Error dispatched by a pipeline
      */
     sealed class Error<T> : StoreResponse<T>() {
@@ -98,6 +103,7 @@ sealed class StoreResponse<out T> {
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> this as Error<R>
         is Loading -> this as Loading<R>
+        is NoNewData -> this as NoNewData<R>
         is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
     }
 }
