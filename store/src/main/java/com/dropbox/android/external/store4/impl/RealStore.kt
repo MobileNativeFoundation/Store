@@ -86,30 +86,39 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
     override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> =
         flow<StoreResponse<Output>> {
-            val cached = if (request.shouldSkipCache(CacheType.MEMORY)) {
+            val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
                 memCache?.get(request.key)
             }
 
-            cached?.let {
+            cachedToEmit?.let {
                 // if we read a value from cache, dispatch it first
                 emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
             }
-            if (sourceOfTruth == null) {
+            val stream = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
-                val piggybackOnly = !request.refresh && cached != null
+                val piggybackOnly = !request.refresh && cachedToEmit != null
                 @Suppress("UNCHECKED_CAST")
-                emitAll(
-                    createNetworkFlow(
-                        request = request,
-                        networkLock = null,
-                        piggybackOnly = piggybackOnly
-                    ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
-                )
+
+                createNetworkFlow(
+                    request = request,
+                    networkLock = null,
+                    piggybackOnly = piggybackOnly
+                ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
             } else {
-                emitAll(diskNetworkCombined(request, sourceOfTruth))
+                diskNetworkCombined(request, sourceOfTruth)
             }
+            emitAll(stream.transform {
+                emit(it)
+                if (it is StoreResponse.NoNewData && cachedToEmit == null) {
+                    // In the special case where fetcher returned no new data we actually want to
+                    // serve cache data (even if the request specified skipping cache and/or SoT)
+                    memCache?.get(request.key)?.let {
+                        emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                    }
+                }
+            })
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != ResponseOrigin.Cache) {
@@ -188,18 +197,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
                     if (it.value !is StoreResponse.Data) {
                         emit(it.value.swapType())
-                    }
-
-                    if (it.value is StoreResponse.NoNewData &&
-                        request.shouldSkipCache(CacheType.MEMORY)) {
-                        // In the special case where the request is skipping memory cache but the
-                        // fetcher returned no new data we actaully want to serve cache and SoT
-                        // data. In this case we do check the cache. If the request did not skip
-                        // memory and no new data was returned from the fetcher we do not emit
-                        // from cache again to avoid a emitting twice from the cache.
-                        memCache?.get(request.key)?.let {
-                            emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
-                        }
                     }
                 }
                 is Either.Right -> {

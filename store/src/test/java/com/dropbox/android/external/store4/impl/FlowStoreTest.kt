@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -452,7 +453,7 @@ class FlowStoreTest {
     }
 
     @Test
-    fun `GIVEN no data from fetcher WHEN stream fresh data THEN fetch returns no data AND cached values are recevied`() =
+    fun `GIVEN SoT WHEN stream fresh data returns no data from fetcher THEN fetch returns no data AND cached values are recevied`() =
         testScope.runBlockingTest {
             val persister = InMemoryPersister<Int, String>().asFlowable()
             val pipeline = StoreBuilder.from(
@@ -481,12 +482,11 @@ class FlowStoreTest {
                         value = "local-1",
                         origin = ResponseOrigin.SourceOfTruth
                     )
-
                 )
         }
 
     @Test
-    fun `GIVEN no data from fetcher WHEN stream cached data with refresh THEN cached values are recevied AND fetch returns no data`() =
+    fun `GIVEN SoT WHEN stream cached data with refresh returns NoNewData THEN cached values are recevied AND fetch returns no data`() =
         testScope.runBlockingTest {
             val persister = InMemoryPersister<Int, String>().asFlowable()
             val pipeline = StoreBuilder.from(
@@ -515,7 +515,72 @@ class FlowStoreTest {
                     StoreResponse.NoNewData(
                         origin = ResponseOrigin.Fetcher
                     )
+                )
+        }
 
+    @Test
+    fun `GIVEN no SoT WHEN stream fresh data returns no data from fetcher THEN fetch returns no data AND cached values are recevied`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val pipeline = StoreBuilder.from<Int, String>(
+                fetcher = Fetcher.ofFlow {
+                    if (createCount++ == 0) {
+                        flowOf("remote-1")
+                    } else {
+                        flowOf()
+                    }
+                }
+            )
+                .buildWithTestScope()
+
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("remote-1")
+
+            assertThat(pipeline.stream(StoreRequest.fresh(3)))
+                .emitsExactly(
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    Data(
+                        value = "remote-1",
+                        origin = ResponseOrigin.Cache
+                    )
+                )
+        }
+
+    @Test
+    fun `GIVEN no SoT WHEN stream cached data with refresh returns NoNewData THEN cached values are recevied AND fetch returns no data`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val pipeline = StoreBuilder.from<Int, String>(
+                fetcher = Fetcher.ofFlow {
+                    if (createCount++ == 0) {
+                        flowOf("remote-1")
+                    } else {
+                        flowOf()
+                    }
+                }
+            )
+                .buildWithTestScope()
+
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("remote-1")
+
+            assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+                .emitsExactly(
+                    Data(
+                        value = "remote-1",
+                        origin = ResponseOrigin.Cache
+                    ),
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    )
                 )
         }
 
