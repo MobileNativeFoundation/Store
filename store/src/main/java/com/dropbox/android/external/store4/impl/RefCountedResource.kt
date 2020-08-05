@@ -22,7 +22,7 @@ import kotlinx.coroutines.sync.withLock
  * Simple holder that can ref-count items by a given key.
  */
 internal class RefCountedResource<Key, T>(
-    private val create: suspend (Key) -> T,
+    private val create: (Key) -> T,
     private val onRelease: (suspend (Key, T) -> Unit)? = null
 ) {
     private val items = mutableMapOf<Key, Item>()
