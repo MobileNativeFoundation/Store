@@ -73,4 +73,6 @@ dependencies {
 
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesAndroid
+
+    debugImplementation libraries.leakcanary
 }
