@@ -24,6 +24,7 @@ import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -97,7 +98,7 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
 
     fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreResponse<Input>> {
         return flow {
-            val fetcher = fetchers.acquire(key)
+            val fetcher = acquireFetcher(key)
             try {
                 emitAll(fetcher.newDownstream(piggybackOnly))
             } finally {
@@ -105,6 +106,23 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
             }
         }
     }
+
+    /**
+     * This functions goes to great length to prevent capturing the calling context from
+     * [getFetcher]. The reason being that the [Flow] returned by [getFetcher] is collected on the
+     * user's context and [acquireFetcher] will, optionally, launch a long running coroutine on the
+     * [FetcherController]'s [scope]. In order to avoid capturing a reference to the scope we need
+     * to:
+     * 1) Not inline this function as that will cause the lambda to capture a reference to the
+     * surrounding suspend lambda which, in turn, holds a reference to the user's coroutine context.
+     * 2) Use [async]-[await] instead of
+     * [kotlinx.coroutines.withContext] as [kotlinx.coroutines.withContext] will also hold onto a
+     * reference to the caller's context (the LHS parameter of the new context which is used to run
+     * the operation).
+     */
+    private suspend fun acquireFetcher(key: Key) = scope.async {
+        fetchers.acquire(key)
+    }.await()
 
     // visible for testing
     internal suspend fun fetcherSize() = fetchers.size()
