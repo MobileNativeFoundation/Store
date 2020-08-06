@@ -114,6 +114,20 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 if (it is StoreResponse.NoNewData && cachedToEmit == null) {
                     // In the special case where fetcher returned no new data we actually want to
                     // serve cache data (even if the request specified skipping cache and/or SoT)
+                    //
+                    // For stream(Request.cached(key, refresh=true)) we will return:
+                    // Cache
+                    // Source of truth
+                    // Fetcher - > Loading
+                    // Fetcher - > NoNewData
+                    // (future Source of truth updates)
+                    //
+                    // For stream(Request.fresh(key)) we will return:
+                    // Fetcher - > Loading
+                    // Fetcher - > NoNewData
+                    // Cache
+                    // Source of truth
+                    // (future Source of truth updates)
                     memCache?.get(request.key)?.let {
                         emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
                     }
@@ -189,9 +203,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 is Either.Left -> {
                     // left, that is data from network
                     if (it.value is StoreResponse.Data || it.value is StoreResponse.NoNewData) {
-                        // unlocking disk only if network sent data or reported no new data
+                        // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
-                        // cached disk data
+                        // cached disk data.
+                        // This means that if the user asked for fresh data but the network returned
+                        // no new data we will still unblock disk.
                         diskLock.complete(Unit)
                     }
 

@@ -43,7 +43,13 @@ data class StoreRequest<Key> private constructor(
         }
 
         /**
-         * Create a Store Request which will skip all caches and hit your fetcher (filling your caches)
+         * Create a Store Request which will skip all caches and hit your fetcher
+         * (filling your caches).
+         *
+         * Note: If the [Fetcher] does not return any data (i.e the returned
+         * [kotlinx.coroutines.Flow], when collected, is empty). Then store will fall back to local
+         * data **even** if you explicitly requested fresh data.
+         * See https://github.com/dropbox/Store/pull/194 for context.
          */
         fun <Key> fresh(key: Key) = StoreRequest(
                 key = key,

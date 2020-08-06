@@ -29,17 +29,18 @@ sealed class StoreResponse<out T> {
     abstract val origin: ResponseOrigin
 
     /**
-     * Loading event dispatched by a Pipeline
+     * Loading event dispatched by [Store] to signal the [Fetcher] is in progress.
      */
     data class Loading<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
-     * Data dispatched by a pipeline
+     * Data dispatched by [Store]
      */
     data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
-     * No new data event dispatched by a Pipeline
+     * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
+     * returned [kotlinx.coroutines.Flow], when collected, was empty).
      */
     data class NoNewData<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
 
