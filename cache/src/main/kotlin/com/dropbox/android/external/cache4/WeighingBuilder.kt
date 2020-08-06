@@ -31,6 +31,8 @@ fun <Key : Any, Value : Any> Cache.Builder.buildWithWeigher(
     maxWeight: Long
 ): Cache<Key, Value> {
     require(maxSize == CacheBuilderImpl.UNSET_LONG) { "maximum size can not be combined with weigher" }
+    require(maxWeight >= 0) { "maximum weight must be greater than or equal to 0" }
+
     return RealCache(
         expireAfterWriteDuration,
         expireAfterAccessDuration,
