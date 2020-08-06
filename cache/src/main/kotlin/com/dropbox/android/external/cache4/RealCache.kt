@@ -159,9 +159,9 @@ internal class RealCache<Key : Any, Value : Any>(
         } else {
             // create a new cache entry
             val weight = weigher.weigh(key, value)
-            //when a new entries weight exceeds the max weight, 
-            //we immediately evict that entry and nothing else
-            if(weight > maxWeight) return 
+            // when a new entries weight exceeds the max weight, 
+            // we immediately evict that entry and nothing else
+            if (weight > maxWeight) return
             val newEntry = CacheEntry(key, value, weight)
             recordWrite(newEntry, nowNanos, weight)
             cacheEntries[key] = newEntry
