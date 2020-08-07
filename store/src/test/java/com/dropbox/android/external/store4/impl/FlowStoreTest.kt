@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
@@ -325,7 +326,12 @@ class FlowStoreTest {
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runBlockingTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
         val pipeline = StoreBuilder.from(
-            Fetcher.ofFlow { flow {} },
+            Fetcher.ofFlow {
+                flow {
+                    delay(20)
+                    emit("three-1")
+                }
+            },
             sourceOfTruth = persister.asSourceOfTruth()
         )
             .disableCache()
@@ -343,7 +349,12 @@ class FlowStoreTest {
                 Data(
                     value = "local-1",
                     origin = ResponseOrigin.SourceOfTruth
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
                 )
+
             )
     }
 
@@ -440,6 +451,138 @@ class FlowStoreTest {
                 )
             )
     }
+
+    @Test
+    fun `GIVEN SoT WHEN stream fresh data returns no data from fetcher THEN fetch returns no data AND cached values are recevied`() =
+        testScope.runBlockingTest {
+            val persister = InMemoryPersister<Int, String>().asFlowable()
+            val pipeline = StoreBuilder.from(
+                fetcher = Fetcher.ofFlow { flow {} },
+                sourceOfTruth = persister.asSourceOfTruth()
+            )
+                .buildWithTestScope()
+
+            persister.flowWriter(3, "local-1")
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("local-1")
+
+            assertThat(pipeline.stream(StoreRequest.fresh(3)))
+                .emitsExactly(
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    Data(
+                        value = "local-1",
+                        origin = ResponseOrigin.Cache
+                    ),
+                    Data(
+                        value = "local-1",
+                        origin = ResponseOrigin.SourceOfTruth
+                    )
+                )
+        }
+
+    @Test
+    fun `GIVEN SoT WHEN stream cached data with refresh returns NoNewData THEN cached values are recevied AND fetch returns no data`() =
+        testScope.runBlockingTest {
+            val persister = InMemoryPersister<Int, String>().asFlowable()
+            val pipeline = StoreBuilder.from(
+                fetcher = Fetcher.ofFlow { flow {} },
+                sourceOfTruth = persister.asSourceOfTruth()
+            )
+                .buildWithTestScope()
+
+            persister.flowWriter(3, "local-1")
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("local-1")
+
+            assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+                .emitsExactly(
+                    Data(
+                        value = "local-1",
+                        origin = ResponseOrigin.Cache
+                    ),
+                    Data(
+                        value = "local-1",
+                        origin = ResponseOrigin.SourceOfTruth
+                    ),
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    )
+                )
+        }
+
+    @Test
+    fun `GIVEN no SoT WHEN stream fresh data returns no data from fetcher THEN fetch returns no data AND cached values are recevied`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val pipeline = StoreBuilder.from<Int, String>(
+                fetcher = Fetcher.ofFlow {
+                    if (createCount++ == 0) {
+                        flowOf("remote-1")
+                    } else {
+                        flowOf()
+                    }
+                }
+            )
+                .buildWithTestScope()
+
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("remote-1")
+
+            assertThat(pipeline.stream(StoreRequest.fresh(3)))
+                .emitsExactly(
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    Data(
+                        value = "remote-1",
+                        origin = ResponseOrigin.Cache
+                    )
+                )
+        }
+
+    @Test
+    fun `GIVEN no SoT WHEN stream cached data with refresh returns NoNewData THEN cached values are recevied AND fetch returns no data`() =
+        testScope.runBlockingTest {
+            var createCount = 0
+            val pipeline = StoreBuilder.from<Int, String>(
+                fetcher = Fetcher.ofFlow {
+                    if (createCount++ == 0) {
+                        flowOf("remote-1")
+                    } else {
+                        flowOf()
+                    }
+                }
+            )
+                .buildWithTestScope()
+
+            val firstFetch = pipeline.fresh(3) // prime the cache
+            assertThat(firstFetch).isEqualTo("remote-1")
+
+            assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
+                .emitsExactly(
+                    Data(
+                        value = "remote-1",
+                        origin = ResponseOrigin.Cache
+                    ),
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.NoNewData(
+                        origin = ResponseOrigin.Fetcher
+                    )
+                )
+        }
 
     @Test
     fun `GIVEN no sourceOfTruth and cache hit WHEN stream cached data without refresh THEN no fetch is triggered AND receives following network updates`() =

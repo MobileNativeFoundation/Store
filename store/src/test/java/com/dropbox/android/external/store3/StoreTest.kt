@@ -163,6 +163,40 @@ class StoreTest(
         verify(persister, never()).read(any())
     }
 
+    @Test
+    fun `GIVEN no new data WHEN get THEN returns disk data`() = testScope.runBlockingTest {
+        val simpleStore = TestStoreBuilder.from(
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
+        ).build(storeType)
+
+        whenever(fetcher.invoke(barCode)) doReturn
+            flowOf()
+
+        whenever(persister.read(barCode)) doReturn DISK
+
+        val value = simpleStore.get(barCode)
+        assertThat(value).isEqualTo(DISK)
+    }
+
+    @Test
+    fun `GIVEN no new data WHEN fresh THEN returns disk data`() = testScope.runBlockingTest {
+        val simpleStore = TestStoreBuilder.from(
+            scope = testScope,
+            fetcher = fetcher,
+            persister = persister
+        ).build(storeType)
+
+        whenever(fetcher.invoke(barCode)) doReturn
+            flowOf()
+
+        whenever(persister.read(barCode)) doReturn DISK
+
+        val value = simpleStore.fresh(barCode)
+        assertThat(value).isEqualTo(DISK)
+    }
+
     companion object {
         private const val DISK = "disk"
         private const val NETWORK = "fresh"
