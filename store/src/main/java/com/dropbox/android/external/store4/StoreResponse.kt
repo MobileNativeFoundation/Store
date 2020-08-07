@@ -29,14 +29,20 @@ sealed class StoreResponse<out T> {
     abstract val origin: ResponseOrigin
 
     /**
-     * Loading event dispatched by a Pipeline
+     * Loading event dispatched by [Store] to signal the [Fetcher] is in progress.
      */
     data class Loading<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
-     * Data dispatched by a pipeline
+     * Data dispatched by [Store]
      */
     data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>()
+
+    /**
+     * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
+     * returned [kotlinx.coroutines.Flow], when collected, was empty).
+     */
+    data class NoNewData<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
 
     /**
      * Error dispatched by a pipeline
@@ -98,6 +104,7 @@ sealed class StoreResponse<out T> {
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
         is Error -> this as Error<R>
         is Loading -> this as Loading<R>
+        is NoNewData -> this as NoNewData<R>
         is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
     }
 }

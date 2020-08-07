@@ -233,6 +233,17 @@ public final class com/dropbox/android/external/store4/StoreResponse$Loading : c
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/dropbox/android/external/store4/StoreResponse$NoNewData : com/dropbox/android/external/store4/StoreResponse {
+	public fun <init> (Lcom/dropbox/android/external/store4/ResponseOrigin;)V
+	public final fun component1 ()Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public final fun copy (Lcom/dropbox/android/external/store4/ResponseOrigin;)Lcom/dropbox/android/external/store4/StoreResponse$NoNewData;
+	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/StoreResponse$NoNewData;Lcom/dropbox/android/external/store4/ResponseOrigin;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/StoreResponse$NoNewData;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class com/dropbox/android/external/store4/StoreResponseKt {
 	public static final fun doThrow (Lcom/dropbox/android/external/store4/StoreResponse$Error;)Ljava/lang/Void;
 }

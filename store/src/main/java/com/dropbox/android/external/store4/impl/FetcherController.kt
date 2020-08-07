@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEmpty
 
 /**
  * This class maintains one and only 1 fetcher for a given [Key].
@@ -82,6 +83,8 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                             origin = ResponseOrigin.Fetcher
                         )
                     }
+                }.onEmpty {
+                    emit(StoreResponse.NoNewData(ResponseOrigin.Fetcher))
                 },
                 piggybackingDownstream = enablePiggyback,
                 onEach = { response ->
