@@ -56,7 +56,7 @@ class StreamFragment : Fragment(), CoroutineScope {
             })
             .cachePolicy(
                 MemoryPolicy
-                    .builder()
+                    .builder<Any, Any>()
                     .setExpireAfterWrite(10.seconds)
                     .build()
             )

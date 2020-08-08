@@ -18,7 +18,7 @@ version = VERSION_NAME
 
 dependencies {
     implementation libraries.kotlinStdLib
-    implementation project(path: ':cache')
+    implementation 'com.nytimes.android:cache3:3.1.1'
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 

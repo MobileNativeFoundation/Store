@@ -21,8 +21,8 @@ internal object StoreDefaults {
      */
     val cacheSize: Long = 100
 
-    val memoryPolicy = MemoryPolicy.builder()
-            .setMemorySize(cacheSize)
+    val memoryPolicy = MemoryPolicy.builder<Any, Any>()
+            .setMaxSize(cacheSize)
             .setExpireAfterWrite(cacheTTL)
             .build()
 }

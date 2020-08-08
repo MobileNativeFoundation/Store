@@ -1,10 +1,8 @@
 package com.dropbox.android.external.store3.base.impl
 
 import com.dropbox.android.external.store4.MemoryPolicy
-
-import org.junit.Test
-
 import com.google.common.truth.Truth.assertThat
+import org.junit.Test
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -13,7 +11,7 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testBuildExpireAfterWriteMemoryPolicy() {
-        val policy = MemoryPolicy.builder()
+        val policy = MemoryPolicy.builder<Any, Any>()
                 .setExpireAfterWrite(4.seconds)
                 .build()
 
@@ -24,7 +22,7 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testBuildExpireAfterAccessMemoryPolicy() {
-        val policy = MemoryPolicy.builder()
+        val policy = MemoryPolicy.builder<Any, Any>()
                 .setExpireAfterAccess(4.seconds)
                 .build()
 
@@ -35,7 +33,7 @@ class MemoryPolicyBuilderTest {
 
     @Test(expected = IllegalStateException::class)
     fun testCannotSetBothExpirationPolicies() {
-        MemoryPolicy.builder()
+        MemoryPolicy.builder<Any, Any>()
                 .setExpireAfterAccess(4.seconds)
                 .setExpireAfterWrite(4.seconds)
                 .build()
@@ -43,8 +41,8 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testBuilderSetsMemorySize() {
-        val policy = MemoryPolicy.builder()
-                .setMemorySize(10L)
+        val policy = MemoryPolicy.builder<Any, Any>()
+                .setMaxSize(10L)
                 .build()
 
         assertThat(policy.hasMaxSize).isEqualTo(true)
@@ -53,7 +51,7 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testDefaultMemorySizeIfNotSet() {
-        val policy = MemoryPolicy.builder().build()
+        val policy = MemoryPolicy.builder<Any, Any>().build()
 
         assertThat(policy.hasMaxSize).isEqualTo(false)
         assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_SIZE_POLICY)

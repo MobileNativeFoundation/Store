@@ -3,21 +3,21 @@ package com.dropbox.android.sample
 import android.content.Context
 import android.text.Html
 import androidx.room.Room
-import com.dropbox.android.sample.data.model.Children
-import com.dropbox.android.sample.data.model.Post
-import com.dropbox.android.sample.data.model.RedditDb
-import com.dropbox.android.sample.data.remote.Api
 import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.Persister
-import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.legacy.BarCode
+import com.dropbox.android.sample.data.model.Children
+import com.dropbox.android.sample.data.model.Post
+import com.dropbox.android.sample.data.model.RedditDb
+import com.dropbox.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -119,7 +119,7 @@ object Graph {
                     }
                 ))
             .cachePolicy(
-                MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
+                MemoryPolicy.builder<Any, Any>().setExpireAfterWrite(10.seconds).build()
             )
             .build()
     }

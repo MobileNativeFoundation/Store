@@ -15,7 +15,6 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.CacheType
 import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.Fetcher
@@ -27,6 +26,7 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.impl.operators.merge
+import com.nytimes.android.external.cache3.CacheBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
+import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -46,7 +47,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Input>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
-    private val memoryPolicy: MemoryPolicy?
+    private val memoryPolicy: MemoryPolicy<Key, Output>?
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -61,15 +62,26 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         }
 
     private val memCache = memoryPolicy?.let {
-        Cache.Builder.newBuilder().apply {
+        CacheBuilder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
-                expireAfterAccess(memoryPolicy.expireAfterAccess)
+                expireAfterAccess(
+                    memoryPolicy.expireAfterAccess.toLongMilliseconds(),
+                    TimeUnit.MILLISECONDS
+                )
             }
             if (memoryPolicy.hasWritePolicy) {
-                expireAfterWrite(memoryPolicy.expireAfterWrite)
+                expireAfterWrite(
+                    memoryPolicy.expireAfterWrite.toLongMilliseconds(),
+                    TimeUnit.MILLISECONDS
+                )
             }
             if (memoryPolicy.hasMaxSize) {
-                maximumCacheSize(memoryPolicy.maxSize)
+                maximumSize(memoryPolicy.maxSize)
+            }
+
+            if (memoryPolicy.hasMaxWeight) {
+                maximumWeight(memoryPolicy.maxWeight)
+                weigher { k: Key, v: Output -> memoryPolicy.weigher.weigh(k, v) }
             }
         }.build<Key, Output>()
     }
@@ -89,7 +101,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
-                memCache?.get(request.key)
+                memCache?.getIfPresent(request.key)
             }
 
             cachedToEmit?.let {
@@ -128,7 +140,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     // Cache
                     // Source of truth
                     // (future Source of truth updates)
-                    memCache?.get(request.key)?.let {
+                    memCache?.getIfPresent(request.key)?.let {
                         emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
                     }
                 }
@@ -198,7 +210,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
         return networkFlow.merge(diskFlow).transform {
-                // left is Fetcher while right is source of truth
+            // left is Fetcher while right is source of truth
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
@@ -239,7 +251,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             // error, we should NOT allow fetcher to start emitting values as we
                             // should always wait for the read attempt.
                             if (diskData is StoreResponse.Error.Exception &&
-                                diskData.error is SourceOfTruth.ReadException) {
+                                diskData.error is SourceOfTruth.ReadException
+                            ) {
                                 networkLock.complete(Unit)
                             }
                             // for other errors, don't do anything, wait for the read attempt

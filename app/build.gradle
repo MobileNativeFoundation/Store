@@ -67,7 +67,7 @@ dependencies {
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
     implementation project(':store')
-    implementation project(':cache')
+    implementation 'com.nytimes.android:cache3:3.1.1'
     implementation project(':filesystem')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 
