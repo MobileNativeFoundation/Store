@@ -3,7 +3,7 @@ ext.versions = [
         targetSdk         : 29,
         compileSdk        : 29,
         buildTools        : '29.0.3',
-        kotlin            : '1.4.0-rc',
+        kotlin            : '1.4.0',
         ktlint            : '0.36.0',
 
         // Plugins
@@ -66,7 +66,6 @@ ext.libraries = [
         okio                  : "com.squareup.okio:okio:$versions.okio",
         moshi                 : "com.squareup.moshi:moshi:$versions.moshi",
         moshiCodegen          : "com.squareup.moshi:moshi-kotlin-codegen:$versions.moshi",
-        kotlinStdLib          : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin",
         roomCompiler          : "androidx.room:room-compiler:$versions.room",
         roomRuntime           : "androidx.room:room-ktx:$versions.room",
         coreKtx               : "androidx.core:core-ktx:$versions.coreKtx",

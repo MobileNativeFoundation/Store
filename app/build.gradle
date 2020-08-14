@@ -69,7 +69,6 @@ dependencies {
     implementation project(':store')
     implementation project(':cache')
     implementation project(':filesystem')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesAndroid
