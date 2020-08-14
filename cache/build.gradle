@@ -12,8 +12,6 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-
     testImplementation libraries.junit
     testImplementation libraries.truth
     testImplementation libraries.coroutinesTest

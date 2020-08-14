@@ -197,7 +197,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         }
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
-        return networkFlow.merge(diskFlow).transform {
+        return networkFlow.merge(diskFlow).transform<Either<StoreResponse<Input>, StoreResponse<Output?>>, StoreResponse<Output>> {
                 // left is Fetcher while right is source of truth
             when (it) {
                 is Either.Left -> {
