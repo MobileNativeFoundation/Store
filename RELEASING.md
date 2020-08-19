@@ -6,6 +6,7 @@ Releasing
  3. Update the `README.md` with the new version.
  4. `git commit -am "Prepare for release X.Y.Z."` (where X.Y.Z is the new version)
  5. `git tag -a X.Y.X -m "Version X.Y.Z"` (where X.Y.Z is the new version)
+    * Run `git tag` to verify it.
  6. Update the top level `build.gradle` to the next SNAPSHOT version.
  7. `git commit -am "Prepare next development version."`
  8. `git push && git push --tags`
