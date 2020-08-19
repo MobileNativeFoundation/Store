@@ -3,7 +3,7 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-Version 4.0.0-alpha06 *(2020-04-29)*
+Version 4.0.0-alpha07 *(2020-08-19)*
 ----------------------------
 **New Features**
 * Add `StoreResult.NoNewData` to represent when a fetcher didn't return data. (#194)
