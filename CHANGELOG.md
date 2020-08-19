@@ -5,6 +5,17 @@ The change log for Store version 1.x can be found [here](https://github.com/NYTi
 
 Version 4.0.0-alpha06 *(2020-04-29)*
 ----------------------------
+**New Features**
+* Add `StoreResult.NoNewData` to represent when a fetcher didn't return data. (#194)
+* Move `Fetcher`-factories into `Companion` of `Fetcher` interface (#168)
+
+**Bug Fixes and Stability Improvements**
+* Fix a leak of non-global coroutine contexts. (#199)
+* Update to Kotlin 1.4.0 and Coroutines 1.3.9 (#195)
+* Update to Coroutines 1.3.5 and remove `@FlowPreview` and `@ExperimentalCoroutinesApi` annotations. (#166)
+
+Version 4.0.0-alpha06 *(2020-04-29)*
+----------------------------
 **Major API change!** (#123)
 
 This release introduces a major change to `StoreBuilder`'s API. This should be the LAST major API change to store before we'll move to beta.
