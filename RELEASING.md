@@ -20,5 +20,5 @@ Releasing
 
 When we're ready to pin, restore the final step:
 
-11. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release) 
+12. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release) 
  
