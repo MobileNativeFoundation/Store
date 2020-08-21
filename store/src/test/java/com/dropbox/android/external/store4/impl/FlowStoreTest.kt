@@ -703,7 +703,7 @@ class FlowStoreTest {
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Loading(origin = ResponseOrigin.Fetcher),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
@@ -722,7 +722,7 @@ class FlowStoreTest {
             testScope.advanceUntilIdle()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Loading(origin = ResponseOrigin.Fetcher),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-2"),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-3")
@@ -750,7 +750,7 @@ class FlowStoreTest {
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Loading(origin = ResponseOrigin.Fetcher),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-1")
                 )
             )
@@ -763,7 +763,7 @@ class FlowStoreTest {
             testScope.runCurrent()
             assertThat(fetcher1Collected).isEqualTo(
                 listOf(
-                    Loading<String>(origin = ResponseOrigin.Fetcher),
+                    Loading(origin = ResponseOrigin.Fetcher),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-1"),
                     Data(origin = ResponseOrigin.Fetcher, value = "three-2")
                 )

@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-sealed class FetcherResult<T : Any> {
+sealed class FetcherResult<out T : Any> {
     data class Data<T : Any>(val value: T) : FetcherResult<T>()
-    sealed class Error<T : Any> : FetcherResult<T>() {
-        data class Exception<T : Any>(val error: Throwable) : Error<T>()
-        data class Message<T : Any>(val message: String) : Error<T>()
+    sealed class Error : FetcherResult<Nothing>() {
+        data class Exception(val error: Throwable) : Error()
+        data class Message(val message: String) : Error()
     }
 }
 

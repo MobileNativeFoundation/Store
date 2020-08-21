@@ -99,7 +99,7 @@ class FetcherResponseTest {
                     if (it > 0) {
                         FetcherResult.Data(it)
                     } else {
-                        FetcherResult.Error.Message<Int>("zero")
+                        FetcherResult.Error.Message("zero")
                     }
                 }
             }
@@ -137,7 +137,7 @@ class FetcherResponseTest {
                     if (it > 0) {
                         FetcherResult.Data(it)
                     } else {
-                        FetcherResult.Error.Exception<Int>(e)
+                        FetcherResult.Error.Exception(e)
                     }
                 }
             }
