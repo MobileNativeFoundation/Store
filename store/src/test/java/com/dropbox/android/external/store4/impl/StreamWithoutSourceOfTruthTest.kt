@@ -74,7 +74,7 @@ class StreamWithoutSourceOfTruthTest(
         )
         println("!")
         assertThat(twoItemsNoRefresh.await()).containsExactly(
-            StoreResponse.Loading<String>(
+            StoreResponse.Loading(
                 origin = ResponseOrigin.Fetcher
             ),
             StoreResponse.Data(

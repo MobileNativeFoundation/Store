@@ -8,10 +8,10 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx3.ofMaybe
 import com.dropbox.store.rx3.observe
 import com.dropbox.store.rx3.observeClear
 import com.dropbox.store.rx3.observeClearAll
+import com.dropbox.store.rx3.ofMaybe
 import com.dropbox.store.rx3.ofResultSingle
 import com.dropbox.store.rx3.withScheduler
 import io.reactivex.rxjava3.core.Completable
@@ -59,7 +59,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
 
@@ -75,7 +75,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 2", ResponseOrigin.Fetcher)
             )
 
@@ -98,7 +98,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
     }
@@ -114,7 +114,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1", ResponseOrigin.Fetcher)
             )
 
@@ -122,7 +122,7 @@ class RxSingleStoreTest {
             .test()
             .awaitCount(2)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("4 2", ResponseOrigin.Fetcher)
             )
     }
