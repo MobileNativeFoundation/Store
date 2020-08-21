@@ -98,7 +98,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     ) as StoreResponse<Output?> // necessary cast for catch block
                                 }
                             }.catch { throwable ->
-                                this.emit(StoreResponse.Error.Exception<Output>(
+                                this.emit(StoreResponse.Error.Exception(
                                     error = SourceOfTruth.ReadException(
                                         key = key,
                                         cause = throwable

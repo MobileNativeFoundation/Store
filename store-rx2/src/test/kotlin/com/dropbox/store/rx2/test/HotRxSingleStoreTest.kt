@@ -36,7 +36,7 @@ class HotRxSingleStoreTest {
 
             assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
                 .emitsExactly(
-                    StoreResponse.Loading<String>(
+                    StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
                     ), StoreResponse.Data(
                         value = "three-1",
@@ -54,7 +54,7 @@ class HotRxSingleStoreTest {
 
             assertThat(pipeline.stream(StoreRequest.fresh(3)))
                 .emitsExactly(
-                    StoreResponse.Loading<String>(
+                    StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
                     ),
                     StoreResponse.Data(

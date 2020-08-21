@@ -12,34 +12,34 @@ class StoreResponseTest {
         assertThat(StoreResponse.Data("Foo", Fetcher).requireData())
             .isEqualTo("Foo")
         // should throw
-        StoreResponse.Loading<Any>(Fetcher).requireData()
+        StoreResponse.Loading(Fetcher).requireData()
     }
 
     @Test(expected = IOException::class)
     fun throwIfErrorException() {
-        StoreResponse.Error.Exception<Any>(IOException(), Fetcher).throwIfError()
+        StoreResponse.Error.Exception(IOException(), Fetcher).throwIfError()
     }
 
     @Test(expected = RuntimeException::class)
     fun throwIfErrorMessage() {
-        StoreResponse.Error.Message<Any>("test error", Fetcher).throwIfError()
+        StoreResponse.Error.Message("test error", Fetcher).throwIfError()
     }
 
     @Test()
     fun errorMessageOrNull() {
         assertThat(
-            StoreResponse.Error.Exception<Any>(
+            StoreResponse.Error.Exception(
                 IOException(),
                 Fetcher
             ).errorMessageOrNull()
         ).contains(IOException::class.java.toString())
         assertThat(
-            StoreResponse.Error.Message<Any>(
+            StoreResponse.Error.Message(
                 "test error message",
                 Fetcher
             ).errorMessageOrNull()
         ).isEqualTo("test error message")
-        assertThat(StoreResponse.Loading<Any>(Fetcher).errorMessageOrNull()).isNull()
+        assertThat(StoreResponse.Loading(Fetcher).errorMessageOrNull()).isNull()
     }
 
     @Test(expected = RuntimeException::class)

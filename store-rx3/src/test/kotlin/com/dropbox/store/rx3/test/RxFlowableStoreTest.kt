@@ -7,8 +7,8 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
-import com.dropbox.store.rx3.ofFlowable
 import com.dropbox.store.rx3.observe
+import com.dropbox.store.rx3.ofFlowable
 import com.dropbox.store.rx3.ofResultFlowable
 import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Completable
@@ -65,7 +65,7 @@ class RxFlowableStoreTest {
         testSubscriber
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 1 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
@@ -90,7 +90,7 @@ class RxFlowableStoreTest {
         testSubscriber
             .awaitCount(3)
             .assertValues(
-                StoreResponse.Loading<String>(ResponseOrigin.Fetcher),
+                StoreResponse.Loading(ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 3 occurrence", ResponseOrigin.Fetcher),
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
