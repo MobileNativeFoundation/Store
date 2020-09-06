@@ -15,12 +15,15 @@ ext.versions = [
         binaryCompatibilityValidator: '0.2.3',
         atomicFuPlugin              : '0.14.2',
 
+        cache                       : '3.1.1',
+
         // UI libs.
         picasso           : '2.5.2',
 
         // Others.
         coroutines        : '1.3.6',
         retrofit          : '2.8.1',
+        jsr305            : '3.0.2',
         okHttp            : '4.6.0',
         okio              : '2.6.0',
         moshi             : '1.9.2',
@@ -46,6 +49,8 @@ ext.versions = [
 ]
 
 ext.libraries = [
+        // depend on cache via jar to avoid building java code
+        cache                 :"com.nytimes.android:cache3:$versions.cache",
         // UI libs.
         constraintLayout      : "androidx.constraintlayout:constraintlayout:$versions.constraintLayout",
         appCompat             : "androidx.appcompat:appcompat:${versions.appCompat}",
@@ -62,6 +67,7 @@ ext.libraries = [
         // Others.
         retrofit              : "com.squareup.retrofit2:retrofit:$versions.retrofit",
         retrofitMoshiConverter: "com.squareup.retrofit2:converter-moshi:$versions.retrofit",
+        jsr305                : "com.google.code.findbugs:jsr305:$versions.jsr305",
         okHttp                : "com.squareup.okhttp:okhttp:$versions.okHttp",
         okio                  : "com.squareup.okio:okio:$versions.okio",
         moshi                 : "com.squareup.moshi:moshi:$versions.moshi",

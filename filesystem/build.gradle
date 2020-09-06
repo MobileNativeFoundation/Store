@@ -16,7 +16,7 @@ dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.okio
     implementation libraries.coroutinesCore
-    implementation 'com.nytimes.android:cache3:3.1.1'
+    implementation libraries.cache
     implementation project(path: ':store')
     testImplementation libraries.mockito
     testImplementation libraries.mockitoKotlin

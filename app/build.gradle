@@ -64,10 +64,10 @@ dependencies {
     implementation libraries.picasso
     implementation libraries.moshi
     implementation libraries.retrofitMoshiConverter
+    implementation libraries.cache
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
     implementation project(':store')
-    implementation 'com.nytimes.android:cache3:3.1.1'
     implementation project(':filesystem')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 

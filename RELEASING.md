@@ -12,6 +12,7 @@ Releasing
  9. Create a PR with these 2 commits.
      * **IMPORTANT** Add this comment to your PR "This is a release PR, it must be merged as individual commits. Do not squash commits on merge"
      * Longer explanation: we release automatically through Travis CI. When Travis builds on master a script is run to send either a new shapshot or a new release version to Maven. If you squash the commits in the PR, Travis will only see what's left at the end, which is your commit to change back to `SNAPSHOT` release. Thus, Travis will not end up sending a release version to Maven. If you land as multiple commits, Travis will build both and send a release build to Maven for the commit where you bumped the version to a new release version.
+ 10. Update `dependencies.gradle` to point to the newly released version of `cache`. (It may take ~2 hours for artifact to be available after release)
 
 
 **Note:** We are currently not pinning the sample app to the last version because the API is still fluid while `Store` is in alpha. We will resume pinning the sample app to a released version when we move to beta (see #159).

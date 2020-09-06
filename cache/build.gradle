@@ -1,3 +1,14 @@
+apply plugin: 'java' // TODO remove once migrated to kotlin
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.dokka'
+
+dependencies {
+    compileOnly libraries.jsr305
+    implementation libraries.kotlinStdLib
+    testImplementation libraries.junit
+    testImplementation libraries.truth
+}
+
 buildscript {
     tasks.withType(JavaCompile) {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -5,25 +16,12 @@ buildscript {
     }
 }
 
-plugins {
-    id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.dokka'
-    id 'kotlinx-atomicfu'
-}
-
-dependencies {
-    implementation libraries.kotlinStdLib
-
-    testImplementation libraries.junit
-    testImplementation libraries.truth
-    testImplementation libraries.coroutinesTest
-}
-
 group = GROUP
 version = VERSION_NAME
 
 apply from: rootProject.file("gradle/maven-push.gradle")
-apply from: rootProject.file("gradle/jacoco.gradle")
+
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
