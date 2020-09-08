@@ -74,7 +74,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                         } else {
                             null
                         }
-                        val readFlow: Flow<StoreResponse<Output?>> = when (it) {
+                        val readFlow = when (it) {
                             is BarrierMsg.Open -> delegate.reader(key).mapIndexed { index, output ->
                                 if (index == 0 && messageArrivedAfterMe) {
                                     val firstMsgOrigin = if (writeError == null) {
@@ -95,8 +95,8 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     StoreResponse.Data(
                                         origin = ResponseOrigin.SourceOfTruth,
                                         value = output
-                                    ) as StoreResponse<Output?> // necessary cast for catch block
-                                }
+                                    )
+                                } as StoreResponse<Output?> // necessary cast for catch block
                             }.catch { throwable ->
                                 this.emit(StoreResponse.Error.Exception(
                                     error = SourceOfTruth.ReadException(

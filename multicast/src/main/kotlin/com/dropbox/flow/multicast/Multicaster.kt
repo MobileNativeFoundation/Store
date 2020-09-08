@@ -106,7 +106,7 @@ class Multicaster<T>(
                         channel.close()
                     }
                 }
-                .transform<ChannelManager.Message.Dispatch.Value<T>, T> {
+                .transform {
                     emit(it.value)
                     it.delivered.complete(Unit)
                 }.onCompletion {

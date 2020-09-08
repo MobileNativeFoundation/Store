@@ -13,6 +13,7 @@ group = GROUP
 version = VERSION_NAME
 
 dependencies {
+    implementation libraries.kotlinStdLib
     implementation libraries.okio
     implementation libraries.coroutinesCore
     implementation project(path: ':cache')

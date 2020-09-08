@@ -17,6 +17,7 @@ group = GROUP
 version = VERSION_NAME
 
 dependencies {
+    implementation libraries.kotlinStdLib
     implementation project(path: ':cache')
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore

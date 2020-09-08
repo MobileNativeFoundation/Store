@@ -1,7 +1,9 @@
 package com.dropbox.android.external.cache4
 
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.toDuration
 
 /**
  * An in-memory key-value store with support for time-based (expiration) and size-based evictions.
@@ -123,10 +125,13 @@ interface Cache<in Key : Any, Value : Any> {
  */
 internal class CacheBuilderImpl : Cache.Builder {
 
+    // Ideally these would be set to Duration.INFINITE, but this breaks consumers compiling with
+    // Kotlin 1.4-M3 (not sure why).
+    // TODO: revert back to using Duration.INFINITE once Store is compiled with Kotlin 1.4
     @ExperimentalTime
-    private var expireAfterWriteDuration = Duration.INFINITE
+    private var expireAfterWriteDuration = Double.POSITIVE_INFINITY.toDuration(TimeUnit.SECONDS)
     @ExperimentalTime
-    private var expireAfterAccessDuration = Duration.INFINITE
+    private var expireAfterAccessDuration = Double.POSITIVE_INFINITY.toDuration(TimeUnit.SECONDS)
     private var maxSize = UNSET_LONG
     private var concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL
     private var clock: Clock? = null
