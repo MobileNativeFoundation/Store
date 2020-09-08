@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
     testImplementation libraries.coroutinesTest
     testImplementation libraries.kotlinTest

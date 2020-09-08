@@ -224,7 +224,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     }
 
                     if (it.value !is StoreResponse.Data) {
-                        emit(it.value.swapType())
+                        emit(it.value.swapType<Output>())
                     }
                 }
                 is Either.Right -> {
@@ -244,7 +244,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         }
                         is StoreResponse.Error -> {
                             // disk sent an error, send it down as well
-                            emit(diskData.swapType())
+                            emit(diskData)
 
                             // If disk sent a read error, we should allow fetcher to start emitting
                             // values since there is nothing to read from disk. If disk sent a write

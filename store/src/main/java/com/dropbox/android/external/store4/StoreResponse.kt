@@ -31,7 +31,7 @@ sealed class StoreResponse<out T> {
     /**
      * Loading event dispatched by [Store] to signal the [Fetcher] is in progress.
      */
-    data class Loading<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
+    data class Loading(override val origin: ResponseOrigin) : StoreResponse<Nothing>()
 
     /**
      * Data dispatched by [Store]
@@ -42,21 +42,21 @@ sealed class StoreResponse<out T> {
      * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
      * returned [kotlinx.coroutines.Flow], when collected, was empty).
      */
-    data class NoNewData<T>(override val origin: ResponseOrigin) : StoreResponse<T>()
+    data class NoNewData(override val origin: ResponseOrigin) : StoreResponse<Nothing>()
 
     /**
      * Error dispatched by a pipeline
      */
-    sealed class Error<T> : StoreResponse<T>() {
-        data class Exception<T>(
+    sealed class Error : StoreResponse<Nothing>() {
+        data class Exception(
             val error: Throwable,
             override val origin: ResponseOrigin
-        ) : Error<T>()
+        ) : Error()
 
-        data class Message<T>(
+        data class Message(
             val message: String,
             override val origin: ResponseOrigin
-        ) : Error<T>()
+        ) : Error()
     }
 
     /**
@@ -102,9 +102,9 @@ sealed class StoreResponse<out T> {
 
     @Suppress("UNCHECKED_CAST")
     internal fun <R> swapType(): StoreResponse<R> = when (this) {
-        is Error -> this as Error<R>
-        is Loading -> this as Loading<R>
-        is NoNewData -> this as NoNewData<R>
+        is Error -> this
+        is Loading -> this
+        is NoNewData -> this
         is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
     }
 }
@@ -129,7 +129,7 @@ enum class ResponseOrigin {
     Fetcher
 }
 
-fun <T> StoreResponse.Error<T>.doThrow(): Nothing = when (this) {
+fun StoreResponse.Error.doThrow(): Nothing = when (this) {
     is StoreResponse.Error.Exception -> throw error
     is StoreResponse.Error.Message -> throw RuntimeException(message)
 }

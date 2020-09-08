@@ -4,7 +4,6 @@ apply plugin: 'org.jetbrains.dokka'
 
 dependencies {
     compileOnly libraries.jsr305
-    implementation libraries.kotlinStdLib
     testImplementation libraries.junit
     testImplementation libraries.truth
 }

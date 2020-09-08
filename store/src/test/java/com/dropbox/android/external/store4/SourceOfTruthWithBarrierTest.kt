@@ -153,7 +153,7 @@ class SourceOfTruthWithBarrierTest {
             }
             advanceUntilIdle()
             assertThat(collected).containsExactly(
-                StoreResponse.Error.Exception<String?>(
+                StoreResponse.Error.Exception(
                     origin = ResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
@@ -167,7 +167,7 @@ class SourceOfTruthWithBarrierTest {
             source.write(1, "a")
             advanceUntilIdle()
             assertThat(collected).containsExactly(
-                StoreResponse.Error.Exception<String?>(
+                StoreResponse.Error.Exception(
                     origin = ResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
@@ -209,7 +209,7 @@ class SourceOfTruthWithBarrierTest {
                     origin = ResponseOrigin.SourceOfTruth,
                     value = null
                 ),
-                StoreResponse.Error.Exception<String?>(
+                StoreResponse.Error.Exception(
                     origin = ResponseOrigin.SourceOfTruth,
                     error = WriteException(
                         key = 1,

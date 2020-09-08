@@ -3,7 +3,7 @@ ext.versions = [
         targetSdk         : 29,
         compileSdk        : 29,
         buildTools        : '29.0.3',
-        kotlin            : '1.3.72',
+        kotlin            : '1.4.0',
         ktlint            : '0.36.0',
 
         // Plugins
@@ -21,7 +21,7 @@ ext.versions = [
         picasso           : '2.5.2',
 
         // Others.
-        coroutines        : '1.3.6',
+        coroutines        : '1.3.9',
         retrofit          : '2.8.1',
         jsr305            : '3.0.2',
         okHttp            : '4.6.0',
@@ -72,7 +72,6 @@ ext.libraries = [
         okio                  : "com.squareup.okio:okio:$versions.okio",
         moshi                 : "com.squareup.moshi:moshi:$versions.moshi",
         moshiCodegen          : "com.squareup.moshi:moshi-kotlin-codegen:$versions.moshi",
-        kotlinStdLib          : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlin",
         roomCompiler          : "androidx.room:room-compiler:$versions.room",
         roomRuntime           : "androidx.room:room-ktx:$versions.room",
         coreKtx               : "androidx.core:core-ktx:$versions.coreKtx",

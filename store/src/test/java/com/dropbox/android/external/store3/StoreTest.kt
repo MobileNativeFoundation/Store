@@ -80,7 +80,7 @@ class StoreTest(
                 if (counter.incrementAndGet() == 1) {
                     flowOf(FetcherResult.Data(NETWORK))
                 } else {
-                    flowOf(FetcherResult.Error.Message<String>("Yo Dawg your inflight is broken"))
+                    flowOf(FetcherResult.Error.Message("Yo Dawg your inflight is broken"))
                 }
             }
 

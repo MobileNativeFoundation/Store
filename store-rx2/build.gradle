@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesRx2
     implementation libraries.coroutinesReactive
