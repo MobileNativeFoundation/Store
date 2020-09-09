@@ -33,6 +33,10 @@ public abstract interface class com/dropbox/android/external/fs3/DiskErase {
 	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class com/dropbox/android/external/fs3/DiskRead {
+	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/dropbox/android/external/fs3/FSAllEraser : com/dropbox/android/external/fs3/DiskAllErase {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun deleteAll (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -48,7 +52,7 @@ public final class com/dropbox/android/external/fs3/FSEraser : com/dropbox/andro
 	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public class com/dropbox/android/external/fs3/FSReader : com/dropbox/android/external/store4/DiskRead {
+public class com/dropbox/android/external/fs3/FSReader : com/dropbox/android/external/fs3/DiskRead {
 	public static final field Companion Lcom/dropbox/android/external/fs3/FSReader$Companion;
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
 	public fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -92,7 +96,7 @@ public abstract interface class com/dropbox/android/external/fs3/PathResolver {
 	public abstract fun resolve (Ljava/lang/Object;)Ljava/lang/String;
 }
 
-public abstract interface class com/dropbox/android/external/fs3/Persister : com/dropbox/android/external/store4/DiskRead, com/dropbox/android/external/store4/DiskWrite {
+public abstract interface class com/dropbox/android/external/fs3/Persister : com/dropbox/android/external/fs3/DiskRead, com/dropbox/android/external/store4/DiskWrite {
 	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -141,7 +145,7 @@ public final class com/dropbox/android/external/fs3/SourceAllPersister$Companion
 	public final fun create (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)Lcom/dropbox/android/external/fs3/SourceAllPersister;
 }
 
-public final class com/dropbox/android/external/fs3/SourceFileReader : com/dropbox/android/external/fs3/FSReader, com/dropbox/android/external/store4/DiskRead {
+public final class com/dropbox/android/external/fs3/SourceFileReader : com/dropbox/android/external/fs3/FSReader, com/dropbox/android/external/fs3/DiskRead {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
 	public synthetic fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
