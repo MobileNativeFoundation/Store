@@ -37,6 +37,10 @@ public abstract interface class com/dropbox/android/external/fs3/DiskRead {
 	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class com/dropbox/android/external/fs3/DiskWrite {
+	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class com/dropbox/android/external/fs3/FSAllEraser : com/dropbox/android/external/fs3/DiskAllErase {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun deleteAll (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -61,7 +65,7 @@ public class com/dropbox/android/external/fs3/FSReader : com/dropbox/android/ext
 public final class com/dropbox/android/external/fs3/FSReader$Companion {
 }
 
-public class com/dropbox/android/external/fs3/FSWriter : com/dropbox/android/external/store4/DiskWrite {
+public class com/dropbox/android/external/fs3/FSWriter : com/dropbox/android/external/fs3/DiskWrite {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
 	public synthetic fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun write (Ljava/lang/Object;Lokio/BufferedSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -96,7 +100,7 @@ public abstract interface class com/dropbox/android/external/fs3/PathResolver {
 	public abstract fun resolve (Ljava/lang/Object;)Ljava/lang/String;
 }
 
-public abstract interface class com/dropbox/android/external/fs3/Persister : com/dropbox/android/external/fs3/DiskRead, com/dropbox/android/external/store4/DiskWrite {
+public abstract interface class com/dropbox/android/external/fs3/Persister : com/dropbox/android/external/fs3/DiskRead, com/dropbox/android/external/fs3/DiskWrite {
 	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -152,7 +156,7 @@ public final class com/dropbox/android/external/fs3/SourceFileReader : com/dropb
 	public final fun getRecordState-hr9CgEE (Lcom/dropbox/android/external/store4/legacy/BarCode;D)Lcom/dropbox/android/external/fs3/RecordState;
 }
 
-public final class com/dropbox/android/external/fs3/SourceFileWriter : com/dropbox/android/external/fs3/FSWriter, com/dropbox/android/external/store4/DiskWrite {
+public final class com/dropbox/android/external/fs3/SourceFileWriter : com/dropbox/android/external/fs3/FSWriter, com/dropbox/android/external/fs3/DiskWrite {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
 	public synthetic fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
