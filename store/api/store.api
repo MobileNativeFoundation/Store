@@ -85,11 +85,6 @@ public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicy
 	public final fun setMemorySize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 }
 
-public abstract interface class com/dropbox/android/external/store4/Persister : com/dropbox/android/external/store4/DiskRead, com/dropbox/android/external/store4/DiskWrite {
-	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public final class com/dropbox/android/external/store4/ResponseOrigin : java/lang/Enum {
 	public static final field Cache Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public static final field Fetcher Lcom/dropbox/android/external/store4/ResponseOrigin;

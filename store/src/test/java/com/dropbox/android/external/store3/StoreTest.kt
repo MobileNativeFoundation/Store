@@ -3,7 +3,6 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.legacy.BarCode
@@ -39,7 +38,8 @@ class StoreTest(
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
     private val fetcher: Fetcher<BarCode, String> = mock()
-    private var persister: Persister<String, BarCode> = mock()
+    private var reader: (BarCode) -> String = mock()
+    private var writer: (BarCode, String) -> Boolean = mock()
     private val barCode = BarCode("key", "value")
 
     @Test
@@ -47,17 +47,18 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode))
             .thenReturn(flowOf(FetcherResult.Data(NETWORK)))
 
-        whenever(persister.read(barCode))
+        whenever(reader(barCode))
             .thenReturn(null)
             .thenReturn(DISK)
 
-        whenever(persister.write(barCode, NETWORK))
+        whenever(writer(barCode, NETWORK))
             .thenReturn(true)
 
         var value = simpleStore.get(barCode)
@@ -73,7 +74,8 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
         whenever(fetcher.invoke(barCode))
             .thenAnswer {
@@ -84,11 +86,11 @@ class StoreTest(
                 }
             }
 
-        whenever(persister.read(barCode))
+        whenever(reader(barCode))
             .thenReturn(null)
             .thenReturn(DISK)
 
-        whenever(persister.write(barCode, NETWORK))
+        whenever(writer(barCode, NETWORK))
             .thenReturn(true)
 
         val deferred = async { simpleStore.get(barCode) }
@@ -104,7 +106,8 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
 
         simpleStore.clear(barCode)
@@ -112,10 +115,10 @@ class StoreTest(
         whenever(fetcher.invoke(barCode))
             .thenReturn(flowOf(FetcherResult.Data(NETWORK)))
 
-        whenever(persister.read(barCode))
+        whenever(reader(barCode))
             .thenReturn(null)
             .thenReturn(DISK)
-        whenever(persister.write(barCode, NETWORK)).thenReturn(true)
+        whenever(writer(barCode, NETWORK)).thenReturn(true)
 
         var value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
@@ -144,13 +147,14 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode)) doReturn
             flowOf(FetcherResult.Error.Message(ERROR))
 
-        whenever(persister.read(barCode)) doReturn DISK
+        whenever(reader(barCode)) doReturn DISK
 
         try {
             simpleStore.fresh(barCode)
@@ -160,7 +164,7 @@ class StoreTest(
         }
 
         verify(fetcher, times(1)).invoke(barCode)
-        verify(persister, never()).read(any())
+        verify(reader, never()).invoke(any())
     }
 
     @Test
@@ -168,13 +172,14 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode)) doReturn
             flowOf()
 
-        whenever(persister.read(barCode)) doReturn DISK
+        whenever(reader(barCode)) doReturn DISK
 
         val value = simpleStore.get(barCode)
         assertThat(value).isEqualTo(DISK)
@@ -185,13 +190,14 @@ class StoreTest(
         val simpleStore = TestStoreBuilder.from(
             scope = testScope,
             fetcher = fetcher,
-            persister = persister
+            reader = reader,
+            writer = writer
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode)) doReturn
             flowOf()
 
-        whenever(persister.read(barCode)) doReturn DISK
+        whenever(reader(barCode)) doReturn DISK
 
         val value = simpleStore.fresh(barCode)
         assertThat(value).isEqualTo(DISK)

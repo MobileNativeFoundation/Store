@@ -1,6 +1,5 @@
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
@@ -31,7 +30,8 @@ class StreamOneKeyTest(
     private val storeType: TestStoreType
 ) {
 
-    val persister: Persister<String, BarCode> = mock()
+    private var reader: (BarCode) -> String = mock()
+    private var writer: (BarCode, String) -> Boolean = mock()
     private val barCode = BarCode("key", "value")
     private val barCode2 = BarCode("key2", "value2")
     private val testScope = TestCoroutineScope()
@@ -45,13 +45,14 @@ class StreamOneKeyTest(
     private val store = TestStoreBuilder.from(
         scope = testScope,
         fetcher = fetcher,
-        persister = persister
+        reader = reader,
+        writer = writer
     ).build(storeType)
 
     @Before
     fun setUp() = runBlockingTest {
 
-        whenever(persister.read(barCode))
+        whenever(reader(barCode))
             .let {
                 // the backport stream method of Pipeline to Store does not skip disk so we
                 // make sure disk returns empty value first
@@ -61,9 +62,9 @@ class StreamOneKeyTest(
             .thenReturn(TEST_ITEM)
             .thenReturn(TEST_ITEM2)
 
-        whenever(persister.write(barCode, TEST_ITEM))
+        whenever(writer(barCode, TEST_ITEM))
             .thenReturn(true)
-        whenever(persister.write(barCode, TEST_ITEM2))
+        whenever(writer(barCode, TEST_ITEM2))
             .thenReturn(true)
     }
 
@@ -89,9 +90,9 @@ class StreamOneKeyTest(
 
             assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
             // get for another barcode should not trigger a stream for barcode1
-            whenever(persister.read(barCode2))
+            whenever(reader(barCode2))
                 .thenReturn(TEST_ITEM)
-            whenever(persister.write(barCode2, TEST_ITEM))
+            whenever(writer(barCode2, TEST_ITEM))
                 .thenReturn(true)
             store.get(barCode2)
             assertThat(streamSubscription.isEmpty).isTrue()
