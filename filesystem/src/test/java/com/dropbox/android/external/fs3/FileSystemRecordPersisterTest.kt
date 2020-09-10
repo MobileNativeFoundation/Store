@@ -3,7 +3,6 @@ package com.dropbox.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
@@ -18,11 +17,11 @@ import kotlin.time.days
 class FileSystemRecordPersisterTest {
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
-    private val simple = BarCode("type", "key")
-    private val resolvedPath = BarCodePathResolver.resolve(simple)
+    private val simple = "type" to "key"
+    private val resolvedPath = StringPairPathResolver.resolve(simple)
     private val fileSystemPersister = FileSystemRecordPersister.create(
         fileSystem = fileSystem,
-        pathResolver = BarCodePathResolver,
+        pathResolver = StringPairPathResolver,
         expirationDuration = 1.days
     )
 

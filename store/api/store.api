@@ -248,16 +248,3 @@ public final class com/dropbox/android/external/store4/StoreResponseKt {
 	public static final fun doThrow (Lcom/dropbox/android/external/store4/StoreResponse$Error;)Ljava/lang/Void;
 }
 
-public final class com/dropbox/android/external/store4/legacy/BarCode {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/dropbox/android/external/store4/legacy/BarCode;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/legacy/BarCode;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/legacy/BarCode;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getKey ()Ljava/lang/String;
-	public final fun getType ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-

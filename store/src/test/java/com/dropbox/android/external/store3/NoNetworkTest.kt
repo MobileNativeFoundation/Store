@@ -3,7 +3,6 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.get
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -21,7 +20,7 @@ class NoNetworkTest(
     storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
-    private val store: Store<BarCode, out Any> = TestStoreBuilder.from<BarCode, Any>(
+    private val store: Store<Pair<String, String>, out Any> = TestStoreBuilder.from<Pair<String, String>, Any>(
         testScope,
         fetcher = Fetcher.of {
             throw EXCEPTION
@@ -30,7 +29,7 @@ class NoNetworkTest(
     @Test
     fun testNoNetwork() = testScope.runBlockingTest {
         try {
-            store.get(BarCode("test", "test"))
+            store.get("test" to "test")
             fail("Exception not thrown")
         } catch (e: Exception) {
             assertThat(e.message).isEqualTo(EXCEPTION.message)
