@@ -3,7 +3,6 @@ package com.dropbox.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
@@ -15,9 +14,9 @@ import org.mockito.Mockito.inOrder
 class FilePersisterTest {
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
-    private val simple = BarCode("type", "key")
-    private val resolvedPath = BarCodePathResolver.resolve(simple)
-    private val fileSystemPersister = FileSystemPersister.create(fileSystem, BarCodePathResolver)
+    private val simple = "type" to "key"
+    private val resolvedPath = StringPairPathResolver.resolve(simple)
+    private val fileSystemPersister = FileSystemPersister.create(fileSystem, StringPairPathResolver)
 
     @Test
     fun readExists() = runBlocking {
