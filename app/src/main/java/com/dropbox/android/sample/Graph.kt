@@ -9,12 +9,12 @@ import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
 import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
+import com.dropbox.android.external.fs3.Persister
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.squareup.moshi.Moshi
