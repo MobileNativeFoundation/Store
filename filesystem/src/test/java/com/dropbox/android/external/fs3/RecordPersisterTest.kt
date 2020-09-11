@@ -3,7 +3,6 @@ package com.dropbox.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
@@ -20,7 +19,7 @@ class RecordPersisterTest {
     private val bufferedSource: BufferedSource = mock()
 
     private val sourcePersister = RecordPersister(fileSystem, 1.days)
-    private val simple = BarCode("type", "key")
+    private val simple = "type" to "key"
 
     @Test
     fun readExists() = runBlocking<Unit> {

@@ -1,7 +1,6 @@
 package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -9,16 +8,16 @@ import okio.BufferedSource
 import java.io.FileNotFoundException
 
 @ExperimentalCoroutinesApi
-class SourceAllPersister(fileSystem: FileSystem) : AllPersister<BufferedSource, BarCode> {
+class SourceAllPersister(fileSystem: FileSystem) : AllPersister<BufferedSource, Pair<String, String>> {
 
     internal val sourceFileAllReader: FSAllReader = FSAllReader(fileSystem)
     internal val sourceFileAllEraser: FSAllEraser = FSAllEraser(fileSystem)
 
-    internal val sourceFileReader: FSReader<BarCode> =
-        FSReader(fileSystem, BarCodeReadAllPathResolver)
+    internal val sourceFileReader: FSReader<Pair<String, String>> =
+        FSReader(fileSystem, StringPairReadAllPathResolver)
 
-    internal val sourceFileWriter: FSWriter<BarCode> =
-        FSWriter(fileSystem, BarCodeReadAllPathResolver)
+    internal val sourceFileWriter: FSWriter<Pair<String, String>> =
+        FSWriter(fileSystem, StringPairReadAllPathResolver)
 
     @Throws(FileNotFoundException::class)
     override fun CoroutineScope.readAll(path: String): ReceiveChannel<BufferedSource> {
@@ -31,11 +30,11 @@ class SourceAllPersister(fileSystem: FileSystem) : AllPersister<BufferedSource, 
         return sourceFileAllEraser.deleteAll(path)
     }
 
-    override suspend fun read(key: BarCode): BufferedSource? {
+    override suspend fun read(key: Pair<String, String>): BufferedSource? {
         return sourceFileReader.read(key)
     }
 
-    override suspend fun write(key: BarCode, raw: BufferedSource): Boolean {
+    override suspend fun write(key: Pair<String, String>, raw: BufferedSource): Boolean {
         return sourceFileWriter.write(key, raw)
     }
 

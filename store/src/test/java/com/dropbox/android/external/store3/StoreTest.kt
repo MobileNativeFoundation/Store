@@ -5,7 +5,6 @@ import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
@@ -37,10 +36,10 @@ class StoreTest(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: Fetcher<BarCode, String> = mock()
-    private var reader: (BarCode) -> String = mock()
-    private var writer: (BarCode, String) -> Boolean = mock()
-    private val barCode = BarCode("key", "value")
+    private val fetcher: Fetcher<Pair<String, String>, String> = mock()
+    private var reader: (Pair<String, String>) -> String = mock()
+    private var writer: (Pair<String, String>, String) -> Boolean = mock()
+    private val barCode = "key" to "value"
 
     @Test
     fun testSimple() = testScope.runBlockingTest {
@@ -132,13 +131,13 @@ class StoreTest(
         val cache = Cache.Builder.newBuilder()
             .maximumCacheSize(1)
             .expireAfterAccess(Duration.INFINITE)
-            .build<BarCode, String>()
+            .build<Pair<String, String>, String>()
 
         cache.put(barCode, MEMORY)
         var value = cache.get(barCode)
         assertThat(value).isEqualTo(MEMORY)
 
-        value = cache.get(BarCode(barCode.type, barCode.key))
+        value = cache.get(barCode.first to barCode.second)
         assertThat(value).isEqualTo(MEMORY)
     }
 

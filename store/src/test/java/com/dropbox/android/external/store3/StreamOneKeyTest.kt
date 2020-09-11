@@ -3,7 +3,6 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -30,10 +29,10 @@ class StreamOneKeyTest(
     private val storeType: TestStoreType
 ) {
 
-    private var reader: (BarCode) -> String = mock()
-    private var writer: (BarCode, String) -> Boolean = mock()
-    private val barCode = BarCode("key", "value")
-    private val barCode2 = BarCode("key2", "value2")
+    private var reader: (Pair<String, String>) -> String = mock()
+    private var writer: (Pair<String, String>, String) -> Boolean = mock()
+    private val barCode = "key" to "value"
+    private val barCode2 = "key2" to "value2"
     private val testScope = TestCoroutineScope()
 
     private val fetcher = FakeFetcher(

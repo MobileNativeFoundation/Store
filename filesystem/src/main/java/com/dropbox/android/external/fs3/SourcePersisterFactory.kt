@@ -2,7 +2,6 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
-import com.dropbox.android.external.store4.legacy.BarCode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import okio.BufferedSource
 import java.io.File
@@ -28,7 +27,7 @@ object SourcePersisterFactory {
     fun create(
         root: File,
         expirationDuration: Duration
-    ): Persister<BufferedSource, BarCode> {
+    ): Persister<BufferedSource, Pair<String, String>> {
         return RecordPersister.create(FileSystemFactory.create(root), expirationDuration)
     }
 
@@ -40,7 +39,7 @@ object SourcePersisterFactory {
     fun create(
         fileSystem: FileSystem,
         expirationDuration: Duration
-    ): Persister<BufferedSource, BarCode> {
+    ): Persister<BufferedSource, Pair<String, String>> {
         return RecordPersister.create(fileSystem, expirationDuration)
     }
 
@@ -51,7 +50,7 @@ object SourcePersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun create(root: File): Persister<BufferedSource, BarCode> {
+    fun create(root: File): Persister<BufferedSource, Pair<String, String>> {
         return SourcePersister.create(FileSystemFactory.create(root))
     }
 
@@ -59,7 +58,7 @@ object SourcePersisterFactory {
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
-    fun create(fileSystem: FileSystem): Persister<BufferedSource, BarCode> {
+    fun create(fileSystem: FileSystem): Persister<BufferedSource, Pair<String, String>> {
         return SourcePersister.create(fileSystem)
     }
 
@@ -70,7 +69,7 @@ object SourcePersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun createAll(root: File): Persister<BufferedSource, BarCode> {
+    fun createAll(root: File): Persister<BufferedSource, Pair<String, String>> {
         return SourceAllPersister.create(FileSystemFactory.create(root))
     }
 
@@ -78,7 +77,7 @@ object SourcePersisterFactory {
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
      * persistence [FileSystem].
      */
-    fun createAll(fileSystem: FileSystem): Persister<BufferedSource, BarCode> {
+    fun createAll(fileSystem: FileSystem): Persister<BufferedSource, Pair<String, String>> {
         return SourceAllPersister.create(fileSystem)
     }
 }
