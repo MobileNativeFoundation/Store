@@ -2,7 +2,6 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
-import com.dropbox.android.external.store4.Persister
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import okio.BufferedSource
 import java.io.File

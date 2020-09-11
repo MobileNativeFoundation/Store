@@ -1,7 +1,6 @@
 package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.DiskWrite
 import okio.BufferedSource
 
 class SourceFileWriter @JvmOverloads constructor(

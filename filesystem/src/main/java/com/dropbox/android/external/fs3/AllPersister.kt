@@ -1,6 +1,5 @@
 package com.dropbox.android.external.fs3
 
-import com.dropbox.android.external.store4.Persister
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import java.io.FileNotFoundException
