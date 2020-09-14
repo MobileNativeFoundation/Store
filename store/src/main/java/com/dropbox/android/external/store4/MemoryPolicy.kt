@@ -5,7 +5,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
-interface Weigher<in K : Any, in V : Any> {
+fun interface Weigher<in K : Any, in V : Any> {
     /**
      * Returns the weight of a cache entry. There is no unit for entry weights; rather they are simply
      * relative to each other.
@@ -87,7 +87,10 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
             this.maxSize = maxSize
         }
 
-        fun setWeigherAndMaxWeight(weigher: Weigher<Key, Value>, maxWeight: Long) {
+        fun setWeigherAndMaxWeight(
+            weigher: Weigher<Key, Value>,
+            maxWeight: Long
+        ): MemoryPolicyBuilder<Key, Value> = apply {
             check(maxSize == DEFAULT_SIZE_POLICY) {
                 "Cannot setWeigherAndMaxWeight when maxSize already set"
             }

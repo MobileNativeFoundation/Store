@@ -1,6 +1,8 @@
 package com.dropbox.android.external.store3.base.impl
 
 import com.dropbox.android.external.store4.MemoryPolicy
+import com.dropbox.android.external.store4.OneWeigher
+import com.dropbox.android.external.store4.Weigher
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import kotlin.time.ExperimentalTime
@@ -55,5 +57,44 @@ class MemoryPolicyBuilderTest {
 
         assertThat(policy.hasMaxSize).isEqualTo(false)
         assertThat(policy.maxSize).isEqualTo(MemoryPolicy.DEFAULT_SIZE_POLICY)
+    }
+
+    @Test
+    fun testBuilderSetsMemoryWeight() {
+        val weigher = Weigher<Any, Any> { key , value ->
+            key.hashCode() + value.hashCode()
+        }
+        val policy = MemoryPolicy.builder<Any, Any>()
+            .setWeigherAndMaxWeight(weigher, 10L)
+            .build()
+
+        assertThat(policy.hasMaxWeight).isEqualTo(true)
+        assertThat(policy.maxWeight).isEqualTo(10L)
+        assertThat(policy.weigher).isSameInstanceAs(weigher)
+    }
+
+    @Test
+    fun testDefaultMemoryWeightIfNotSet() {
+        val policy = MemoryPolicy.builder<Any, Any>().build()
+
+        assertThat(policy.hasMaxWeight).isEqualTo(false)
+        assertThat(policy.maxWeight).isEqualTo(MemoryPolicy.DEFAULT_SIZE_POLICY)
+        assertThat(policy.weigher).isSameInstanceAs(OneWeigher)
+    }
+
+    @Test(expected = java.lang.IllegalStateException::class)
+    fun testMaxWeightCannotBeSetAfterMaxSize() {
+        val policy = MemoryPolicy.builder<Any, Any>()
+            .setMaxSize(10L)
+            .setWeigherAndMaxWeight(OneWeigher, 10L)
+            .build()
+    }
+
+    @Test(expected = java.lang.IllegalStateException::class)
+    fun testMaxSizeCannotBeSetAfterMaxWeight() {
+        val policy = MemoryPolicy.builder<Any, Any>()
+            .setWeigherAndMaxWeight(OneWeigher, 10L)
+            .setMaxSize(10L)
+            .build()
     }
 }
