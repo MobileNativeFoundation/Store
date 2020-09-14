@@ -4,7 +4,7 @@ ext.versions = [
         compileSdk        : 29,
         buildTools        : '29.0.3',
         kotlin            : '1.4.0',
-        ktlint            : '0.36.0',
+        ktlint            : '0.39.0',
 
         // Plugins
         androidGradlePlugin         : '4.0.0',
