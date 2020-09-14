@@ -27,7 +27,7 @@ class SourcePersisterTest {
     @Test
     fun readExists() = runBlocking<Unit> {
         whenever(fileSystem.exists(simple.toString()))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(simple.toString())).thenReturn(bufferedSource)
 
         val returnedValue = sourcePersister.read(simple)
@@ -37,7 +37,7 @@ class SourcePersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking<Unit> {
         whenever(fileSystem.exists(SourcePersister.pathForBarcode(simple)))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             sourcePersister.read(simple)

@@ -24,9 +24,10 @@ class SequentialTest(
     private val store = TestStoreBuilder.from<Pair<String, String>, Int>(
         scope = testScope,
         cached = true,
-    fetcher = Fetcher.of {
-        networkCalls++
-    }).build(storeType)
+        fetcher = Fetcher.of {
+            networkCalls++
+        }
+    ).build(storeType)
 
     @Test
     fun sequentially() = testScope.runBlockingTest {

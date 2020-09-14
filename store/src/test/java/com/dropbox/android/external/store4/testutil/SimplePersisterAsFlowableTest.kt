@@ -47,15 +47,17 @@ class SimplePersisterAsFlowableTest {
         val collectedFirst = CompletableDeferred<Unit>()
         val collectedValues = CompletableDeferred<List<String?>>()
         otherScope.launch {
-            collectedValues.complete(flowable
-                .flowReader(barcode)
-                .onEach {
-                    if (collectedFirst.isActive) {
-                        collectedFirst.complete(Unit)
+            collectedValues.complete(
+                flowable
+                    .flowReader(barcode)
+                    .onEach {
+                        if (collectedFirst.isActive) {
+                            collectedFirst.complete(Unit)
+                        }
                     }
-                }
-                .take(2)
-                .toList())
+                    .take(2)
+                    .toList()
+            )
         }
         collectedFirst.await()
         flowable.flowWriter(barcode, "x")

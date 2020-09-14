@@ -29,6 +29,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalCoroutinesApi
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
+
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
      *  [Store] will open a global scope for management of shared responses, if instead you'd like to control
@@ -44,7 +45,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
     @ExperimentalTime
-    fun cachePolicy(memoryPolicy: MemoryPolicy?): StoreBuilder<Key, Output>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
@@ -87,17 +88,18 @@ private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
-    private var cachePolicy: MemoryPolicy? = StoreDefaults.memoryPolicy
+    private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
 
     override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy?): RealStoreBuilder<Key, Input, Output> {
-        cachePolicy = memoryPolicy
-        return this
-    }
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?):
+        RealStoreBuilder<Key, Input, Output> {
+            cachePolicy = memoryPolicy
+            return this
+        }
 
     override fun disableCache(): RealStoreBuilder<Key, Input, Output> {
         cachePolicy = null

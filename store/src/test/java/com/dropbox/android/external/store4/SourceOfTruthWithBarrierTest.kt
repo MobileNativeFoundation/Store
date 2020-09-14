@@ -65,10 +65,12 @@ class SourceOfTruthWithBarrierTest {
             listOf(
                 StoreResponse.Data(
                     origin = ResponseOrigin.SourceOfTruth,
-                    value = null),
+                    value = null
+                ),
                 StoreResponse.Data(
                     origin = ResponseOrigin.Fetcher,
-                    value = "a")
+                    value = "a"
+                )
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)
@@ -103,10 +105,12 @@ class SourceOfTruthWithBarrierTest {
             listOf(
                 StoreResponse.Data(
                     origin = ResponseOrigin.SourceOfTruth,
-                    value = "a"),
+                    value = "a"
+                ),
                 StoreResponse.Data(
                     origin = ResponseOrigin.Fetcher,
-                    value = "b")
+                    value = "b"
+                )
             )
         )
         assertThat(source.barrierCount()).isEqualTo(0)

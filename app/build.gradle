@@ -64,10 +64,10 @@ dependencies {
     implementation libraries.picasso
     implementation libraries.moshi
     implementation libraries.retrofitMoshiConverter
+    implementation libraries.cache
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
     implementation project(':store')
-    implementation project(':cache')
     implementation project(':filesystem')
 
     implementation libraries.coroutinesCore

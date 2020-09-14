@@ -17,7 +17,7 @@ group = GROUP
 version = VERSION_NAME
 
 dependencies {
-    implementation project(path: ':cache')
+    implementation libraries.cache
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 

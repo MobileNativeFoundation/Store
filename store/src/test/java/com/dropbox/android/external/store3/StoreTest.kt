@@ -1,10 +1,10 @@
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
+import com.google.common.cache.CacheBuilder
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
@@ -23,8 +23,8 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -128,16 +128,16 @@ class StoreTest(
 
     @Test
     fun testEquivalence() = testScope.runBlockingTest {
-        val cache = Cache.Builder.newBuilder()
-            .maximumCacheSize(1)
-            .expireAfterAccess(Duration.INFINITE)
+        val cache = CacheBuilder.newBuilder()
+            .maximumSize(1)
+            .expireAfterAccess(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
             .build<Pair<String, String>, String>()
 
         cache.put(barCode, MEMORY)
-        var value = cache.get(barCode)
+        var value = cache.getIfPresent(barCode)
         assertThat(value).isEqualTo(MEMORY)
 
-        value = cache.get(barCode.first to barCode.second)
+        value = cache.getIfPresent(barCode.first to barCode.second)
         assertThat(value).isEqualTo(MEMORY)
     }
 

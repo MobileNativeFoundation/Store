@@ -17,10 +17,10 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
-import com.dropbox.android.external.store4.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,7 +41,7 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
         fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
             cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
+            cacheMemoryPolicy: MemoryPolicy<Any, Any>? = null,
             reader: ((Key) -> Output?)? = null,
             writer: ((Key, Output) -> Boolean)? = null,
             fetcher: Fetcher<Key, Output>

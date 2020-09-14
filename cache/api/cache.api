@@ -1,27 +1,238 @@
-public abstract interface class com/dropbox/android/external/cache4/Cache {
-	public abstract fun asMap ()Ljava/util/Map;
-	public abstract fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public abstract fun get (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+public abstract class com/dropbox/android/external/cache3/AbstractFuture : com/dropbox/android/external/cache3/ListenableFuture {
+	protected fun <init> ()V
+	public fun addListener (Ljava/lang/Runnable;Ljava/util/concurrent/Executor;)V
+	public fun cancel (Z)Z
+	public fun get ()Ljava/lang/Object;
+	public fun get (JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;
+	protected fun interruptTask ()V
+	public fun isCancelled ()Z
+	public fun isDone ()Z
+	protected fun set (Ljava/lang/Object;)Z
+	protected fun setException (Ljava/lang/Throwable;)Z
+	protected fun setFuture (Lcom/dropbox/android/external/cache3/ListenableFuture;)Z
+	protected final fun wasInterrupted ()Z
+}
+
+public abstract class com/dropbox/android/external/cache3/AbstractFuture$TrustedFuture : com/dropbox/android/external/cache3/AbstractFuture {
+	public fun <init> ()V
+	public final fun addListener (Ljava/lang/Runnable;Ljava/util/concurrent/Executor;)V
+	public final fun get ()Ljava/lang/Object;
+	public final fun get (JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;
+	public final fun isCancelled ()Z
+	public final fun isDone ()Z
+}
+
+public abstract class com/dropbox/android/external/cache3/AbstractSequentialIterator : com/dropbox/android/external/cache3/UnmodifiableIterator {
+	protected fun <init> (Ljava/lang/Object;)V
+	protected abstract fun computeNext (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun hasNext ()Z
+	public final fun next ()Ljava/lang/Object;
+}
+
+public final class com/dropbox/android/external/cache3/Ascii {
+	public static fun isUpperCase (C)Z
+	public static fun toLowerCase (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public abstract interface class com/dropbox/android/external/cache3/Cache {
+	public abstract fun asMap ()Ljava/util/concurrent/ConcurrentMap;
+	public abstract fun cleanUp ()V
+	public abstract fun get (Ljava/lang/Object;Ljava/util/concurrent/Callable;)Ljava/lang/Object;
+	public abstract fun getAllPresent (Ljava/lang/Iterable;)Ljava/util/Map;
+	public abstract fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun invalidate (Ljava/lang/Object;)V
 	public abstract fun invalidateAll ()V
+	public abstract fun invalidateAll (Ljava/lang/Iterable;)V
 	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun putAll (Ljava/util/Map;)V
+	public abstract fun size ()J
 }
 
-public abstract interface class com/dropbox/android/external/cache4/Cache$Builder {
-	public static final field Companion Lcom/dropbox/android/external/cache4/Cache$Builder$Companion;
-	public abstract fun build ()Lcom/dropbox/android/external/cache4/Cache;
-	public abstract fun clock (Lcom/dropbox/android/external/cache4/Clock;)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun concurrencyLevel (I)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun expireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun expireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/cache4/Cache$Builder;
-	public abstract fun maximumCacheSize (J)Lcom/dropbox/android/external/cache4/Cache$Builder;
+public final class com/dropbox/android/external/cache3/CacheBuilder {
+	public fun build ()Lcom/dropbox/android/external/cache3/Cache;
+	public fun build (Lcom/dropbox/android/external/cache3/CacheLoader;)Lcom/dropbox/android/external/cache3/LoadingCache;
+	public fun concurrencyLevel (I)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun expireAfterAccess (JLjava/util/concurrent/TimeUnit;)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun expireAfterWrite (JLjava/util/concurrent/TimeUnit;)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun maximumSize (J)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun maximumWeight (J)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public static fun newBuilder ()Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun removalListener (Lcom/dropbox/android/external/cache3/RemovalListener;)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun ticker (Lcom/dropbox/android/external/cache3/Ticker;)Lcom/dropbox/android/external/cache3/CacheBuilder;
+	public fun toString ()Ljava/lang/String;
+	public fun weigher (Lcom/dropbox/android/external/cache3/Weigher;)Lcom/dropbox/android/external/cache3/CacheBuilder;
 }
 
-public final class com/dropbox/android/external/cache4/Cache$Builder$Companion {
-	public final fun newBuilder ()Lcom/dropbox/android/external/cache4/Cache$Builder;
+public abstract class com/dropbox/android/external/cache3/CacheLoader {
+	protected fun <init> ()V
+	public static fun from (Lcom/dropbox/android/external/cache3/Function;)Lcom/dropbox/android/external/cache3/CacheLoader;
+	public static fun from (Lcom/dropbox/android/external/cache3/Supplier;)Lcom/dropbox/android/external/cache3/CacheLoader;
+	public abstract fun load (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun loadAll (Ljava/lang/Iterable;)Ljava/util/Map;
+	public fun reload (Ljava/lang/Object;Ljava/lang/Object;)Lcom/dropbox/android/external/cache3/ListenableFuture;
 }
 
-public abstract interface class com/dropbox/android/external/cache4/Clock {
-	public abstract fun getCurrentTimeNanos ()J
+public final class com/dropbox/android/external/cache3/CacheLoader$InvalidCacheLoadException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class com/dropbox/android/external/cache3/CacheLoader$UnsupportedLoadingOperationException : java/lang/UnsupportedOperationException {
+}
+
+public abstract class com/dropbox/android/external/cache3/Equivalence {
+	protected fun <init> ()V
+	protected abstract fun doEquivalent (Ljava/lang/Object;Ljava/lang/Object;)Z
+	protected abstract fun doHash (Ljava/lang/Object;)I
+	public static fun equals ()Lcom/dropbox/android/external/cache3/Equivalence;
+	public final fun equivalent (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public final fun hash (Ljava/lang/Object;)I
+	public static fun identity ()Lcom/dropbox/android/external/cache3/Equivalence;
+}
+
+public class com/dropbox/android/external/cache3/ExecutionError : java/lang/Error {
+	public fun <init> (Ljava/lang/Error;)V
+}
+
+public abstract class com/dropbox/android/external/cache3/ForwardingCache : com/dropbox/android/external/cache3/ForwardingObject, com/dropbox/android/external/cache3/Cache {
+	protected fun <init> ()V
+	public fun asMap ()Ljava/util/concurrent/ConcurrentMap;
+	public fun cleanUp ()V
+	protected abstract fun delegate ()Lcom/dropbox/android/external/cache3/Cache;
+	protected synthetic fun delegate ()Ljava/lang/Object;
+	public fun get (Ljava/lang/Object;Ljava/util/concurrent/Callable;)Ljava/lang/Object;
+	public fun getAllPresent (Ljava/lang/Iterable;)Ljava/util/Map;
+	public fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun invalidate (Ljava/lang/Object;)V
+	public fun invalidateAll ()V
+	public fun invalidateAll (Ljava/lang/Iterable;)V
+	public fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun putAll (Ljava/util/Map;)V
+	public fun size ()J
+}
+
+public abstract class com/dropbox/android/external/cache3/ForwardingObject {
+	protected fun <init> ()V
+	protected abstract fun delegate ()Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/dropbox/android/external/cache3/Function {
+	public abstract fun apply (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun equals (Ljava/lang/Object;)Z
+}
+
+public final class com/dropbox/android/external/cache3/Futures {
+	public static fun getChecked (Ljava/util/concurrent/Future;Ljava/lang/Class;)Ljava/lang/Object;
+	public static fun getChecked (Ljava/util/concurrent/Future;Ljava/lang/Class;JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;
+	public static fun immediateFailedFuture (Ljava/lang/Throwable;)Lcom/dropbox/android/external/cache3/ListenableFuture;
+	public static fun immediateFuture (Ljava/lang/Object;)Lcom/dropbox/android/external/cache3/ListenableFuture;
+	public static fun transform (Lcom/dropbox/android/external/cache3/ListenableFuture;Lcom/dropbox/android/external/cache3/Function;)Lcom/dropbox/android/external/cache3/ListenableFuture;
+}
+
+public abstract interface class com/dropbox/android/external/cache3/ListenableFuture : java/util/concurrent/Future {
+	public abstract fun addListener (Ljava/lang/Runnable;Ljava/util/concurrent/Executor;)V
+}
+
+public abstract interface class com/dropbox/android/external/cache3/LoadingCache : com/dropbox/android/external/cache3/Cache, com/dropbox/android/external/cache3/Function {
+	public abstract fun apply (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun asMap ()Ljava/util/concurrent/ConcurrentMap;
+	public abstract fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getAll (Ljava/lang/Iterable;)Ljava/util/Map;
+	public abstract fun getUnchecked (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun refresh (Ljava/lang/Object;)V
+}
+
+public final class com/dropbox/android/external/cache3/MoreObjects {
+	public static fun firstNonNull (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public static fun toStringHelper (Ljava/lang/Object;)Lcom/dropbox/android/external/cache3/MoreObjects$ToStringHelper;
+}
+
+public final class com/dropbox/android/external/cache3/MoreObjects$ToStringHelper {
+	public fun add (Ljava/lang/String;I)Lcom/dropbox/android/external/cache3/MoreObjects$ToStringHelper;
+	public fun add (Ljava/lang/String;J)Lcom/dropbox/android/external/cache3/MoreObjects$ToStringHelper;
+	public fun add (Ljava/lang/String;Ljava/lang/Object;)Lcom/dropbox/android/external/cache3/MoreObjects$ToStringHelper;
+	public fun addValue (Ljava/lang/Object;)Lcom/dropbox/android/external/cache3/MoreObjects$ToStringHelper;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/android/external/cache3/Objects {
+	public static fun equal (Ljava/lang/Object;Ljava/lang/Object;)Z
+}
+
+public final class com/dropbox/android/external/cache3/Preconditions {
+	public static fun checkArgument (Z)V
+	public static fun checkArgument (ZLjava/lang/Object;)V
+	public static fun checkArgument (ZLjava/lang/String;[Ljava/lang/Object;)V
+	public static fun checkNotNull (Ljava/lang/Object;)Ljava/lang/Object;
+	public static fun checkNotNull (Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public static fun checkState (Z)V
+	public static fun checkState (ZLjava/lang/Object;)V
+	public static fun checkState (ZLjava/lang/String;[Ljava/lang/Object;)V
+}
+
+public abstract class com/dropbox/android/external/cache3/RemovalCause : java/lang/Enum {
+	public static final field COLLECTED Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static final field EXPIRED Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static final field EXPLICIT Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static final field REPLACED Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static final field SIZE Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static fun valueOf (Ljava/lang/String;)Lcom/dropbox/android/external/cache3/RemovalCause;
+	public static fun values ()[Lcom/dropbox/android/external/cache3/RemovalCause;
+}
+
+public abstract interface class com/dropbox/android/external/cache3/RemovalListener {
+	public abstract fun onRemoval (Lcom/dropbox/android/external/cache3/RemovalNotification;)V
+}
+
+public final class com/dropbox/android/external/cache3/RemovalNotification : java/util/Map$Entry {
+	public static fun create (Ljava/lang/Object;Ljava/lang/Object;Lcom/dropbox/android/external/cache3/RemovalCause;)Lcom/dropbox/android/external/cache3/RemovalNotification;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getKey ()Ljava/lang/Object;
+	public fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public final fun setValue (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/android/external/cache3/SettableFuture : com/dropbox/android/external/cache3/AbstractFuture$TrustedFuture {
+	public static fun create ()Lcom/dropbox/android/external/cache3/SettableFuture;
+	public fun set (Ljava/lang/Object;)Z
+	public fun setException (Ljava/lang/Throwable;)Z
+	public fun setFuture (Lcom/dropbox/android/external/cache3/ListenableFuture;)Z
+}
+
+public final class com/dropbox/android/external/cache3/Stopwatch {
+	public static fun createStarted ()Lcom/dropbox/android/external/cache3/Stopwatch;
+	public static fun createUnstarted ()Lcom/dropbox/android/external/cache3/Stopwatch;
+	public fun start ()Lcom/dropbox/android/external/cache3/Stopwatch;
+	public fun stop ()Lcom/dropbox/android/external/cache3/Stopwatch;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/dropbox/android/external/cache3/Supplier {
+	public abstract fun get ()Ljava/lang/Object;
+}
+
+public abstract class com/dropbox/android/external/cache3/Ticker {
+	protected fun <init> ()V
+	public abstract fun read ()J
+	public static fun systemTicker ()Lcom/dropbox/android/external/cache3/Ticker;
+}
+
+public class com/dropbox/android/external/cache3/UncheckedExecutionException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/Throwable;)V
+}
+
+public final class com/dropbox/android/external/cache3/Uninterruptibles {
+	public static fun getUninterruptibly (Ljava/util/concurrent/Future;)Ljava/lang/Object;
+}
+
+public abstract class com/dropbox/android/external/cache3/UnmodifiableIterator : java/util/Iterator {
+	protected fun <init> ()V
+	public final fun remove ()V
+}
+
+public abstract interface class com/dropbox/android/external/cache3/Weigher {
+	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
 }
 

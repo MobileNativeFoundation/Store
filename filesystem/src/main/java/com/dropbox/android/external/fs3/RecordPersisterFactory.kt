@@ -25,7 +25,7 @@ object RecordPersisterFactory {
         root: File,
         expirationDuration: Duration
     ): Persister<BufferedSource, Pair<String, String>> =
-            RecordPersister(FileSystemFactory.create(root), expirationDuration)
+        RecordPersister(FileSystemFactory.create(root), expirationDuration)
 
     /**
      * Returns a new [BufferedSource] persister with the provided fileSystem as the root of the
@@ -35,5 +35,5 @@ object RecordPersisterFactory {
         fileSystem: FileSystem,
         expirationDuration: Duration
     ): Persister<BufferedSource, Pair<String, String>> =
-            RecordPersister(fileSystem, expirationDuration)
+        RecordPersister(fileSystem, expirationDuration)
 }

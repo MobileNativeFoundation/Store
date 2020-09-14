@@ -3,20 +3,20 @@ package com.dropbox.android.sample
 import android.content.Context
 import android.text.Html
 import androidx.room.Room
-import com.dropbox.android.sample.data.model.Children
-import com.dropbox.android.sample.data.model.Post
-import com.dropbox.android.sample.data.model.RedditDb
-import com.dropbox.android.sample.data.remote.Api
 import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
 import com.dropbox.android.external.fs3.Persister
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.StoreBuilder
+import com.dropbox.android.sample.data.model.Children
+import com.dropbox.android.sample.data.model.Post
+import com.dropbox.android.sample.data.model.RedditDb
+import com.dropbox.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -92,9 +92,12 @@ object Graph {
     fun provideConfigStore(context: Context): Store<Unit, RedditConfig> {
         val fileSystem = FileSystemFactory.create(context.cacheDir)
         val fileSystemPersister =
-            FileSystemPersister.create(fileSystem, object : PathResolver<Unit> {
-                override fun resolve(key: Unit) = "config.json"
-            })
+            FileSystemPersister.create(
+                fileSystem,
+                object : PathResolver<Unit> {
+                    override fun resolve(key: Unit) = "config.json"
+                }
+            )
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
@@ -116,9 +119,10 @@ object Graph {
                         }
                         fileSystemPersister.write(Unit, buffer)
                     }
-                ))
+                )
+            )
             .cachePolicy(
-                MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
+                MemoryPolicy.builder<Any, Any>().setExpireAfterWrite(10.seconds).build()
             )
             .build()
     }

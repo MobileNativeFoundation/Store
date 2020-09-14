@@ -24,7 +24,8 @@ class NoNetworkTest(
         testScope,
         fetcher = Fetcher.of {
             throw EXCEPTION
-        }).build(storeType)
+        }
+    ).build(storeType)
 
     @Test
     fun testNoNetwork() = testScope.runBlockingTest {

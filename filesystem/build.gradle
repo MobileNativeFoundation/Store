@@ -15,7 +15,7 @@ version = VERSION_NAME
 dependencies {
     implementation libraries.okio
     implementation libraries.coroutinesCore
-    implementation project(path: ':cache')
+    implementation libraries.cache
     implementation project(path: ':store')
     testImplementation libraries.mockito
     testImplementation libraries.mockitoKotlin
