@@ -68,7 +68,8 @@ class FlowStoreTest {
             .emitsExactly(
                 Loading(
                     origin = ResponseOrigin.Fetcher
-                ), Data(
+                ),
+                Data(
                     value = "three-1",
                     origin = ResponseOrigin.Fetcher
                 )

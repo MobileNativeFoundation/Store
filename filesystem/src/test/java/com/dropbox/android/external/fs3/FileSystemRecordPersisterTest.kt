@@ -28,7 +28,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun readExists() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
 
         val returnedValue = fileSystemPersister.read(simple)
@@ -38,7 +38,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             fileSystemPersister.read(simple)
@@ -64,7 +64,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun freshTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.FRESH)
+            .thenReturn(RecordState.FRESH)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.FRESH)
     }
@@ -72,7 +72,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun staleTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.STALE)
+            .thenReturn(RecordState.STALE)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.STALE)
     }
@@ -80,7 +80,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun missingTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.MISSING)
+            .thenReturn(RecordState.MISSING)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.MISSING)
     }

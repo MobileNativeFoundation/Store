@@ -54,8 +54,10 @@ class MultiTest {
 
     companion object {
 
-        private val fileData: Map<String, List<String>> = mapOf("/foo/bar.txt" to listOf("sfvSFv", "AsfgasFgae", "szfvzsfbzdsfb"),
-                "/foo/bar/baz.xyz" to listOf("sasffvSFv", "AsfgsdvzsfbvasFgae", "szfvzsfszfvzsvbzdsfb"))
+        private val fileData: Map<String, List<String>> = mapOf(
+            "/foo/bar.txt" to listOf("sfvSFv", "AsfgasFgae", "szfvzsfbzdsfb"),
+            "/foo/bar/baz.xyz" to listOf("sasffvSFv", "AsfgsdvzsfbvasFgae", "szfvzsfszfvzsvbzdsfb")
+        )
 
         private fun source(data: String): BufferedSource = ByteArrayInputStream(data.toByteArray(UTF_8)).source().buffer()
     }

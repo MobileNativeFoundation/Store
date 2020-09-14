@@ -1,8 +1,9 @@
 package com.dropbox.android.external.fs3.filesystem
 
-import com.dropbox.android.external.cache4.Cache
 import com.dropbox.android.external.fs3.RecordState
 import com.dropbox.android.external.fs3.Util
+import com.nytimes.android.external.cache3.Cache
+import com.nytimes.android.external.cache3.CacheBuilder
 import okio.BufferedSource
 import java.io.File
 import java.io.FileNotFoundException
@@ -18,8 +19,8 @@ import kotlin.time.ExperimentalTime
  */
 internal class FileSystemImpl(private val root: File) : FileSystem {
 
-    private val files: Cache<String, FSFile> = Cache.Builder.newBuilder()
-        .maximumCacheSize(20)
+    private val files: Cache<String, FSFile> = CacheBuilder.newBuilder()
+        .maximumSize(20)
         .build()
 
     init {
@@ -83,7 +84,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
 
     private fun getFile(path: String): FSFile? {
         val cleanedPath = cleanPath(path)
-        return files.get(cleanedPath, loader = { FSFile(root, cleanedPath) })
+        return files.get(cleanedPath) { FSFile(root, cleanedPath) }
     }
 
     private fun cleanPath(dirty: String): String =
@@ -104,7 +105,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
                 file!!.path.replaceFirst(root.path.toRegex(), "")
             )
             foundFiles.add(
-                files.get(simplifiedPath, loader = { FSFile(root, simplifiedPath) })
+                files.get(simplifiedPath) { FSFile(root, simplifiedPath) }!!
             )
         }
         return foundFiles

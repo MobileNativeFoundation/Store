@@ -24,7 +24,7 @@ class RecordPersisterTest {
     @Test
     fun readExists() = runBlocking<Unit> {
         whenever(fileSystem.exists(simple.toString()))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(simple.toString())).thenReturn(bufferedSource)
 
         val returnedValue = sourcePersister.read(simple)
@@ -34,7 +34,7 @@ class RecordPersisterTest {
     @Test
     fun freshTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.FRESH)
+            .thenReturn(RecordState.FRESH)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.FRESH)
     }
@@ -42,7 +42,7 @@ class RecordPersisterTest {
     @Test
     fun staleTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.STALE)
+            .thenReturn(RecordState.STALE)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.STALE)
     }
@@ -50,7 +50,7 @@ class RecordPersisterTest {
     @Test
     fun missingTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.MISSING)
+            .thenReturn(RecordState.MISSING)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.MISSING)
     }
@@ -58,7 +58,7 @@ class RecordPersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(SourcePersister.pathForBarcode(simple)))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             sourcePersister.read(simple)

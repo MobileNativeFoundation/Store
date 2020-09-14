@@ -25,9 +25,9 @@ class StoreWithInMemoryCacheTest {
             .from(Fetcher.of { _: Int -> "result" })
             .cachePolicy(
                 MemoryPolicy
-                    .builder()
+                    .builder<Any, Any>()
                     .setExpireAfterAccess(10.minutes)
-                    .setMemorySize(1)
+                    .setMaxSize(1)
                     .build()
             )
             .build()

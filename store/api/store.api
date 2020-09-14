@@ -59,8 +59,11 @@ public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public final fun getExpireAfterWrite-UwyO8pc ()D
 	public final fun getHasAccessPolicy ()Z
 	public final fun getHasMaxSize ()Z
+	public final fun getHasMaxWeight ()Z
 	public final fun getHasWritePolicy ()Z
 	public final fun getMaxSize ()J
+	public final fun getMaxWeight ()J
+	public final fun getWeigher ()Lcom/dropbox/android/external/store4/Weigher;
 	public final fun isDefaultWritePolicy ()Z
 }
 
@@ -74,7 +77,8 @@ public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicy
 	public final fun build ()Lcom/dropbox/android/external/store4/MemoryPolicy;
 	public final fun setExpireAfterAccess-LRDsOJo (D)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setExpireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
-	public final fun setMemorySize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setMaxSize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setWeigherAndMaxWeight (Lcom/dropbox/android/external/store4/Weigher;J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 }
 
 public final class com/dropbox/android/external/store4/ResponseOrigin : java/lang/Enum {
@@ -233,5 +237,9 @@ public final class com/dropbox/android/external/store4/StoreResponse$NoNewData :
 
 public final class com/dropbox/android/external/store4/StoreResponseKt {
 	public static final fun doThrow (Lcom/dropbox/android/external/store4/StoreResponse$Error;)Ljava/lang/Void;
+}
+
+public abstract interface class com/dropbox/android/external/store4/Weigher {
+	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
 }
 

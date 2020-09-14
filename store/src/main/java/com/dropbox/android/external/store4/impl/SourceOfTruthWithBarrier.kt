@@ -66,62 +66,68 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
             val readerVersion: Long = versionCounter.incrementAndGet()
             try {
                 lock.await()
-                emitAll(barrier.asFlow()
-                    .flatMapLatest {
-                        val messageArrivedAfterMe = readerVersion < it.version
-                        val writeError = if (messageArrivedAfterMe && it is BarrierMsg.Open) {
-                            it.writeError
-                        } else {
-                            null
-                        }
-                        val readFlow: Flow<StoreResponse<Output?>> = when (it) {
-                            is BarrierMsg.Open -> delegate.reader(key).mapIndexed { index, output ->
-                                if (index == 0 && messageArrivedAfterMe) {
-                                    val firstMsgOrigin = if (writeError == null) {
-                                        // restarted barrier without an error means write succeeded
-                                        ResponseOrigin.Fetcher
-                                    } else {
-                                        // when a write fails, we still get a new reader because
-                                        // we've disabled the previous reader before starting the
-                                        // write operation. But since write has failed, we should
-                                        // use the SourceOfTruth as the origin
-                                        ResponseOrigin.SourceOfTruth
-                                    }
-                                    StoreResponse.Data(
-                                        origin = firstMsgOrigin,
-                                        value = output
-                                    )
-                                } else {
-                                    StoreResponse.Data(
-                                        origin = ResponseOrigin.SourceOfTruth,
-                                        value = output
-                                    ) as StoreResponse<Output?> // necessary cast for catch block
-                                }
-                            }.catch { throwable ->
-                                this.emit(StoreResponse.Error.Exception(
-                                    error = SourceOfTruth.ReadException(
-                                        key = key,
-                                        cause = throwable
-                                    ),
-                                    origin = ResponseOrigin.SourceOfTruth))
+                emitAll(
+                    barrier.asFlow()
+                        .flatMapLatest {
+                            val messageArrivedAfterMe = readerVersion < it.version
+                            val writeError = if (messageArrivedAfterMe && it is BarrierMsg.Open) {
+                                it.writeError
+                            } else {
+                                null
                             }
-                            is BarrierMsg.Blocked -> {
-                                flowOf()
-                            }
-                        }
-                        readFlow
-                            .onStart {
-                                // if we have a pending error, make sure to dispatch it first.
-                                if (writeError != null) {
-                                    emit(
-                                        StoreResponse.Error.Exception(
-                                            origin = ResponseOrigin.SourceOfTruth,
-                                            error = writeError
+                            val readFlow: Flow<StoreResponse<Output?>> = when (it) {
+                                is BarrierMsg.Open ->
+                                    delegate.reader(key).mapIndexed { index, output ->
+                                        if (index == 0 && messageArrivedAfterMe) {
+                                            val firstMsgOrigin = if (writeError == null) {
+                                                // restarted barrier without an error means write succeeded
+                                                ResponseOrigin.Fetcher
+                                            } else {
+                                                // when a write fails, we still get a new reader because
+                                                // we've disabled the previous reader before starting the
+                                                // write operation. But since write has failed, we should
+                                                // use the SourceOfTruth as the origin
+                                                ResponseOrigin.SourceOfTruth
+                                            }
+                                            StoreResponse.Data(
+                                                origin = firstMsgOrigin,
+                                                value = output
+                                            )
+                                        } else {
+                                            StoreResponse.Data(
+                                                origin = ResponseOrigin.SourceOfTruth,
+                                                value = output
+                                            ) as StoreResponse<Output?> // necessary cast for catch block
+                                        }
+                                    }.catch { throwable ->
+                                        this.emit(
+                                            StoreResponse.Error.Exception(
+                                                error = SourceOfTruth.ReadException(
+                                                    key = key,
+                                                    cause = throwable
+                                                ),
+                                                origin = ResponseOrigin.SourceOfTruth
+                                            )
                                         )
-                                    )
+                                    }
+                                is BarrierMsg.Blocked -> {
+                                    flowOf()
                                 }
                             }
-                    })
+                            readFlow
+                                .onStart {
+                                    // if we have a pending error, make sure to dispatch it first.
+                                    if (writeError != null) {
+                                        emit(
+                                            StoreResponse.Error.Exception(
+                                                origin = ResponseOrigin.SourceOfTruth,
+                                                error = writeError
+                                            )
+                                        )
+                                    }
+                                }
+                        }
+                )
             } finally {
                 // we are using a finally here instead of onCompletion as there might be a
                 // possibility where flow gets cancelled right before `emitAll`.
@@ -154,7 +160,8 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                             value = value,
                             cause = writeError
                         )
-                    })
+                    }
+                )
             )
             if (writeError is CancellationException) {
                 // only throw if it failed because of cancelation.

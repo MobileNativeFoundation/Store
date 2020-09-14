@@ -53,7 +53,7 @@ class ValueFetcherTest {
         testScope.runBlockingTest {
             val e = Exception()
             val fetcher = Fetcher.of<Int, Int> {
-                    throw e
+                throw e
             }
             assertThat(fetcher(3))
                 .emitsExactly(FetcherResult.Error.Exception(e))

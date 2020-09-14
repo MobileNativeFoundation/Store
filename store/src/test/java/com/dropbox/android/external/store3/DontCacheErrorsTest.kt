@@ -30,7 +30,8 @@ class DontCacheErrorsTest(
             } else {
                 0
             }
-        }).build(storeType)
+        }
+    ).build(storeType)
 
     @Test
     fun testStoreDoesntCacheErrors() = testScope.runBlockingTest {

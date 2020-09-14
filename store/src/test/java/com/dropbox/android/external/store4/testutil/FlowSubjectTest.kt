@@ -103,7 +103,7 @@ class FlowSubjectTest {
             Too many emissions in the flow (only first additional item is shown)
             expected: [1, 2, 3]
             but was : [1, 2, 3, 4]
-        """.trimIndent()
+            """.trimIndent()
         )
     }
 }
