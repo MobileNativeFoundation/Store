@@ -17,7 +17,6 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
@@ -43,16 +42,17 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
             scope: CoroutineScope,
             cached: Boolean = false,
             cacheMemoryPolicy: MemoryPolicy<Any, Any>? = null,
-            persister: Persister<Output, Key>? = null,
+            reader: ((Key) -> Output?)? = null,
+            writer: ((Key, Output) -> Boolean)? = null,
             fetcher: Fetcher<Key, Output>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
                     StoreBuilder.let {
-                        if (persister == null) {
+                        if (reader == null || writer == null) {
                             it.from<Key, Output>(fetcher)
                         } else {
-                            it.from(fetcher, sourceOfTruthFromLegacy(persister))
+                            it.from(fetcher, sourceOfTruth(reader, writer))
                         }
                     }
                         .scope(scope)
@@ -72,17 +72,18 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
             )
         }
 
-        internal fun <Key, Output> sourceOfTruthFromLegacy(
-            persister: Persister<Output, Key>
+        internal fun <Key, Output> sourceOfTruth(
+            reader: (Key) -> Output?,
+            writer: (Key, Output) -> Boolean
         ): SourceOfTruth<Key, Output, Output> {
             return PersistentSourceOfTruth(
                 realReader = { key ->
                     flow {
-                        emit(persister.read(key))
+                        emit(reader(key))
                     }
                 },
                 realWriter = { key, value ->
-                    persister.write(key, value)
+                    writer(key, value)
                 }
             )
         }

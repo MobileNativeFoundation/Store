@@ -1,11 +1,3 @@
-public abstract interface class com/dropbox/android/external/store4/DiskRead {
-	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface class com/dropbox/android/external/store4/DiskWrite {
-	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public abstract interface annotation class com/dropbox/android/external/store4/ExperimentalStoreApi : java/lang/annotation/Annotation {
 }
 
@@ -87,11 +79,6 @@ public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicy
 	public final fun setExpireAfterWrite-LRDsOJo (D)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setMaxSize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setWeigherAndMaxWeight (Lcom/dropbox/android/external/store4/Weigher;J)V
-}
-
-public abstract interface class com/dropbox/android/external/store4/Persister : com/dropbox/android/external/store4/DiskRead, com/dropbox/android/external/store4/DiskWrite {
-	public abstract fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/dropbox/android/external/store4/ResponseOrigin : java/lang/Enum {
@@ -254,18 +241,5 @@ public final class com/dropbox/android/external/store4/StoreResponseKt {
 
 public abstract interface class com/dropbox/android/external/store4/Weigher {
 	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
-}
-
-public final class com/dropbox/android/external/store4/legacy/BarCode {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/dropbox/android/external/store4/legacy/BarCode;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/legacy/BarCode;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/legacy/BarCode;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getKey ()Ljava/lang/String;
-	public final fun getType ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 

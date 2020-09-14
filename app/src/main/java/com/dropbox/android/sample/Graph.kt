@@ -5,15 +5,14 @@ import android.text.Html
 import androidx.room.Room
 import com.dropbox.android.external.fs3.FileSystemPersister
 import com.dropbox.android.external.fs3.PathResolver
+import com.dropbox.android.external.fs3.Persister
 import com.dropbox.android.external.fs3.SourcePersisterFactory
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.dropbox.android.sample.data.model.Children
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.data.model.RedditDb
@@ -86,7 +85,7 @@ object Graph {
      * Returns a new Persister with the cache as the root.
      */
     @Throws(IOException::class)
-    fun newPersister(cacheDir: File): Persister<BufferedSource, BarCode> {
+    fun newPersister(cacheDir: File): Persister<BufferedSource, Pair<String, String>> {
         return SourcePersisterFactory.create(cacheDir)
     }
 

@@ -1,7 +1,6 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.get
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.dropbox.android.external.store4.Fetcher
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,7 +22,7 @@ class DontCacheErrorsTest(
     private var shouldThrow: Boolean = false
 
     // TODO move to test coroutine scope
-    private val store = TestStoreBuilder.from<BarCode, Int>(
+    private val store = TestStoreBuilder.from<Pair<String, String>, Int>(
         testScope,
         fetcher = Fetcher.of {
             if (shouldThrow) {
@@ -35,7 +34,7 @@ class DontCacheErrorsTest(
 
     @Test
     fun testStoreDoesntCacheErrors() = testScope.runBlockingTest {
-        val barcode = BarCode("bar", "code")
+        val barcode = "bar" to "code"
 
         shouldThrow = true
 

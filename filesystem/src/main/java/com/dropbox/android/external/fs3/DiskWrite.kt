@@ -1,4 +1,4 @@
-package com.dropbox.android.external.store4
+package com.dropbox.android.external.fs3
 
 /**
  *  Interface for saving [Raw] data from disk/persistent sources based on a [key] identifier

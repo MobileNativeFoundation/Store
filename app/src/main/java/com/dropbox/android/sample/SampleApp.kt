@@ -1,9 +1,8 @@
 package com.dropbox.android.sample
 
 import android.app.Application
-import com.dropbox.android.external.store4.Persister
+import com.dropbox.android.external.fs3.Persister
 import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.dropbox.android.sample.data.model.Post
 import okio.BufferedSource
 import java.io.IOException
@@ -15,7 +14,7 @@ class SampleApp : Application() {
 
     lateinit var configStore: Store<Unit, RedditConfig>
 
-    lateinit var persister: Persister<BufferedSource, BarCode>
+    lateinit var persister: Persister<BufferedSource, Pair<String, String>>
 
     override fun onCreate() {
         super.onCreate()
