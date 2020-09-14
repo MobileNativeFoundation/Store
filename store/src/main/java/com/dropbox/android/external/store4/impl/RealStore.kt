@@ -121,30 +121,32 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             } else {
                 diskNetworkCombined(request, sourceOfTruth)
             }
-            emitAll(stream.transform {
-                emit(it)
-                if (it is StoreResponse.NoNewData && cachedToEmit == null) {
-                    // In the special case where fetcher returned no new data we actually want to
-                    // serve cache data (even if the request specified skipping cache and/or SoT)
-                    //
-                    // For stream(Request.cached(key, refresh=true)) we will return:
-                    // Cache
-                    // Source of truth
-                    // Fetcher - > Loading
-                    // Fetcher - > NoNewData
-                    // (future Source of truth updates)
-                    //
-                    // For stream(Request.fresh(key)) we will return:
-                    // Fetcher - > Loading
-                    // Fetcher - > NoNewData
-                    // Cache
-                    // Source of truth
-                    // (future Source of truth updates)
-                    memCache?.getIfPresent(request.key)?.let {
-                        emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+            emitAll(
+                stream.transform {
+                    emit(it)
+                    if (it is StoreResponse.NoNewData && cachedToEmit == null) {
+                        // In the special case where fetcher returned no new data we actually want to
+                        // serve cache data (even if the request specified skipping cache and/or SoT)
+                        //
+                        // For stream(Request.cached(key, refresh=true)) we will return:
+                        // Cache
+                        // Source of truth
+                        // Fetcher - > Loading
+                        // Fetcher - > NoNewData
+                        // (future Source of truth updates)
+                        //
+                        // For stream(Request.fresh(key)) we will return:
+                        // Fetcher - > Loading
+                        // Fetcher - > NoNewData
+                        // Cache
+                        // Source of truth
+                        // (future Source of truth updates)
+                        memCache?.getIfPresent(request.key)?.let {
+                            emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                        }
                     }
                 }
-            })
+            )
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != ResponseOrigin.Cache) {

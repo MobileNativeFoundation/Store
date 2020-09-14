@@ -14,8 +14,8 @@ class MemoryPolicyBuilderTest {
     @Test
     fun testBuildExpireAfterWriteMemoryPolicy() {
         val policy = MemoryPolicy.builder<Any, Any>()
-                .setExpireAfterWrite(4.seconds)
-                .build()
+            .setExpireAfterWrite(4.seconds)
+            .build()
 
         assertThat(policy.expireAfterWrite).isEqualTo(4.seconds)
         assertThat(policy.isDefaultWritePolicy).isFalse()
@@ -25,8 +25,8 @@ class MemoryPolicyBuilderTest {
     @Test
     fun testBuildExpireAfterAccessMemoryPolicy() {
         val policy = MemoryPolicy.builder<Any, Any>()
-                .setExpireAfterAccess(4.seconds)
-                .build()
+            .setExpireAfterAccess(4.seconds)
+            .build()
 
         assertThat(policy.expireAfterAccess).isEqualTo(4.seconds)
         assertThat(policy.isDefaultWritePolicy).isTrue()
@@ -36,16 +36,16 @@ class MemoryPolicyBuilderTest {
     @Test(expected = IllegalStateException::class)
     fun testCannotSetBothExpirationPolicies() {
         MemoryPolicy.builder<Any, Any>()
-                .setExpireAfterAccess(4.seconds)
-                .setExpireAfterWrite(4.seconds)
-                .build()
+            .setExpireAfterAccess(4.seconds)
+            .setExpireAfterWrite(4.seconds)
+            .build()
     }
 
     @Test
     fun testBuilderSetsMemorySize() {
         val policy = MemoryPolicy.builder<Any, Any>()
-                .setMaxSize(10L)
-                .build()
+            .setMaxSize(10L)
+            .build()
 
         assertThat(policy.hasMaxSize).isEqualTo(true)
         assertThat(policy.maxSize).isEqualTo(10L)
@@ -61,7 +61,7 @@ class MemoryPolicyBuilderTest {
 
     @Test
     fun testBuilderSetsMemoryWeight() {
-        val weigher = Weigher<Any, Any> { key , value ->
+        val weigher = Weigher<Any, Any> { key, value ->
             key.hashCode() + value.hashCode()
         }
         val policy = MemoryPolicy.builder<Any, Any>()

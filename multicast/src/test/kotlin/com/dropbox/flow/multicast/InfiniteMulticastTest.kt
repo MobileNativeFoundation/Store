@@ -48,21 +48,24 @@ class InfiniteMulticastTest {
             piggybackingDownstream = true,
             onEach = {
                 dispatchLog.add(it.toString())
-            })
+            }
+        )
     }
 
     @Test
     fun piggyback() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster(flow {
-            val id = createdCount++
-            listOf("a", "b", "c").forEach {
-                emit("$it$id")
+        val activeFlow = createMulticaster(
+            flow {
+                val id = createdCount++
+                listOf("a", "b", "c").forEach {
+                    emit("$it$id")
+                }
+            }.onStart {
+                // make sure both registers on time so that no one drops a value
+                delay(100)
             }
-        }.onStart {
-            // make sure both registers on time so that no one drops a value
-            delay(100)
-        })
+        )
         val c1 = async {
             activeFlow.newDownstream().onEach {
                 delay(100)
@@ -86,15 +89,17 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_newStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster(flow {
-            val id = createdCount++
-            listOf("a", "b", "c").forEach {
-                emit("$it$id")
+        val activeFlow = createMulticaster(
+            flow {
+                val id = createdCount++
+                listOf("a", "b", "c").forEach {
+                    emit("$it$id")
+                }
+            }.onStart {
+                // make sure both registers on time so that no one drops a value
+                delay(100)
             }
-        }.onStart {
-            // make sure both registers on time so that no one drops a value
-            delay(100)
-        })
+        )
         val c1 = async {
             activeFlow.newDownstream().onEach {
                 delay(100)
@@ -118,15 +123,17 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_oldStreamClosesEarly() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster(flow {
-            val id = createdCount++
-            listOf("a", "b", "c").forEach {
-                emit("$it$id")
+        val activeFlow = createMulticaster(
+            flow {
+                val id = createdCount++
+                listOf("a", "b", "c").forEach {
+                    emit("$it$id")
+                }
+            }.onStart {
+                // make sure both registers on time so that no one drops a value
+                delay(100)
             }
-        }.onStart {
-            // make sure both registers on time so that no one drops a value
-            delay(100)
-        })
+        )
         val c1 = async {
             activeFlow.newDownstream().onEach {
                 delay(100)
@@ -150,16 +157,18 @@ class InfiniteMulticastTest {
     @Test
     fun piggyback_allStreamsCloseSearch() = testScope.runBlockingTest {
         var createdCount = 0
-        val activeFlow = createMulticaster(flow {
-            val id = createdCount++
-            listOf("a", "b", "c").forEach {
-                emit("$it$id")
+        val activeFlow = createMulticaster(
+            flow {
+                val id = createdCount++
+                listOf("a", "b", "c").forEach {
+                    emit("$it$id")
+                }
+            }.transform {
+                // make sure both registers on time so that no one drops a value
+                delay(1_000)
+                emit(it)
             }
-        }.transform {
-            // make sure both registers on time so that no one drops a value
-            delay(1_000)
-            emit(it)
-        })
+        )
         val c1 = async {
             activeFlow.newDownstream().onEach {
                 delay(100)

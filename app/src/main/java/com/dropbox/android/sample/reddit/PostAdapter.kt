@@ -10,7 +10,8 @@ import com.dropbox.android.sample.data.model.Post
 class PostAdapter : ListAdapter<Post, PostViewHolder>(PostDiffCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val itemView = LayoutInflater.from(
-                parent.context).inflate(R.layout.article_item, parent, false)
+            parent.context
+        ).inflate(R.layout.article_item, parent, false)
         return PostViewHolder(itemView)
     }
 

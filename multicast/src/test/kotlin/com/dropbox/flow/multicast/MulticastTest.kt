@@ -403,12 +403,14 @@ class MulticastTest {
     @Test
     fun closed_whileCollecting() = testScope.runBlockingTest {
         var collectionCount = 0
-        val multicaster = createMulticaster(flow {
-            collectionCount++
-            emit(1)
-            // suspend forever
-            suspendCancellableCoroutine<Unit> {}
-        })
+        val multicaster = createMulticaster(
+            flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            }
+        )
         val collection = async {
             multicaster.newDownstream().toList()
         }
@@ -423,12 +425,14 @@ class MulticastTest {
     @Test
     fun closed_subscriberAfterClose() = testScope.runBlockingTest {
         var collectionCount = 0
-        val multicaster = createMulticaster(flow {
-            collectionCount++
-            emit(1)
-            // suspend forever
-            suspendCancellableCoroutine<Unit> {}
-        })
+        val multicaster = createMulticaster(
+            flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            }
+        )
         multicaster.close()
         // now add a subscriber, should just close immediately
         runCurrent()
@@ -517,9 +521,11 @@ class MulticastTest {
             source = flow<String> {
                 val id = counter++
                 assertTrue(counter <= collectionLimit)
-                emitAll(values.asFlow().map {
-                    "${it}_$id"
-                })
+                emitAll(
+                    values.asFlow().map {
+                        "${it}_$id"
+                    }
+                )
             },
             onEach = {}
         )

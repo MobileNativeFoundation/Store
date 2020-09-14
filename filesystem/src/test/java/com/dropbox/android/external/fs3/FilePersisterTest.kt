@@ -21,7 +21,7 @@ class FilePersisterTest {
     @Test
     fun readExists() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
 
         val returnedValue = fileSystemPersister.read(simple)
@@ -31,7 +31,7 @@ class FilePersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             fileSystemPersister.read(simple)

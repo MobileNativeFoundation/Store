@@ -52,27 +52,27 @@ data class StoreRequest<Key> private constructor(
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
         fun <Key> fresh(key: Key) = StoreRequest(
-                key = key,
-                skippedCaches = allCaches,
-                refresh = true
+            key = key,
+            skippedCaches = allCaches,
+            refresh = true
         )
         /**
          * Create a Store Request which will return data from memory/disk caches
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> cached(key: Key, refresh: Boolean) = StoreRequest(
-                key = key,
-                skippedCaches = 0,
-                refresh = refresh
+            key = key,
+            skippedCaches = 0,
+            refresh = refresh
         )
         /**
          * Create a Store Request which will return data from disk cache
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreRequest(
-                key = key,
-                skippedCaches = CacheType.MEMORY.flag,
-                refresh = refresh
+            key = key,
+            skippedCaches = CacheType.MEMORY.flag,
+            refresh = refresh
         )
     }
 }

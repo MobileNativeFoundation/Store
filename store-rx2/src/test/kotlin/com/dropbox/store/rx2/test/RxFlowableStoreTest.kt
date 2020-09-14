@@ -32,15 +32,18 @@ class RxFlowableStoreTest {
     private val store =
         StoreBuilder.from<Int, String, String>(
             Fetcher.ofResultFlowable {
-                Flowable.create({ emitter ->
-                    emitter.onNext(
-                        FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
-                    )
-                    emitter.onNext(
-                        FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
-                    )
-                    emitter.onComplete()
-                }, BackpressureStrategy.BUFFER)
+                Flowable.create(
+                    { emitter ->
+                        emitter.onNext(
+                            FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
+                        )
+                        emitter.onNext(
+                            FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
+                        )
+                        emitter.onComplete()
+                    },
+                    BackpressureStrategy.BUFFER
+                )
             },
             sourceOfTruth = SourceOfTruth.ofFlowable(
                 reader = {
@@ -52,7 +55,8 @@ class RxFlowableStoreTest {
                 writer = { key, value ->
                     Completable.fromAction { fakeDisk[key] = value }
                 }
-            ))
+            )
+        )
             .withScheduler(testScheduler)
             .build()
 

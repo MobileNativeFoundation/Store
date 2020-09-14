@@ -75,7 +75,8 @@ class FetcherResponseTest {
                 .emitsExactly(
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
-                    ), StoreResponse.Data(
+                    ),
+                    StoreResponse.Data(
                         value = 9,
                         origin = ResponseOrigin.Fetcher
                     )
@@ -110,7 +111,8 @@ class FetcherResponseTest {
                 .emitsExactly(
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
-                    ), StoreResponse.Error.Message(
+                    ),
+                    StoreResponse.Error.Message(
                         message = "zero",
                         origin = ResponseOrigin.Fetcher
                     )
@@ -120,7 +122,8 @@ class FetcherResponseTest {
             ).emitsExactly(
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
-                ), StoreResponse.Data(
+                ),
+                StoreResponse.Data(
                     value = 1,
                     origin = ResponseOrigin.Fetcher
                 )
@@ -149,7 +152,8 @@ class FetcherResponseTest {
                 .emitsExactly(
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
-                    ), StoreResponse.Error.Exception(
+                    ),
+                    StoreResponse.Error.Exception(
                         error = e,
                         origin = ResponseOrigin.Fetcher
                     )
@@ -159,7 +163,8 @@ class FetcherResponseTest {
             ).emitsExactly(
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
-                ), StoreResponse.Data(
+                ),
+                StoreResponse.Data(
                     value = 1,
                     origin = ResponseOrigin.Fetcher
                 )
@@ -186,7 +191,8 @@ class FetcherResponseTest {
                 .emitsExactly(
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
-                    ), StoreResponse.Error.Exception(
+                    ),
+                    StoreResponse.Error.Exception(
                         error = e,
                         origin = ResponseOrigin.Fetcher
                     )
@@ -196,7 +202,8 @@ class FetcherResponseTest {
             ).emitsExactly(
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
-                ), StoreResponse.Data(
+                ),
+                StoreResponse.Data(
                     value = 1,
                     origin = ResponseOrigin.Fetcher
                 )

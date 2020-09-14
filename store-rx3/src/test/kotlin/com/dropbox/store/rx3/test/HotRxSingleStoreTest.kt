@@ -40,7 +40,8 @@ class HotRxSingleStoreTest {
                 .emitsExactly(
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
-                    ), StoreResponse.Data(
+                    ),
+                    StoreResponse.Data(
                         value = "three-1",
                         origin = ResponseOrigin.Fetcher
                     )

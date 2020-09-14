@@ -92,9 +92,12 @@ object Graph {
     fun provideConfigStore(context: Context): Store<Unit, RedditConfig> {
         val fileSystem = FileSystemFactory.create(context.cacheDir)
         val fileSystemPersister =
-            FileSystemPersister.create(fileSystem, object : PathResolver<Unit> {
-                override fun resolve(key: Unit) = "config.json"
-            })
+            FileSystemPersister.create(
+                fileSystem,
+                object : PathResolver<Unit> {
+                    override fun resolve(key: Unit) = "config.json"
+                }
+            )
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
@@ -116,7 +119,8 @@ object Graph {
                         }
                         fileSystemPersister.write(Unit, buffer)
                     }
-                ))
+                )
+            )
             .cachePolicy(
                 MemoryPolicy.builder<Any, Any>().setExpireAfterWrite(10.seconds).build()
             )
