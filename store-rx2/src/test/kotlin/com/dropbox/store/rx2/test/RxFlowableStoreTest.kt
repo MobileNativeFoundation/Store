@@ -10,11 +10,11 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.ofFlowable
 import com.dropbox.store.rx2.ofResultFlowable
+import com.dropbox.store.rx2.withScheduler
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
-import io.reactivex.subscribers.TestSubscriber
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import org.junit.Test
@@ -40,7 +40,7 @@ class RxFlowableStoreTest {
                         FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
                     )
                     emitter.onComplete()
-                }, BackpressureStrategy.LATEST)
+                }, BackpressureStrategy.BUFFER)
             },
             sourceOfTruth = SourceOfTruth.ofFlowable(
                 reader = {
@@ -53,14 +53,14 @@ class RxFlowableStoreTest {
                     Completable.fromAction { fakeDisk[key] = value }
                 }
             ))
+            .withScheduler(testScheduler)
             .build()
 
     @Test
     fun simpleTest() {
-        val testSubscriber1 = TestSubscriber<StoreResponse<String>>()
-        store.observe(StoreRequest.fresh(3))
+        val testSubscriber1 = store.observe(StoreRequest.fresh(3))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber1)
+            .test()
         testScheduler.triggerActions()
         testSubscriber1
             .awaitCount(3)
@@ -70,10 +70,9 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val testSubscriber2 = TestSubscriber<StoreResponse<String>>()
-        store.observe(StoreRequest.cached(3, false))
+        val testSubscriber2 = store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber2)
+            .test()
         testScheduler.triggerActions()
         testSubscriber2
             .awaitCount(2)
@@ -82,10 +81,9 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 2 occurrence", ResponseOrigin.SourceOfTruth)
             )
 
-        val testSubscriber3 = TestSubscriber<StoreResponse<String>>()
-        store.observe(StoreRequest.fresh(3))
+        val testSubscriber3 = store.observe(StoreRequest.fresh(3))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber3)
+            .test()
         testScheduler.triggerActions()
         testSubscriber3
             .awaitCount(3)
@@ -95,10 +93,9 @@ class RxFlowableStoreTest {
                 StoreResponse.Data("3 4 occurrence", ResponseOrigin.Fetcher)
             )
 
-        val testSubscriber4 = TestSubscriber<StoreResponse<String>>()
-        store.observe(StoreRequest.cached(3, false))
+        val testSubscriber4 = store.observe(StoreRequest.cached(3, false))
             .subscribeOn(testScheduler)
-            .subscribe(testSubscriber4)
+            .test()
         testScheduler.triggerActions()
         testSubscriber4
             .awaitCount(2)
