@@ -8,11 +8,11 @@ import okio.BufferedSource
 import java.io.IOException
 
 class SampleApp : Application() {
-    lateinit var roomStore: Store<String, List<Post>>
+    lateinit var roomStore: Store<String, List<Post>, Throwable>
 
-    lateinit var storeMultiParam: Store<Pair<String, RedditConfig>, List<Post>>
+    lateinit var storeMultiParam: Store<Pair<String, RedditConfig>, List<Post>, Throwable>
 
-    lateinit var configStore: Store<Unit, RedditConfig>
+    lateinit var configStore: Store<Unit, RedditConfig, Throwable>
 
     lateinit var persister: Persister<BufferedSource, Pair<String, String>>
 

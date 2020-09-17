@@ -18,6 +18,7 @@ package com.dropbox.android.external.store4.impl
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class SourceOfTruthWithBarrier<Key, Input, Output>(
+internal class SourceOfTruthWithBarrier<Key, Input, Output, Error>(
     private val delegate: SourceOfTruth<Key, Input, Output>
 ) {
     /**
@@ -60,7 +61,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      */
     private val versionCounter = AtomicLong(0)
 
-    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreResponse<Output?>> {
+    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreResponse<Output?, Either<Error, Throwable>>> {
         return flow {
             val barrier = barriers.acquire(key)
             val readerVersion: Long = versionCounter.incrementAndGet()
@@ -75,7 +76,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                             } else {
                                 null
                             }
-                            val readFlow: Flow<StoreResponse<Output?>> = when (it) {
+                            val readFlow: Flow<StoreResponse<Output?, Either<Error, Throwable>>> = when (it) {
                                 is BarrierMsg.Open ->
                                     delegate.reader(key).mapIndexed { index, output ->
                                         if (index == 0 && messageArrivedAfterMe) {
@@ -97,14 +98,16 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                             StoreResponse.Data(
                                                 origin = ResponseOrigin.SourceOfTruth,
                                                 value = output
-                                            ) as StoreResponse<Output?> // necessary cast for catch block
+                                            ) as StoreResponse<Output?, Either<Error, Throwable>> // necessary cast for catch block
                                         }
                                     }.catch { throwable ->
                                         this.emit(
-                                            StoreResponse.Error.Exception(
-                                                error = SourceOfTruth.ReadException(
-                                                    key = key,
-                                                    cause = throwable
+                                            StoreResponse.Error(
+                                                error = Either.Right(
+                                                    SourceOfTruth.ReadException(
+                                                        key = key,
+                                                        cause = throwable
+                                                    )
                                                 ),
                                                 origin = ResponseOrigin.SourceOfTruth
                                             )
@@ -119,9 +122,9 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     // if we have a pending error, make sure to dispatch it first.
                                     if (writeError != null) {
                                         emit(
-                                            StoreResponse.Error.Exception(
+                                            StoreResponse.Error(
                                                 origin = ResponseOrigin.SourceOfTruth,
-                                                error = writeError
+                                                error = Either.Right(writeError)
                                             )
                                         )
                                     }

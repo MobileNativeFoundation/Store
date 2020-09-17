@@ -27,8 +27,8 @@ import kotlin.time.ExperimentalTime
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-interface StoreBuilder<Key : Any, Output : Any> {
-    fun build(): Store<Key, Output>
+interface StoreBuilder<Key : Any, Output : Any, Error : Any> {
+    fun build(): Store<Key, Output, Error>
 
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -37,7 +37,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
      *
      *   @param scope - scope to use for sharing
      */
-    fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
+    fun scope(scope: CoroutineScope): StoreBuilder<Key, Output, Error>
 
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
@@ -45,12 +45,12 @@ interface StoreBuilder<Key : Any, Output : Any> {
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
     @ExperimentalTime
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output, Error>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
-    fun disableCache(): StoreBuilder<Key, Output>
+    fun disableCache(): StoreBuilder<Key, Output, Error>
 
     companion object {
 
@@ -60,9 +60,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a [Fetcher] flow of network records.
          */
         @OptIn(ExperimentalTime::class)
-        fun <Key : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Output>
-        ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher)
+        fun <Key : Any, Output : Any, Error : Any> from(
+            fetcher: Fetcher<Key, Output, Error>
+        ): StoreBuilder<Key, Output, Error> = RealStoreBuilder(fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -70,10 +70,10 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, Input : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Input>,
+        fun <Key : Any, Input : Any, Output : Any, Error : Any> from(
+            fetcher: Fetcher<Key, Input, Error>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> = RealStoreBuilder(
+        ): StoreBuilder<Key, Output, Error> = RealStoreBuilder(
             fetcher = fetcher,
             sourceOfTruth = sourceOfTruth
         )
@@ -83,30 +83,30 @@ interface StoreBuilder<Key : Any, Output : Any> {
 @FlowPreview
 @OptIn(ExperimentalTime::class)
 @ExperimentalCoroutinesApi
-private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
-    private val fetcher: Fetcher<Key, Input>,
+private class RealStoreBuilder<Key : Any, Input : Any, Output : Any, Error : Any>(
+    private val fetcher: Fetcher<Key, Input, Error>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
-) : StoreBuilder<Key, Output> {
+) : StoreBuilder<Key, Output, Error> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
 
-    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output> {
+    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output, Error> {
         this.scope = scope
         return this
     }
 
     override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?):
-        RealStoreBuilder<Key, Input, Output> {
+        RealStoreBuilder<Key, Input, Output, Error> {
             cachePolicy = memoryPolicy
             return this
         }
 
-    override fun disableCache(): RealStoreBuilder<Key, Input, Output> {
+    override fun disableCache(): RealStoreBuilder<Key, Input, Output, Error> {
         cachePolicy = null
         return this
     }
 
-    override fun build(): Store<Key, Output> {
+    override fun build(): Store<Key, Output, Error> {
         @Suppress("UNCHECKED_CAST")
         return RealStore(
             scope = scope ?: GlobalScope,

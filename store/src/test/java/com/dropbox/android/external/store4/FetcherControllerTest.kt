@@ -39,11 +39,11 @@ class FetcherControllerTest {
 
     @Test
     fun simple() = testScope.runBlockingTest {
-        val fetcherController = FetcherController<Int, Int, Int>(
+        val fetcherController = FetcherController<Int, Int, Int, Throwable>(
             scope = testScope,
             realFetcher = Fetcher.ofResultFlow { key: Int ->
                 flow {
-                    emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
+                    emit(FetcherResult.Data(key * key) as FetcherResult<Int, Throwable>)
                 }
             },
             sourceOfTruth = null
@@ -65,14 +65,14 @@ class FetcherControllerTest {
     @Test
     fun concurrent() = testScope.runBlockingTest {
         var createdCnt = 0
-        val fetcherController = FetcherController<Int, Int, Int>(
+        val fetcherController = FetcherController<Int, Int, Int, Throwable>(
             scope = testScope,
             realFetcher = Fetcher.ofResultFlow { key: Int ->
                 createdCnt++
                 flow {
                     // make sure it takes time, otherwise, we may not share
                     delay(1)
-                    emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
+                    emit(FetcherResult.Data(key * key) as FetcherResult<Int, Throwable>)
                 }
             },
             sourceOfTruth = null

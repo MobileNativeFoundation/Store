@@ -19,6 +19,7 @@ import com.dropbox.android.external.store4.SourceOfTruth.ReadException
 import com.dropbox.android.external.store4.SourceOfTruth.WriteException
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import com.dropbox.android.external.store4.impl.SourceOfTruthWithBarrier
+import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.assertThat
 import com.google.common.truth.Truth.assertThat
@@ -51,7 +52,7 @@ class SourceOfTruthWithBarrierTest {
             realDelete = persister::deleteByKey,
             realDeleteAll = persister::deleteAll
         )
-    private val source = SourceOfTruthWithBarrier(
+    private val source = SourceOfTruthWithBarrier<Int, String, String, String>(
         delegate = delegate
     )
 
@@ -126,11 +127,13 @@ class SourceOfTruthWithBarrierTest {
             assertThat(
                 source.reader(1, CompletableDeferred(Unit))
             ).emitsExactly(
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = ReadException(
-                        key = 1,
-                        cause = exception
+                    error = Either.Right(
+                        ReadException(
+                            key = 1,
+                            cause = exception
+                        )
                     )
                 )
             )
@@ -149,7 +152,7 @@ class SourceOfTruthWithBarrierTest {
                 value
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
-            val collected = mutableListOf<StoreResponse<String?>>()
+            val collected = mutableListOf<StoreResponse<String?, Either<String, Throwable>>>()
             val collection = async {
                 reader.collect {
                     collected.add(it)
@@ -157,11 +160,13 @@ class SourceOfTruthWithBarrierTest {
             }
             advanceUntilIdle()
             assertThat(collected).containsExactly(
-                StoreResponse.Error.Exception(
+                StoreResponse.Error<Either<String, Throwable>>(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = ReadException(
-                        key = 1,
-                        cause = exception
+                    error = Either.Right(
+                        ReadException(
+                            key = 1,
+                            cause = exception
+                        )
                     )
                 )
             )
@@ -171,11 +176,13 @@ class SourceOfTruthWithBarrierTest {
             source.write(1, "a")
             advanceUntilIdle()
             assertThat(collected).containsExactly(
-                StoreResponse.Error.Exception(
+                StoreResponse.Error<Either<String, Throwable>>(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = ReadException(
-                        key = 1,
-                        cause = exception
+                    error = Either.Right(
+                        ReadException(
+                            key = 1,
+                            cause = exception
+                        )
                     )
                 ),
                 StoreResponse.Data(
@@ -195,7 +202,7 @@ class SourceOfTruthWithBarrierTest {
                 throw exception
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
-            val collected = mutableListOf<StoreResponse<String?>>()
+            val collected = mutableListOf<StoreResponse<String?, Either<String, Throwable>>>()
             val collection = async {
                 reader.collect {
                     collected.add(it)
@@ -213,12 +220,14 @@ class SourceOfTruthWithBarrierTest {
                     origin = ResponseOrigin.SourceOfTruth,
                     value = null
                 ),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error<Either<String, Throwable>>(
                     origin = ResponseOrigin.SourceOfTruth,
-                    error = WriteException(
-                        key = 1,
-                        value = "will fail",
-                        cause = exception
+                    error = Either.Right(
+                        WriteException(
+                            key = 1,
+                            value = "will fail",
+                            cause = exception
+                        )
                     )
                 ),
                 StoreResponse.Data<String?>(

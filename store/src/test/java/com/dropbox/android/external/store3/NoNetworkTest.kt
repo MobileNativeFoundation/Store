@@ -1,7 +1,6 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.get
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,7 +19,7 @@ class NoNetworkTest(
     storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
-    private val store: Store<Pair<String, String>, out Any> = TestStoreBuilder.from<Pair<String, String>, Any>(
+    private val store = TestStoreBuilder.from<Pair<String, String>, Any>(
         testScope,
         fetcher = Fetcher.of {
             throw EXCEPTION

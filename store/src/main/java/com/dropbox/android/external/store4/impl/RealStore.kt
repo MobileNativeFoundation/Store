@@ -43,12 +43,12 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 @ExperimentalCoroutinesApi
 @FlowPreview
-internal class RealStore<Key : Any, Input : Any, Output : Any>(
+internal class RealStore<Key : Any, Input : Any, Output : Any, Error : Any>(
     scope: CoroutineScope,
-    fetcher: Fetcher<Key, Input>,
+    fetcher: Fetcher<Key, Input, Error>,
     sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
     private val memoryPolicy: MemoryPolicy<Key, Output>?
-) : Store<Key, Output> {
+) : Store<Key, Output, Error> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
      * the builder.
@@ -56,7 +56,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
      * we write the value from fetcher into the disk, we can block reads to avoid sending new data
      * as if it came from the server (the [StoreResponse.origin] field).
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>? =
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output, Error>? =
         sourceOfTruth?.let {
             SourceOfTruthWithBarrier(it)
         }
@@ -96,8 +96,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         sourceOfTruth = this.sourceOfTruth
     )
 
-    override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> =
-        flow<StoreResponse<Output>> {
+    override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output, Error>> =
+        flow<StoreResponse<Output, Error>> {
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
@@ -117,7 +117,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     request = request,
                     networkLock = null,
                     piggybackOnly = piggybackOnly
-                ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
+                ) as Flow<StoreResponse<Output, Error>> // when no source of truth Input == Output
             } else {
                 diskNetworkCombined(request, sourceOfTruth)
             }
@@ -193,8 +193,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
      */
     private fun diskNetworkCombined(
         request: StoreRequest<Key>,
-        sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>
-    ): Flow<StoreResponse<Output>> {
+        sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output, Error>
+    ): Flow<StoreResponse<Output, Error>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
         val networkFlow = createNetworkFlow(request, networkLock)
@@ -236,7 +236,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             val diskValue = diskData.value
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
-                                emit(diskData as StoreResponse<Output>)
+                                emit(diskData as StoreResponse<Output, Error>)
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.
@@ -245,19 +245,20 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             }
                         }
                         is StoreResponse.Error -> {
-                            // disk sent an error, send it down as well
-                            emit(diskData)
-
-                            // If disk sent a read error, we should allow fetcher to start emitting
-                            // values since there is nothing to read from disk. If disk sent a write
-                            // error, we should NOT allow fetcher to start emitting values as we
-                            // should always wait for the read attempt.
-                            if (diskData is StoreResponse.Error.Exception &&
-                                diskData.error is SourceOfTruth.ReadException
-                            ) {
-                                networkLock.complete(Unit)
+                            when (val error = diskData.error) {
+                                is Either.Left ->
+                                    // disk sent an error, send it down as well
+                                    emit(StoreResponse.Error(error.value, diskData.origin))
+                                is Either.Right ->
+                                    // If disk sent a read error, we should allow fetcher to start emitting
+                                    // values since there is nothing to read from disk. If disk sent a write
+                                    // error, we should NOT allow fetcher to start emitting values as we
+                                    // should always wait for the read attempt.
+                                    if (error.value is SourceOfTruth.ReadException) {
+                                        networkLock.complete(Unit)
+                                    }
+                                // for other errors, don't do anything, wait for the read attempt
                             }
-                            // for other errors, don't do anything, wait for the read attempt
                         }
                     }
                 }
@@ -269,7 +270,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         request: StoreRequest<Key>,
         networkLock: CompletableDeferred<Unit>?,
         piggybackOnly: Boolean = false
-    ): Flow<StoreResponse<Input>> {
+    ): Flow<StoreResponse<Input, Error>> {
         return fetcherController
             .getFetcher(request.key, piggybackOnly)
             .onStart {

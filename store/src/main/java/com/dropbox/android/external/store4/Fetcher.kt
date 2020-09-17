@@ -8,12 +8,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-sealed class FetcherResult<out T : Any> {
-    data class Data<T : Any>(val value: T) : FetcherResult<T>()
-    sealed class Error : FetcherResult<Nothing>() {
-        data class Exception(val error: Throwable) : Error()
-        data class Message(val message: String) : Error()
-    }
+sealed class FetcherResult<out DATA : Any, out ERROR : Any> {
+    data class Data<T : Any>(val value: T) : FetcherResult<T, Nothing>()
+    data class Error<E : Any>(val error: E) : FetcherResult<Nothing, E>()
 }
 
 /**
@@ -27,8 +24,8 @@ sealed class FetcherResult<out T : Any> {
  * See [ofFlow], [of] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error].
  */
-interface Fetcher<Key : Any, Output : Any> {
-    operator fun invoke(key: Key): Flow<FetcherResult<Output>>
+interface Fetcher<Key : Any, Output : Any, Error : Any> {
+    operator fun invoke(key: Key): Flow<FetcherResult<Output, Error>>
 
     /**
      * Returns a flow of the item represented by the given [key].
@@ -45,9 +42,9 @@ interface Fetcher<Key : Any, Output : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Output : Any> ofResultFlow(
-            flowFactory: (Key) -> Flow<FetcherResult<Output>>
-        ): Fetcher<Key, Output> = FactoryFetcher(flowFactory)
+        fun <Key : Any, Output : Any, Error : Any> ofResultFlow(
+            flowFactory: (Key) -> Flow<FetcherResult<Output, Error>>
+        ): Fetcher<Key, Output, Error> = FactoryFetcher(flowFactory)
 
         /**
          * "Creates" a [Fetcher] from a non-[Flow] source.
@@ -60,9 +57,9 @@ interface Fetcher<Key : Any, Output : Any> {
          *
          * @param doFetch a source of network records.
          */
-        fun <Key : Any, Output : Any> ofResult(
-            doFetch: suspend (Key) -> FetcherResult<Output>
-        ): Fetcher<Key, Output> = ofResultFlow(doFetch.asFlow())
+        fun <Key : Any, Output : Any, Error : Any> ofResult(
+            doFetch: suspend (Key) -> FetcherResult<Output, Error>
+        ): Fetcher<Key, Output, Error> = ofResultFlow(doFetch.asFlow())
 
         /**
          * "Creates" a [Fetcher] from a [flowFactory] and translate the results to a [FetcherResult].
@@ -78,10 +75,10 @@ interface Fetcher<Key : Any, Output : Any> {
          */
         fun <Key : Any, Output : Any> ofFlow(
             flowFactory: (Key) -> Flow<Output>
-        ): Fetcher<Key, Output> = FactoryFetcher { key: Key ->
-            flowFactory(key).map { FetcherResult.Data(it) as FetcherResult<Output> }
+        ): Fetcher<Key, Output, Throwable> = FactoryFetcher { key: Key ->
+            flowFactory(key).map { FetcherResult.Data(it) as FetcherResult<Output, Throwable> }
                 .catch { th: Throwable ->
-                    emit(FetcherResult.Error.Exception(th))
+                    emit(FetcherResult.Error(th))
                 }
         }
 
@@ -98,7 +95,7 @@ interface Fetcher<Key : Any, Output : Any> {
          */
         fun <Key : Any, Output : Any> of(
             doFetch: suspend (key: Key) -> Output
-        ): Fetcher<Key, Output> = ofFlow(doFetch.asFlow())
+        ): Fetcher<Key, Output, Throwable> = ofFlow(doFetch.asFlow())
 
         private fun <Key, Value> (suspend (key: Key) -> Value).asFlow() = { key: Key ->
             flow {
@@ -106,10 +103,10 @@ interface Fetcher<Key : Any, Output : Any> {
             }
         }
 
-        private class FactoryFetcher<Key : Any, Output : Any>(
-            private val factory: (Key) -> Flow<FetcherResult<Output>>
-        ) : Fetcher<Key, Output> {
-            override fun invoke(key: Key): Flow<FetcherResult<Output>> = factory(key)
+        private class FactoryFetcher<Key : Any, Output : Any, Error : Any>(
+            private val factory: (Key) -> Flow<FetcherResult<Output, Error>>
+        ) : Fetcher<Key, Output, Error> {
+            override fun invoke(key: Key): Flow<FetcherResult<Output, Error>> = factory(key)
         }
     }
 }

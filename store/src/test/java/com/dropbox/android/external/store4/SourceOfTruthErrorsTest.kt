@@ -62,7 +62,7 @@ class SourceOfTruthErrorsTest {
                 pipeline.stream(StoreRequest.fresh(3))
             ).emitsExactly(
                 StoreResponse.Loading(ResponseOrigin.Fetcher),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "a",
@@ -96,7 +96,7 @@ class SourceOfTruthErrorsTest {
             assertThat(
                 pipeline.stream(StoreRequest.cached(3, refresh = false))
             ).emitsExactly(
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = ReadException(
                         key = 3,
                         cause = TestException("null")
@@ -109,7 +109,7 @@ class SourceOfTruthErrorsTest {
                 ),
                 // and after fetcher writes the value, it will trigger another read which will also
                 // fail
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = ReadException(
                         key = 3,
                         cause = TestException("a")
@@ -146,7 +146,7 @@ class SourceOfTruthErrorsTest {
                 StoreResponse.Loading(
                     origin = ResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "a",
@@ -158,7 +158,7 @@ class SourceOfTruthErrorsTest {
                     value = "b",
                     origin = ResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "c",
@@ -217,7 +217,7 @@ class SourceOfTruthErrorsTest {
                 pipeline.stream(StoreRequest.cached(3, refresh = true))
             ).emitsExactly(
                 // we wanted the disk value but write failed so we don't get it
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "c",
@@ -366,7 +366,7 @@ class SourceOfTruthErrorsTest {
             assertThat(
                 pipeline.stream(StoreRequest.cached(3, refresh = true))
             ).emitsExactly(
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     origin = ResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 3,

@@ -26,7 +26,7 @@ class FetcherResponseTest {
     fun `GIVEN a Fetcher that throws an exception in invoke WHEN streaming THEN the exceptions should not be caught`() {
         val result = kotlin.runCatching {
             testScope.runBlockingTest {
-                val store = StoreBuilder.from<Int, Int>(
+                val store = StoreBuilder.from<Int, Int, Throwable>(
                     Fetcher.ofResult {
                         throw RuntimeException("don't catch me")
                     }
@@ -48,8 +48,8 @@ class FetcherResponseTest {
         testScope.runBlockingTest {
             val store = StoreBuilder.from(
                 fetcher = Fetcher.ofResultFlow { key: Int ->
-                    flowOf<FetcherResult<String>>(
-                        FetcherResult.Error.Exception(exception),
+                    flowOf<FetcherResult<String, Throwable>>(
+                        FetcherResult.Error(exception),
                         FetcherResult.Data("$key")
                     )
                 }
@@ -58,7 +58,7 @@ class FetcherResponseTest {
             assertThat(store.stream(StoreRequest.fresh(1)))
                 .emitsExactly(
                     StoreResponse.Loading(ResponseOrigin.Fetcher),
-                    StoreResponse.Error.Exception(exception, ResponseOrigin.Fetcher),
+                    StoreResponse.Error(exception, ResponseOrigin.Fetcher),
                     StoreResponse.Data("1", ResponseOrigin.Fetcher)
                 )
         }
@@ -92,45 +92,6 @@ class FetcherResponseTest {
         }
 
     @Test
-    fun `GIVEN transformer WHEN error message THEN error returned to user AND error isn't cached`() =
-        testScope.runBlockingTest {
-            var count = 0
-            val fetcher = Fetcher.ofResultFlow { _: Int ->
-                flowOf(count++).map {
-                    if (it > 0) {
-                        FetcherResult.Data(it)
-                    } else {
-                        FetcherResult.Error.Message("zero")
-                    }
-                }
-            }
-            val pipeline = StoreBuilder.from(fetcher)
-                .buildWithTestScope()
-
-            assertThat(pipeline.stream(StoreRequest.fresh(3)))
-                .emitsExactly(
-                    StoreResponse.Loading(
-                        origin = ResponseOrigin.Fetcher
-                    ),
-                    StoreResponse.Error.Message(
-                        message = "zero",
-                        origin = ResponseOrigin.Fetcher
-                    )
-                )
-            assertThat(
-                pipeline.stream(StoreRequest.cached(3, refresh = false))
-            ).emitsExactly(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
-                ),
-                StoreResponse.Data(
-                    value = 1,
-                    origin = ResponseOrigin.Fetcher
-                )
-            )
-        }
-
-    @Test
     fun `GIVEN transformer WHEN error exception THEN error returned to user AND error isn't cached`() =
         testScope.runBlockingTest {
             val e = Exception()
@@ -140,7 +101,7 @@ class FetcherResponseTest {
                     if (it > 0) {
                         FetcherResult.Data(it)
                     } else {
-                        FetcherResult.Error.Exception(e)
+                        FetcherResult.Error(e)
                     }
                 }
             }
@@ -153,7 +114,7 @@ class FetcherResponseTest {
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
                     ),
-                    StoreResponse.Error.Exception(
+                    StoreResponse.Error(
                         error = e,
                         origin = ResponseOrigin.Fetcher
                     )
@@ -192,7 +153,7 @@ class FetcherResponseTest {
                     StoreResponse.Loading(
                         origin = ResponseOrigin.Fetcher
                     ),
-                    StoreResponse.Error.Exception(
+                    StoreResponse.Error(
                         error = e,
                         origin = ResponseOrigin.Fetcher
                     )
@@ -210,6 +171,6 @@ class FetcherResponseTest {
             )
         }
 
-    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
+    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output, out Throwable>.buildWithTestScope() =
         scope(testScope).build()
 }

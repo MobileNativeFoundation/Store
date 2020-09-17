@@ -1,6 +1,7 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.StoreRequest
+import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.testutil.FakeFetcher
@@ -75,7 +76,7 @@ class StreamOneKeyTest(
                 refresh = true
             )
         ).transform {
-            it.throwIfError()
+            require(it !is StoreResponse.Error)
             it.dataOrNull()?.let {
                 emit(it)
             }

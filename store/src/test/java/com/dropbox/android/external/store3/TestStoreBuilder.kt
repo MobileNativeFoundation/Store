@@ -30,9 +30,9 @@ import kotlin.time.ExperimentalTime
 @FlowPreview
 @ExperimentalCoroutinesApi
 data class TestStoreBuilder<Key : Any, Output : Any>(
-    private val buildStore: () -> Store<Key, Output>
+    private val buildStore: () -> Store<Key, Output, Throwable>
 ) {
-    fun build(storeType: TestStoreType): Store<Key, out Output> = when (storeType) {
+    fun build(storeType: TestStoreType): Store<Key, out Output, out Throwable> = when (storeType) {
         TestStoreType.FlowStore -> buildStore()
     }
 
@@ -44,13 +44,13 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
             cacheMemoryPolicy: MemoryPolicy<Any, Any>? = null,
             reader: ((Key) -> Output?)? = null,
             writer: ((Key, Output) -> Boolean)? = null,
-            fetcher: Fetcher<Key, Output>
+            fetcher: Fetcher<Key, Output, Throwable>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
                     StoreBuilder.let {
                         if (reader == null || writer == null) {
-                            it.from<Key, Output>(fetcher)
+                            it.from<Key, Output, Throwable>(fetcher)
                         } else {
                             it.from(fetcher, sourceOfTruth(reader, writer))
                         }

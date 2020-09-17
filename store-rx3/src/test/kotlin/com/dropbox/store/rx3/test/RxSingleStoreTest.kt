@@ -33,7 +33,7 @@ class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.from<Int, String, String>(
+        StoreBuilder.from<Int, String, String, Throwable>(
             fetcher = Fetcher.ofResultSingle {
                 Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
             },

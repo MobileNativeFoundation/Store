@@ -26,11 +26,11 @@ class HotRxSingleStoreTest {
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
         testScope.runBlockingTest {
-            val fetcher: FakeRxFetcher<Int, FetcherResult<String>> = FakeRxFetcher(
+            val fetcher: FakeRxFetcher<Int, FetcherResult<String, Throwable>> = FakeRxFetcher(
                 3 to FetcherResult.Data("three-1"),
                 3 to FetcherResult.Data("three-2")
             )
-            val pipeline = StoreBuilder.from(Fetcher.ofResultSingle<Int, String> { fetcher.fetch(it) })
+            val pipeline = StoreBuilder.from(Fetcher.ofResultSingle<Int, String, Throwable> { fetcher.fetch(it) })
                 .scope(testScope)
                 .build()
 

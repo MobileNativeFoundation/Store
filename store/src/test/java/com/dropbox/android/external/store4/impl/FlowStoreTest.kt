@@ -428,7 +428,7 @@ class FlowStoreTest {
                 Loading(
                     origin = ResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = exception,
                     origin = ResponseOrigin.Fetcher
                 ),
@@ -446,7 +446,7 @@ class FlowStoreTest {
                 Loading(
                     origin = ResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreResponse.Error(
                     error = exception,
                     origin = ResponseOrigin.Fetcher
                 )
@@ -523,7 +523,7 @@ class FlowStoreTest {
     fun `GIVEN no SoT WHEN stream fresh data returns no data from fetcher THEN fetch returns no data AND cached values are recevied`() =
         testScope.runBlockingTest {
             var createCount = 0
-            val pipeline = StoreBuilder.from<Int, String>(
+            val pipeline = StoreBuilder.from<Int, String, Throwable>(
                 fetcher = Fetcher.ofFlow {
                     if (createCount++ == 0) {
                         flowOf("remote-1")
@@ -556,7 +556,7 @@ class FlowStoreTest {
     fun `GIVEN no SoT WHEN stream cached data with refresh returns NoNewData THEN cached values are recevied AND fetch returns no data`() =
         testScope.runBlockingTest {
             var createCount = 0
-            val pipeline = StoreBuilder.from<Int, String>(
+            val pipeline = StoreBuilder.from<Int, String, Throwable>(
                 fetcher = Fetcher.ofFlow {
                     if (createCount++ == 0) {
                         flowOf("remote-1")
@@ -597,7 +597,7 @@ class FlowStoreTest {
 
             val firstFetch = store.fresh(3)
             assertThat(firstFetch).isEqualTo("three-1")
-            val secondCollect = mutableListOf<StoreResponse<String>>()
+            val secondCollect = mutableListOf<StoreResponse<String, Throwable>>()
             val collection = launch {
                 store.stream(StoreRequest.cached(3, refresh = false)).collect {
                     secondCollect.add(it)
@@ -643,7 +643,7 @@ class FlowStoreTest {
 
             val firstFetch = pipeline.fresh(3)
             assertThat(firstFetch).isEqualTo("three-1")
-            val secondCollect = mutableListOf<StoreResponse<String>>()
+            val secondCollect = mutableListOf<StoreResponse<String, Throwable>>()
             val collection = launch {
                 pipeline.stream(StoreRequest.cached(3, refresh = false)).collect {
                     secondCollect.add(it)
@@ -694,7 +694,7 @@ class FlowStoreTest {
                 fetcher = fetcher
             ).buildWithTestScope()
 
-            val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+            val fetcher1Collected = mutableListOf<StoreResponse<String, Throwable>>()
             val fetcher1Job = async {
                 pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
                     fetcher1Collected.add(it)
@@ -742,7 +742,7 @@ class FlowStoreTest {
             val pipeline = StoreBuilder.from(fetcher = fetcher)
                 .buildWithTestScope()
 
-            val fetcher1Collected = mutableListOf<StoreResponse<String>>()
+            val fetcher1Collected = mutableListOf<StoreResponse<String, Throwable>>()
             val fetcher1Job = async {
                 pipeline.stream(StoreRequest.cached(3, refresh = true)).collect {
                     fetcher1Collected.add(it)
@@ -772,16 +772,16 @@ class FlowStoreTest {
             fetcher1Job.cancelAndJoin()
         }
 
-    suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
+    suspend fun Store<Int, String, Throwable>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
-    suspend fun Store<Int, String>.get(key: Int) = get(
+    suspend fun Store<Int, String, Throwable>.get(key: Int) = get(
         StoreRequest.cached(
             key = key,
             refresh = false
         )
     )
 
-    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
+    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output, out Throwable>.buildWithTestScope() =
         scope(testScope).build()
 }

@@ -36,7 +36,7 @@ class StoreTest(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: Fetcher<Pair<String, String>, String> = mock()
+    private val fetcher: Fetcher<Pair<String, String>, String, Throwable> = mock()
     private var reader: (Pair<String, String>) -> String = mock()
     private var writer: (Pair<String, String>, String) -> Boolean = mock()
     private val barCode = "key" to "value"
@@ -81,7 +81,7 @@ class StoreTest(
                 if (counter.incrementAndGet() == 1) {
                     flowOf(FetcherResult.Data(NETWORK))
                 } else {
-                    flowOf(FetcherResult.Error.Message("Yo Dawg your inflight is broken"))
+                    flowOf(FetcherResult.Error(Exception("Yo Dawg your inflight is broken")))
                 }
             }
 
@@ -151,7 +151,7 @@ class StoreTest(
         ).build(storeType)
 
         whenever(fetcher.invoke(barCode)) doReturn
-            flowOf(FetcherResult.Error.Message(ERROR))
+            flowOf(FetcherResult.Error(ERROR))
 
         whenever(reader(barCode)) doReturn DISK
 
@@ -159,7 +159,7 @@ class StoreTest(
             simpleStore.fresh(barCode)
             fail("Exception not thrown!")
         } catch (e: Exception) {
-            assertThat(e.message).isEqualTo(ERROR)
+            assertThat(e).isEqualTo(ERROR)
         }
 
         verify(fetcher, times(1)).invoke(barCode)
@@ -206,7 +206,7 @@ class StoreTest(
         private const val DISK = "disk"
         private const val NETWORK = "fresh"
         private const val MEMORY = "memory"
-        private const val ERROR = "error!!"
+        private val ERROR = Exception("error!!")
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

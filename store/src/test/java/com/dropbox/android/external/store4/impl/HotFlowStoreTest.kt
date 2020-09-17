@@ -70,10 +70,10 @@ class HotFlowStoreTest {
 
 class FakeFlowFetcher<Key : Any, Output : Any>(
     vararg val responses: Pair<Key, Output>
-) : Fetcher<Key, Output> {
+) : Fetcher<Key, Output, Throwable> {
     private var index = 0
 
-    override fun invoke(key: Key): Flow<FetcherResult<Output>> {
+    override fun invoke(key: Key): Flow<FetcherResult<Output, Throwable>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }

@@ -75,7 +75,7 @@ class ClearStoreByKeyTest {
         testScope.runBlockingTest {
             val key = "key"
             val value = 1
-            val store = StoreBuilder.from<String, Int>(
+            val store = StoreBuilder.from<String, Int, Throwable>(
                 fetcher = Fetcher.of { value }
             ).scope(testScope).build()
 

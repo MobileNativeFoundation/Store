@@ -36,7 +36,7 @@ class ValueFetcherTest {
                 }
             }
             assertThat(fetcher(3))
-                .emitsExactly(FetcherResult.Error.Exception(e))
+                .emitsExactly(FetcherResult.Error(e))
         }
 
     @Test
@@ -56,6 +56,6 @@ class ValueFetcherTest {
                 throw e
             }
             assertThat(fetcher(3))
-                .emitsExactly(FetcherResult.Error.Exception(e))
+                .emitsExactly(FetcherResult.Error(e))
         }
 }

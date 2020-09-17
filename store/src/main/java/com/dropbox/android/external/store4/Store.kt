@@ -35,13 +35,13 @@ import kotlinx.coroutines.flow.first
  *  }
  *
  */
-interface Store<Key : Any, Output : Any> {
+interface Store<Key : Any, Output : Any, Error : Any> {
 
     /**
      * Return a flow for the given key
      * @param request - see [StoreRequest] for configurations
      */
-    fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>>
+    fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output, Error>>
 
     /**
      * Purge a particular entry from memory and disk cache.
@@ -63,7 +63,7 @@ interface Store<Key : Any, Output : Any> {
  * Helper factory that will return data for [key] if it is cached otherwise will return
  * fresh/network data (updating your caches)
  */
-suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
+suspend fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.get(key: Key) = stream(
     StoreRequest.cached(key, refresh = false)
 ).filterNot {
     it is StoreResponse.Loading || it is StoreResponse.NoNewData
@@ -77,7 +77,7 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
  * data **even** if you explicitly requested fresh data.
  * See https://github.com/dropbox/Store/pull/194 for context
  */
-suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = stream(
+suspend fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.fresh(key: Key) = stream(
     StoreRequest.fresh(key)
 ).filterNot {
     it is StoreResponse.Loading || it is StoreResponse.NoNewData

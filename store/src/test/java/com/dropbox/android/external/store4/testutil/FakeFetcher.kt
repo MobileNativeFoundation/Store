@@ -25,10 +25,10 @@ import kotlinx.coroutines.flow.flowOf
 
 class FakeFetcher<Key : Any, Output : Any>(
     private vararg val responses: Pair<Key, Output>
-) : Fetcher<Key, Output> {
+) : Fetcher<Key, Output, Throwable> {
     private var index = 0
 
-    override fun invoke(key: Key): Flow<FetcherResult<Output>> {
+    override fun invoke(key: Key): Flow<FetcherResult<Output, Throwable>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
         }
@@ -40,7 +40,7 @@ class FakeFetcher<Key : Any, Output : Any>(
 
 class FakeFlowingFetcher<Key : Any, Output : Any>(
     private vararg val responses: Pair<Key, Output>
-) : Fetcher<Key, Output> {
+) : Fetcher<Key, Output, Throwable> {
     override fun invoke(key: Key) = flow {
         responses.filter {
             it.first == key

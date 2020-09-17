@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.first
  * Helper factory that will return [StoreResponse.Data] for [key]
  * if it is cached otherwise will return fresh/network data (updating your caches)
  */
-suspend fun <Key : Any, Output : Any> Store<Key, Output>.getData(key: Key) =
+suspend fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.getData(key: Key) =
     stream(
         StoreRequest.cached(key, refresh = false)
     ).filterNot {

@@ -101,7 +101,7 @@ class RoomFragment : Fragment() {
  */
 @ExperimentalCoroutinesApi
 internal class StoreState<Key : Any, Output : Any>(
-    private val store: Store<Key, Output>
+    private val store: Store<Key, Output, Throwable>
 ) {
     private val keyFlow = Channel<Key>(capacity = Channel.CONFLATED)
     private val _errors = Channel<String>(capacity = Channel.CONFLATED)
@@ -130,8 +130,7 @@ internal class StoreState<Key : Any, Output : Any>(
                 )
             }
             when (it) {
-                is StoreResponse.Error.Exception -> _errors.send(it.error.localizedMessage!!)
-                is StoreResponse.Error.Message -> _errors.send(it.message)
+                is StoreResponse.Error -> _errors.send(it.error.localizedMessage!!)
             }
         }.transform {
             if (it is StoreResponse.Data) {

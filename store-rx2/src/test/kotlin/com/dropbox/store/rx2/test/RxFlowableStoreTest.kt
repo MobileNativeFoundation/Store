@@ -30,7 +30,7 @@ class RxFlowableStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private val fakeDisk = mutableMapOf<Int, String>()
     private val store =
-        StoreBuilder.from<Int, String, String>(
+        StoreBuilder.from<Int, String, String, Throwable>(
             Fetcher.ofResultFlowable {
                 Flowable.create(
                     { emitter ->

@@ -41,7 +41,7 @@ import kotlin.time.seconds
 object Graph {
     private val moshi = Moshi.Builder().build()
 
-    fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
+    fun provideRoomStore(context: SampleApp): Store<String, List<Post>, Throwable> {
         val db = provideRoom(context)
         return StoreBuilder
             .from(
@@ -58,10 +58,10 @@ object Graph {
             .build()
     }
 
-    fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>> {
+    fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>, Throwable> {
         val db = provideRoom(context)
         return StoreBuilder
-            .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
+            .from<Pair<String, RedditConfig>, List<Post>, List<Post>, Throwable>(
                 Fetcher.of { (query, config) ->
                     provideRetrofit().fetchSubreddit(query, config.limit)
                         .data.children.map(::toPosts)
@@ -89,7 +89,7 @@ object Graph {
         return SourcePersisterFactory.create(cacheDir)
     }
 
-    fun provideConfigStore(context: Context): Store<Unit, RedditConfig> {
+    fun provideConfigStore(context: Context): Store<Unit, RedditConfig, Throwable> {
         val fileSystem = FileSystemFactory.create(context.cacheDir)
         val fileSystemPersister =
             FileSystemPersister.create(
@@ -100,7 +100,7 @@ object Graph {
             )
         val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
-            .from<Unit, RedditConfig, RedditConfig>(
+            .from<Unit, RedditConfig, RedditConfig, Throwable>(
                 Fetcher.of {
                     delay(500)
                     RedditConfig(10)

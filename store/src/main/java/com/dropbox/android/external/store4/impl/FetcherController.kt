@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.onEmpty
  */
 @FlowPreview
 @ExperimentalCoroutinesApi
-internal class FetcherController<Key : Any, Input : Any, Output : Any>(
+internal class FetcherController<Key : Any, Input : Any, Output : Any, Error : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher
      */
@@ -49,12 +49,12 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
     /**
      * The function that provides the actualy fetcher flow when needed
      */
-    private val realFetcher: Fetcher<Key, Input>,
+    private val realFetcher: Fetcher<Key, Input, Error>,
     /**
      * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
      * no [SourceOfTruth] is available.
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>?,
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output, Error>?,
     /**
      * When enabled, downstream collectors are never closed, instead, they are kept active to
      * receive values dispatched by fetchers created after them. This makes [FetcherController]
@@ -73,12 +73,8 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                         is FetcherResult.Data -> StoreResponse.Data(
                             it.value,
                             origin = ResponseOrigin.Fetcher
-                        ) as StoreResponse<Input>
-                        is FetcherResult.Error.Message -> StoreResponse.Error.Message(
-                            it.message,
-                            origin = ResponseOrigin.Fetcher
-                        )
-                        is FetcherResult.Error.Exception -> StoreResponse.Error.Exception(
+                        ) as StoreResponse<Input, Error>
+                        is FetcherResult.Error -> StoreResponse.Error(
                             it.error,
                             origin = ResponseOrigin.Fetcher
                         )
@@ -94,12 +90,12 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                 }
             )
         },
-        onRelease = { _: Key, multicaster: Multicaster<StoreResponse<Input>> ->
+        onRelease = { _: Key, multicaster: Multicaster<StoreResponse<Input, Error>> ->
             multicaster.close()
         }
     )
 
-    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreResponse<Input>> {
+    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreResponse<Input, Error>> {
         return flow {
             val fetcher = acquireFetcher(key)
             try {

@@ -19,16 +19,18 @@ import kotlinx.coroutines.rx2.rxSingle
  * @param request - see [StoreRequest] for configurations
  */
 @ExperimentalCoroutinesApi
-fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreRequest<Key>): Flowable<StoreResponse<Output>> =
-    stream(request).asFlowable()
+fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.observe(
+    request: StoreRequest<Key>
+): Flowable<StoreResponse<Output, Error>> = stream(request).asFlowable()
 
 /**
  * Purge a particular entry from memory and disk cache.
  * Persistent storage will only be cleared if a delete function was passed to
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable =
-    rxCompletable { clear(key) }
+fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.observeClear(
+    key: Key
+): Completable = rxCompletable { clear(key) }
 
 /**
  * Purge all entries from memory and disk cache.
@@ -36,15 +38,17 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Complet
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
 @ExperimentalStoreApi
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable =
+fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.observeClearAll() =
     rxCompletable { clearAll() }
 
 /**
  * Helper factory that will return data as a [Single] for [key] if it is cached otherwise will return fresh/network data (updating your caches)
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.getSingle(key: Key) = rxSingle { this@getSingle.get(key) }
+fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.getSingle(key: Key) =
+    rxSingle { this@getSingle.get(key) }
 
 /**
  * Helper factory that will return fresh data as a [Single] for [key] while updating your caches
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.freshSingle(key: Key) = rxSingle { this@freshSingle.fresh(key) }
+fun <Key : Any, Output : Any, Error : Any> Store<Key, Output, Error>.freshSingle(key: Key) =
+    rxSingle { this@freshSingle.fresh(key) }
