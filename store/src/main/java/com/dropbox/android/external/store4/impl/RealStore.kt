@@ -106,7 +106,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
             cachedToEmit?.let {
                 // if we read a value from cache, dispatch it first
-                emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                emit(StoreResponse.Data(value = it, loading = request.refresh, origin = ResponseOrigin.Cache))
             }
             val stream = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
@@ -121,32 +121,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             } else {
                 diskNetworkCombined(request, sourceOfTruth)
             }
-            emitAll(
-                stream.transform {
-                    emit(it)
-                    if (it is StoreResponse.NoNewData && cachedToEmit == null) {
-                        // In the special case where fetcher returned no new data we actually want to
-                        // serve cache data (even if the request specified skipping cache and/or SoT)
-                        //
-                        // For stream(Request.cached(key, refresh=true)) we will return:
-                        // Cache
-                        // Source of truth
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // (future Source of truth updates)
-                        //
-                        // For stream(Request.fresh(key)) we will return:
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // Cache
-                        // Source of truth
-                        // (future Source of truth updates)
-                        memCache?.getIfPresent(request.key)?.let {
-                            emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
-                        }
-                    }
-                }
-            )
+            emitAll(stream)
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != ResponseOrigin.Cache) {
@@ -216,7 +191,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value is StoreResponse.Data || it.value is StoreResponse.NoNewData) {
+                    if (it.value is StoreResponse.Data) {
                         // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
                         // cached disk data.
@@ -232,11 +207,15 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 is Either.Right -> {
                     // right, that is data from disk
                     when (val diskData = it.value) {
-                        is StoreResponse.Data -> {
+                        is SourceOfTruthWithBarrierResult.Data -> {
                             val diskValue = diskData.value
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
-                                emit(diskData as StoreResponse<Output>)
+                                emit(StoreResponse.Data(
+                                    value = diskValue,
+                                    loading = request.refresh && !diskData.readAfterWrite,
+                                    origin = diskData.origin
+                                ))
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.
@@ -252,7 +231,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             // values since there is nothing to read from disk. If disk sent a write
                             // error, we should NOT allow fetcher to start emitting values as we
                             // should always wait for the read attempt.
-                            if (diskData is StoreResponse.Error.Exception &&
+                            if (diskData is SourceOfTruthWithBarrierResult.Error &&
                                 diskData.error is SourceOfTruth.ReadException
                             ) {
                                 networkLock.complete(Unit)
@@ -275,9 +254,6 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             .onStart {
                 // wait until disk gives us the go
                 networkLock?.await()
-                if (!piggybackOnly) {
-                    emit(StoreResponse.Loading(origin = ResponseOrigin.Fetcher))
-                }
             }
     }
 }

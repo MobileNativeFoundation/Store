@@ -1,7 +1,6 @@
 package com.dropbox.android.external.store4
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 
 /**
@@ -65,9 +64,7 @@ interface Store<Key : Any, Output : Any> {
  */
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
     StoreRequest.cached(key, refresh = false)
-).filterNot {
-    it is StoreResponse.Loading || it is StoreResponse.NoNewData
-}.first().requireData()
+).first().requireData()
 
 /**
  * Helper factory that will return fresh data for [key] while updating your caches
@@ -79,6 +76,4 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) = stream(
  */
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = stream(
     StoreRequest.fresh(key)
-).filterNot {
-    it is StoreResponse.Loading || it is StoreResponse.NoNewData
-}.first().requireData()
+).first().requireData()

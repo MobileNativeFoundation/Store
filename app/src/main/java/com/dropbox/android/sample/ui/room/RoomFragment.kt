@@ -126,7 +126,7 @@ internal class StoreState<Key : Any, Output : Any>(
         ).onEach {
             if (it.origin == ResponseOrigin.Fetcher) {
                 _loading.send(
-                    it is StoreResponse.Loading
+                    it is StoreResponse.Data && it.loading
                 )
             }
             when (it) {

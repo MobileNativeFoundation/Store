@@ -17,7 +17,6 @@ package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.SourceOfTruth
-import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -33,6 +32,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import java.util.concurrent.atomic.AtomicLong
+
+
+internal sealed class SourceOfTruthWithBarrierResult<out Value> {
+    data class Data<out Value>(
+        val value: Value?,
+        val readAfterWrite: Boolean,
+        val origin: ResponseOrigin
+    ): SourceOfTruthWithBarrierResult<Value>()
+
+    data class Error(val error: Throwable) : SourceOfTruthWithBarrierResult<Nothing>()
+}
 
 /**
  * Wraps a [SourceOfTruth] and blocks reads while a write is in progress.
@@ -60,7 +70,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      */
     private val versionCounter = AtomicLong(0)
 
-    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreResponse<Output?>> {
+    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<SourceOfTruthWithBarrierResult<Output>> {
         return flow {
             val barrier = barriers.acquire(key)
             val readerVersion: Long = versionCounter.incrementAndGet()
@@ -69,16 +79,16 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                 emitAll(
                     barrier.asFlow()
                         .flatMapLatest {
-                            val messageArrivedAfterMe = readerVersion < it.version
-                            val writeError = if (messageArrivedAfterMe && it is BarrierMsg.Open) {
+                            val readTriggeredBySubsequentWrite = readerVersion < it.version
+                            val writeError = if (readTriggeredBySubsequentWrite && it is BarrierMsg.Open) {
                                 it.writeError
                             } else {
                                 null
                             }
-                            val readFlow: Flow<StoreResponse<Output?>> = when (it) {
+                            val readFlow: Flow<SourceOfTruthWithBarrierResult<Output>> = when (it) {
                                 is BarrierMsg.Open ->
                                     delegate.reader(key).mapIndexed { index, output ->
-                                        if (index == 0 && messageArrivedAfterMe) {
+                                        if (index == 0 && readTriggeredBySubsequentWrite) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
                                                 ResponseOrigin.Fetcher
@@ -89,24 +99,25 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                                 // use the SourceOfTruth as the origin
                                                 ResponseOrigin.SourceOfTruth
                                             }
-                                            StoreResponse.Data(
+                                            SourceOfTruthWithBarrierResult.Data(
                                                 origin = firstMsgOrigin,
+                                                readAfterWrite = readTriggeredBySubsequentWrite,
                                                 value = output
                                             )
                                         } else {
-                                            StoreResponse.Data(
+                                            SourceOfTruthWithBarrierResult.Data(
                                                 origin = ResponseOrigin.SourceOfTruth,
+                                                readAfterWrite = readTriggeredBySubsequentWrite,
                                                 value = output
-                                            ) as StoreResponse<Output?> // necessary cast for catch block
+                                            ) as SourceOfTruthWithBarrierResult<Output> // necessary cast for catch block
                                         }
                                     }.catch { throwable ->
                                         this.emit(
-                                            StoreResponse.Error.Exception(
+                                            SourceOfTruthWithBarrierResult.Error(
                                                 error = SourceOfTruth.ReadException(
                                                     key = key,
                                                     cause = throwable
-                                                ),
-                                                origin = ResponseOrigin.SourceOfTruth
+                                                )
                                             )
                                         )
                                     }
@@ -119,8 +130,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     // if we have a pending error, make sure to dispatch it first.
                                     if (writeError != null) {
                                         emit(
-                                            StoreResponse.Error.Exception(
-                                                origin = ResponseOrigin.SourceOfTruth,
+                                            SourceOfTruthWithBarrierResult.Error(
                                                 error = writeError
                                             )
                                         )
