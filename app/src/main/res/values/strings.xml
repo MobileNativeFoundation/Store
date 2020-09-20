@@ -5,4 +5,5 @@
     <string name="bottom_navigation_menu_title_reddit">Reddit</string>
     <string name="bottom_navigation_menu_title_stream">Stream</string>
     <string name="bottom_navigation_menu_title_room">Room</string>
+    <string name="bottom_navigation_menu_title_uistate">UIState</string>
 </resources>

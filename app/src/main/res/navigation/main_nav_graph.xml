@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_nav_graph"
-    app:startDestination="@id/redditFragment">
+    app:startDestination="@id/uiStateFragment">
 
     <fragment
         android:id="@+id/redditFragment"
@@ -16,4 +16,8 @@
         android:id="@+id/streamFragment"
         android:name="com.dropbox.android.sample.ui.stream.StreamFragment"
         android:label="StreamFragment" />
+    <fragment
+        android:id="@+id/uiStateFragment"
+        android:name="com.dropbox.android.sample.ui.uistate.UIStateFragment"
+        android:label="UIStateFragment" />
 </navigation>
