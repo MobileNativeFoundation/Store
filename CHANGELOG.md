@@ -3,6 +3,15 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0-beta *(2020-09-21)*
+----------------------------
+**API change**
+* Remove need for generics with `Error` type (#220)
+
+**Bug Fixes and Stability Improvements**
+* Revert cache implementation to guava, rather than rolling our own (#200)
+* Sample App improvements (#227)
+
 Version 4.0.0-alpha07 *(2020-08-19)*
 ----------------------------
 **New Features**
