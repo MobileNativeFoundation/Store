@@ -29,7 +29,7 @@ Artifacts are hosted on **Maven Central**.
 ###### Latest version:
 
 ```groovy
-def store_version = "4.0.0-alpha07"
+def store_version = "4.0.0-beta01"
 ```
 
 ###### Add the dependency to your `build.gradle`:
