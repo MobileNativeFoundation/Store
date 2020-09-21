@@ -4,9 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
-    implementation libraries.coroutinesRx
+    implementation libraries.coroutinesRx2
     implementation libraries.coroutinesReactive
     implementation project(path: ':store')
     implementation libraries.rx2

@@ -99,7 +99,6 @@ class RoomFragment : Fragment() {
 /**
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
-@FlowPreview
 @ExperimentalCoroutinesApi
 internal class StoreState<Key : Any, Output : Any>(
     private val store: Store<Key, Output>
@@ -130,8 +129,9 @@ internal class StoreState<Key : Any, Output : Any>(
                     it is StoreResponse.Loading
                 )
             }
-            if (it is StoreResponse.Error) {
-                _errors.send(it.error.localizedMessage!!)
+            when (it) {
+                is StoreResponse.Error.Exception -> _errors.send(it.error.localizedMessage!!)
+                is StoreResponse.Error.Message -> _errors.send(it.message)
             }
         }.transform {
             if (it is StoreResponse.Data) {

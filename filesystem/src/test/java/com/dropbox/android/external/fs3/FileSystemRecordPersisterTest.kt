@@ -3,7 +3,6 @@ package com.dropbox.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
@@ -18,18 +17,18 @@ import kotlin.time.days
 class FileSystemRecordPersisterTest {
     private val fileSystem: FileSystem = mock()
     private val bufferedSource: BufferedSource = mock()
-    private val simple = BarCode("type", "key")
-    private val resolvedPath = BarCodePathResolver.resolve(simple)
+    private val simple = "type" to "key"
+    private val resolvedPath = StringPairPathResolver.resolve(simple)
     private val fileSystemPersister = FileSystemRecordPersister.create(
         fileSystem = fileSystem,
-        pathResolver = BarCodePathResolver,
+        pathResolver = StringPairPathResolver,
         expirationDuration = 1.days
     )
 
     @Test
     fun readExists() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(resolvedPath)).thenReturn(bufferedSource)
 
         val returnedValue = fileSystemPersister.read(simple)
@@ -39,7 +38,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(resolvedPath))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             fileSystemPersister.read(simple)
@@ -65,7 +64,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun freshTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.FRESH)
+            .thenReturn(RecordState.FRESH)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.FRESH)
     }
@@ -73,7 +72,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun staleTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.STALE)
+            .thenReturn(RecordState.STALE)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.STALE)
     }
@@ -81,7 +80,7 @@ class FileSystemRecordPersisterTest {
     @Test
     fun missingTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, resolvedPath))
-                .thenReturn(RecordState.MISSING)
+            .thenReturn(RecordState.MISSING)
 
         assertThat(fileSystemPersister.getRecordState(simple)).isEqualTo(RecordState.MISSING)
     }

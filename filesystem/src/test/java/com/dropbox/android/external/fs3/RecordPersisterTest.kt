@@ -3,7 +3,6 @@ package com.dropbox.android.external.fs3
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import java.io.FileNotFoundException
 import org.junit.Assert.fail
 import kotlinx.coroutines.runBlocking
@@ -20,12 +19,12 @@ class RecordPersisterTest {
     private val bufferedSource: BufferedSource = mock()
 
     private val sourcePersister = RecordPersister(fileSystem, 1.days)
-    private val simple = BarCode("type", "key")
+    private val simple = "type" to "key"
 
     @Test
     fun readExists() = runBlocking<Unit> {
         whenever(fileSystem.exists(simple.toString()))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(simple.toString())).thenReturn(bufferedSource)
 
         val returnedValue = sourcePersister.read(simple)
@@ -35,7 +34,7 @@ class RecordPersisterTest {
     @Test
     fun freshTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.FRESH)
+            .thenReturn(RecordState.FRESH)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.FRESH)
     }
@@ -43,7 +42,7 @@ class RecordPersisterTest {
     @Test
     fun staleTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.STALE)
+            .thenReturn(RecordState.STALE)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.STALE)
     }
@@ -51,7 +50,7 @@ class RecordPersisterTest {
     @Test
     fun missingTest() = runBlocking {
         whenever(fileSystem.getRecordState(1.days, SourcePersister.pathForBarcode(simple)))
-                .thenReturn(RecordState.MISSING)
+            .thenReturn(RecordState.MISSING)
 
         assertThat(sourcePersister.getRecordState(simple)).isEqualTo(RecordState.MISSING)
     }
@@ -59,7 +58,7 @@ class RecordPersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking {
         whenever(fileSystem.exists(SourcePersister.pathForBarcode(simple)))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             sourcePersister.read(simple)

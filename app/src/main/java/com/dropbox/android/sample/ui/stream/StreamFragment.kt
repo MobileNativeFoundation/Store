@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
@@ -50,10 +51,14 @@ class StreamFragment : Fragment(), CoroutineScope {
         var counter = 0
 
         val store = StoreBuilder
-            .fromNonFlow { key: Int -> (key * 1000 + counter++).also { delay(1_000) } }
+            .from(
+                Fetcher.of { key: Int ->
+                    (key * 1000 + counter++).also { delay(1_000) }
+                }
+            )
             .cachePolicy(
                 MemoryPolicy
-                    .builder()
+                    .builder<Any, Any>()
                     .setExpireAfterWrite(10.seconds)
                     .build()
             )

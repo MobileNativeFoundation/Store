@@ -1,10 +1,12 @@
 package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.ExperimentalStoreApi
+import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
+import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,7 +30,7 @@ class ClearAllStoreTest {
     private val value1 = 1
     private val value2 = 2
 
-    private val fetcher: suspend (key: String) -> Int = { key: String ->
+    private val fetcher = Fetcher.of { key: String ->
         when (key) {
             key1 -> value1
             key2 -> value2
@@ -41,15 +43,11 @@ class ClearAllStoreTest {
     @Test
     fun `calling clearAll() on store with persister (no in-memory cache) deletes all entries from the persister`() =
         testScope.runBlockingTest {
-            val store = StoreBuilder.fromNonFlow(
-                fetcher = fetcher
+            val store = StoreBuilder.from(
+                fetcher = fetcher,
+                sourceOfTruth = persister.asSourceOfTruth()
             ).scope(testScope)
                 .disableCache()
-                .nonFlowingPersister(
-                    reader = persister::read,
-                    writer = persister::write,
-                    deleteAll = persister::deleteAll
-                )
                 .build()
 
             // should receive data from network first time
@@ -72,14 +70,14 @@ class ClearAllStoreTest {
             assertThat(store.getData(key1))
                 .isEqualTo(
                     Data(
-                        origin = ResponseOrigin.Persister,
+                        origin = ResponseOrigin.SourceOfTruth,
                         value = value1
                     )
                 )
             assertThat(store.getData(key2))
                 .isEqualTo(
                     Data(
-                        origin = ResponseOrigin.Persister,
+                        origin = ResponseOrigin.SourceOfTruth,
                         value = value2
                     )
                 )
@@ -111,7 +109,7 @@ class ClearAllStoreTest {
     @Test
     fun `calling clearAll() on store with in-memory cache (no persister) deletes all entries from the in-memory cache`() =
         testScope.runBlockingTest {
-            val store = StoreBuilder.fromNonFlow(
+            val store = StoreBuilder.from(
                 fetcher = fetcher
             ).scope(testScope).build()
 

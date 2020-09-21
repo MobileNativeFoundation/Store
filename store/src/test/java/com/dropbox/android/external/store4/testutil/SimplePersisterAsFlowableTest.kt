@@ -15,7 +15,6 @@
  */
 package com.dropbox.android.external.store4.testutil
 
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +32,7 @@ import org.junit.Test
 class SimplePersisterAsFlowableTest {
     private val testScope = TestCoroutineScope()
     private val otherScope = TestCoroutineScope()
-    private val barcode = BarCode("a", "b")
+    private val barcode = "a" to "b"
     @Test
     fun testSimple() = testScope.runBlockingTest {
         val (flowable, written) = create("a", "b")
@@ -44,19 +43,21 @@ class SimplePersisterAsFlowableTest {
     @Test
     fun writeInvalidation() = testScope.runBlockingTest {
         val (flowable, written) = create("a", "b")
-        flowable.flowWriter(BarCode("another", "value"), "dsa")
+        flowable.flowWriter("another" to "value", "dsa")
         val collectedFirst = CompletableDeferred<Unit>()
         val collectedValues = CompletableDeferred<List<String?>>()
         otherScope.launch {
-            collectedValues.complete(flowable
-                .flowReader(barcode)
-                .onEach {
-                    if (collectedFirst.isActive) {
-                        collectedFirst.complete(Unit)
+            collectedValues.complete(
+                flowable
+                    .flowReader(barcode)
+                    .onEach {
+                        if (collectedFirst.isActive) {
+                            collectedFirst.complete(Unit)
+                        }
                     }
-                }
-                .take(2)
-                .toList())
+                    .take(2)
+                    .toList()
+            )
         }
         collectedFirst.await()
         flowable.flowWriter(barcode, "x")
@@ -80,17 +81,17 @@ class SimplePersisterAsFlowableTest {
 
     private fun create(
         vararg values: String
-    ): Pair<SimplePersisterAsFlowable<BarCode, String, String>, List<String>> {
+    ): Pair<SimplePersisterAsFlowable<Pair<String, String>, String, String>, List<String>> {
         var readIndex = 0
         val written = mutableListOf<String>()
-        return SimplePersisterAsFlowable<BarCode, String, String>(
+        return SimplePersisterAsFlowable<Pair<String, String>, String, String>(
             reader = {
                 if (readIndex >= values.size) {
                     throw AssertionError("should not've read this many")
                 }
                 values[readIndex++]
             },
-            writer = { _: BarCode, value: String ->
+            writer = { _: Pair<String, String>, value: String ->
                 written.add(value)
             },
             delete = {

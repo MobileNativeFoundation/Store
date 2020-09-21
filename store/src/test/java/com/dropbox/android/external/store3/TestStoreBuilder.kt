@@ -15,14 +15,12 @@
  */
 package com.dropbox.android.external.store3
 
-import com.dropbox.android.external.store3.util.KeyParser
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Persister
+import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
-import com.dropbox.android.external.store4.impl.SourceOfTruth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -40,64 +38,23 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
 
     @OptIn(ExperimentalTime::class)
     companion object {
-
         fun <Key : Any, Output : Any> from(
             scope: CoroutineScope,
-            fetcher: Fetcher<Output, Key>,
-            persister: Persister<Output, Key>? = null,
-            inflight: Boolean = true
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            persister = persister,
-            fetcher = { fetcher.invoke(it) }
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        fun <Key : Any, Output : Any> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
             cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
-            persister: Persister<Output, Key>? = null,
-            fetcher: suspend (Key) -> Output
-        ): TestStoreBuilder<Key, Output> = from(
-            scope = scope,
-            inflight = inflight,
-            cached = cached,
-            cacheMemoryPolicy = cacheMemoryPolicy,
-            persister = persister,
-            fetcher = object : Fetcher<Output, Key> {
-                override suspend fun invoke(key: Key): Output = fetcher(key)
-            }
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        fun <Key : Any, Output : Any> from(
-            scope: CoroutineScope,
-            inflight: Boolean = true,
-            cached: Boolean = false,
-            cacheMemoryPolicy: MemoryPolicy? = null,
-            persister: Persister<Output, Key>? = null,
-            // parser that runs after fetch
-            fetchParser: KeyParser<Key, Output, Output>? = null,
-            // parser that runs after get from db
-            postParser: KeyParser<Key, Output, Output>? = null,
-            fetcher: Fetcher<Output, Key>
+            cacheMemoryPolicy: MemoryPolicy<Any, Any>? = null,
+            reader: ((Key) -> Output?)? = null,
+            writer: ((Key, Output) -> Boolean)? = null,
+            fetcher: Fetcher<Key, Output>
         ): TestStoreBuilder<Key, Output> {
             return TestStoreBuilder(
                 buildStore = {
-                    StoreBuilder
-                        .from { key: Key ->
-                            flow {
-                                val value = fetcher.invoke(key = key)
-                                if (fetchParser != null) {
-                                    emit(fetchParser.apply(key, value))
-                                } else {
-                                    emit(value)
-                                }
-                            }
+                    StoreBuilder.let {
+                        if (reader == null || writer == null) {
+                            it.from<Key, Output>(fetcher)
+                        } else {
+                            it.from(fetcher, sourceOfTruth(reader, writer))
                         }
+                    }
                         .scope(scope)
                         .let {
                             if (cached) {
@@ -110,42 +67,23 @@ data class TestStoreBuilder<Key : Any, Output : Any>(
                                 it.disableCache()
                             }
                         }
-                        .let {
-                            if (persister == null) {
-                                it
-                            } else {
-                                val sourceOfTruth = sourceOfTruthFromLegacy(persister, postParser)
-                                it.persister(
-                                    sourceOfTruth::reader,
-                                    sourceOfTruth::write,
-                                    sourceOfTruth::delete
-                                )
-                            }
-                        }.build()
+                        .build()
                 }
             )
         }
 
-        internal fun <Key, Output> sourceOfTruthFromLegacy(
-            persister: Persister<Output, Key>,
-            // parser that runs after get from db
-            postParser: KeyParser<Key, Output, Output>? = null
+        internal fun <Key, Output> sourceOfTruth(
+            reader: (Key) -> Output?,
+            writer: (Key, Output) -> Boolean
         ): SourceOfTruth<Key, Output, Output> {
             return PersistentSourceOfTruth(
                 realReader = { key ->
                     flow {
-                        if (postParser == null) {
-                            emit(persister.read(key))
-                        } else {
-                            persister.read(key)?.let {
-                                val postParsed = postParser.apply(key, it)
-                                emit(postParsed)
-                            } ?: emit(null)
-                        }
+                        emit(reader(key))
                     }
                 },
                 realWriter = { key, value ->
-                    persister.write(key, value)
+                    writer(key, value)
                 }
             )
         }

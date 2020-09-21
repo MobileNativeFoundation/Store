@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
     implementation libraries.coroutinesCore
     testImplementation libraries.coroutinesTest
     testImplementation libraries.kotlinTest
@@ -21,6 +20,9 @@ sourceCompatibility = 1.8
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += [
+                '-Xopt-in=kotlin.RequiresOptIn',
+        ]
     }
 }
 compileTestKotlin {

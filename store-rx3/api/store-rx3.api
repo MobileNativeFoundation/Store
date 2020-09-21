@@ -1,0 +1,26 @@
+public final class com/dropbox/store/rx3/RxFetcherKt {
+	public static final fun ofFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun ofResultFlowable (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun ofResultSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+	public static final fun ofSingle (Lcom/dropbox/android/external/store4/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/android/external/store4/Fetcher;
+}
+
+public final class com/dropbox/store/rx3/RxSourceOfTruthKt {
+	public static final fun ofFlowable (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun ofFlowable$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static final fun ofMaybe (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+	public static synthetic fun ofMaybe$default (Lcom/dropbox/android/external/store4/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/SourceOfTruth;
+}
+
+public final class com/dropbox/store/rx3/RxStoreBuilderKt {
+	public static final fun withScheduler (Lcom/dropbox/android/external/store4/StoreBuilder;Lio/reactivex/rxjava3/core/Scheduler;)Lcom/dropbox/android/external/store4/StoreBuilder;
+}
+
+public final class com/dropbox/store/rx3/RxStoreKt {
+	public static final fun freshSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Single;
+	public static final fun getSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Single;
+	public static final fun observe (Lcom/dropbox/android/external/store4/Store;Lcom/dropbox/android/external/store4/StoreRequest;)Lio/reactivex/rxjava3/core/Flowable;
+	public static final fun observeClear (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Completable;
+	public static final fun observeClearAll (Lcom/dropbox/android/external/store4/Store;)Lio/reactivex/rxjava3/core/Completable;
+}
+
