@@ -1,7 +1,6 @@
 package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.runBlocking
@@ -23,12 +22,12 @@ class SourcePersisterTest {
     private val bufferedSource: BufferedSource = mock()
 
     private val sourcePersister = SourcePersister(fileSystem)
-    private val simple = BarCode("type", "key")
+    private val simple = "type" to "key"
 
     @Test
     fun readExists() = runBlocking<Unit> {
         whenever(fileSystem.exists(simple.toString()))
-                .thenReturn(true)
+            .thenReturn(true)
         whenever(fileSystem.read(simple.toString())).thenReturn(bufferedSource)
 
         val returnedValue = sourcePersister.read(simple)
@@ -38,7 +37,7 @@ class SourcePersisterTest {
     @Test
     fun readDoesNotExist() = runBlocking<Unit> {
         whenever(fileSystem.exists(SourcePersister.pathForBarcode(simple)))
-                .thenReturn(false)
+            .thenReturn(false)
 
         try {
             sourcePersister.read(simple)

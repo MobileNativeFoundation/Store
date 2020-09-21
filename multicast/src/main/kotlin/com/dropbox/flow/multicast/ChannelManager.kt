@@ -16,6 +16,7 @@
 @file:OptIn(ExperimentalStdlibApi::class)
 package com.dropbox.flow.multicast
 
+import com.dropbox.flow.multicast.ChannelManager.Message
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +32,6 @@ import kotlinx.coroutines.flow.Flow
  * is no active upstream and there's at least one downstream that has not received a value.
  *
  */
-@ExperimentalCoroutinesApi
 internal class ChannelManager<T>(
     /**
      * The scope in which ChannelManager actor runs
@@ -195,7 +195,7 @@ internal class ChannelManager<T>(
         /**
          * Dispatch an upstream error to downstream collectors.
          */
-        private fun doDispatchError(msg: Message.Dispatch.Error<T>) {
+        private fun doDispatchError(msg: Message.Dispatch.Error) {
             // dispatching error is as good as dispatching value
             dispatchedValue = true
             channels.forEach {
@@ -307,7 +307,7 @@ internal class ChannelManager<T>(
     /**
      * Messages accepted by the [ChannelManager].
      */
-    sealed class Message<T> {
+    sealed class Message<out T> {
         /**
          * Add a new channel, that means a new downstream subscriber
          */
@@ -321,11 +321,11 @@ internal class ChannelManager<T>(
          */
         class RemoveChannel<T>(val channel: SendChannel<Dispatch.Value<T>>) : Message<T>()
 
-        sealed class Dispatch<T> : Message<T>() {
+        sealed class Dispatch<out T> : Message<T>() {
             /**
              * Upstream dispatched a new value, send it to all downstream items
              */
-            class Value<T>(
+            class Value<out T>(
                 /**
                  * The value dispatched by the upstream
                  */
@@ -340,12 +340,12 @@ internal class ChannelManager<T>(
             /**
              * Upstream dispatched an error, send it to all downstream items
              */
-            class Error<T>(
+            class Error(
                 /**
                  * The error sent by the upstream
                  */
                 val error: Throwable
-            ) : Dispatch<T>()
+            ) : Dispatch<Nothing>()
 
             class UpstreamFinished<T>(
                 /**
@@ -360,7 +360,6 @@ internal class ChannelManager<T>(
 /**
  * Buffer implementation for any late arrivals.
  */
-@ExperimentalCoroutinesApi
 private interface Buffer<T> {
     fun add(item: ChannelManager.Message.Dispatch.Value<T>)
     fun isEmpty() = items.isEmpty()
@@ -370,7 +369,6 @@ private interface Buffer<T> {
 /**
  * Default implementation of buffer which does not buffer anything.
  */
-@ExperimentalCoroutinesApi
 private class NoBuffer<T> : Buffer<T> {
     override val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
         get() = emptyList()
@@ -383,7 +381,6 @@ private class NoBuffer<T> : Buffer<T> {
  * Create a new buffer insteance based on the provided limit.
  */
 @Suppress("FunctionName")
-@ExperimentalCoroutinesApi
 private fun <T> Buffer(limit: Int): Buffer<T> = if (limit > 0) {
     BufferImpl(limit)
 } else {
@@ -393,7 +390,6 @@ private fun <T> Buffer(limit: Int): Buffer<T> = if (limit > 0) {
 /**
  * A real buffer implementation that has a FIFO queue.
  */
-@ExperimentalCoroutinesApi
 private class BufferImpl<T>(private val limit: Int) :
     Buffer<T> {
     override val items = ArrayDeque<ChannelManager.Message.Dispatch.Value<T>>(limit.coerceAtMost(10))

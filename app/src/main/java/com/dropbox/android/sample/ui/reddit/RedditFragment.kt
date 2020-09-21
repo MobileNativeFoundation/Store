@@ -28,13 +28,16 @@ class RedditFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        viewModel.liveData.observe(viewLifecycleOwner, Observer { lce: Lce<List<Post>> ->
-            pullToRefresh.isRefreshing = lce is Lce.Loading
-            when (lce) {
-                is Lce.Error -> showErrorMessage(lce.message)
-                is Lce.Success -> updateData(lce.data)
+        viewModel.liveData.observe(
+            viewLifecycleOwner,
+            Observer { lce: Lce<List<Post>> ->
+                pullToRefresh.isRefreshing = lce is Lce.Loading
+                when (lce) {
+                    is Lce.Error -> showErrorMessage(lce.message)
+                    is Lce.Success -> updateData(lce.data)
+                }
             }
-        })
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,7 +63,7 @@ class RedditFragment : Fragment() {
 
     private fun showErrorMessage(message: String) {
         Snackbar.make(root, message, Snackbar.LENGTH_INDEFINITE).setAction(
-                "refresh"
+            "refresh"
         ) {
             viewModel.refresh(subredditInput.text.toString())
         }.show()

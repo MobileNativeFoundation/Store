@@ -17,7 +17,6 @@ package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -40,11 +39,10 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
-@FlowPreview
 @ExperimentalCoroutinesApi
 class MulticastTest {
     private val testScope = TestCoroutineScope()
@@ -405,12 +403,14 @@ class MulticastTest {
     @Test
     fun closed_whileCollecting() = testScope.runBlockingTest {
         var collectionCount = 0
-        val multicaster = createMulticaster(flow {
-            collectionCount++
-            emit(1)
-            // suspend forever
-            suspendCancellableCoroutine<Unit> {}
-        })
+        val multicaster = createMulticaster(
+            flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            }
+        )
         val collection = async {
             multicaster.newDownstream().toList()
         }
@@ -425,12 +425,14 @@ class MulticastTest {
     @Test
     fun closed_subscriberAfterClose() = testScope.runBlockingTest {
         var collectionCount = 0
-        val multicaster = createMulticaster(flow {
-            collectionCount++
-            emit(1)
-            // suspend forever
-            suspendCancellableCoroutine<Unit> {}
-        })
+        val multicaster = createMulticaster(
+            flow {
+                collectionCount++
+                emit(1)
+                // suspend forever
+                suspendCancellableCoroutine<Unit> {}
+            }
+        )
         multicaster.close()
         // now add a subscriber, should just close immediately
         runCurrent()
@@ -519,9 +521,11 @@ class MulticastTest {
             source = flow<String> {
                 val id = counter++
                 assertTrue(counter <= collectionLimit)
-                emitAll(values.asFlow().map {
-                    "${it}_$id"
-                })
+                emitAll(
+                    values.asFlow().map {
+                        "${it}_$id"
+                    }
+                )
             },
             onEach = {}
         )

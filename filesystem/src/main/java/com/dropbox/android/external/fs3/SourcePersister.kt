@@ -1,8 +1,6 @@
 package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.store4.Persister
-import com.dropbox.android.external.store4.legacy.BarCode
 import okio.BufferedSource
 
 /**
@@ -14,16 +12,16 @@ import okio.BufferedSource
  * .parser(new GsonSourceParser<>(gson, BookResults.class))
  * .open();
  */
-open class SourcePersister(fileSystem: FileSystem) : Persister<BufferedSource, BarCode> {
+open class SourcePersister(fileSystem: FileSystem) : Persister<BufferedSource, Pair<String, String>> {
 
     protected val sourceFileReader: SourceFileReader = SourceFileReader(fileSystem)
     protected val sourceFileWriter: SourceFileWriter = SourceFileWriter(fileSystem)
 
-    override suspend fun read(key: BarCode): BufferedSource? {
+    override suspend fun read(key: Pair<String, String>): BufferedSource? {
         return sourceFileReader.read(key)
     }
 
-    override suspend fun write(key: BarCode, raw: BufferedSource): Boolean {
+    override suspend fun write(key: Pair<String, String>, raw: BufferedSource): Boolean {
         return sourceFileWriter.write(key, raw)
     }
 
@@ -33,8 +31,8 @@ open class SourcePersister(fileSystem: FileSystem) : Persister<BufferedSource, B
             return SourcePersister(fileSystem)
         }
 
-        internal fun pathForBarcode(barCode: BarCode): String {
-            return barCode.type + barCode.key
+        internal fun pathForBarcode(barCode: Pair<String, String>): String {
+            return barCode.first + barCode.second
         }
     }
 }

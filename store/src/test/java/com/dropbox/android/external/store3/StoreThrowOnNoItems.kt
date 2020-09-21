@@ -1,9 +1,7 @@
 package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.Persister
 import com.dropbox.android.external.store4.get
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +23,8 @@ class StoreThrowOnNoItems(
 ) {
     private val testScope = TestCoroutineScope()
     private val counter = AtomicInteger(0)
-    private val fetcher: Fetcher<String, BarCode> = mock()
-    private var persister: Persister<String, BarCode> = mock()
-    private val barCode = BarCode("key", "value")
+    private val fetcher: Fetcher<Pair<String, String>, String> = mock()
+    private val barCode = "key" to "value"
 
     @Test
     fun testShouldThrowOnFetcherEmitsNoSuckElementException() = testScope.runBlockingTest {

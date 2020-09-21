@@ -48,7 +48,7 @@ class StreamWithoutSourceOfTruthTest(
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.fromNonFlow(fetcher::fetch)
+        val pipeline = StoreBuilder.from(fetcher)
             .scope(testScope)
             .let {
                 if (enableCache) {
@@ -74,7 +74,7 @@ class StreamWithoutSourceOfTruthTest(
         )
         println("!")
         assertThat(twoItemsNoRefresh.await()).containsExactly(
-            StoreResponse.Loading<String>(
+            StoreResponse.Loading(
                 origin = ResponseOrigin.Fetcher
             ),
             StoreResponse.Data(

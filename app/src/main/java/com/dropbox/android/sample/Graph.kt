@@ -3,19 +3,20 @@ package com.dropbox.android.sample
 import android.content.Context
 import android.text.Html
 import androidx.room.Room
+import com.dropbox.android.external.fs3.FileSystemPersister
+import com.dropbox.android.external.fs3.PathResolver
+import com.dropbox.android.external.fs3.Persister
+import com.dropbox.android.external.fs3.SourcePersisterFactory
+import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.dropbox.android.external.store4.Fetcher
+import com.dropbox.android.external.store4.MemoryPolicy
+import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.android.external.store4.Store
+import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.sample.data.model.Children
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
-import com.dropbox.android.external.fs3.FileSystemPersister
-import com.dropbox.android.external.fs3.PathResolver
-import com.dropbox.android.external.fs3.SourcePersisterFactory
-import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
-import com.dropbox.android.external.store4.StoreBuilder
-import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.Persister
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.legacy.BarCode
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,21 +32,28 @@ import java.io.IOException
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, ExperimentalTime::class, ExperimentalStdlibApi::class)
+@OptIn(
+    FlowPreview::class,
+    ExperimentalCoroutinesApi::class,
+    ExperimentalTime::class,
+    ExperimentalStdlibApi::class
+)
 object Graph {
     private val moshi = Moshi.Builder().build()
 
     fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow { key: String ->
-                provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
-            }
-            .persister(
-                reader = db.postDao()::loadPosts,
-                writer = db.postDao()::insertPosts,
-                delete = db.postDao()::clearFeedBySubredditName,
-                deleteAll = db.postDao()::clearAllFeeds
+            .from(
+                Fetcher.of { key: String ->
+                    provideRetrofit().fetchSubreddit(key, 10).data.children.map(::toPosts)
+                },
+                sourceOfTruth = SourceOfTruth.of(
+                    reader = db.postDao()::loadPosts,
+                    writer = db.postDao()::insertPosts,
+                    delete = db.postDao()::clearFeedBySubredditName,
+                    deleteAll = db.postDao()::clearAllFeeds
+                )
             )
             .build()
     }
@@ -53,14 +61,17 @@ object Graph {
     fun provideRoomStoreMultiParam(context: SampleApp): Store<Pair<String, RedditConfig>, List<Post>> {
         val db = provideRoom(context)
         return StoreBuilder
-            .fromNonFlow<Pair<String, RedditConfig>, List<Post>> { (query, config) ->
-                provideRetrofit().fetchSubreddit(query, config.limit)
-                    .data.children.map(::toPosts)
-            }
-            .persister(reader = { (query, _) -> db.postDao().loadPosts(query) },
-                writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
-                delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
-                deleteAll = db.postDao()::clearAllFeeds
+            .from<Pair<String, RedditConfig>, List<Post>, List<Post>>(
+                Fetcher.of { (query, config) ->
+                    provideRetrofit().fetchSubreddit(query, config.limit)
+                        .data.children.map(::toPosts)
+                },
+                sourceOfTruth = SourceOfTruth.of(
+                    reader = { (query, _) -> db.postDao().loadPosts(query) },
+                    writer = { (query, _), posts -> db.postDao().insertPosts(query, posts) },
+                    delete = { (query, _) -> db.postDao().clearFeedBySubredditName(query) },
+                    deleteAll = db.postDao()::clearAllFeeds
+                )
             )
             .build()
     }
@@ -74,39 +85,44 @@ object Graph {
      * Returns a new Persister with the cache as the root.
      */
     @Throws(IOException::class)
-    fun newPersister(cacheDir: File): Persister<BufferedSource, BarCode> {
+    fun newPersister(cacheDir: File): Persister<BufferedSource, Pair<String, String>> {
         return SourcePersisterFactory.create(cacheDir)
     }
 
     fun provideConfigStore(context: Context): Store<Unit, RedditConfig> {
         val fileSystem = FileSystemFactory.create(context.cacheDir)
         val fileSystemPersister =
-            FileSystemPersister.create(fileSystem, object : PathResolver<Unit> {
-                override fun resolve(key: Unit) = "config.json"
-            })
-        val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
-        return StoreBuilder
-            .fromNonFlow<Unit, RedditConfig> {
-                delay(500)
-                RedditConfig(10)
-            }
-            .nonFlowingPersister(
-                reader = {
-                    runCatching {
-                        val source = fileSystemPersister.read(Unit)
-                        source?.let { adapter.fromJson(it) }
-                    }.getOrNull()
-                },
-                writer = { _, config ->
-                    val buffer = Buffer()
-                    withContext(Dispatchers.IO) {
-                        adapter.toJson(buffer, config)
-                    }
-                    fileSystemPersister.write(Unit, buffer)
+            FileSystemPersister.create(
+                fileSystem,
+                object : PathResolver<Unit> {
+                    override fun resolve(key: Unit) = "config.json"
                 }
             )
+        val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
+        return StoreBuilder
+            .from<Unit, RedditConfig, RedditConfig>(
+                Fetcher.of {
+                    delay(500)
+                    RedditConfig(10)
+                },
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = {
+                        runCatching {
+                            val source = fileSystemPersister.read(Unit)
+                            source?.let { adapter.fromJson(it) }
+                        }.getOrNull()
+                    },
+                    writer = { _, config ->
+                        val buffer = Buffer()
+                        withContext(Dispatchers.IO) {
+                            adapter.toJson(buffer, config)
+                        }
+                        fileSystemPersister.write(Unit, buffer)
+                    }
+                )
+            )
             .cachePolicy(
-                MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
+                MemoryPolicy.builder<Any, Any>().setExpireAfterWrite(10.seconds).build()
             )
             .build()
     }

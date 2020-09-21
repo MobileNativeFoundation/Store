@@ -64,13 +64,14 @@ dependencies {
     implementation libraries.picasso
     implementation libraries.moshi
     implementation libraries.retrofitMoshiConverter
+    implementation libraries.cache
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
     implementation project(':store')
-    implementation project(':cache')
     implementation project(':filesystem')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin"
 
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesAndroid
+
+    debugImplementation libraries.leakcanary
 }

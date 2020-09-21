@@ -6,17 +6,15 @@ buildscript {
 }
 
 plugins {
+    id 'java'
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.dokka'
-    id 'kotlinx-atomicfu'
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-
+    compileOnly libraries.jsr305
     testImplementation libraries.junit
     testImplementation libraries.truth
-    testImplementation libraries.coroutinesTest
 }
 
 group = GROUP
@@ -24,6 +22,7 @@ version = VERSION_NAME
 
 apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
