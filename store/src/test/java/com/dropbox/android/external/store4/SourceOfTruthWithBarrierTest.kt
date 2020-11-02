@@ -189,10 +189,14 @@ class SourceOfTruthWithBarrierTest {
 
     @Test
     fun `Given Source Of Truth WHEN write fails THEN error should propogate`() {
+        val failValue = "will fail"
         testScope.runBlockingTest {
             val exception = RuntimeException("write fails")
             persister.preWriteCallback = { key, value ->
-                throw exception
+                if (value == failValue) {
+                    throw exception
+                }
+                value
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
             val collected = mutableListOf<StoreResponse<String?>>()
@@ -202,13 +206,11 @@ class SourceOfTruthWithBarrierTest {
                 }
             }
             advanceUntilIdle()
-            source.write(1, "will fail")
+            source.write(1, failValue)
             advanceUntilIdle()
             // make sure collection does not cancel for a write error
             assertThat(collection.isActive).isTrue()
-            assertThat(
-                collected
-            ).containsExactly(
+            val eventsUntilFailure = listOf(
                 StoreResponse.Data<String?>(
                     origin = ResponseOrigin.SourceOfTruth,
                     value = null
@@ -217,7 +219,7 @@ class SourceOfTruthWithBarrierTest {
                     origin = ResponseOrigin.SourceOfTruth,
                     error = WriteException(
                         key = 1,
-                        value = "will fail",
+                        value = failValue,
                         cause = exception
                     )
                 ),
@@ -226,8 +228,24 @@ class SourceOfTruthWithBarrierTest {
                     value = null
                 )
             )
+            assertThat(
+                collected
+            ).containsExactlyElementsIn(
+                eventsUntilFailure
+            )
             advanceUntilIdle()
             assertThat(collection.isActive).isTrue()
+            // send another write that will succeed
+            source.write(1, "succeed")
+            advanceUntilIdle()
+            assertThat(
+                collected
+            ).containsExactlyElementsIn(
+                eventsUntilFailure + StoreResponse.Data<String?>(
+                    origin = ResponseOrigin.Fetcher,
+                    value = "succeed"
+                )
+            )
             collection.cancelAndJoin()
         }
     }
