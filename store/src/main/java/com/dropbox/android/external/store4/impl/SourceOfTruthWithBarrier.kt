@@ -22,10 +22,8 @@ import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
@@ -40,17 +38,16 @@ import java.util.concurrent.atomic.AtomicLong
  * Used in the [com.dropbox.android.external.store4.impl.RealStore] implementation to avoid
  * dispatching values to downstream while a write is in progress.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class SourceOfTruthWithBarrier<Key, Input, Output>(
     private val delegate: SourceOfTruth<Key, Input, Output>
 ) {
     /**
      * Each key has a barrier so that we can block reads while writing.
      */
-    private val barriers = RefCountedResource<Key, ConflatedBroadcastChannel<BarrierMsg>>(
+    private val barriers = RefCountedResource<Key, MutableStateFlow<BarrierMsg>>(
         create = {
-            ConflatedBroadcastChannel(BarrierMsg.Open.INITIAL)
+            MutableStateFlow(BarrierMsg.Open.INITIAL)
         }
     )
     /**
@@ -67,7 +64,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
             try {
                 lock.await()
                 emitAll(
-                    barrier.asFlow()
+                    barrier
                         .flatMapLatest {
                             val messageArrivedAfterMe = readerVersion < it.version
                             val writeError = if (messageArrivedAfterMe && it is BarrierMsg.Open) {
@@ -139,7 +136,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
     suspend fun write(key: Key, value: Input) {
         val barrier = barriers.acquire(key)
         try {
-            barrier.send(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
+            barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
                 delegate.write(key, value)
                 null
@@ -151,7 +148,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                 }
             }
 
-            barrier.send(
+            barrier.emit(
                 BarrierMsg.Open(
                     version = versionCounter.incrementAndGet(),
                     writeError = writeError?.let {
