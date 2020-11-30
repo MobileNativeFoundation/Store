@@ -108,7 +108,7 @@ Each `StoreResponse` includes an `origin` field which specifies where the event 
 When an error happens, `Store` does not throw an exception, instead, it wraps it in a `StoreResponse.Error` type which allows `Flow` to continue so that it can still receive updates that might be triggered by either changes in your data source or subsequent fetch operations.
 
 ```kotlin
-lifecycleScope.launchWhenStarted {
+viewModelScope.launch {
   store.stream(StoreRequest.cached(key = key, refresh=true)).collect { response ->
     when(response) {
         is StoreResponse.Loading -> showLoadingSpinner()
@@ -143,7 +143,7 @@ All subsequent calls to `store.get(key)` with the same `Key` will retrieve the c
 By default, 100 items will be cached in memory for 24 hours. You may [pass in your own memory policy to override the default policy](#Configuring-In-memory-Cache).
 
 
-### Busting through the cache
+### Skipping Memory/Disk
 
 Alternatively, you can call `store.fresh(key)` to get a `suspended result` that skips the memory (and optional disk cache).
 
