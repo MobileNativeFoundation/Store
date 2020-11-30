@@ -3,6 +3,11 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.0 *(2020-11-30)*
+----------------------------
+update coroutines to 1.4.0, kotlin to 1.4.10 [#242](https://github.com/dropbox/Store/pull/242)
+
+
 Version 4.0.0-beta *(2020-09-21)*
 ----------------------------
 **API change**
