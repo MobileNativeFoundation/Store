@@ -2,7 +2,7 @@ package com.dropbox.android.sample
 
 import android.app.Application
 import com.dropbox.android.external.fs3.Persister
-import com.dropbox.android.external.store4.Store
+import com.dropbox.kmp.external.store4.Store
 import com.dropbox.android.sample.data.model.Post
 import okio.BufferedSource
 import java.io.IOException

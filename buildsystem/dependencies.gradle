@@ -13,7 +13,7 @@ ext.versions = [
         spotlessGradlePlugin        : '3.26.1',
         jacocoGradlePlugin          : '0.8.5',
         binaryCompatibilityValidator: '0.2.3',
-        atomicFuPlugin              : '0.14.2',
+        atomicFuPlugin              : '0.14.4',
 
         cache                       : '3.1.1',
 
@@ -21,7 +21,7 @@ ext.versions = [
         picasso           : '2.5.2',
 
         // Others.
-        coroutines        : '1.4.0',
+        coroutines        : '1.4.2',
         retrofit          : '2.8.1',
         jsr305            : '3.0.2',
         okHttp            : '4.6.0',
@@ -46,6 +46,7 @@ ext.versions = [
         truth             : '1.0',
         mockito           : '2.24.0',
         mockitoKotlin     : '2.2.0',
+        turbine           : '0.3.0',
 ]
 
 ext.libraries = [
@@ -92,4 +93,7 @@ ext.libraries = [
         coroutinesTest        : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines",
         kotlinTest            : "org.jetbrains.kotlin:kotlin-test:$versions.kotlin",
         kotlinTestJunit       : "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin",
+        turbine               : "app.cash.turbine:turbine:$versions.turbine",
+        kmpCommonTest         : "org.jetbrains.kotlin:kotlin-test-common:$versions.kotlin",
+        kmpCommonAnnotations  : "org.jetbrains.kotlin:kotlin-test-annotations-common:$versions.kotlin"
 ]

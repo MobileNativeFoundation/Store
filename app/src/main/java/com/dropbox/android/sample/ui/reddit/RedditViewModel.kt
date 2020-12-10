@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.dropbox.android.external.store4.fresh
-import com.dropbox.android.external.store4.get
+import com.dropbox.kmp.external.store4.fresh
+import com.dropbox.kmp.external.store4.get
 import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.utils.Lce

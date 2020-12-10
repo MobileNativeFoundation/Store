@@ -1,0 +1,48 @@
+plugins {
+    id 'kotlin-multiplatform'
+    id 'kotlinx-atomicfu'
+}
+
+setupMultiplatform(project)
+
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                // Coroutines
+                implementation libraries.coroutinesCore
+            }
+        }
+
+        commonTest {
+            dependencies {
+                // KMP Testing
+                implementation libraries.kmpCommonTest
+                implementation libraries.kmpCommonAnnotations
+                implementation libraries.turbine
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                // JVM Testing
+                implementation libraries.kotlinTestJunit
+            }
+        }
+    }
+}
+
+void setupMultiplatform(Project project) {
+    project.kotlin {
+        jvm()
+        ios()
+
+        sourceSets {
+            commonMain {
+                dependencies {
+                    implementation kotlin("stdlib")
+                }
+            }
+        }
+    }
+}

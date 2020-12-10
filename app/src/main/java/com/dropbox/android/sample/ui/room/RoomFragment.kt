@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.dropbox.android.external.store4.ResponseOrigin
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.kmp.external.store4.ResponseOrigin
+import com.dropbox.kmp.external.store4.Store
+import com.dropbox.kmp.external.store4.StoreRequest
+import com.dropbox.kmp.external.store4.StoreResponse
 import com.dropbox.android.sample.R
 import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.reddit.PostAdapter
@@ -19,11 +19,7 @@ import kotlinx.android.synthetic.main.fragment_room_store.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @FlowPreview

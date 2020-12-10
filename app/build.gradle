@@ -68,6 +68,7 @@ dependencies {
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
     implementation project(':store')
+    implementation project(':kmp')
     implementation project(':filesystem')
 
     implementation libraries.coroutinesCore
