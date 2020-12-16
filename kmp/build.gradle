@@ -31,18 +31,3 @@ kotlin {
         }
     }
 }
-
-void setupMultiplatform(Project project) {
-    project.kotlin {
-        jvm()
-        ios()
-
-        sourceSets {
-            commonMain {
-                dependencies {
-                    implementation kotlin("stdlib")
-                }
-            }
-        }
-    }
-}

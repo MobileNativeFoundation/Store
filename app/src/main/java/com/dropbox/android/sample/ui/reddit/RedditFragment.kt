@@ -13,7 +13,10 @@ import com.dropbox.android.sample.reddit.PostAdapter
 import com.dropbox.android.sample.utils.Lce
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
-import kotlinx.android.synthetic.main.fragment_room_store.*
+import kotlinx.android.synthetic.main.fragment_room_store.pullToRefresh
+import kotlinx.android.synthetic.main.fragment_room_store.subredditInput
+import kotlinx.android.synthetic.main.fragment_room_store.fetchButton
+import kotlinx.android.synthetic.main.fragment_room_store.root
 
 class RedditFragment : Fragment() {
 
