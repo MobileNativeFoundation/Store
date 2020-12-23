@@ -3,6 +3,7 @@ package com.dropbox.android.external.store4
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * A Store is responsible for managing a particular data request.
@@ -82,3 +83,20 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) = strea
 ).filterNot {
     it is StoreResponse.Loading || it is StoreResponse.NoNewData
 }.first().requireData()
+
+/**
+ * Helper factory that will return a [Flow] of data for [key] if it is cached otherwise will return
+ * fresh/network data (updating your caches).
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.getFlow(key: Key): Flow<Output> = stream(
+    StoreRequest.cached(key, refresh = false)
+).filterNot { it is StoreResponse.Loading || it is StoreResponse.NoNewData }
+    .map { it.requireData() }
+
+/**
+ * Helper factory that will return a [Flow] of fresh data for [key] while updating your caches.
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.freshFlow(key: Key): Flow<Output> = stream(
+    StoreRequest.fresh(key)
+).filterNot { it is StoreResponse.Loading || it is StoreResponse.NoNewData }
+    .map { it.requireData() }
