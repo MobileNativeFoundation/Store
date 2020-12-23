@@ -6,12 +6,15 @@ import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.fresh
+import com.dropbox.android.external.store4.freshFlow
 import com.dropbox.android.external.store4.get
+import com.dropbox.android.external.store4.getFlow
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.rx2.asFlowable
 import kotlinx.coroutines.rx2.rxCompletable
+import kotlinx.coroutines.rx2.rxFlowable
 import kotlinx.coroutines.rx2.rxSingle
 
 /**
@@ -48,3 +51,19 @@ fun <Key : Any, Output : Any> Store<Key, Output>.getSingle(key: Key) = rxSingle 
  * Helper factory that will return fresh data as a [Single] for [key] while updating your caches
  */
 fun <Key : Any, Output : Any> Store<Key, Output>.freshSingle(key: Key) = rxSingle { this@freshSingle.fresh(key) }
+
+/**
+ * Helper factory that will return stream of data as a [Flowable] for [key] if it is cached
+ * otherwise will return fresh/network data (updating your caches).
+ */
+@ExperimentalCoroutinesApi
+fun <Key : Any, Output : Any> Store<Key, Output>.getFlowable(key: Key): Flowable<Output> =
+    rxFlowable { this@getFlowable.getFlow(key) }
+
+/**
+ * Helper factory that will return a fresh stream of data as a [Flowable] for [key] while updating
+ * your caches.
+ */
+@ExperimentalCoroutinesApi
+fun <Key : Any, Output : Any> Store<Key, Output>.freshFlowable(key: Key): Flowable<Output> =
+    rxFlowable { this@freshFlowable.freshFlow(key) }

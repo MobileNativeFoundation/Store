@@ -17,7 +17,9 @@ public final class com/dropbox/store/rx3/RxStoreBuilderKt {
 }
 
 public final class com/dropbox/store/rx3/RxStoreKt {
+	public static final fun freshFlowable (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Flowable;
 	public static final fun freshSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Single;
+	public static final fun getFlowable (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Flowable;
 	public static final fun getSingle (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Single;
 	public static final fun observe (Lcom/dropbox/android/external/store4/Store;Lcom/dropbox/android/external/store4/StoreRequest;)Lio/reactivex/rxjava3/core/Flowable;
 	public static final fun observeClear (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Completable;
