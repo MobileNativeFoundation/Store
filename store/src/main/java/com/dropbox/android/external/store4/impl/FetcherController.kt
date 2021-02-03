@@ -60,7 +60,7 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
      * receive values dispatched by fetchers created after them. This makes [FetcherController]
      * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
      */
-    private val enablePiggyback: Boolean = sourceOfTruth == null
+    private val enablePiggyback: Boolean = true
 ) {
     @Suppress("USELESS_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
