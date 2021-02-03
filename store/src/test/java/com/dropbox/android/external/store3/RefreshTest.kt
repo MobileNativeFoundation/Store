@@ -21,12 +21,40 @@ import org.junit.Test
 class RefreshTest {
 
     @Test
-    fun refreshWithError() = runBlocking {
+    fun refreshWithErrorWithSourceOfTruth() = runBlocking {
         val fetcher = Fetcher.ofResult<Unit, String> {
             FetcherResult.Error.Message("Error")
         }
         val sourceOfTruth = InMemorySourceOfTruth()
         val store = StoreBuilder.from(fetcher, sourceOfTruth).build()
+
+        val result = mutableListOf<StoreResponse<String>>()
+        val job = launch {
+            store.stream(StoreRequest.cached(Unit, refresh = true))
+                .toList(result)
+        }
+
+        delay(1000)
+        runCatching {
+            store.fresh(Unit)
+        }
+
+        delay(1000)
+        job.cancel()
+
+        val expected = listOf<StoreResponse<String>>(
+            StoreResponse.Loading(origin = ResponseOrigin.Fetcher),
+            StoreResponse.Error.Message(message = "Error", origin = ResponseOrigin.Fetcher),
+            StoreResponse.Error.Message(message = "Error", origin = ResponseOrigin.Fetcher)
+        )
+        assertEquals(expected, result)
+    }
+    @Test
+    fun refreshWithErrorNoSourceOfTruth() = runBlocking {
+        val fetcher = Fetcher.ofResult<Unit, String> {
+            FetcherResult.Error.Message("Error")
+        }
+        val store = StoreBuilder.from(fetcher).build()
 
         val result = mutableListOf<StoreResponse<String>>()
         val job = launch {
