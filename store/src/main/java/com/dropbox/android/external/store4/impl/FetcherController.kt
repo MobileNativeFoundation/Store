@@ -55,12 +55,6 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
      * no [SourceOfTruth] is available.
      */
     private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>?,
-    /**
-     * When enabled, downstream collectors are never closed, instead, they are kept active to
-     * receive values dispatched by fetchers created after them. This makes [FetcherController]
-     * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
-     */
-    private val enablePiggyback: Boolean = sourceOfTruth == null
 ) {
     @Suppress("USELESS_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
@@ -86,7 +80,12 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                 }.onEmpty {
                     emit(StoreResponse.NoNewData(ResponseOrigin.Fetcher))
                 },
-                piggybackingDownstream = enablePiggyback,
+                /**
+                 * When enabled, downstream collectors are never closed, instead, they are kept active to
+                 * receive values dispatched by fetchers created after them. This makes [FetcherController]
+                 * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
+                 */
+                piggybackingDownstream = true,
                 onEach = { response ->
                     response.dataOrNull()?.let { input ->
                         sourceOfTruth?.write(key, input)
