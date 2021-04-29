@@ -65,13 +65,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         CacheBuilder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
                 expireAfterAccess(
-                    memoryPolicy.expireAfterAccess.toLongMilliseconds(),
+                    memoryPolicy.expireAfterAccess.inWholeMilliseconds,
                     TimeUnit.MILLISECONDS
                 )
             }
             if (memoryPolicy.hasWritePolicy) {
                 expireAfterWrite(
-                    memoryPolicy.expireAfterWrite.toLongMilliseconds(),
+                    memoryPolicy.expireAfterWrite.inWholeMilliseconds,
                     TimeUnit.MILLISECONDS
                 )
             }

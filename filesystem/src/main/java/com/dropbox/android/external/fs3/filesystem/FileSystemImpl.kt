@@ -74,7 +74,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
             return RecordState.MISSING
         }
         val now = System.currentTimeMillis()
-        val cuttOffPoint = now - expirationDuration.toLongMilliseconds()
+        val cuttOffPoint = now - expirationDuration.inWholeMilliseconds
         return if (file.lastModified() < cuttOffPoint) {
             RecordState.STALE
         } else {
