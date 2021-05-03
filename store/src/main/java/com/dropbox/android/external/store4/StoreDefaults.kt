@@ -1,8 +1,10 @@
 package com.dropbox.android.external.store4
 
 import kotlin.time.Duration
+import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.hours
+import kotlin.time.toDuration
 
 @ExperimentalTime
 internal object StoreDefaults {
@@ -12,7 +14,7 @@ internal object StoreDefaults {
      *
      * @return memory cache TTL
      */
-    val cacheTTL: Duration = Duration.hours(24)
+    val cacheTTL: Duration = 24.toDuration(DurationUnit.HOURS)
 
     /**
      * Cache size (default is 100), can be overridden

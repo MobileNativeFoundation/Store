@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
@@ -65,13 +66,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
         CacheBuilder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
                 expireAfterAccess(
-                    memoryPolicy.expireAfterAccess.inWholeMilliseconds,
+                    memoryPolicy.expireAfterAccess.toLong(DurationUnit.MILLISECONDS),
                     TimeUnit.MILLISECONDS
                 )
             }
             if (memoryPolicy.hasWritePolicy) {
                 expireAfterWrite(
-                    memoryPolicy.expireAfterWrite.inWholeMilliseconds,
+                    memoryPolicy.expireAfterWrite.toLong(DurationUnit.MILLISECONDS),
                     TimeUnit.MILLISECONDS
                 )
             }
