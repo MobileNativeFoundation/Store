@@ -3,7 +3,7 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-Version 4.1.0 *(2021-05-06)*
+Version 4.0.1 *(2021-05-06)*
 ----------------------------
 * Fixes issues when upgrading to kotlin 1.5 (Deprecated duration api)
 * Add piggyback to all stores
