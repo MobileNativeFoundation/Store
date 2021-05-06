@@ -18,12 +18,5 @@ Releasing
       * Select all the Repositories that contain the content you want to release
       * Click on Close and refresh until the Release button is active
       * Click Release and submit
- 12. Update `dependencies.gradle` to point to the newly released version of `cache`. (It may take ~2 hours for artifact to be available after release)
-
-
-**Note:** We are currently not pinning the sample app to the last version because the API is still fluid while `Store` is in alpha. We will resume pinning the sample app to a released version when we move to beta (see #159).
-
-When we're ready to pin, restore the final step:
-
-13. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
+ 12. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
  
