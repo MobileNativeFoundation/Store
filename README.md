@@ -282,7 +282,7 @@ StoreBuilder
 The following will clear the entry associated with the key from both the in-memory cache and the sourceOfTruth:
 
 ```kotlin
-store.clear("10")
+store.clear("myKey")
 ```
 
 The following will clear all entries from both the in-memory cache and the sourceOfTruth:
