@@ -67,8 +67,8 @@ dependencies {
     implementation libraries.cache
     kapt(libraries.moshiCodegen)
     kapt(libraries.roomCompiler)
-    implementation project(':store')
-    implementation project(':filesystem')
+    implementation libraries.store
+    implementation libraries.filesystem
 
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesAndroid

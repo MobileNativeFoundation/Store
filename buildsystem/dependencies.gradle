@@ -16,6 +16,7 @@ ext.versions = [
         atomicFuPlugin              : '0.14.2',
 
         cache                       : '3.1.1',
+        store                       : '4.0.1',
 
         // UI libs.
         picasso           : '2.5.2',
@@ -49,8 +50,10 @@ ext.versions = [
 ]
 
 ext.libraries = [
+        store                 : "com.dropbox.mobile.store:store4:$versions.store",
+        filesystem            : "com.dropbox.mobile.store:filesystem4:$versions.store",
         // depend on cache via jar to avoid building java code
-        cache                 :"com.nytimes.android:cache3:$versions.cache",
+        cache                 : "com.nytimes.android:cache3:$versions.cache",
         // UI libs.
         constraintLayout      : "androidx.constraintlayout:constraintlayout:$versions.constraintLayout",
         appCompat             : "androidx.appcompat:appcompat:${versions.appCompat}",
