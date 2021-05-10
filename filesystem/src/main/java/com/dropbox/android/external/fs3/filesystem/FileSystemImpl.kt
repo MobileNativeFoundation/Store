@@ -9,7 +9,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 
 /**
@@ -75,7 +74,7 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
             return RecordState.MISSING
         }
         val now = System.currentTimeMillis()
-        val cuttOffPoint = now - expirationDuration.inWholeMilliseconds
+        val cuttOffPoint: Long = now - expirationDuration.inWholeMilliseconds
         return if (file.lastModified() < cuttOffPoint) {
             RecordState.STALE
         } else {

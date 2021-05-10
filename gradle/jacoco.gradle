@@ -4,6 +4,10 @@
 
 // Enables code coverage for JVM tests.
 apply plugin: "jacoco"
+
+jacoco {
+    toolVersion = "0.8.7"
+}
 // Android Gradle Plugin out of the box supports only code coverage for instrumentation tests.
 // Creates a task that will merge coverage for all projects
 project.afterEvaluate {
