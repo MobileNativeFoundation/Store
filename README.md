@@ -30,6 +30,8 @@ Artifacts are hosted on **Maven Central**.
 
 ```groovy
 def store_version = "4.0.1"
+//if using kotlin 1.5 (https://github.com/dropbox/Store/issues/263)
+def store_version = "4.0.2-KT15-SNAPSHOT" 
 ```
 
 ###### Add the dependency to your `build.gradle`:
