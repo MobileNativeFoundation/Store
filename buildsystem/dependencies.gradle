@@ -3,7 +3,7 @@ ext.versions = [
         targetSdk         : 29,
         compileSdk        : 29,
         buildTools        : '29.0.3',
-        kotlin            : '1.4.10',
+        kotlin            : '1.5.0',
         ktlint            : '0.39.0',
 
         // Plugins
@@ -11,7 +11,7 @@ ext.versions = [
         dokkaGradlePlugin           : '0.10.0',
         ktlintGradle                : '9.1.1',
         spotlessGradlePlugin        : '3.26.1',
-        jacocoGradlePlugin          : '0.8.5',
+        jacocoGradlePlugin          : '0.8.7',
         binaryCompatibilityValidator: '0.2.3',
         atomicFuPlugin              : '0.14.2',
 
@@ -27,7 +27,7 @@ ext.versions = [
         jsr305            : '3.0.2',
         okHttp            : '4.6.0',
         okio              : '2.6.0',
-        moshi             : '1.9.2',
+        moshi             : '1.12.0',
         appCompat         : '1.1.0',
         fragment          : '1.2.4',
         recyclerView      : '1.1.0',
