@@ -1,7 +1,17 @@
 Change Log
 ==========
 
+
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
+
+Version 4.0.2-KT15 *(2021-05-06)
+----------------------------
+**Kotlin 1.5 introduced breaking changes in the experimental Duration apis we used**
+**4.0.2-KT15 is a duplicate of 4.0.1 but compiled for kotlin 1.5**
+**Version 4.0.1 is the last version compatible with Kotlin 1.4**
+
+* Fire off kotlin 1.5 compatible snapshot (#273)
+
 
 Version 4.0.1 *(2021-05-06)*
 ----------------------------
