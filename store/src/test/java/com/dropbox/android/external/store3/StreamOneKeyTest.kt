@@ -3,20 +3,17 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
+import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import com.dropbox.android.external.store4.testutil.FakeFetcher
+import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.broadcastIn
-import kotlinx.coroutines.plus
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.transform
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,7 +23,7 @@ import org.junit.runners.Parameterized
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamOneKeyTest(
-    private val storeType: TestStoreType
+    storeType: TestStoreType
 ) {
 
     private var reader: (Pair<String, String>) -> String = mock()
@@ -52,11 +49,10 @@ class StreamOneKeyTest(
     fun setUp() = runBlockingTest {
 
         whenever(reader(barCode))
-            .let {
+            .run {
                 // the backport stream method of Pipeline to Store does not skip disk so we
                 // make sure disk returns empty value first
-
-                it.thenReturn(null)
+                thenReturn(null)
             }
             .thenReturn(TEST_ITEM)
             .thenReturn(TEST_ITEM2)
@@ -79,29 +75,25 @@ class StreamOneKeyTest(
             it.dataOrNull()?.let {
                 emit(it)
             }
-        }
-            .openChannelSubscription()
-        try {
+        }.mapIndexed { index, data ->
+            index to data
+        }.stateIn(testScope)
+        assertThat(streamSubscription.value).isEqualTo(0 to TEST_ITEM)
 
-            assertThat(streamSubscription.isEmpty).isFalse()
+        store.clear(barCode)
 
-            store.clear(barCode)
+        assertThat(streamSubscription.value).isEqualTo(0 to TEST_ITEM)
+        // get for another barcode should not trigger a stream for barcode1
+        whenever(reader(barCode2))
+            .thenReturn(TEST_ITEM)
+        whenever(writer(barCode2, TEST_ITEM))
+            .thenReturn(true)
+        store.get(barCode2)
+        assertThat(streamSubscription.value).isEqualTo(0 to TEST_ITEM)
 
-            assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM)
-            // get for another barcode should not trigger a stream for barcode1
-            whenever(reader(barCode2))
-                .thenReturn(TEST_ITEM)
-            whenever(writer(barCode2, TEST_ITEM))
-                .thenReturn(true)
-            store.get(barCode2)
-            assertThat(streamSubscription.isEmpty).isTrue()
-
-            // get a another barCode one and ensure subscribers are notified
-            store.fresh(barCode)
-            assertThat(streamSubscription.poll()).isEqualTo(TEST_ITEM2)
-        } finally {
-            streamSubscription.cancel()
-        }
+        // get a another barCode one and ensure subscribers are notified
+        store.fresh(barCode)
+        assertThat(streamSubscription.value).isEqualTo(1 to TEST_ITEM2)
     }
 
     companion object {
@@ -113,8 +105,3 @@ class StreamOneKeyTest(
         fun params() = TestStoreType.values()
     }
 }
-
-@FlowPreview
-@ExperimentalCoroutinesApi
-fun <T> Flow<T>.openChannelSubscription() =
-    broadcastIn(GlobalScope + Dispatchers.Unconfined).openSubscription()
