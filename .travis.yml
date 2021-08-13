@@ -18,6 +18,7 @@ after_success:
 after_script:
 - tools/release/deploy_cleanup.sh
 before_install:
+- echo testy:wq:wq
 - yes | sdkmanager "platforms;android-29"
 branches:
   except:
