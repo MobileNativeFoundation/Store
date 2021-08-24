@@ -15,9 +15,6 @@ import com.dropbox.android.sample.R
 import kotlinx.android.synthetic.main.fragment_stream.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -29,7 +26,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
-@ExperimentalCoroutinesApi
+@ExperimentalTime
 class StreamFragment : Fragment(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
@@ -42,9 +39,6 @@ class StreamFragment : Fragment(), CoroutineScope {
         return inflater.inflate(R.layout.fragment_stream, container, false)
     }
 
-    @ExperimentalTime
-    @InternalCoroutinesApi
-    @FlowPreview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

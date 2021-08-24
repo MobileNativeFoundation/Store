@@ -9,7 +9,6 @@ import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.rx3.asFlowable
 import kotlinx.coroutines.rx3.rxCompletable
 import kotlinx.coroutines.rx3.rxSingle
@@ -18,7 +17,6 @@ import kotlinx.coroutines.rx3.rxSingle
  * Return a [Flowable] for the given key
  * @param request - see [StoreRequest] for configurations
  */
-@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreRequest<Key>): Flowable<StoreResponse<Output>> =
     stream(request).asFlowable()
 

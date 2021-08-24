@@ -1,13 +1,11 @@
 package com.dropbox.android.external.store4.impl.operators
 
 import com.dropbox.android.external.store4.testutil.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class MapIndexedKtTest {
     val scope = TestCoroutineScope()
     @Test

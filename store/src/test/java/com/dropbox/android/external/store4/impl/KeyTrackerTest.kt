@@ -17,7 +17,6 @@ package com.dropbox.android.external.store4.impl
 
 import com.dropbox.android.external.store4.testutil.KeyTracker
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.take
@@ -29,7 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-@ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class KeyTrackerTest {
     private val scope1 = TestCoroutineScope()

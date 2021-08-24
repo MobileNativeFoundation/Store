@@ -15,16 +15,12 @@ import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.schedulers.TestScheduler
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(JUnit4::class)
-@FlowPreview
-@ExperimentalCoroutinesApi
 class RxFlowableStoreTest {
     private val testScheduler = TestScheduler()
     private val atomicInteger = AtomicInteger(0)
