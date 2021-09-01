@@ -1,0 +1,39 @@
+# This workflow will build the project with Gradle, run integration tests, and release.
+# Because secrets are not available on external forks, this job is expected to fail
+# on external pull requests.
+
+name: Build project & run tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level:
+          - 21t
+          - 29
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up our JDK environment
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.8
+    - name: Run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+            api-level: 29
+            script: ./gradlew clean cleanBuildCache check --stacktrace
+      env:
+        API_LEVEL: ${{ matrix.api-level }}
