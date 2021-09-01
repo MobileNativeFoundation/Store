@@ -34,6 +34,7 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
       
       - name: Clean up Artifacts
+        if: always()
         run: tools/release/deploy_cleanup.sh
   test:
     runs-on: ubuntu-latest
