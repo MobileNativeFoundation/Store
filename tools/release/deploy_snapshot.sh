@@ -5,7 +5,13 @@
 # Adapted from https://coderwall.com/p/9b_lfq and
 # http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci/
 
+<<<<<<< Updated upstream
+SLUG="dropbox/Store"
+JDK="oraclejdk8"
 BRANCH="main"
+=======
+BRANCH="master"
+>>>>>>> Stashed changes
 
 set -e
 
