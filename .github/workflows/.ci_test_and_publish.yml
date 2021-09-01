@@ -1,0 +1,65 @@
+# This workflow will build the project with Gradle, run integration tests, and release.
+# Because secrets are not available on external forks, this job is expected to fail
+# on external pull requests.
+
+name: Build project & run tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dropbox/Store' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up our JDK environment
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Upload Artifacts
+        run: tools/release/deploy_snapshot.sh
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
+          SIGNING_ID: ${{ secrets.SIGNING_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+      
+      - name: Clean up Artifacts
+        if: always()
+        run: tools/release/deploy_cleanup.sh
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level:
+          - 29
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up our JDK environment
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.8
+    - name: Run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+            api-level: 29
+            script: ./gradlew clean cleanBuildCache check --stacktrace
+      env:
+        API_LEVEL: ${{ matrix.api-level }}
+    - name: Upload code coverage
+      run: bash <(curl -s https://codecov.io/bash)
