@@ -11,15 +11,38 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'changusmc/Store' && github.ref == 'refs/heads/main'
 
-    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up our JDK environment
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 1.8
+
+      - name: Upload Artifacts
+        run: tools/release/deploy_snapshot.sh
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
+          SIGNING_ID: ${{ secrets.SIGNING_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+      
+      - name: Clean up Artifacts
+        run: tools/release/deploy_cleanup.sh
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
       matrix:
         api-level:
-          - 21t
           - 29
 
     steps:
@@ -37,3 +60,5 @@ jobs:
             script: ./gradlew clean cleanBuildCache check --stacktrace
       env:
         API_LEVEL: ${{ matrix.api-level }}
+    - name: Upload code coverage
+      run: bash <(curl -s https://codecov.io/bash)
