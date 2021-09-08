@@ -16,7 +16,6 @@
 package com.dropbox.flow.multicast
 
 import com.dropbox.flow.multicast.ChannelManager.Message.Dispatch
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -35,7 +34,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@ExperimentalCoroutinesApi
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()
     private val upstream: Channel<String> = Channel(Channel.UNLIMITED)

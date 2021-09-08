@@ -15,7 +15,6 @@
  */
 package com.dropbox.flow.multicast
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +34,6 @@ import kotlin.test.assertEquals
  * It basically waits until there is another reason to enable upstream and will receive those
  * values as well.
  */
-@ExperimentalCoroutinesApi
 class InfiniteMulticastTest {
     private val testScope = TestCoroutineScope()
     private val dispatchLog = mutableListOf<String>()

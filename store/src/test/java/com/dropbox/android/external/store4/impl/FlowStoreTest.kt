@@ -31,8 +31,6 @@ import com.dropbox.android.external.store4.testutil.asFlowable
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.assertThat
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -48,8 +46,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-@FlowPreview
-@ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class FlowStoreTest {
     private val testScope = TestCoroutineScope()

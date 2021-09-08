@@ -22,8 +22,6 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -39,8 +37,6 @@ import kotlinx.coroutines.flow.onEmpty
  * fetcher requests receives values dispatched by later requests even if they don't share the
  * request.
  */
-@FlowPreview
-@ExperimentalCoroutinesApi
 internal class FetcherController<Key : Any, Input : Any, Output : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher

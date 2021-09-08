@@ -13,8 +13,6 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -28,8 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@FlowPreview
-@ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StoreTest(
     private val storeType: TestStoreType

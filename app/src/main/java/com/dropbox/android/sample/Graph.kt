@@ -19,8 +19,6 @@ import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okio.Buffer
@@ -33,8 +31,6 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
 @OptIn(
-    FlowPreview::class,
-    ExperimentalCoroutinesApi::class,
     ExperimentalTime::class,
     ExperimentalStdlibApi::class
 )

@@ -15,7 +15,6 @@
  */
 package com.dropbox.flow.multicast
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -23,7 +22,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@ExperimentalCoroutinesApi
 class SharedFlowProducerTest {
     private val scope = TestCoroutineScope()
     private val upstreamMessages = mutableListOf<String>()

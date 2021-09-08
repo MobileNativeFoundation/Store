@@ -8,8 +8,6 @@ import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -19,8 +17,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@FlowPreview
-@ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamOneKeyTest(
     storeType: TestStoreType

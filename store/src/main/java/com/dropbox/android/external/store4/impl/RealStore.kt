@@ -29,8 +29,6 @@ import com.dropbox.android.external.store4.impl.operators.merge
 import com.nytimes.android.external.cache3.CacheBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -41,8 +39,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-@ExperimentalCoroutinesApi
-@FlowPreview
 internal class RealStore<Key : Any, Input : Any, Output : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Input>,
