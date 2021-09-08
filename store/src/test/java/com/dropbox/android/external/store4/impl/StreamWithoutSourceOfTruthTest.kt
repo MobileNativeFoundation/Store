@@ -22,8 +22,6 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.dropbox.android.external.store4.testutil.assertThat
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.take
@@ -34,8 +32,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@FlowPreview
-@ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class StreamWithoutSourceOfTruthTest(
     private val enableCache: Boolean
