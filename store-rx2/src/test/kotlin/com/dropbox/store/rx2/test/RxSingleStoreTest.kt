@@ -4,20 +4,22 @@ import com.dropbox.android.external.store4.ExperimentalStoreApi
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.FetcherResult
 import com.dropbox.android.external.store4.ResponseOrigin
-import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.store4.SourceOfTruth
+import com.dropbox.store.rx2.ofMaybe
 import com.dropbox.store.rx2.observe
 import com.dropbox.store.rx2.observeClear
 import com.dropbox.store.rx2.observeClearAll
-import com.dropbox.store.rx2.ofMaybe
 import com.dropbox.store.rx2.ofResultSingle
 import com.dropbox.store.rx2.withScheduler
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -25,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalStoreApi
 @RunWith(JUnit4::class)
+@FlowPreview
+@ExperimentalCoroutinesApi
 class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String>()

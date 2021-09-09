@@ -17,6 +17,7 @@
 package com.dropbox.android.external.store4.testutil
 
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -28,6 +29,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class FlowSubjectTest {
     // Can't use ExpectFailure in these tests because it is not a suspend function.
     private val testScope = TestCoroutineScope()
