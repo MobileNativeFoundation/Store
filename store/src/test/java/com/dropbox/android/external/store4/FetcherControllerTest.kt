@@ -18,6 +18,8 @@ package com.dropbox.android.external.store4
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.impl.FetcherController
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -29,6 +31,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@ExperimentalCoroutinesApi
+@FlowPreview
 @RunWith(JUnit4::class)
 class FetcherControllerTest {
     private val testScope = TestCoroutineScope()

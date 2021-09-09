@@ -2,6 +2,7 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import okio.BufferedSource
 import java.io.File
 import java.io.IOException
@@ -12,6 +13,7 @@ import kotlin.time.ExperimentalTime
  * Factory for [SourcePersister]
  */
 
+@ExperimentalCoroutinesApi
 object SourcePersisterFactory {
 
     /**

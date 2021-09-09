@@ -15,6 +15,7 @@
  */
 package com.dropbox.android.external.store4.impl.operators
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 /**
  * Merge implementation tells downstream what the source is and also uses a rendezvous channel
  */
+@ExperimentalCoroutinesApi
 internal fun <T, R> Flow<T>.merge(other: Flow<R>): Flow<Either<T, R>> {
     return channelFlow<Either<T, R>> {
         launch {

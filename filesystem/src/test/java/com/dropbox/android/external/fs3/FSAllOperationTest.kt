@@ -4,6 +4,7 @@ import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
 import com.google.common.base.Charsets.UTF_8
 import com.google.common.io.Files.createTempDir
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import okio.buffer
@@ -11,6 +12,7 @@ import okio.source
 import org.junit.Test
 import java.io.ByteArrayInputStream
 
+@ExperimentalCoroutinesApi
 class FSAllOperationTest {
 
     @Test

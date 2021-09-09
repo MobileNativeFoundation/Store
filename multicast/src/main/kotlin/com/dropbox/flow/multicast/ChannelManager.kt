@@ -19,6 +19,7 @@ package com.dropbox.flow.multicast
 import com.dropbox.flow.multicast.ChannelManager.Message
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 
@@ -400,5 +401,6 @@ private class BufferImpl<T>(private val limit: Int) :
     }
 }
 
+@ExperimentalCoroutinesApi
 internal fun <T> ChannelManager.Message.Dispatch.Value<T>.markDelivered() =
     delivered.complete(Unit)

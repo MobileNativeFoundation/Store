@@ -22,9 +22,13 @@ import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreBuilder
 import com.dropbox.android.external.store4.impl.PersistentSourceOfTruth
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
 import kotlin.time.ExperimentalTime
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 data class TestStoreBuilder<Key : Any, Output : Any>(
     private val buildStore: () -> Store<Key, Output>
 ) {

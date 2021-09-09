@@ -17,6 +17,7 @@
 package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.transform
  * downstream value collects the latest dispatched value OR a new downstream is added while [buffer]
  * is empty.
  */
+@ExperimentalCoroutinesApi
 class Multicaster<T>(
     /**
      * The [CoroutineScope] to use for upstream subscription

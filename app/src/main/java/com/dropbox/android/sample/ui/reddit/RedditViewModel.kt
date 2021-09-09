@@ -9,8 +9,11 @@ import com.dropbox.android.external.store4.get
 import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.utils.Lce
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class RedditViewModel(
     app: Application
 ) : AndroidViewModel(app) {

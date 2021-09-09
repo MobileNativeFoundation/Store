@@ -16,6 +16,7 @@
 package com.dropbox.android.external.store4.testutil
 
 import com.dropbox.android.external.store4.SourceOfTruth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +29,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Only used in FlowStoreTest. We should get rid of it eventually.
  */
+@ExperimentalCoroutinesApi
 class SimplePersisterAsFlowable<Key, Input, Output>(
     private val reader: suspend (Key) -> Output?,
     private val writer: suspend (Key, Input) -> Unit,
@@ -58,6 +60,7 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
     }
 }
 
+@ExperimentalCoroutinesApi
 fun <Key : Any, Input : Any, Output : Any> SimplePersisterAsFlowable<Key, Input, Output>.asSourceOfTruth() =
     SourceOfTruth.of(
         reader = ::flowReader,
@@ -68,6 +71,7 @@ fun <Key : Any, Input : Any, Output : Any> SimplePersisterAsFlowable<Key, Input,
 /**
  * helper class which provides Flows for Keys that can be tracked.
  */
+@ExperimentalCoroutinesApi
 internal class KeyTracker<Key> {
     private val lock = Mutex()
     // list of open key channels
@@ -140,6 +144,7 @@ internal class KeyTracker<Key> {
     }
 }
 
+@ExperimentalCoroutinesApi
 fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
     SimplePersisterAsFlowable(
         reader = this::read,

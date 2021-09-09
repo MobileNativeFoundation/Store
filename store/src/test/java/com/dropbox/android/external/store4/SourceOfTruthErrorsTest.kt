@@ -21,6 +21,7 @@ import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.assertThat
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -32,9 +33,8 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
+@FlowPreview
 @RunWith(JUnit4::class)
 class SourceOfTruthErrorsTest {
     private val testScope = TestCoroutineScope()

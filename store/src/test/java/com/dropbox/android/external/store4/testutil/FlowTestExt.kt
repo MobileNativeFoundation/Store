@@ -19,16 +19,19 @@ import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertWithMessage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.TestCoroutineScope
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
     return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class FlowSubject<T> constructor(
     failureMetadata: FailureMetadata,
     private val testCoroutineScope: TestCoroutineScope,

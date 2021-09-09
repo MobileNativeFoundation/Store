@@ -17,12 +17,16 @@ package com.dropbox.android.external.store4
 
 import com.dropbox.android.external.store4.impl.RealStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlin.time.ExperimentalTime
 
 /**
  * Main entry point for creating a [Store].
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
@@ -55,7 +59,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        @ExperimentalTime
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
             fetcher: Fetcher<Key, Output>
         ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher)
@@ -66,7 +70,6 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        @ExperimentalTime
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
@@ -77,7 +80,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
     }
 }
 
-@ExperimentalTime
+@FlowPreview
+@OptIn(ExperimentalTime::class)
+@ExperimentalCoroutinesApi
 private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
     private val fetcher: Fetcher<Key, Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null

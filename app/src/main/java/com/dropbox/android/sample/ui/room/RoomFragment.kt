@@ -16,6 +16,8 @@ import com.dropbox.android.sample.reddit.PostAdapter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_store.postRecyclerView
 import kotlinx.android.synthetic.main.fragment_room_store.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
+@FlowPreview
 class RoomFragment : Fragment() {
 
     override fun onCreateView(
@@ -34,11 +37,13 @@ class RoomFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_room_store, container, false)
     }
 
+    @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initUI()
     }
 
+    @ExperimentalCoroutinesApi
     private fun initUI() {
         val adapter = PostAdapter()
         // lazily set the adapter when we have data the first time so that RecyclerView can
@@ -94,6 +99,7 @@ class RoomFragment : Fragment() {
 /**
  * This class should possibly be moved to a helper library but needs more API work before that.
  */
+@ExperimentalCoroutinesApi
 internal class StoreState<Key : Any, Output : Any>(
     private val store: Store<Key, Output>
 ) {

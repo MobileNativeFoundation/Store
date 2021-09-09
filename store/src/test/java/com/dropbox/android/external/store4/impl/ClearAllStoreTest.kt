@@ -9,12 +9,16 @@ import com.dropbox.android.external.store4.testutil.InMemoryPersister
 import com.dropbox.android.external.store4.testutil.asSourceOfTruth
 import com.dropbox.android.external.store4.testutil.getData
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @ExperimentalStoreApi
 @RunWith(JUnit4::class)
 class ClearAllStoreTest {
