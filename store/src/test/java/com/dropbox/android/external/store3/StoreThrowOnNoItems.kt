@@ -4,8 +4,6 @@ import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.get
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import com.google.common.truth.Truth.assertThat
@@ -14,9 +12,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.ExperimentalTime
 
-@FlowPreview
-@ExperimentalCoroutinesApi
+@ExperimentalTime
 @RunWith(Parameterized::class)
 class StoreThrowOnNoItems(
     private val storeType: TestStoreType

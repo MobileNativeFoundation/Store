@@ -21,7 +21,6 @@ import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.android.external.store4.impl.operators.mapIndexed
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -38,7 +37,6 @@ import java.util.concurrent.atomic.AtomicLong
  * Used in the [com.dropbox.android.external.store4.impl.RealStore] implementation to avoid
  * dispatching values to downstream while a write is in progress.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SourceOfTruthWithBarrier<Key, Input, Output>(
     private val delegate: SourceOfTruth<Key, Input, Output>
 ) {

@@ -2,12 +2,10 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
 import okio.BufferedSource
 import java.io.FileNotFoundException
 
-@ExperimentalCoroutinesApi
 class SourceAllPersister(fileSystem: FileSystem) : AllPersister<BufferedSource, Pair<String, String>> {
 
     internal val sourceFileAllReader: FSAllReader = FSAllReader(fileSystem)

@@ -2,7 +2,6 @@ package com.dropbox.android.external.fs3
 
 import com.dropbox.android.external.fs3.filesystem.FileSystem
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import okio.BufferedSource
@@ -14,7 +13,6 @@ import java.io.FileNotFoundException
  * Make sure to have keys containing same data resolve to same "path"
  *
  */
-@ExperimentalCoroutinesApi
 class FSAllReader(internal val fileSystem: FileSystem) : DiskAllRead<BufferedSource> {
 
     @Throws(FileNotFoundException::class)
