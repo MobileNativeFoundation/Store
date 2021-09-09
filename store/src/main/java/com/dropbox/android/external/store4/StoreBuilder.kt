@@ -55,7 +55,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        @ExperimentalTime
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Output : Any> from(
             fetcher: Fetcher<Key, Output>
         ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher)
@@ -66,7 +66,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        @ExperimentalTime
+        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
@@ -77,7 +77,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
     }
 }
 
-@ExperimentalTime
+@OptIn(ExperimentalTime::class)
 private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
     private val fetcher: Fetcher<Key, Input>,
     private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null

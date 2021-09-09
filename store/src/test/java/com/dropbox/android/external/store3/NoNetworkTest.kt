@@ -4,6 +4,8 @@ import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.get
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.fail
@@ -11,6 +13,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)
 class NoNetworkTest(
     storeType: TestStoreType
