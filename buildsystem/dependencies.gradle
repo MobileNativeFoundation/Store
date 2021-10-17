@@ -33,7 +33,7 @@ ext.versions = [
         recyclerView      : '1.2.1',
         swipeRefreshLayout: '1.0.0',
         material          : '1.1.0',
-        room              : '2.2.5',
+        room              : '2.3.0',
         coreKtx           : '1.2.0',
         lifecycle         : '2.2.0',
         navigation        : '2.3.5',
