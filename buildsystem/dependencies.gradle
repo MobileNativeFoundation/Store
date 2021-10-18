@@ -23,7 +23,7 @@ ext.versions = [
 
         // Others.
         coroutines        : '1.5.2',
-        retrofit          : '2.8.1',
+        retrofit          : '2.9.0',
         jsr305            : '3.0.2',
         okHttp            : '4.6.0',
         okio              : '2.6.0',
