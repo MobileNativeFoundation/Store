@@ -19,7 +19,7 @@ ext.versions = [
         store                       : '4.0.2-KT15',
 
         // UI libs.
-        picasso           : '2.5.2',
+        picasso           : '2.71828',
 
         // Others.
         coroutines        : '1.5.2',
