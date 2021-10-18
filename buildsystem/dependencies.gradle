@@ -12,7 +12,7 @@ ext.versions = [
         ktlintGradle                : '9.1.1',
         spotlessGradlePlugin        : '3.26.1',
         jacocoGradlePlugin          : '0.8.7',
-        binaryCompatibilityValidator: '0.2.3',
+        binaryCompatibilityValidator: '0.7.1',
         atomicFuPlugin              : '0.14.2',
 
         cache                       : '3.1.1',
