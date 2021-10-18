@@ -18,7 +18,7 @@ class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun showImage(url: String) {
-        Picasso.with(itemView.context)
+        Picasso.get()
             .load(url)
             .placeholder(R.color.gray80)
             .into(itemView.thumbnail)
