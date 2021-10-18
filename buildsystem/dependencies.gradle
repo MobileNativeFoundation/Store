@@ -40,7 +40,7 @@ ext.versions = [
         constraintLayout  : '1.1.3',
         rx2               : '2.2.21',
         rx3               : '3.0.3',
-        leakcanary        : '2.4',
+        leakcanary        : '2.7',
 
         // Testing.
         junit             : '4.13',
