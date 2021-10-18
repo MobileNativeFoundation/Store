@@ -22,7 +22,7 @@ ext.versions = [
         picasso           : '2.5.2',
 
         // Others.
-        coroutines        : '1.5.1',
+        coroutines        : '1.5.2',
         retrofit          : '2.8.1',
         jsr305            : '3.0.2',
         okHttp            : '4.6.0',
