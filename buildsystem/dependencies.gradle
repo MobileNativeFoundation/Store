@@ -45,7 +45,7 @@ ext.versions = [
         // Testing.
         junit             : '4.13',
         truth             : '1.0',
-        mockito           : '3.12.4',
+        mockito           : '4.0.0',
         mockitoKotlin     : '2.2.0',
 ]
 
