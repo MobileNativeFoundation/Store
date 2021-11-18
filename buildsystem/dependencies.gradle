@@ -16,7 +16,7 @@ ext.versions = [
         atomicFuPlugin              : '0.14.2',
 
         cache                       : '3.1.1',
-        store                       : '4.0.2-KT15',
+        store                       : '4.0.3-KT15',
 
         // UI libs.
         picasso           : '2.5.2',
