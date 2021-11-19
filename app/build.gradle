@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-android-extensions'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -62,11 +63,11 @@ dependencies {
     implementation libraries.navigationUi
     implementation libraries.constraintLayout
 
-    implementation libraries.picasso
-    implementation libraries.moshi
-    implementation libraries.retrofitMoshiConverter
     implementation libraries.cache
-    kapt(libraries.moshiCodegen)
+    implementation libraries.kotlinSerialization
+    implementation libraries.okHttp
+    implementation libraries.picasso
+    implementation libraries.retrofitSerializerConverter
     kapt(libraries.roomCompiler)
     implementation libraries.store
     implementation libraries.filesystem
