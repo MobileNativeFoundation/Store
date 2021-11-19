@@ -28,8 +28,9 @@ memCache.get(key, new Callable<T>() {
  https://github.com/google/guava/wiki/CachesExplained
 
 ```groovy
-	implementation 'com.dropbox.android:cache3:3.0.0-beta'
+	implementation "com.dropbox.mobile.store:store4:${store_version}"
 ```
+Please refer to the [Store Readme](https://github.com/dropbox/Store/blob/main/README.md#latest-version) for the latest version.
 
 ```
 Copyright (c) 2017 The New York Times Company
