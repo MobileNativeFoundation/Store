@@ -1,9 +1,7 @@
 package com.dropbox.android.external.store4
 
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.toDuration
 
 fun interface Weigher<in K : Any, in V : Any> {
     /**
@@ -109,11 +107,7 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
     }
 
     companion object {
-        // Ideally this would be set to Duration.INFINITE, but this breaks consumers compiling with
-        // Kotlin 1.4-M3 (not sure why).
-        // TODO: revert back to using Duration.INFINITE once Store is compiled with Kotlin 1.4
-        val DEFAULT_DURATION_POLICY: Duration =
-            Double.POSITIVE_INFINITY.toDuration(TimeUnit.SECONDS)
+        val DEFAULT_DURATION_POLICY: Duration = Duration.INFINITE
         const val DEFAULT_SIZE_POLICY: Long = -1
 
         fun <Key : Any, Value : Any> builder(): MemoryPolicyBuilder<Key, Value> =
