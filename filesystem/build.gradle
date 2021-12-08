@@ -9,6 +9,9 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
+group = GROUP
+version = VERSION_NAME
+
 dependencies {
     implementation libraries.okio
     implementation libraries.coroutinesCore
@@ -21,6 +24,5 @@ dependencies {
     testImplementation libraries.coroutinesTest
 }
 
+apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
-
-apply plugin: 'com.vanniktech.maven.publish'

@@ -17,9 +17,11 @@ dependencies {
     testImplementation libraries.truth
 }
 
-apply from: rootProject.file("gradle/jacoco.gradle")
+group = GROUP
+version = VERSION_NAME
 
-apply plugin: 'com.vanniktech.maven.publish'
+apply from: rootProject.file("gradle/maven-push.gradle")
+apply from: rootProject.file("gradle/jacoco.gradle")
 
 targetCompatibility = 1.8
 sourceCompatibility = 1.8

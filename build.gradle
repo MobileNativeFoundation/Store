@@ -3,6 +3,7 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
         google()
+        jcenter()
     }
 
     apply from: 'buildsystem/dependencies.gradle'
@@ -16,7 +17,6 @@ buildscript {
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
         classpath "org.jacoco:org.jacoco.core:${versions.jacocoGradlePlugin}"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:${versions.atomicFuPlugin}"
-        classpath "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}"
     }
 }
 
@@ -32,6 +32,7 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        jcenter()
     }
 
     apply plugin: 'org.jlleitschuh.gradle.ktlint'
@@ -46,18 +47,28 @@ allprojects {
     tasks.withType(JavaForkOptions) {
         jvmArgs '-Djava.awt.headless=true'
     }
-
-    configurations.all {
-        resolutionStrategy {
-            force "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutines}"
-            force "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.coroutines}"
-            force "org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.coroutines}"
-        }
-    }
 }
 
 ext {
+    // POM file
+    GROUP = "com.dropbox.mobile.store"
+    //e2c5cbfb31bbaa9793f430a25c750195c414ac44 was the last commit compatible with kotlin 1.4
+    //if a release with lower compatiblity than kotlin 1.5 is needed, branch off the above commit and cherry pick any newer changes
+    VERSION_NAME = "4.0.3-KT15"
+    POM_PACKAGING = "pom"
+    POM_DESCRIPTION = "Store4 is built with Kotlin Coroutines"
 
+    POM_URL = "https://github.com/dropbox/Store/"
+    POM_SCM_URL = "https://github.com/dropbox/Store/"
+    POM_SCM_CONNECTION = "scm:git:https://github.com/dropbox/Store.git"
+    POM_SCM_DEV_CONNECTION = "scm:git:git@github.com:dropbox/Store.git"
+
+    POM_LICENCE_NAME = "Apache License"
+    POM_LICENCE_URL = "http://www.apache.org/licenses/LICENSE-2.0"
+    POM_LICENCE_DIST = "repo"
+
+    POM_DEVELOPER_ID = "dropbox"
+    POM_DEVELOPER_NAME = "Dropbox"
 }
 
 subprojects {
