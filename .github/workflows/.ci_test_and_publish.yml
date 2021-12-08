@@ -41,21 +41,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
-          
-      - name: Prepare next development version
-        run: |
-          sed -i -e "s/${VERSION_NAME}/${VERSION_NAME}-SNAPSHOT/g" gradle.properties
-          git config --local user.email "dropbox[bot]@users.noreply.github.com"
-          git config --local user.name "dropbox[bot]"
-          git commit -m "Prepare next development version" -a
-        if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-        if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"          
 
   test:
     runs-on: ubuntu-latest
