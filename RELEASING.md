@@ -14,6 +14,7 @@ Releasing
  9. `git commit -am "Prepare next development version."`
  10. Create a PR with this commit and merge it.
  11. Login to Sonatype to promote the artifacts https://central.sonatype.org/pages/releasing-the-deployment.html
+      * This part is automated. If it fails in CI, follow the steps below.
       * Click on Staging Repositories under Build Promotion
       * Select all the Repositories that contain the content you want to release
       * Click on Close and refresh until the Release button is active
