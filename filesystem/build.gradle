@@ -7,10 +7,8 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.dokka'
 }
-
-group = GROUP
-version = VERSION_NAME
 
 dependencies {
     implementation libraries.okio
@@ -24,5 +22,6 @@ dependencies {
     testImplementation libraries.coroutinesTest
 }
 
-apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
+
+apply plugin: 'com.vanniktech.maven.publish'
