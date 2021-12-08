@@ -15,20 +15,20 @@
  */
 package com.dropbox.flow.multicast
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class StoreRealActorTest {
-    private val didClose = atomic<Boolean>(false)
+    private val didClose = AtomicBoolean(false)
 
     /**
      * Intentionally not using test scope here to use real coroutines to ensure we don't get into
@@ -37,19 +37,19 @@ class StoreRealActorTest {
     @Test
     fun closeOrder() {
         val actor = object : StoreRealActor<String>(CoroutineScope(EmptyCoroutineContext)) {
-            val active = atomic<Boolean>(false)
+            val active = AtomicBoolean(false)
             override suspend fun handle(msg: String) {
                 try {
-                    active.value = true
+                    active.set(true)
                     delay(100)
                 } finally {
-                    active.value = false
+                    active.set(false)
                 }
             }
 
             override fun onClosed() {
-                assertFalse(active.value)
-                didClose.value = true
+                assertFalse(active.get())
+                didClose.set(true)
             }
         }
         runBlocking {
@@ -67,6 +67,6 @@ class StoreRealActorTest {
             actor.close()
             sender.join()
         }
-        assertTrue(didClose.value)
+        assertTrue(didClose.get())
     }
 }

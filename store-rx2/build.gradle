@@ -16,10 +16,10 @@ dependencies {
     testImplementation libraries.coroutinesTest
 
 }
-group = GROUP
-version = VERSION_NAME
-apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
+
+apply plugin: 'com.vanniktech.maven.publish'
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 

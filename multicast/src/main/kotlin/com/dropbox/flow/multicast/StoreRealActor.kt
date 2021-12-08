@@ -15,12 +15,12 @@
  */
 package com.dropbox.flow.multicast
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Simple actor implementation abstracting away Coroutine.actor since it is deprecated.
@@ -32,7 +32,7 @@ internal abstract class StoreRealActor<T>(
 ) {
     private val inboundChannel: SendChannel<Any?>
     private val closeCompleted = CompletableDeferred<Unit>()
-    private val didClose = atomic<Boolean>(false)
+    private val didClose = AtomicBoolean(false)
 
     init {
         inboundChannel = scope.actor(
@@ -55,7 +55,7 @@ internal abstract class StoreRealActor<T>(
     }
 
     private fun doClose() {
-        if (didClose.compareAndSet(expect = false, update = true)) {
+        if (didClose.compareAndSet(false, true)) {
             try {
                 onClosed()
             } finally {

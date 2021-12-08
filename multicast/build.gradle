@@ -1,7 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.dokka'
-    id 'kotlinx-atomicfu'
 }
 
 dependencies {
@@ -10,10 +9,10 @@ dependencies {
     testImplementation libraries.kotlinTest
     testImplementation libraries.kotlinTestJunit
 }
-group = GROUP
-version = VERSION_NAME
-apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
+
+apply plugin: 'com.vanniktech.maven.publish'
+
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
