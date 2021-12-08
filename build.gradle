@@ -3,7 +3,6 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
         google()
-        jcenter()
     }
 
     apply from: 'buildsystem/dependencies.gradle'
@@ -11,6 +10,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.androidGradlePlugin}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:${versions.kotlin}"
         classpath "org.jetbrains.kotlinx:binary-compatibility-validator:${versions.binaryCompatibilityValidator}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"

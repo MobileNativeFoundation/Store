@@ -1,6 +1,6 @@
 package com.dropbox.android.sample
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class RedditConfig(val limit: Int)

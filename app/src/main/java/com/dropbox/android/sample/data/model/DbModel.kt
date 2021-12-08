@@ -12,8 +12,10 @@ import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.squareup.moshi.Moshi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  * Keeps the association between a Post and a feed
@@ -38,17 +40,14 @@ data class PostEntity(
 )
 
 class RedditTypeConverters {
-    private val moshi = Moshi.Builder().build()
-    private val previewAdapter = moshi.adapter<Preview>(Preview::class.java)
-
     @TypeConverter
     fun previewToString(preview: Preview?) = preview?.let {
-        previewAdapter.toJson(it)
+        Json.encodeToString(preview)
     }
 
     @TypeConverter
     fun stringToPreview(preview: String?) = preview?.let {
-        previewAdapter.fromJson(it)
+        Json.decodeFromString<Preview>(preview)
     }
 }
 
