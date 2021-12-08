@@ -1,48 +1,48 @@
 package com.dropbox.android.sample.data.model
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class RedditData(
     val data: Data,
     val kind: String
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Children(
     val data: Post
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Data(
     val children: List<Children>
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Post(
     val id: String,
-    val preview: Preview?,
+    val preview: Preview? = null,
     val title: String,
     val url: String,
-    val height: Int?,
-    val width: Int?
+    val height: Int? = null,
+    val width: Int? = null,
 ) {
     fun nestedThumbnail(): Image? {
         return preview?.images?.getOrNull(0)?.source
     }
 }
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Preview(
     val images: List<Images>
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Images(
     val source: Image
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Image(
     val url: String,
     val height: Int,

@@ -17,16 +17,20 @@ import com.dropbox.android.sample.data.model.Children
 import com.dropbox.android.sample.data.model.Post
 import com.dropbox.android.sample.data.model.RedditDb
 import com.dropbox.android.sample.data.remote.Api
-import com.squareup.moshi.Moshi
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okio.Buffer
 import okio.BufferedSource
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
@@ -35,7 +39,7 @@ import kotlin.time.seconds
     ExperimentalStdlibApi::class
 )
 object Graph {
-    private val moshi = Moshi.Builder().build()
+    private val serializer = Json { ignoreUnknownKeys = true }
 
     fun provideRoomStore(context: SampleApp): Store<String, List<Post>> {
         val db = provideRoom(context)
@@ -94,7 +98,6 @@ object Graph {
                     override fun resolve(key: Unit) = "config.json"
                 }
             )
-        val adapter = moshi.adapter<RedditConfig>(RedditConfig::class.java)
         return StoreBuilder
             .from<Unit, RedditConfig, RedditConfig>(
                 Fetcher.of {
@@ -104,14 +107,15 @@ object Graph {
                 sourceOfTruth = SourceOfTruth.of(
                     nonFlowReader = {
                         runCatching {
-                            val source = fileSystemPersister.read(Unit)
-                            source?.let { adapter.fromJson(it) }
+                            fileSystemPersister.read(Unit)
+                                ?.readString(StandardCharsets.UTF_8)
+                                ?.let { Json.decodeFromString<RedditConfig>(it) }
                         }.getOrNull()
                     },
                     writer = { _, config ->
                         val buffer = Buffer()
                         withContext(Dispatchers.IO) {
-                            adapter.toJson(buffer, config)
+                            buffer.writeUtf8(Json.encodeToString(config))
                         }
                         fileSystemPersister.write(Unit, buffer)
                     }
@@ -126,7 +130,7 @@ object Graph {
     private fun provideRetrofit(): Api {
         return Retrofit.Builder()
             .baseUrl("https://reddit.com/")
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(serializer.asConverterFactory(contentType = "application/json".toMediaType()))
             .build()
             .create(Api::class.java)
     }
