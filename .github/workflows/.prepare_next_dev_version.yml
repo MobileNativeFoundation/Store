@@ -1,0 +1,33 @@
+name: Prepare next development version
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Version Name for the next snapshot release. Do not append with "-SNAPSHOT", this action will do it for you.'
+        required: true
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dropbox/Store' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Retrieve version
+        run: |
+          echo "VERSION_NAME=$(cat gradle.properties | grep -w "VERSION_NAME" | cut -d'=' -f2)" >> $GITHUB_ENV
+
+      - name: Update version
+        run: |
+          sed -i -e "s/${VERSION_NAME}/${{ github.event.inputs.versionName}}-SNAPSHOT/g" gradle.properties
+          git config --local user.email "dropbox[bot]@users.noreply.github.com"
+          git config --local user.name "dropbox[bot]"
+          git commit -m "Prepare next development version" -a
+        if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+        if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
