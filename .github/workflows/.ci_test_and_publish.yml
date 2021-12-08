@@ -45,8 +45,8 @@ jobs:
       - name: Prepare next development version
         run: |
           sed -i -e "s/${VERSION_NAME}/${VERSION_NAME}-SNAPSHOT/g" gradle.properties
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "dropbox[bot]@users.noreply.github.com"
+          git config --local user.name "dropbox[bot]"
           git commit -m "Prepare next development version" -a
         if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
 
