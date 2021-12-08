@@ -34,7 +34,7 @@ ext.versions = [
         lifecycle                   : '2.2.0',
         material                    : '1.4.0',
         navigation                  : '2.3.5',
-        okHttp                      : '4.9.0',
+        okHttp                      : '4.9.3',
         okio                        : '3.0.0',
         recyclerView                : '1.2.1',
         retrofit                    : '2.9.0',
