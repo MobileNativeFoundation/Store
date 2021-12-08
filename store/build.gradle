@@ -13,9 +13,6 @@ plugins {
     id 'org.jetbrains.dokka'
 }
 
-group = GROUP
-version = VERSION_NAME
-
 dependencies {
     implementation libraries.cache
     implementation project(path: ':multicast')
@@ -28,8 +25,9 @@ dependencies {
     testImplementation libraries.coroutinesTest
 }
 
-apply from: rootProject.file("gradle/maven-push.gradle")
 apply from: rootProject.file("gradle/jacoco.gradle")
+
+apply plugin: 'com.vanniktech.maven.publish'
 
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
@@ -51,10 +49,4 @@ compileTestKotlin {
                 '-Xopt-in=kotlin.RequiresOptIn',
         ]
     }
-}
-
-
-dokka {
-    outputFormat = 'javadoc'
-    outputDirectory = "$buildDir/dokkaHtml"
 }
