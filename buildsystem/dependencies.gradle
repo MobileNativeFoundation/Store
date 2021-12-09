@@ -17,7 +17,7 @@ ext.versions = [
         mavenPublishPlugin          : "0.18.0",
 
         cache                       : '3.1.1',
-        store                       : '4.0.3-KT15',
+        store                       : '4.0.4-KT15',
 
         // UI libs.
         picasso                     : '2.5.2',
