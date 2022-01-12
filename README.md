@@ -226,13 +226,13 @@ StoreBuilder
         )
     ).cachePolicy(
         MemoryPolicy.builder()
-            .setMemorySize(10)
+            .setMaxSize(10)
             .setExpireAfterAccess(10.minutes) // or setExpireAfterWrite(10.minutes)
             .build()
     ).build()
 ```
 
-* `setMemorySize(maxSize: Long)` sets the maximum number of entries to be kept in the cache before starting to evict the least recently used items.
+* `setMaxSize(maxSize: Long)` sets the maximum number of entries to be kept in the cache before starting to evict the least recently used items.
 * `setExpireAfterAccess(expireAfterAccess: Duration)` sets the maximum time an entry can live in the cache since the last access, where "access" means reading the cache, adding a new cache entry, and replacing an existing entry with a new one. This duration is also known as **time-to-idle (TTI)**.
 * `setExpireAfterWrite(expireAfterWrite: Duration)` sets the maximum time an entry can live in the cache since the last write, where "write" means adding a new cache entry and replacing an existing entry with a new one. This duration is also known as **time-to-live (TTL)**.
 
