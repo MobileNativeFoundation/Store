@@ -33,7 +33,7 @@ ext.versions = [
         leakcanary                  : '2.8.1',
         lifecycle                   : '2.2.0',
         material                    : '1.4.0',
-        navigation                  : '2.3.5',
+        navigation                  : '2.4.0',
         okHttp                      : '4.9.3',
         okio                        : '3.0.0',
         recyclerView                : '1.2.1',
