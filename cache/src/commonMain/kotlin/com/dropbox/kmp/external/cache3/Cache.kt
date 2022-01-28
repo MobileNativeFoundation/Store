@@ -48,5 +48,4 @@ interface Cache<in K : Any, V : Any> {
      * Discards all entries in the cache.
      */
     fun invalidateAll()
-
 }

@@ -11,15 +11,17 @@ kotlin {
     //iosSimulatorArm64() sure all ios dependencies support this target
 
     sourceSets {
+        commonMain{}
         commonTest {
             dependencies {
                 implementation (libraries.kotlinTestJunit)
                 implementation (libraries.coroutinesTest)
             }
         }
+        jvmTest{}
     }
 }
 
-apply from: rootProject.file("gradle/jacoco.gradle")
+//apply from: rootProject.file("gradle/jacoco.gradle")
 
 apply plugin: 'com.vanniktech.maven.publish'

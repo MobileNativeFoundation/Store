@@ -24,7 +24,6 @@ annotation class CacheBuilderDsl
 fun <K : Any, V : Any> cacheBuilder(lambda: CacheBuilder<K, V>.() -> Unit) =
     CacheBuilder<K, V>().apply(lambda).build()
 
-
 @CacheBuilderDsl
 class CacheBuilder<K : Any, V : Any> {
     internal var concurrencyLevel = 4
@@ -67,7 +66,7 @@ class CacheBuilder<K : Any, V : Any> {
         }
     }
 
-    fun ticker(lambda: ()-> Ticker) {
+    fun ticker(lambda: () -> Ticker) {
         ticker = lambda()
     }
 

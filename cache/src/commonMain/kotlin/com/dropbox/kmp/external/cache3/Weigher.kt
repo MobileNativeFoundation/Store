@@ -13,6 +13,7 @@
  */
 
 package com.dropbox.kmp.external.cache3
+
 /**
  * Returns the weight of a cache entry. There is no unit for entry weights; rather they are simply
  * relative to each other.
