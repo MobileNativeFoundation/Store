@@ -32,26 +32,21 @@ public abstract interface class com/dropbox/android/external/fs3/DiskWrite {
 public final class com/dropbox/android/external/fs3/FSAllEraser : com/dropbox/android/external/fs3/DiskAllErase {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun deleteAll (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getFileSystem$filesystem ()Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
 }
 
 public final class com/dropbox/android/external/fs3/FSAllReader : com/dropbox/android/external/fs3/DiskAllRead {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
-	public final fun getFileSystem$filesystem ()Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
 	public fun readAll (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;)Lkotlinx/coroutines/channels/ReceiveChannel;
 }
 
 public final class com/dropbox/android/external/fs3/FSEraser : com/dropbox/android/external/fs3/DiskErase {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
 	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getFileSystem$filesystem ()Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
-	public final fun getPathResolver$filesystem ()Lcom/dropbox/android/external/fs3/PathResolver;
 }
 
 public class com/dropbox/android/external/fs3/FSReader : com/dropbox/android/external/fs3/DiskRead {
 	public static final field Companion Lcom/dropbox/android/external/fs3/FSReader$Companion;
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
-	public final fun getFileSystem$filesystem ()Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
 	public fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -60,7 +55,6 @@ public final class com/dropbox/android/external/fs3/FSReader$Companion {
 
 public class com/dropbox/android/external/fs3/FSWriter : com/dropbox/android/external/fs3/DiskWrite {
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;Lcom/dropbox/android/external/fs3/PathResolver;)V
-	public final fun getFileSystem$filesystem ()Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
 	public synthetic fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun write (Ljava/lang/Object;Lokio/BufferedSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -132,10 +126,6 @@ public final class com/dropbox/android/external/fs3/SourceAllPersister : com/dro
 	public static final field Companion Lcom/dropbox/android/external/fs3/SourceAllPersister$Companion;
 	public fun <init> (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)V
 	public fun deleteAll (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getSourceFileAllEraser$filesystem ()Lcom/dropbox/android/external/fs3/FSAllEraser;
-	public final fun getSourceFileAllReader$filesystem ()Lcom/dropbox/android/external/fs3/FSAllReader;
-	public final fun getSourceFileReader$filesystem ()Lcom/dropbox/android/external/fs3/FSReader;
-	public final fun getSourceFileWriter$filesystem ()Lcom/dropbox/android/external/fs3/FSWriter;
 	public synthetic fun read (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun read (Lkotlin/Pair;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun readAll (Lkotlinx/coroutines/CoroutineScope;Ljava/lang/String;)Lkotlinx/coroutines/channels/ReceiveChannel;
@@ -173,7 +163,6 @@ public class com/dropbox/android/external/fs3/SourcePersister : com/dropbox/andr
 
 public final class com/dropbox/android/external/fs3/SourcePersister$Companion {
 	public final fun create (Lcom/dropbox/android/external/fs3/filesystem/FileSystem;)Lcom/dropbox/android/external/fs3/SourcePersister;
-	public final fun pathForBarcode$filesystem (Lkotlin/Pair;)Ljava/lang/String;
 }
 
 public final class com/dropbox/android/external/fs3/SourcePersisterFactory {
@@ -204,23 +193,6 @@ public final class com/dropbox/android/external/fs3/Util {
 	public final fun simplifyPath (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class com/dropbox/android/external/fs3/filesystem/BreadthFirstFileTreeIterator : java/util/Iterator, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun <init> (Ljava/io/File;)V
-	public fun hasNext ()Z
-	public fun next ()Ljava/lang/Object;
-	public fun remove ()V
-}
-
-public final class com/dropbox/android/external/fs3/filesystem/FSFile {
-	public fun <init> (Ljava/io/File;Ljava/lang/String;)V
-	public final fun delete ()V
-	public final fun exists ()Z
-	public final fun lastModified ()J
-	public final fun path ()Ljava/lang/String;
-	public final fun source ()Lokio/BufferedSource;
-	public final fun write (Lokio/BufferedSource;)V
-}
-
 public abstract interface class com/dropbox/android/external/fs3/filesystem/FileSystem {
 	public abstract fun delete (Ljava/lang/String;)V
 	public abstract fun deleteAll (Ljava/lang/String;)V
@@ -234,16 +206,5 @@ public abstract interface class com/dropbox/android/external/fs3/filesystem/File
 public final class com/dropbox/android/external/fs3/filesystem/FileSystemFactory {
 	public static final field INSTANCE Lcom/dropbox/android/external/fs3/filesystem/FileSystemFactory;
 	public final fun create (Ljava/io/File;)Lcom/dropbox/android/external/fs3/filesystem/FileSystem;
-}
-
-public final class com/dropbox/android/external/fs3/filesystem/FileSystemImpl : com/dropbox/android/external/fs3/filesystem/FileSystem {
-	public fun <init> (Ljava/io/File;)V
-	public fun delete (Ljava/lang/String;)V
-	public fun deleteAll (Ljava/lang/String;)V
-	public fun exists (Ljava/lang/String;)Z
-	public fun getRecordState-VtjQ1oo (JLjava/lang/String;)Lcom/dropbox/android/external/fs3/RecordState;
-	public fun list (Ljava/lang/String;)Ljava/util/Collection;
-	public fun read (Ljava/lang/String;)Lokio/BufferedSource;
-	public fun write (Ljava/lang/String;Lokio/BufferedSource;)V
 }
 
