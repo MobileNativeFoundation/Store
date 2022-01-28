@@ -23,8 +23,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.advanceUntilIdle
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
