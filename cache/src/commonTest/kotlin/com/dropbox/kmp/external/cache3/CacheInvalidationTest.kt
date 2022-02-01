@@ -1,6 +1,5 @@
 package com.dropbox.kmp.external.cache3
 
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -25,22 +24,22 @@ class CacheInvalidationTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun invalidateByKey_allExpiredEntriesEvicted() {
-        val fakeTicker = FakeTicker()
+        val mutableTicker = MutableTicker()
         val oneMinute = 1.minutes
         val cache = cacheBuilder<Long, String> {
-            ticker { fakeTicker.ticker }
-            expireAfterWrite { oneMinute }
+            ticker(mutableTicker.ticker)
+            expireAfterWrite(oneMinute)
         }
 
         cache.put(1, "dog")
         cache.put(2, "cat")
 
-        fakeTicker += oneMinute / 2
+        mutableTicker += oneMinute / 2
 
         cache.put(3, "bird")
 
         // first 2 entries now expire
-        fakeTicker += oneMinute / 2
+        mutableTicker += oneMinute / 2
 
         cache.invalidate(3)
 

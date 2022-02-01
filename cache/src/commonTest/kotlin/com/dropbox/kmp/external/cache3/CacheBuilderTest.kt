@@ -13,7 +13,7 @@ class CacheBuilderTest {
     @Test
     fun expireAfterWrite_positiveDuration() {
         val cacheBuilder = CacheBuilder<Any, Any>().apply {
-            expireAfterWrite { 24.hours }
+            expireAfterWrite(24.hours)
         }
         assertEquals(24.hours, cacheBuilder.expireAfterWrite)
     }
@@ -22,7 +22,7 @@ class CacheBuilderTest {
     fun expireAfterWrite_negativeDuration() {
         val exception = assertFailsWith<IllegalArgumentException> {
             cacheBuilder<Any, Any> {
-                expireAfterWrite { -(1.nanoseconds) }
+                expireAfterWrite(-(1.nanoseconds))
             }
         }
         assertEquals("expireAfterWrite duration must be positive", exception.message)
@@ -31,7 +31,7 @@ class CacheBuilderTest {
     @Test
     fun expireAfterAccess_positiveDuration() {
         val cacheBuilder = CacheBuilder<Any, Any>().apply {
-            expireAfterAccess { 24.hours }
+            expireAfterAccess(24.hours)
         }
         assertEquals(24.hours, cacheBuilder.expireAfterAccess)
     }
@@ -40,7 +40,7 @@ class CacheBuilderTest {
     fun expireAfterAccess_negativeDuration() {
         val exception = assertFailsWith<IllegalArgumentException> {
             cacheBuilder<Any, Any> {
-                expireAfterAccess { -(1.nanoseconds) }
+                expireAfterAccess(-(1.nanoseconds))
             }
         }
         assertEquals("expireAfterAccess duration must be positive", exception.message)
@@ -71,7 +71,7 @@ class CacheBuilderTest {
     @Test
     fun maximumCacheSize_zero() {
         val cacheBuilder = CacheBuilder<Any, Any>().apply {
-            maximumSize { 0 }
+            maximumSize(0)
         }
 
         assertEquals(0, cacheBuilder.maximumSize)
@@ -80,7 +80,7 @@ class CacheBuilderTest {
     @Test
     fun maximumCacheSize_positiveValue() {
         val cacheBuilder = CacheBuilder<Any, Any>().apply {
-            maximumSize { 10 }
+            maximumSize(10)
         }
 
         assertEquals(10, cacheBuilder.maximumSize)
@@ -90,17 +90,17 @@ class CacheBuilderTest {
     fun maximumCacheSize_negativeValue() {
         val exception = assertFailsWith<IllegalArgumentException> {
             cacheBuilder<Any, Any> {
-                maximumSize { -1 }
+                maximumSize(-1)
             }
         }
         assertEquals("maximum size must not be negative", exception.message)
     }
 
     @Test
-    fun fakeTicker() {
+    fun customTicker() {
         val ticker: Ticker = { 0L }
         val cacheBuilder = CacheBuilder<Any, Any>().apply {
-            ticker { ticker }
+            ticker(ticker)
         }
         assertEquals(ticker, cacheBuilder.ticker)
     }
@@ -109,7 +109,7 @@ class CacheBuilderTest {
     fun buildWithMaxiumuSizeAndWeigher() {
         val exception = assertFailsWith<IllegalStateException> {
             cacheBuilder<Any, Any> {
-                maximumSize { 10 }
+                maximumSize(10)
                 weigher(1) { _, _ -> 1 }
             }
         }

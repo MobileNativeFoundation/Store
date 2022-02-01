@@ -4,8 +4,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
 import java.util.concurrent.Executors
+import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
@@ -15,7 +15,7 @@ class JvmConcurrencyTest {
     @Test
     fun evictEntriesConcurrently() = runTest {
         val cache = cacheBuilder<Long, String> {
-            maximumSize { 2 }
+            maximumSize(2)
         }
 
         // should not produce a ConcurrentModificationException
@@ -28,10 +28,10 @@ class JvmConcurrencyTest {
 
     @Test
     fun expireEntriesConcurrently() = runTest {
-        val fakeTicker = FakeTicker()
+        val mutableTicker = MutableTicker()
         val cache = cacheBuilder<Long, String> {
-            expireAfterWrite { 2.seconds }
-            ticker { fakeTicker.ticker }
+            expireAfterWrite(2.seconds)
+            ticker(mutableTicker.ticker)
         }
 
         repeat(10) {
@@ -42,7 +42,7 @@ class JvmConcurrencyTest {
         repeat(10) {
             launch(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
                 cache.getIfPresent(it.toLong())
-                fakeTicker += 1.seconds
+                mutableTicker += 1.seconds
             }
         }
     }

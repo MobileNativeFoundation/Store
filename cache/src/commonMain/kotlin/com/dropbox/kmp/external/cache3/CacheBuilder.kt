@@ -1,17 +1,20 @@
 /*
- * Copyright 2022 André Claßen
+ * Copyright (C) 2009 The Guava Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * KMP conversion
+ * Copyright (C) 2022 André Claßen
  */
 
 package com.dropbox.kmp.external.cache3
@@ -46,28 +49,28 @@ class CacheBuilder<K : Any, V : Any> {
         concurrencyLevel = lambda()
     }
 
-    fun maximumSize(lambda: () -> Long) {
-        maximumSize = lambda()
+    fun maximumSize(size: Long) {
+        maximumSize = size
             .apply {
                 if (this < 0) throw IllegalArgumentException("maximum size must not be negative")
             }
-        maximumSize = lambda()
     }
 
-    fun expireAfterAccess(lambda: () -> Duration) {
-        expireAfterAccess = lambda().apply {
-            if (this.isNegative()) throw IllegalArgumentException("expireAfterAccess duration must be positive")
-        }
+    fun expireAfterAccess(duration: Duration) {
+        expireAfterAccess = duration
+            .apply {
+                if (this.isNegative()) throw IllegalArgumentException("expireAfterAccess duration must be positive")
+            }
     }
 
-    fun expireAfterWrite(lambda: () -> Duration) {
-        expireAfterWrite = lambda().apply {
+    fun expireAfterWrite(duration: Duration) {
+        expireAfterWrite = duration.apply {
             if (this.isNegative()) throw IllegalArgumentException("expireAfterWrite duration must be positive")
         }
     }
 
-    fun ticker(lambda: () -> Ticker) {
-        ticker = lambda()
+    fun ticker(ticker: Ticker) {
+        this.ticker = ticker
     }
 
     fun weigher(maximumWeight: Long, weigher: Weigher<K, V>) {

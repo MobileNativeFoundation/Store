@@ -1,4 +1,5 @@
 package com.dropbox.kmp.external.cache3
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -10,7 +11,7 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 class CacheDefaultValueTest {
 
-    private val fakeTicker = FakeTicker()
+    private val mutableTicker = MutableTicker()
     private val expiryDuration = 1.minutes
 
     @Test
@@ -32,14 +33,14 @@ class CacheDefaultValueTest {
     @Test
     fun expiredEntryWithAssociatedKeyExists_getWithDefaultValueFactory_returnsValueFromDefaultValueFactory() {
         val cache = cacheBuilder<Long, String> {
-            expireAfterWrite { expiryDuration }
-            ticker { fakeTicker.ticker }
+            expireAfterWrite(expiryDuration)
+            ticker(mutableTicker.ticker)
         }
 
         cache.put(1, "cat")
 
         // now expires
-        fakeTicker += expiryDuration
+        mutableTicker += expiryDuration
 
         var defaultValueFactoryInvokeCount = 0
         val defaultValueFactory = {
@@ -56,14 +57,14 @@ class CacheDefaultValueTest {
     @Test
     fun unexpiredEntryWithAssociatedKeyExists_getWithDefaultValueFactory_returnsExistingValue() {
         val cache = cacheBuilder<Long, String> {
-            expireAfterAccess { expiryDuration }
-            ticker { fakeTicker.ticker }
+            expireAfterAccess(expiryDuration)
+            ticker(mutableTicker.ticker)
         }
 
         cache.put(1, "dog")
 
         // just before expiry
-        fakeTicker += expiryDuration - 1.nanoseconds
+        mutableTicker += expiryDuration - 1.nanoseconds
 
         var defaultValueFactoryInvokeCount = 0
         val defaultValueFactory = {
