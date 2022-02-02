@@ -11,7 +11,7 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 @OptIn(ExperimentalCoroutinesApi::class)
-class JvmConcurrencyTest {
+class ConcurrentTest {
     @Test
     fun evictEntriesConcurrently() = runTest {
         val cache = cacheBuilder<Long, String> {

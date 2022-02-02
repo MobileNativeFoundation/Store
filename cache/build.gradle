@@ -18,7 +18,11 @@ kotlin {
                 implementation (libraries.coroutinesTest)
             }
         }
-        jvmTest{}
+        jvmTest{
+            dependencies{
+                implementation ("org.jetbrains.kotlinx:lincheck:2.14.1")
+            }
+        }
     }
 }
 
