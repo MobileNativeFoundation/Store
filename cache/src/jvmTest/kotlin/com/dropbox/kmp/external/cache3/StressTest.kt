@@ -14,7 +14,7 @@ import kotlin.test.Test
 @ModelCheckingCTest
 @Param(name = "key", gen = IntGen::class, conf = "1:5")
 class StressTest {
-    private val s = cacheBuilder<Int, Int> { }
+    private val s = cacheBuilder<Int, Int> {}
 
     @Operation
     fun put(@Param(name = "key") key: Int, value: Int) {
@@ -22,9 +22,8 @@ class StressTest {
     }
 
     @Operation
-    operator fun get(@Param(name = "key") key: Int) {
+    operator fun get(@Param(name = "key") key: Int) =
         s.getIfPresent(key)
-    }
 
     @Operation
     fun invalidate(@Param(name = "key") key: Int) {
@@ -37,7 +36,7 @@ class StressTest {
             this::class.java, StressOptions()
                 .iterations(10)
                 .threads(3)
-                .logLevel(LoggingLevel.WARN)
+                .logLevel(LoggingLevel.INFO)
         )
     }
 }
