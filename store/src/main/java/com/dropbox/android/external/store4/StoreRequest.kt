@@ -21,6 +21,8 @@ package com.dropbox.android.external.store4
  * @param skippedCaches List of cache types that should be skipped when retuning the response see [CacheType]
  * @param refresh If set to true  [Store] will always get fresh value from fetcher while also
  *  starting the stream from the local [com.dropbox.android.external.store4.impl.SourceOfTruth] and memory cache
+ * @param fallbackToSourceOfTruth If set to true [Store] will fallback to source of truth in case of
+ *  an error from the fetcher.
  *
  */
 data class StoreRequest<Key> private constructor(
@@ -29,7 +31,9 @@ data class StoreRequest<Key> private constructor(
 
     private val skippedCaches: Int,
 
-    val refresh: Boolean = false
+    val refresh: Boolean = false,
+
+    val fallbackToSourceOfTruth: Boolean = true,
 ) {
 
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
@@ -45,16 +49,19 @@ data class StoreRequest<Key> private constructor(
         /**
          * Create a Store Request which will skip all caches and hit your fetcher
          * (filling your caches).
+         * @param fallbackToSourceOfTruth if true and fetcher returns an error, [Store] will
+         *  fallback to source of truth data, if there is any.
          *
          * Note: If the [Fetcher] does not return any data (i.e the returned
          * [kotlinx.coroutines.Flow], when collected, is empty). Then store will fall back to local
          * data **even** if you explicitly requested fresh data.
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
-        fun <Key> fresh(key: Key) = StoreRequest(
+        fun <Key> fresh(key: Key, fallbackToSourceOfTruth: Boolean = false) = StoreRequest(
             key = key,
             skippedCaches = allCaches,
-            refresh = true
+            refresh = true,
+            fallbackToSourceOfTruth = fallbackToSourceOfTruth
         )
         /**
          * Create a Store Request which will return data from memory/disk caches
@@ -63,7 +70,8 @@ data class StoreRequest<Key> private constructor(
         fun <Key> cached(key: Key, refresh: Boolean) = StoreRequest(
             key = key,
             skippedCaches = 0,
-            refresh = refresh
+            refresh = refresh,
+            fallbackToSourceOfTruth = true
         )
         /**
          * Create a Store Request which will return data from disk cache
@@ -72,7 +80,8 @@ data class StoreRequest<Key> private constructor(
         fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreRequest(
             key = key,
             skippedCaches = CacheType.MEMORY.flag,
-            refresh = refresh
+            refresh = refresh,
+            fallbackToSourceOfTruth = true
         )
     }
 }

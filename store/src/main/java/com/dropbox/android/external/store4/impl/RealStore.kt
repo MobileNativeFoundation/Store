@@ -212,10 +212,16 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value is StoreResponse.Data || it.value is StoreResponse.NoNewData) {
-                        // Unlocking disk only if network sent data or reported no new data
-                        // so that fresh data request never receives new fetcher data after
-                        // cached disk data.
+                    if (it.value is StoreResponse.Data ||
+                        it.value is StoreResponse.NoNewData ||
+                        (it.value is StoreResponse.Error && request.fallbackToSourceOfTruth)
+                    ) {
+                        // Unlocking disk only if network:
+                        // - sent data
+                        // - reported no new data
+                        // - reported an error and we want to fallback to source of truth
+                        // This happens so that fresh data request never receives new fetcher data
+                        // after cached disk data.
                         // This means that if the user asked for fresh data but the network returned
                         // no new data we will still unblock disk.
                         diskLock.complete(Unit)

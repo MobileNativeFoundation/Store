@@ -772,6 +772,64 @@ class FlowStoreTest {
             fetcher1Job.cancelAndJoin()
         }
 
+    @Test
+    fun `GIVEN SoT has no data and fetcher throws an error WHEN stream with fresh request and fallbackToSourceOfTruth THEN return fetcher error`() =
+        testScope.runBlockingTest {
+            val exception = IllegalArgumentException("wow")
+            val persister = InMemoryPersister<Int, String>().asFlowable()
+            val pipeline = StoreBuilder.from(
+                Fetcher.of {
+                    throw exception
+                },
+                sourceOfTruth = persister.asSourceOfTruth()
+            )
+                .disableCache()
+                .buildWithTestScope()
+
+            assertThat(pipeline.stream(StoreRequest.fresh(key = 3, fallbackToSourceOfTruth = true)))
+                .emitsExactly(
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.Error.Exception(
+                        error = exception,
+                        origin = ResponseOrigin.Fetcher
+                    )
+                )
+        }
+
+    @Test
+    fun `GIVEN SoT has data and fetcher throws an error WHEN stream with fresh request and fallbackToSourceOfTruth THEN return fetcher error followed by SoT data`() =
+        testScope.runBlockingTest {
+            val exception = IllegalArgumentException("wow")
+            val persister = InMemoryPersister<Int, String>().asFlowable()
+            val pipeline = StoreBuilder.from(
+                Fetcher.of {
+                    throw exception
+                },
+                sourceOfTruth = persister.asSourceOfTruth()
+            )
+                .disableCache()
+                .buildWithTestScope()
+
+            persister.flowWriter(3, "local-1")
+
+            assertThat(pipeline.stream(StoreRequest.fresh(key = 3, fallbackToSourceOfTruth = true)))
+                .emitsExactly(
+                    Loading(
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    StoreResponse.Error.Exception(
+                        error = exception,
+                        origin = ResponseOrigin.Fetcher
+                    ),
+                    Data(
+                        value = "local-1",
+                        origin = ResponseOrigin.SourceOfTruth
+                    )
+                )
+        }
+
     suspend fun Store<Int, String>.get(request: StoreRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
