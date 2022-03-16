@@ -3,7 +3,7 @@ ext.versions = [
         targetSdk                   : 29,
         compileSdk                  : 29,
         buildTools                  : '29.0.3',
-        kotlin                      : '1.5.31',
+        kotlin                      : '1.6.10',
         ktlint                      : '0.39.0',
 
         // Plugins
