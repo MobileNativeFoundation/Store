@@ -65,7 +65,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
             api-level: 29
-            script: ./gradlew clean cleanBuildCache check --stacktrace
+            script: ./gradlew check --rerun-tasks --stacktrace
       env:
         API_LEVEL: ${{ matrix.api-level }}
     - name: Upload code coverage
