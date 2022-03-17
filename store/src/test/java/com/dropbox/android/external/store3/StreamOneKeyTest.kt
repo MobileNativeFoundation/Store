@@ -8,6 +8,7 @@ import com.dropbox.android.external.store4.testutil.FakeFetcher
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.stateIn
@@ -38,6 +39,7 @@ class StreamOneKeyTest(
         barCode2 to TEST_ITEM
     )
 
+    @OptIn(ExperimentalTime::class)
     private val store = TestStoreBuilder.from(
         scope = testScope,
         fetcher = fetcher,

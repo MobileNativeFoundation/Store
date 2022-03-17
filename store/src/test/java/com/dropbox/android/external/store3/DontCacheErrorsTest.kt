@@ -2,6 +2,7 @@ package com.dropbox.android.external.store3
 
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.external.store4.Fetcher
+import kotlin.time.ExperimentalTime
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -22,6 +23,7 @@ class DontCacheErrorsTest(
     private var shouldThrow: Boolean = false
 
     // TODO move to test coroutine scope
+    @OptIn(ExperimentalTime::class)
     private val store = TestStoreBuilder.from<Pair<String, String>, Int>(
         testScope,
         fetcher = Fetcher.of {

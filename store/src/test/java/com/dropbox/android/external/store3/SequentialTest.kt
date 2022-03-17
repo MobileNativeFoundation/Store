@@ -3,6 +3,7 @@ package com.dropbox.android.external.store3
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.get
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -21,6 +22,8 @@ class SequentialTest(
     private val testScope = TestCoroutineScope()
 
     var networkCalls = 0
+
+    @OptIn(ExperimentalTime::class)
     private val store = TestStoreBuilder.from<Pair<String, String>, Int>(
         scope = testScope,
         cached = true,
