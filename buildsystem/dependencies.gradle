@@ -13,7 +13,7 @@ ext.versions = [
         spotlessGradlePlugin        : '6.3.0',
         jacocoGradlePlugin          : '0.8.7',
         binaryCompatibilityValidator: '0.4.0',
-        atomicFuPlugin              : '0.15.1',
+        atomicFuPlugin              : '0.17.1',
         mavenPublishPlugin          : "0.18.0",
 
         cache                       : '3.1.1',
