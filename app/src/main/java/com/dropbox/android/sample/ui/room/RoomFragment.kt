@@ -4,8 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.dropbox.android.external.store4.ResponseOrigin
 import com.dropbox.android.external.store4.Store
 import com.dropbox.android.external.store4.StoreRequest
@@ -14,8 +19,6 @@ import com.dropbox.android.sample.R
 import com.dropbox.android.sample.SampleApp
 import com.dropbox.android.sample.reddit.PostAdapter
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_store.postRecyclerView
-import kotlinx.android.synthetic.main.fragment_room_store.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -25,6 +28,16 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 class RoomFragment : Fragment() {
+
+    private val postRecyclerView: RecyclerView get() = requireView().findViewById(R.id.postRecyclerView)
+
+    private val subredditInput: EditText get() = requireView().findViewById(R.id.subredditInput)
+
+    private val pullToRefresh: SwipeRefreshLayout get() = requireView().findViewById(R.id.pullToRefresh)
+
+    private val root: ConstraintLayout get() = requireView().findViewById(R.id.root)
+
+    private val fetchButton: Button get() = requireView().findViewById(R.id.fetchButton)
 
     override fun onCreateView(
         inflater: LayoutInflater,

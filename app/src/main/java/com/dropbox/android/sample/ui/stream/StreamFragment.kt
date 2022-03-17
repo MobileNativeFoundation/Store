@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.dropbox.android.external.store4.Fetcher
 import com.dropbox.android.external.store4.MemoryPolicy
@@ -12,7 +14,9 @@ import com.dropbox.android.external.store4.StoreRequest
 import com.dropbox.android.external.store4.fresh
 import com.dropbox.android.external.store4.get
 import com.dropbox.android.sample.R
-import kotlinx.android.synthetic.main.fragment_stream.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,12 +26,23 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 @ExperimentalTime
 class StreamFragment : Fragment(), CoroutineScope {
+
+    private val get_1: Button get() = requireView().findViewById(R.id.get_1)
+
+    private val get_2: Button get() = requireView().findViewById(R.id.get_2)
+
+    private val fresh_1: Button get() = requireView().findViewById(R.id.fresh_1)
+
+    private val fresh_2: Button get() = requireView().findViewById(R.id.fresh_2)
+
+    private val stream_1: TextView get() = requireView().findViewById(R.id.stream_1)
+
+    private val stream_2: TextView get() = requireView().findViewById(R.id.stream_2)
+
+    private val stream: TextView get() = requireView().findViewById(R.id.stream)
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
 
