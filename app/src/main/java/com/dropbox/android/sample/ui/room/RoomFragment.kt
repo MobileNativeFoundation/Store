@@ -29,15 +29,15 @@ import kotlinx.coroutines.launch
 
 class RoomFragment : Fragment() {
 
-    private val postRecyclerView : RecyclerView get() = requireView().findViewById(R.id.postRecyclerView)
+    private val postRecyclerView: RecyclerView get() = requireView().findViewById(R.id.postRecyclerView)
 
-    private val subredditInput : EditText get() = requireView().findViewById(R.id.subredditInput)
+    private val subredditInput: EditText get() = requireView().findViewById(R.id.subredditInput)
 
-    private val pullToRefresh : SwipeRefreshLayout get() = requireView().findViewById(R.id.pullToRefresh)
+    private val pullToRefresh: SwipeRefreshLayout get() = requireView().findViewById(R.id.pullToRefresh)
 
-    private val root : ConstraintLayout get() = requireView().findViewById(R.id.root)
+    private val root: ConstraintLayout get() = requireView().findViewById(R.id.root)
 
-    private val fetchButton : Button get() = requireView().findViewById(R.id.fetchButton)
+    private val fetchButton: Button get() = requireView().findViewById(R.id.fetchButton)
 
     override fun onCreateView(
         inflater: LayoutInflater,
