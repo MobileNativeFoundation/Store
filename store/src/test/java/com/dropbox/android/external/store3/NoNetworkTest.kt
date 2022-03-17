@@ -21,7 +21,7 @@ class NoNetworkTest(
     storeType: TestStoreType
 ) {
     private val testScope = TestCoroutineScope()
-    
+
     @OptIn(ExperimentalTime::class)
     private val store: Store<Pair<String, String>, out Any> = TestStoreBuilder.from<Pair<String, String>, Any>(
         testScope,
