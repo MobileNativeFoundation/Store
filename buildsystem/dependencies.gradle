@@ -3,14 +3,14 @@ ext.versions = [
         targetSdk                   : 29,
         compileSdk                  : 31,
         buildTools                  : '29.0.3',
-        kotlin                      : '1.5.31',
+        kotlin                      : '1.6.10',
         ktlint                      : '0.39.0',
 
         // Plugins
         androidGradlePlugin         : '7.1.2',
         dokkaGradlePlugin           : '1.6.0',
         ktlintGradle                : '10.2.1',
-        spotlessGradlePlugin        : '3.26.1',
+        spotlessGradlePlugin        : '6.3.0',
         jacocoGradlePlugin          : '0.8.7',
         binaryCompatibilityValidator: '0.4.0',
         atomicFuPlugin              : '0.15.1',
