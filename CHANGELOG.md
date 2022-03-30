@@ -4,6 +4,10 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.5 *(2021-03-30)
+----------------------------
+** Update to Kotlin 1.6.10
+
 Version 4.0.4-KT15 *(2021-12-08)
 ----------------------------
 ** Bug fixes and documentation updates
