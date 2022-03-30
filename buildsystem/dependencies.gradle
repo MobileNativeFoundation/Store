@@ -10,7 +10,7 @@ ext.versions = [
         androidGradlePlugin         : '7.1.2',
         dokkaGradlePlugin           : '1.6.0',
         ktlintGradle                : '10.2.1',
-        spotlessGradlePlugin        : '6.3.0',
+        spotlessGradlePlugin        : '6.4.1',
         jacocoGradlePlugin          : '0.8.7',
         binaryCompatibilityValidator: '0.4.0',
         atomicFuPlugin              : '0.15.1',
