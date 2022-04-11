@@ -22,12 +22,14 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import com.dropbox.android.external.store4.StoreResponse
 import com.dropbox.flow.multicast.Multicaster
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.withContext
 
 /**
  * This class maintains one and only 1 fetcher for a given [Key].
@@ -100,7 +102,9 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
             try {
                 emitAll(fetcher.newDownstream(piggybackOnly))
             } finally {
-                fetchers.release(key, fetcher)
+                withContext(NonCancellable) {
+                    fetchers.release(key, fetcher)
+                }
             }
         }
     }

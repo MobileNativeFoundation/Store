@@ -18,10 +18,7 @@ package com.dropbox.android.external.store4
 import com.dropbox.android.external.store4.StoreResponse.Data
 import com.dropbox.android.external.store4.impl.FetcherController
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
@@ -96,6 +93,42 @@ class FetcherControllerTest {
                 )
             )
         }
+        assertThat(fetcherController.fetcherSize()).isEqualTo(0)
+        assertThat(createdCnt).isEqualTo(1)
+    }
+
+    @Test
+    fun concurrent_when_cancelled() = runBlocking {
+        var createdCnt = 0
+        val job = SupervisorJob()
+        val scope = CoroutineScope(Dispatchers.Default + job)
+        val fetcherController = FetcherController<Int, Int, Int>(
+            scope = scope,
+            realFetcher = Fetcher.ofResultFlow { key: Int ->
+                createdCnt++
+                flow {
+                    // make sure it takes time, otherwise, we may not share
+                    delay(100)
+                    emit(FetcherResult.Data(key * key) as FetcherResult<Int>)
+                }
+            },
+            sourceOfTruth = null
+        )
+        val fetcherCount = 20
+
+        fun createFetcher() = scope.launch {
+            fetcherController.getFetcher(3)
+                .onEach {
+                    assertThat(fetcherController.fetcherSize()).isEqualTo(1)
+                }.first()
+        }
+
+        (0 until fetcherCount).map {
+            createFetcher()
+        }
+        delay(50)
+        job.cancelChildren()
+        delay(50)
         assertThat(fetcherController.fetcherSize()).isEqualTo(0)
         assertThat(createdCnt).isEqualTo(1)
     }
