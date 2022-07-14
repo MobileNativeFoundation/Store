@@ -26,4 +26,4 @@ typealias Ticker = () -> Long
 
 @OptIn(ExperimentalTime::class)
 internal val MonotonicTicker: Ticker = TimeSource.Monotonic.markNow()
-    .let { { it.elapsedNow().inWholeMilliseconds } }
+    .let { { it.elapsedNow().inWholeNanoseconds } }
