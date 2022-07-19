@@ -6,6 +6,7 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Maybe
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitSingleOrNull
 
 /**
  * Creates a [Maybe] source of truth that is accessible via [reader], [writer], [delete] and
@@ -27,7 +28,7 @@ fun <Key : Any, Input : Any, Output : Any> SourceOfTruth.Companion.ofMaybe(
         if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
     return of(
-        nonFlowReader = { key -> reader.invoke(key).await() },
+        nonFlowReader = { key -> reader.invoke(key).awaitSingleOrNull() },
         writer = { key, output -> writer.invoke(key, output).await() },
         delete = deleteFun,
         deleteAll = deleteAllFun

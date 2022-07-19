@@ -19,7 +19,6 @@ import com.dropbox.android.external.store4.SourceOfTruth
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
@@ -100,7 +99,7 @@ internal class KeyTracker<Key> {
                     KeyChannel(
                         channel = BroadcastChannel<Unit>(Channel.CONFLATED).apply {
                             // start w/ an initial value.
-                            offer(Unit)
+                            trySend(Unit)
                         }
                     )
                 }.also {

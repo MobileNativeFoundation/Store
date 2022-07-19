@@ -11,7 +11,9 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @FlowPreview
 @ExperimentalCoroutinesApi
 @RunWith(Parameterized::class)

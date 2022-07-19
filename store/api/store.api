@@ -1,11 +1,3 @@
-public final class com/dropbox/android/external/store4/CacheType : java/lang/Enum {
-	public static final field DISK Lcom/dropbox/android/external/store4/CacheType;
-	public static final field MEMORY Lcom/dropbox/android/external/store4/CacheType;
-	public final fun getFlag$store ()I
-	public static fun valueOf (Ljava/lang/String;)Lcom/dropbox/android/external/store4/CacheType;
-	public static fun values ()[Lcom/dropbox/android/external/store4/CacheType;
-}
-
 public abstract interface annotation class com/dropbox/android/external/store4/ExperimentalStoreApi : java/lang/annotation/Annotation {
 }
 
@@ -63,7 +55,6 @@ public final class com/dropbox/android/external/store4/FetcherResult$Error$Messa
 public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public static final field Companion Lcom/dropbox/android/external/store4/MemoryPolicy$Companion;
 	public static final field DEFAULT_SIZE_POLICY J
-	public synthetic fun <init> (JJJJLcom/dropbox/android/external/store4/Weigher;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getExpireAfterAccess-UwyO8pc ()J
 	public final fun getExpireAfterWrite-UwyO8pc ()J
 	public final fun getHasAccessPolicy ()Z
@@ -88,11 +79,6 @@ public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicy
 	public final fun setExpireAfterWrite-LRDsOJo (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setMaxSize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setWeigherAndMaxWeight (Lcom/dropbox/android/external/store4/Weigher;J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
-}
-
-public final class com/dropbox/android/external/store4/OneWeigher : com/dropbox/android/external/store4/Weigher {
-	public static final field INSTANCE Lcom/dropbox/android/external/store4/OneWeigher;
-	public fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
 }
 
 public final class com/dropbox/android/external/store4/ResponseOrigin : java/lang/Enum {
@@ -152,13 +138,6 @@ public final class com/dropbox/android/external/store4/StoreBuilder$Companion {
 	public final fun from (Lcom/dropbox/android/external/store4/Fetcher;Lcom/dropbox/android/external/store4/SourceOfTruth;)Lcom/dropbox/android/external/store4/StoreBuilder;
 }
 
-public final class com/dropbox/android/external/store4/StoreDefaults {
-	public static final field INSTANCE Lcom/dropbox/android/external/store4/StoreDefaults;
-	public final fun getCacheSize ()J
-	public final fun getCacheTTL-UwyO8pc ()J
-	public final fun getMemoryPolicy ()Lcom/dropbox/android/external/store4/MemoryPolicy;
-}
-
 public final class com/dropbox/android/external/store4/StoreKt {
 	public static final fun fresh (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun get (Lcom/dropbox/android/external/store4/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -175,7 +154,6 @@ public final class com/dropbox/android/external/store4/StoreRequest {
 	public final fun getKey ()Ljava/lang/Object;
 	public final fun getRefresh ()Z
 	public fun hashCode ()I
-	public final fun shouldSkipCache$store (Lcom/dropbox/android/external/store4/CacheType;)Z
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -190,7 +168,6 @@ public abstract class com/dropbox/android/external/store4/StoreResponse {
 	public final fun errorMessageOrNull ()Ljava/lang/String;
 	public abstract fun getOrigin ()Lcom/dropbox/android/external/store4/ResponseOrigin;
 	public final fun requireData ()Ljava/lang/Object;
-	public final fun swapType$store ()Lcom/dropbox/android/external/store4/StoreResponse;
 	public final fun throwIfError ()V
 }
 
@@ -264,92 +241,5 @@ public final class com/dropbox/android/external/store4/StoreResponseKt {
 
 public abstract interface class com/dropbox/android/external/store4/Weigher {
 	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
-}
-
-public final class com/dropbox/android/external/store4/impl/FetcherController {
-	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/dropbox/android/external/store4/Fetcher;Lcom/dropbox/android/external/store4/impl/SourceOfTruthWithBarrier;)V
-	public final fun fetcherSize$store (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun getFetcher (Ljava/lang/Object;Z)Lkotlinx/coroutines/flow/Flow;
-	public static synthetic fun getFetcher$default (Lcom/dropbox/android/external/store4/impl/FetcherController;Ljava/lang/Object;ZILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
-}
-
-public final class com/dropbox/android/external/store4/impl/PersistentNonFlowingSourceOfTruth : com/dropbox/android/external/store4/SourceOfTruth {
-	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
-	public fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class com/dropbox/android/external/store4/impl/PersistentSourceOfTruth : com/dropbox/android/external/store4/SourceOfTruth {
-	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
-	public fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class com/dropbox/android/external/store4/impl/RealStore : com/dropbox/android/external/store4/Store {
-	public fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/dropbox/android/external/store4/Fetcher;Lcom/dropbox/android/external/store4/SourceOfTruth;Lcom/dropbox/android/external/store4/MemoryPolicy;)V
-	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;Lcom/dropbox/android/external/store4/Fetcher;Lcom/dropbox/android/external/store4/SourceOfTruth;Lcom/dropbox/android/external/store4/MemoryPolicy;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun clear (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun stream (Lcom/dropbox/android/external/store4/StoreRequest;)Lkotlinx/coroutines/flow/Flow;
-}
-
-public final class com/dropbox/android/external/store4/impl/RefCountedResource {
-	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun acquire (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun release (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun size (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class com/dropbox/android/external/store4/impl/SourceOfTruthWithBarrier {
-	public static final field Companion Lcom/dropbox/android/external/store4/impl/SourceOfTruthWithBarrier$Companion;
-	public fun <init> (Lcom/dropbox/android/external/store4/SourceOfTruth;)V
-	public final fun barrierCount$store (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun reader (Ljava/lang/Object;Lkotlinx/coroutines/CompletableDeferred;)Lkotlinx/coroutines/flow/Flow;
-	public final fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class com/dropbox/android/external/store4/impl/SourceOfTruthWithBarrier$Companion {
-}
-
-public abstract class com/dropbox/android/external/store4/impl/operators/Either {
-}
-
-public final class com/dropbox/android/external/store4/impl/operators/Either$Left : com/dropbox/android/external/store4/impl/operators/Either {
-	public fun <init> (Ljava/lang/Object;)V
-	public final fun component1 ()Ljava/lang/Object;
-	public final fun copy (Ljava/lang/Object;)Lcom/dropbox/android/external/store4/impl/operators/Either$Left;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/impl/operators/Either$Left;Ljava/lang/Object;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/impl/operators/Either$Left;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getValue ()Ljava/lang/Object;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/dropbox/android/external/store4/impl/operators/Either$Right : com/dropbox/android/external/store4/impl/operators/Either {
-	public fun <init> (Ljava/lang/Object;)V
-	public final fun component1 ()Ljava/lang/Object;
-	public final fun copy (Ljava/lang/Object;)Lcom/dropbox/android/external/store4/impl/operators/Either$Right;
-	public static synthetic fun copy$default (Lcom/dropbox/android/external/store4/impl/operators/Either$Right;Ljava/lang/Object;ILjava/lang/Object;)Lcom/dropbox/android/external/store4/impl/operators/Either$Right;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getValue ()Ljava/lang/Object;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class com/dropbox/android/external/store4/impl/operators/FlowMergeKt {
-	public static final fun merge (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
-}
-
-public final class com/dropbox/android/external/store4/impl/operators/MapIndexedKt {
-	public static final fun mapIndexed (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
 }
 
