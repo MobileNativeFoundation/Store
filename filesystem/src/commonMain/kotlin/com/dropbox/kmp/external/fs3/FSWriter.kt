@@ -1,6 +1,6 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.BufferedSource
@@ -13,11 +13,11 @@ import okio.BufferedSource
 </T> */
 open class FSWriter<Key>(
     internal val fileSystem: FileSystem,
-    private val pathResolver: PathResolver<Key>
+    private val pathResolver: (Key) -> String
 ) : DiskWrite<BufferedSource, Key> {
     override suspend fun write(key: Key, raw: BufferedSource): Boolean {
-        return withContext(Dispatchers.IO) {
-            fileSystem.write(pathResolver.resolve(key), raw)
+        return withContext(Dispatchers.Default) { // withContext(Dispatchers.IO) {
+            fileSystem.write(pathResolver(key), raw)
             true
         }
     }

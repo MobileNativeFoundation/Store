@@ -1,13 +1,15 @@
-package com.dropbox.android.external.fs3.filesystem
+package com.dropbox.kmp.external.fs3.filesystem
 
-import com.dropbox.android.external.fs3.RecordState
-import com.dropbox.android.external.fs3.Util
-import com.nytimes.android.external.cache3.Cache
-import com.nytimes.android.external.cache3.CacheBuilder
+import com.dropbox.kmp.external.cache3.Cache
+import com.dropbox.kmp.external.cache3.cacheBuilder
+import com.dropbox.kmp.external.fs3.RecordState
+import com.dropbox.kmp.external.fs3.Util
+import com.dropbox.kmp.external.fs3.plus
+import kotlinx.datetime.Clock
 import okio.BufferedSource
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
+import okio.FileNotFoundException
+import okio.IOException
+import okio.Path.Companion.toPath
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -17,51 +19,45 @@ import kotlin.time.ExperimentalTime
  *
  * All operations are on the caller's thread.
  */
-internal class FileSystemImpl(private val root: File) : FileSystem {
+internal class FileSystemImpl(_root: String, private val realFileSystem: RealFileSystem) : FileSystem {
 
-    private val files: Cache<String, FSFile> = CacheBuilder.newBuilder()
-        .maximumSize(20)
-        .build()
+    private val files: Cache<String, FSFile> = cacheBuilder { maximumSize(20) }
+    private val root = _root.toPath()
 
     init {
-        Util.createParentDirs(root)
+        Util.createParentDirs(realFileSystem, root)
     }
 
     @Throws(FileNotFoundException::class)
     override fun read(path: String): BufferedSource {
-        return getFile(path)!!.source()
+        return getFile(path).source()
     }
 
     @Throws(IOException::class)
     override fun write(path: String, source: BufferedSource) {
-        getFile(path)!!.write(source)
+        getFile(path).write(source)
     }
 
     @Throws(IOException::class)
     override fun delete(path: String) {
-        getFile(path)!!.delete()
+        getFile(path).delete()
     }
 
     @Throws(FileNotFoundException::class)
     override fun list(path: String): Collection<String> {
-        val foundFiles = findFiles(path)
-        val names = ArrayList<String>(foundFiles.size)
-        for (foundFile in foundFiles) {
-            names.add(foundFile.path())
-        }
-        return names
+        return findFiles(path)
+            .map { it.path() }
+            .toList()
     }
 
-    @Throws(FileNotFoundException::class)
+    @Throws(IOException::class)
     override fun deleteAll(path: String) {
-        val foundFiles = findFiles(path)
-        for (foundFile in foundFiles) {
-            foundFile.delete()
-        }
+        findFiles(path)
+            .forEach { it.delete() }
     }
 
     override fun exists(file: String): Boolean {
-        return getFile(file)!!.exists()
+        return getFile(file).exists()
     }
 
     @ExperimentalTime
@@ -70,10 +66,10 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         path: String
     ): RecordState {
         val file = getFile(path)
-        if (!file!!.exists()) {
+        if (!file.exists()) {
             return RecordState.MISSING
         }
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val cuttOffPoint: Long = now - expirationDuration.inWholeMilliseconds
         return if (file.lastModified() < cuttOffPoint) {
             RecordState.STALE
@@ -82,32 +78,23 @@ internal class FileSystemImpl(private val root: File) : FileSystem {
         }
     }
 
-    private fun getFile(path: String): FSFile? {
-        val cleanedPath = cleanPath(path)
-        return files.get(cleanedPath) { FSFile(root, cleanedPath) }
+    private fun getFile(path: String): FSFile {
+        return path.toPath(true).toString()
+            .let { files.getOrPut(it) { FSFile(realFileSystem, root, it) } }
     }
 
-    private fun cleanPath(dirty: String): String =
-        Util.simplifyPath(dirty)
-
     @Throws(FileNotFoundException::class)
-    private fun findFiles(path: String): Collection<FSFile> {
-        val searchRoot = File(root, Util.simplifyPath(path))
-        if (searchRoot.exists() && searchRoot.isFile) {
+    private fun findFiles(path: String): Sequence<FSFile> {
+        val searchRoot = root + path
+        if (realFileSystem.exists(searchRoot) && realFileSystem.metadataOrNull(searchRoot)?.isDirectory != true) {
             throw FileNotFoundException("expecting a directory at $path, instead found a file")
         }
-
-        val foundFiles = ArrayList<FSFile>()
-        val iterator = BreadthFirstFileTreeIterator(searchRoot)
-        while (iterator.hasNext()) {
-            val file = iterator.next() as File?
-            val simplifiedPath = Util.simplifyPath(
-                file!!.path.replaceFirst(root.path.toRegex(), "")
-            )
-            foundFiles.add(
-                files.get(simplifiedPath) { FSFile(root, simplifiedPath) }!!
-            )
-        }
-        return foundFiles
+        val prefix = root.toString()
+        return realFileSystem.listRecursively(searchRoot)
+            .filter { realFileSystem.metadata(it).isRegularFile }
+            .map {
+                val simplifiedPath = it.normalized().toString().removePrefix(prefix)
+                files.getOrPut(simplifiedPath) { FSFile(realFileSystem, root, simplifiedPath) }
+            }
     }
 }

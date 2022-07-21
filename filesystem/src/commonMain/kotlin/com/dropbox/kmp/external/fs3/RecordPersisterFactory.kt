@@ -1,10 +1,9 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystemFactory
 import okio.BufferedSource
-import java.io.File
-import java.io.IOException
+import okio.IOException
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -22,7 +21,7 @@ object RecordPersisterFactory {
      */
     @Throws(IOException::class)
     fun create(
-        root: File,
+        root: String,
         expirationDuration: Duration
     ): Persister<BufferedSource, Pair<String, String>> =
         RecordPersister(FileSystemFactory.create(root), expirationDuration)

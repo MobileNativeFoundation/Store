@@ -1,8 +1,8 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
-import java.io.FileNotFoundException
+import okio.FileNotFoundException
 
 interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAllErase {
     /**
@@ -23,7 +23,6 @@ interface AllPersister<Raw, Key> : Persister<Raw, Key>, DiskAllRead<Raw>, DiskAl
      * If data is not available implementer needs to
      * throw an exception
      */
-    //    @Override
     override suspend fun read(key: Key): Raw?
 
     /**

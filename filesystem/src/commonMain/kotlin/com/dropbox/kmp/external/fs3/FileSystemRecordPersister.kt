@@ -1,6 +1,6 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
 import okio.BufferedSource
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -15,14 +15,14 @@ import kotlin.time.ExperimentalTime
 @ExperimentalTime
 class FileSystemRecordPersister<Key> private constructor(
     private val fileSystem: FileSystem,
-    private val pathResolver: PathResolver<Key>,
+    private val pathResolver: (Key) -> String,
     private val expirationDuration: Duration
 ) : Persister<BufferedSource, Key>, RecordProvider<Key> {
     private val fileReader: FSReader<Key> = FSReader(fileSystem, pathResolver)
     private val fileWriter: FSWriter<Key> = FSWriter(fileSystem, pathResolver)
 
     override fun getRecordState(key: Key): RecordState =
-        fileSystem.getRecordState(expirationDuration, pathResolver.resolve(key))
+        fileSystem.getRecordState(expirationDuration, pathResolver(key))
 
     override suspend fun read(key: Key): BufferedSource? = fileReader.read(key)
 
@@ -32,7 +32,7 @@ class FileSystemRecordPersister<Key> private constructor(
 
         fun <T> create(
             fileSystem: FileSystem,
-            pathResolver: PathResolver<T>,
+            pathResolver: (T) -> String,
             expirationDuration: Duration
         ): FileSystemRecordPersister<T> = FileSystemRecordPersister(
             fileSystem = fileSystem,

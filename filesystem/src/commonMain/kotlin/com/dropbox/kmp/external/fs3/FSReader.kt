@@ -1,8 +1,8 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
 import okio.BufferedSource
-import java.io.FileNotFoundException
+import okio.FileNotFoundException
 
 /**
  * FSReader is used when persisting from file system
@@ -13,11 +13,11 @@ import java.io.FileNotFoundException
 </T> */
 open class FSReader<Key>(
     internal val fileSystem: FileSystem,
-    private val pathResolver: PathResolver<Key>
+    private val pathResolver: (Key) -> String
 ) : DiskRead<BufferedSource, Key> {
 
     override suspend fun read(key: Key): BufferedSource? {
-        val resolvedKey = pathResolver.resolve(key)
+        val resolvedKey = pathResolver(key)
         val exists = fileSystem.exists(resolvedKey)
 
         if (exists) {

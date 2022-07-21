@@ -1,6 +1,6 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
 import okio.BufferedSource
 
 /**
@@ -11,7 +11,7 @@ import okio.BufferedSource
 </T> */
 class FileSystemPersister<Key> private constructor(
     fileSystem: FileSystem,
-    pathResolver: PathResolver<Key>
+    pathResolver: (Key) -> String
 ) : Persister<BufferedSource, Key> {
     private val fileReader: FSReader<Key> = FSReader(fileSystem, pathResolver)
     private val fileWriter: FSWriter<Key> = FSWriter(fileSystem, pathResolver)
@@ -24,7 +24,7 @@ class FileSystemPersister<Key> private constructor(
 
         fun <Key> create(
             fileSystem: FileSystem,
-            pathResolver: PathResolver<Key>
+            pathResolver: (Key) -> String
         ): Persister<BufferedSource, Key> = FileSystemPersister(
             fileSystem = fileSystem,
             pathResolver = pathResolver

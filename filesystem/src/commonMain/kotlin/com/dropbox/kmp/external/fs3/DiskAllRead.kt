@@ -1,8 +1,8 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
-import java.io.FileNotFoundException
+import okio.FileNotFoundException
 
 interface DiskAllRead<Raw> {
     @Throws(FileNotFoundException::class)

@@ -1,57 +1,15 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import java.io.File
-import java.io.IOException
-import java.util.Stack
+import com.dropbox.kmp.external.fs3.filesystem.RealFileSystem
+import kotlinx.datetime.Clock
+import okio.IOException
+import okio.Path
+import okio.Path.Companion.toPath
 
-object Util {
-
-    fun simplifyPath(path: String): String {
-        if (ifInvalidPATH(path)) {
-            return ""
-        }
-
-        val delim = "[/]+"
-        val arr = path.split(delim.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        val stack = Stack<String>()
-
-        fillStack(arr, stack)
-
-        if (stack.isEmpty()) {
-            return "/"
-        }
-
-        val sb = StringBuilder()
-
-        for (str in stack) {
-            sb.append("/").append(str)
-        }
-
-        return sb.toString()
-    }
-
-    private fun fillStack(arr: Array<String>, stack: Stack<String>) {
-        for (str in arr) {
-            if ("/" == str) {
-                continue
-            }
-            if (".." == str) {
-                if (!stack.isEmpty()) {
-                    stack.pop()
-                }
-            } else if ("." != str && !str.isEmpty()) {
-                stack.push(str)
-            }
-        }
-    }
-
-    private fun ifInvalidPATH(path: String?): Boolean =
-        path == null || path.isEmpty()
-
+internal object Util {
     @Throws(IOException::class)
-    fun createParentDirs(file: File) {
-        val parent = file.canonicalFile.parentFile /*
+    fun createParentDirs(realFileSystem: RealFileSystem, file: Path) {
+        val parent = file.parent /*
        * The given directory is a filesystem root. All zero of its ancestors
        * exist. This doesn't mean that the root itself exists -- consider x:\ on
        * a Windows machine without such a drive -- or even that the caller can
@@ -59,9 +17,29 @@ object Util {
        * files.
        */
             ?: return
-        parent.mkdirs()
-        if (!parent.isDirectory) {
+        realFileSystem.createDirectory(parent)
+        if (realFileSystem.metadataOrNull(parent)?.isDirectory != true) {
             throw IOException("Unable to create parent directories of $file")
         }
     }
+
+    fun createTempFile(realFileSystem: RealFileSystem, prefix: String, suffix: String, directory: Path): Path {
+        var i = 0
+        while (true) {
+            val file = (directory + "$prefix${Clock.System.now().toEpochMilliseconds()}-$i.$suffix")
+            if (!realFileSystem.exists(file)) {
+                realFileSystem.sink(file, true).close()
+                return file
+            }
+            i++
+        }
+    }
 }
+
+operator fun Path.plus(other: String) = this.toString().let {
+    if (it.endsWith(Path.DIRECTORY_SEPARATOR) || other.startsWith(Path.DIRECTORY_SEPARATOR)) {
+        "$it$other"
+    } else {
+        "$it${Path.DIRECTORY_SEPARATOR}$other"
+    }
+}.toPath()

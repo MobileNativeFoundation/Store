@@ -1,11 +1,11 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import okio.BufferedSource
-import java.io.FileNotFoundException
+import okio.FileNotFoundException
 
 /**
  * FSReader is used when persisting from file system

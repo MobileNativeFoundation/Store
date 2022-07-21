@@ -1,13 +1,13 @@
-package com.dropbox.android.external.fs3.filesystem
+package com.dropbox.kmp.external.fs3.filesystem
 
-import java.io.File
-import java.io.IOException
+import okio.IOException
+
+typealias RealFileSystem = okio.FileSystem
 
 /**
  * Factory for [FileSystem].
  */
 object FileSystemFactory {
-
     /**
      * Creates new instance of [FileSystemImpl].
      *
@@ -16,5 +16,6 @@ object FileSystemFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun create(root: File): FileSystem = FileSystemImpl(root)
+    fun create(root: String, realFileSystem: RealFileSystem): FileSystem =
+        FileSystemImpl(root, realFileSystem)
 }

@@ -1,5 +1,3 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-object StringPairPathResolver : PathResolver<Pair<String, String>> {
-    override fun resolve(key: Pair<String, String>): String = key.toString()
-}
+val StringPairPathResolver: (Pair<String, String>) -> String = { it.toString() }

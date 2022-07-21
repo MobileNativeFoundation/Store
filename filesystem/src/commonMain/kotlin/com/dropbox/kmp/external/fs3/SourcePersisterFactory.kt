@@ -1,10 +1,9 @@
-package com.dropbox.android.external.fs3
+package com.dropbox.kmp.external.fs3
 
-import com.dropbox.android.external.fs3.filesystem.FileSystem
-import com.dropbox.android.external.fs3.filesystem.FileSystemFactory
+import com.dropbox.kmp.external.fs3.filesystem.FileSystem
+import com.dropbox.kmp.external.fs3.filesystem.FileSystemFactory
 import okio.BufferedSource
-import java.io.File
-import java.io.IOException
+import okio.IOException
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -23,7 +22,7 @@ object SourcePersisterFactory {
     @ExperimentalTime
     @Throws(IOException::class)
     fun create(
-        root: File,
+        root: String,
         expirationDuration: Duration
     ): Persister<BufferedSource, Pair<String, String>> {
         return RecordPersister.create(FileSystemFactory.create(root), expirationDuration)
@@ -48,7 +47,7 @@ object SourcePersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun create(root: File): Persister<BufferedSource, Pair<String, String>> {
+    fun create(root: String): Persister<BufferedSource, Pair<String, String>> {
         return SourcePersister.create(FileSystemFactory.create(root))
     }
 
@@ -67,7 +66,7 @@ object SourcePersisterFactory {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun createAll(root: File): Persister<BufferedSource, Pair<String, String>> {
+    fun createAll(root: String): Persister<BufferedSource, Pair<String, String>> {
         return SourceAllPersister.create(FileSystemFactory.create(root))
     }
 

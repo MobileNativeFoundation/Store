@@ -1,10 +1,9 @@
-package com.dropbox.android.external.fs3.filesystem
+package com.dropbox.kmp.external.fs3.filesystem
 
-import com.dropbox.android.external.fs3.RecordState
+import com.dropbox.kmp.external.fs3.RecordState
 import okio.BufferedSource
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
+import okio.FileNotFoundException
+import okio.IOException
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
