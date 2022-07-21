@@ -1,35 +1,30 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.multiplatform'
     id 'kotlinx-atomicfu'
     id 'org.jetbrains.dokka'
 }
 
-dependencies {
-    implementation libraries.coroutinesCore
-    testImplementation libraries.coroutinesTest
-    testImplementation libraries.kotlinTest
-    testImplementation libraries.kotlinTestJunit
+kotlin {
+    iosX64()
+    iosArm64()
+    jvm()
+    //iosSimulatorArm64() sure all ios dependencies support this target
+
+    sourceSets {
+        commonMain{
+            dependencies {
+                implementation (libraries.coroutinesCore)
+            }
+        }
+        commonTest {        }
+        jvmTest{
+            dependencies{
+                implementation ("org.jetbrains.kotlinx:lincheck:2.14.1")
+            }
+        }
+    }
 }
-apply from: rootProject.file("gradle/jacoco.gradle")
+
+//apply from: rootProject.file("gradle/jacoco.gradle")
 
 apply plugin: 'com.vanniktech.maven.publish'
-
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                '-Xopt-in=kotlin.RequiresOptIn',
-        ]
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs += [
-                '-Xopt-in=kotlin.RequiresOptIn',
-        ]
-    }
-}
