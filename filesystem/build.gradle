@@ -1,27 +1,42 @@
-buildscript {
-    tasks.withType(JavaCompile) {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-}
-
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.dokka'
 }
 
-dependencies {
-    implementation libraries.okio
-    implementation libraries.coroutinesCore
-    implementation libraries.cache
-    implementation project(path: ':store')
-    testImplementation libraries.mockito
-    testImplementation libraries.mockitoKotlin
-    testImplementation libraries.truth
-    testImplementation libraries.junit
-    testImplementation libraries.coroutinesTest
+kotlin {
+    jvm()
+    targets {
+        final def ios = System.getenv('SDK_NAME')?.startsWith("iphoneos") ? presets.iosArm64 : presets.iosX64
+        fromPreset(ios, 'ios')
+    }
+
+    sourceSets {
+        commonMain{
+            dependencies {
+                implementation libraries.okio
+                implementation libraries.coroutinesCore
+                implementation ("org.jetbrains.kotlinx:kotlinx-datetime:0.3.3")
+                implementation project(path: ':cache')
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation (libraries.kotlinTestJunit)
+                implementation (libraries.coroutinesTest)
+            }
+        }
+
+        jvmTest{
+            dependencies{
+                implementation ("org.jetbrains.kotlinx:lincheck:2.14.1")
+            }
+        }
+
+        ios{}
+    }
 }
 
-apply from: rootProject.file("gradle/jacoco.gradle")
+//apply from: rootProject.file("gradle/jacoco.gradle")
 
 apply plugin: 'com.vanniktech.maven.publish'
