@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 @file:OptIn(ExperimentalStdlibApi::class)
-package com.dropbox.flow.multicast
 
-import com.dropbox.flow.multicast.ChannelManager.Message
+package com.dropbox.kmp.flow.multicast
+
+import com.dropbox.kmp.flow.multicast.ChannelManager.Message
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
