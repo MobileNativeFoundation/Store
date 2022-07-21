@@ -15,7 +15,7 @@ kotlin {
             dependencies {
                 implementation libraries.okio
                 implementation libraries.coroutinesCore
-                implementation ("org.jetbrains.kotlinx:kotlinx-datetime:0.3.3")
+                implementation libraries.dateTime
                 implementation project(path: ':cache')
             }
         }
@@ -26,6 +26,9 @@ kotlin {
                 implementation (libraries.coroutinesTest)
             }
         }
+        jvmMain {
+            dependsOn(commonMain)
+        }
 
         jvmTest{
             dependencies{
@@ -33,7 +36,9 @@ kotlin {
             }
         }
 
-        ios{}
+        ios{
+            dependsOn(commonMain)
+        }
     }
 }
 
