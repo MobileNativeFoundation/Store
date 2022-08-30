@@ -63,7 +63,7 @@ public final class com/dropbox/android/external/store4/FetcherResult$Error$Messa
 public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public static final field Companion Lcom/dropbox/android/external/store4/MemoryPolicy$Companion;
 	public static final field DEFAULT_SIZE_POLICY J
-	public synthetic fun <init> (JJJJLcom/dropbox/android/external/store4/Weigher;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JJJJLcom/dropbox/android/external/store4/Weigher;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getExpireAfterAccess-UwyO8pc ()J
 	public final fun getExpireAfterWrite-UwyO8pc ()J
 	public final fun getHasAccessPolicy ()Z
@@ -72,6 +72,7 @@ public final class com/dropbox/android/external/store4/MemoryPolicy {
 	public final fun getHasWritePolicy ()Z
 	public final fun getMaxSize ()J
 	public final fun getMaxWeight ()J
+	public final fun getRemovalListener ()Lkotlin/jvm/functions/Function3;
 	public final fun getWeigher ()Lcom/dropbox/android/external/store4/Weigher;
 	public final fun isDefaultWritePolicy ()Z
 }
@@ -87,6 +88,7 @@ public final class com/dropbox/android/external/store4/MemoryPolicy$MemoryPolicy
 	public final fun setExpireAfterAccess-LRDsOJo (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setExpireAfterWrite-LRDsOJo (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setMaxSize (J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setRemovalListener (Lkotlin/jvm/functions/Function3;)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 	public final fun setWeigherAndMaxWeight (Lcom/dropbox/android/external/store4/Weigher;J)Lcom/dropbox/android/external/store4/MemoryPolicy$MemoryPolicyBuilder;
 }
 

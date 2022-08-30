@@ -187,6 +187,7 @@ public abstract interface class com/dropbox/android/external/cache3/RemovalListe
 public final class com/dropbox/android/external/cache3/RemovalNotification : java/util/Map$Entry {
 	public static fun create (Ljava/lang/Object;Ljava/lang/Object;Lcom/dropbox/android/external/cache3/RemovalCause;)Lcom/dropbox/android/external/cache3/RemovalNotification;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getCause ()Lcom/dropbox/android/external/cache3/RemovalCause;
 	public fun getKey ()Ljava/lang/Object;
 	public fun getValue ()Ljava/lang/Object;
 	public fun hashCode ()I

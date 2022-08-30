@@ -1,5 +1,6 @@
 package com.dropbox.android.external.store4
 
+import com.dropbox.android.external.cache3.RemovalCause
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -34,7 +35,8 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
     val expireAfterAccess: Duration,
     val maxSize: Long,
     val maxWeight: Long,
-    val weigher: Weigher<Key, Value>
+    val weigher: Weigher<Key, Value>,
+    val removalListener: ((Key, Value, RemovalCause) -> Unit)?
 ) {
 
     val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_DURATION_POLICY
@@ -53,6 +55,7 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
         private var maxSize: Long = DEFAULT_SIZE_POLICY
         private var maxWeight: Long = DEFAULT_SIZE_POLICY
         private var weigher: Weigher<Key, Value> = OneWeigher
+        private var removalListener: ((Key, Value, RemovalCause) -> Unit)? = null
 
         fun setExpireAfterWrite(expireAfterWrite: Duration): MemoryPolicyBuilder<Key, Value> =
             apply {
@@ -97,12 +100,25 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
             this.maxWeight = maxWeight
         }
 
+        /**
+         * Specifies a listener instance that caches should notify each time an entry is removed for
+         * any [com.nytimes.android.external.cache3.RemovalCause]. Each cache created by this builder
+         * will invoke this listener as part of the routine maintenance described in the
+         * class documentation above.
+         */
+        fun setRemovalListener(
+            removalListener: (Key, Value, RemovalCause) -> Unit
+        ): MemoryPolicyBuilder<Key, Value> = apply {
+            this.removalListener = removalListener
+        }
+
         fun build() = MemoryPolicy<Key, Value>(
             expireAfterWrite = expireAfterWrite,
             expireAfterAccess = expireAfterAccess,
             maxSize = maxSize,
             maxWeight = maxWeight,
-            weigher = weigher
+            weigher = weigher,
+            removalListener = removalListener,
         )
     }
 
