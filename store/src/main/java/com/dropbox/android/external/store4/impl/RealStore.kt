@@ -20,7 +20,10 @@ import com.dropbox.android.external.cache3.RemovalListener
 import com.dropbox.android.external.store4.*
 import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.impl.operators.merge
-import kotlinx.coroutines.*
+import com.dropbox.android.external.store4.utils.listenerScoped
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
@@ -68,16 +71,9 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 weigher { k: Key, v: Output -> memoryPolicy.weigher.weigh(k, v) }
             }
             memoryPolicy.removalListener?.let { listener ->
-                var weakListener: RemovalFunction<Key, Output>? = listener
-                scope.launch(
-                    CoroutineExceptionHandler { _, throwable ->
-                        if (throwable is CancellationException) {
-                            weakListener = null
-                        }
-                    }
-                ) {
+                listener.listenerScoped(scope) { callback ->
                     removalListener(RemovalListener<Key, Output> {
-                        weakListener?.invoke(it.key, it.value, it.cause)
+                        callback?.invoke(it.key, it.value, it.cause)
                     })
                 }
             }
@@ -278,19 +274,4 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 }
             }
     }
-}
-
-suspend fun <T> T.scoped(
-    register: (T) -> Unit,
-) = coroutineScope {
-    var weakListener: T? = this@scoped
-    async(
-        CoroutineExceptionHandler { _, throwable ->
-            if (throwable is CancellationException) {
-                weakListener = null
-            }
-        }
-    ) {
-        register.invoke(weakListener!!)
-    }.await()
 }
