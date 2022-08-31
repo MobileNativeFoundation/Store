@@ -18,6 +18,8 @@ internal object OneWeigher : Weigher<Any, Any> {
     override fun weigh(key: Any, value: Any): Int = 1
 }
 
+typealias RemovalFunction<Key, Value> = (Key, Value, RemovalCause) -> Unit
+
 /**
  * MemoryPolicy holds all required info to create MemoryCache
  *

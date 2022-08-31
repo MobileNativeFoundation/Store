@@ -20,8 +20,7 @@ import com.dropbox.android.external.cache3.RemovalListener
 import com.dropbox.android.external.store4.*
 import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.impl.operators.merge
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
@@ -45,6 +44,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             SourceOfTruthWithBarrier(it)
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val memCache = memoryPolicy?.let {
         CacheBuilder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
@@ -68,9 +68,18 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 weigher { k: Key, v: Output -> memoryPolicy.weigher.weigh(k, v) }
             }
             memoryPolicy.removalListener?.let { listener ->
-                removalListener(RemovalListener<Key, Output> {
-                    listener.invoke(it.key, it.value, it.cause)
-                })
+                var weakListener: RemovalFunction<Key, Output>? = listener
+                scope.launch(
+                    CoroutineExceptionHandler { _, throwable ->
+                        if (throwable is CancellationException) {
+                            weakListener = null
+                        }
+                    }
+                ) {
+                    removalListener(RemovalListener<Key, Output> {
+                        weakListener?.invoke(it.key, it.value, it.cause)
+                    })
+                }
             }
         }.build<Key, Output>()
     }
@@ -269,4 +278,19 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                 }
             }
     }
+}
+
+suspend fun <T> T.scoped(
+    register: (T) -> Unit,
+) = coroutineScope {
+    var weakListener: T? = this@scoped
+    async(
+        CoroutineExceptionHandler { _, throwable ->
+            if (throwable is CancellationException) {
+                weakListener = null
+            }
+        }
+    ) {
+        register.invoke(weakListener!!)
+    }.await()
 }
