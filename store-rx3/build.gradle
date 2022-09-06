@@ -7,7 +7,7 @@ dependencies {
     implementation libraries.coroutinesCore
     implementation libraries.coroutinesRx3
     implementation libraries.coroutinesReactive
-    implementation project(path: ':store')
+    implementation project(path: ':store4')
     implementation libraries.rx3
 
     testImplementation libraries.junit

@@ -14,7 +14,7 @@ dependencies {
     implementation libraries.okio
     implementation libraries.coroutinesCore
     implementation libraries.cache
-    implementation project(path: ':store')
+    implementation project(path: ':store4')
     testImplementation libraries.mockito
     testImplementation libraries.mockitoKotlin
     testImplementation libraries.truth
