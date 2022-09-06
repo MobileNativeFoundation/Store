@@ -17,6 +17,7 @@
 package com.dropbox.flow.multicast
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.withContext
 
 /**
  * Like a publish, shares 1 upstream value with multiple downstream receiver.
@@ -68,8 +70,8 @@ class Multicaster<T>(
     private val onEach: suspend (T) -> Unit
 ) {
 
-    private val channelManager by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-        ChannelManager(
+    internal var channelManagerFactory: () -> ChannelManager<T> = {
+        StoreChannelManager(
             scope = scope,
             bufferSize = bufferSize,
             upstream = source,
@@ -78,6 +80,8 @@ class Multicaster<T>(
             onEach = onEach
         )
     }
+
+    private val channelManager by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { channelManagerFactory() }
 
     /**
      * Gets a new downstream flow. Collectors of this flow will share values dispatched by a
@@ -108,10 +112,12 @@ class Multicaster<T>(
                     emit(it.value)
                     it.delivered.complete(Unit)
                 }.onCompletion {
-                    try {
-                        channelManager.removeDownstream(channel)
-                    } catch (closed: ClosedSendChannelException) {
-                        // ignore, we might be closed because ChannelManager is closed
+                    withContext(NonCancellable) {
+                        try {
+                            channelManager.removeDownstream(channel)
+                        } catch (closed: ClosedSendChannelException) {
+                            // ignore, we might be closed because ChannelManager is closed
+                        }
                     }
                 }
             emitAll(subFlow)

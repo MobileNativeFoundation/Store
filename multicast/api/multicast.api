@@ -1,10 +1,7 @@
-public final class com/dropbox/flow/multicast/ChannelManager {
-	public fun <init> (Lkotlinx/coroutines/CoroutineScope;IZZLkotlin/jvm/functions/Function2;Lkotlinx/coroutines/flow/Flow;)V
-	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;IZZLkotlin/jvm/functions/Function2;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun addDownstream (Lkotlinx/coroutines/channels/SendChannel;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun addDownstream$default (Lcom/dropbox/flow/multicast/ChannelManager;Lkotlinx/coroutines/channels/SendChannel;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public final fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun removeDownstream (Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public abstract interface class com/dropbox/flow/multicast/ChannelManager {
+	public abstract fun addDownstream (Lkotlinx/coroutines/channels/SendChannel;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun removeDownstream (Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/dropbox/flow/multicast/ChannelManager$ChannelEntry {
@@ -23,6 +20,10 @@ public final class com/dropbox/flow/multicast/ChannelManager$ChannelEntry {
 	public final fun hasChannel (Lkotlinx/coroutines/channels/SendChannel;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/flow/multicast/ChannelManager$DefaultImpls {
+	public static synthetic fun addDownstream$default (Lcom/dropbox/flow/multicast/ChannelManager;Lkotlinx/coroutines/channels/SendChannel;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract class com/dropbox/flow/multicast/ChannelManager$Message {
@@ -67,8 +68,10 @@ public final class com/dropbox/flow/multicast/Multicaster {
 	public fun <init> (Lkotlinx/coroutines/CoroutineScope;ILkotlinx/coroutines/flow/Flow;ZZLkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;ILkotlinx/coroutines/flow/Flow;ZZLkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getChannelManagerFactory$multicast ()Lkotlin/jvm/functions/Function0;
 	public final fun newDownstream (Z)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun newDownstream$default (Lcom/dropbox/flow/multicast/Multicaster;ZILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public final fun setChannelManagerFactory$multicast (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class com/dropbox/flow/multicast/SharedFlowProducer {
@@ -76,6 +79,14 @@ public final class com/dropbox/flow/multicast/SharedFlowProducer {
 	public final fun cancel ()V
 	public final fun cancelAndJoin (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun start ()V
+}
+
+public final class com/dropbox/flow/multicast/StoreChannelManager : com/dropbox/flow/multicast/ChannelManager {
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;IZZLkotlin/jvm/functions/Function2;Lkotlinx/coroutines/flow/Flow;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;IZZLkotlin/jvm/functions/Function2;Lkotlinx/coroutines/flow/Flow;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun addDownstream (Lkotlinx/coroutines/channels/SendChannel;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun removeDownstream (Lkotlinx/coroutines/channels/SendChannel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract class com/dropbox/flow/multicast/StoreRealActor {
