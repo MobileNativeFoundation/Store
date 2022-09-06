@@ -255,6 +255,9 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             }
                             // for other errors, don't do anything, wait for the read attempt
                         }
+
+                        is StoreResponse.Loading -> {}
+                        is StoreResponse.NoNewData -> {}
                     }
                 }
             }

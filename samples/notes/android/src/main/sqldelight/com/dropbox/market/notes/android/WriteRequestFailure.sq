@@ -1,0 +1,21 @@
+CREATE TABLE writeRequestFailure (
+  key TEXT NOT NULL PRIMARY KEY,
+  datetime  INTEGER AS Long
+);
+
+CREATE INDEX writeRequestFailure_key_datetime ON writeRequestFailure(key, datetime);
+
+read:
+SELECT *
+FROM writeRequestFailure
+WHERE key = ?;
+
+write:
+INSERT OR REPLACE INTO writeRequestFailure VALUES ?;
+
+delete:
+DELETE FROM writeRequestFailure
+WHERE key = ?;
+
+clear:
+DELETE FROM writeRequestFailure;
