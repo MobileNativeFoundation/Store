@@ -15,9 +15,13 @@
  */
 package com.dropbox.flow.multicast
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -509,6 +513,29 @@ class MulticastTest {
         }
     }
 
+    @Test
+    fun `remove downstream when flow is cancelled`() {
+        val channelManagerMock = ChannelManagerMock()
+        runBlockingTest {
+            val multicaster = Multicaster(
+                scope = this,
+                source = flowOf(1, 2),
+                onEach = {},
+                piggybackingDownstream = true
+            ).apply {
+                channelManagerFactory = { channelManagerMock }
+            }
+
+            launch {
+                multicaster.newDownstream().collect {
+                    delay(10)
+                    currentCoroutineContext().cancel()
+                }
+            }
+        }
+        assertEquals(0, channelManagerMock.count.value)
+    }
+
     private fun versionedMulticaster(
         bufferSize: Int = 0,
         collectionLimit: Int,
@@ -533,5 +560,25 @@ class MulticastTest {
 
     class MyCustomException(val x: String) : RuntimeException("hello") {
         override fun toString() = "custom$x"
+    }
+
+    private class ChannelManagerMock() : ChannelManager<Int> {
+        val count = atomic(0)
+        override suspend fun addDownstream(channel: SendChannel<ChannelManager.Message.Dispatch.Value<Int>>, piggybackOnly: Boolean) {
+            count.incrementAndGet()
+            for (i in 1 until 3) {
+                channel.send(ChannelManager.Message.Dispatch.Value(1, CompletableDeferred<Unit>()))
+                delay(5)
+            }
+        }
+
+        override suspend fun removeDownstream(channel: SendChannel<ChannelManager.Message.Dispatch.Value<Int>>) {
+            delay(2)
+            count.decrementAndGet()
+        }
+
+        override suspend fun close() {
+            TODO("Not yet implemented")
+        }
     }
 }
