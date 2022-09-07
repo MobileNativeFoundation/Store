@@ -26,7 +26,6 @@ apply from: 'buildsystem/dependencies.gradle'
 apply plugin: 'binary-compatibility-validator'
 
 apiValidation {
-    ignoredProjects += ["app"]
 }
 
 allprojects {
