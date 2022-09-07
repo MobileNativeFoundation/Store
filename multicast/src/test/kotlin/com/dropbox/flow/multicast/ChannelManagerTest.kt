@@ -39,7 +39,7 @@ import kotlin.test.fail
 class ChannelManagerTest {
     private val scope = TestCoroutineScope()
     private val upstream: Channel<String> = Channel(Channel.UNLIMITED)
-    private val manager = ChannelManager(
+    private val manager = StoreChannelManager(
         scope,
         0,
         onEach = {},
@@ -174,7 +174,7 @@ class ChannelManagerTest {
         }
 
         // create a manager with this specific upstream
-        val manager = ChannelManager(
+        val manager = StoreChannelManager(
             scope,
             bufferSize = 1,
             onEach = {},
@@ -336,7 +336,7 @@ class ChannelManagerTest {
         // upstream that tracks creates and can be emitted to on demand
 
         // create a manager with this specific upstream
-        val manager = ChannelManager(
+        val manager = StoreChannelManager(
             scope,
             bufferSize,
             onEach = {},
