@@ -5,27 +5,25 @@ buildscript {
         google()
     }
 
-    apply from: 'buildsystem/dependencies.gradle'
-
     dependencies {
-        classpath "com.android.tools.build:gradle:${versions.androidGradlePlugin}"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:${versions.kotlin}"
-        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:${versions.binaryCompatibilityValidator}"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaGradlePlugin}"
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:${versions.ktlintGradle}"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradlePlugin}"
-        classpath "org.jacoco:org.jacoco.core:${versions.jacocoGradlePlugin}"
-        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:${versions.atomicFuPlugin}"
-        classpath "com.vanniktech:gradle-maven-publish-plugin:${versions.mavenPublishPlugin}"
+        classpath "com.android.tools.build:gradle:${Version.androidGradlePlugin}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.baseKotlin}"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:${Version.baseKotlin}"
+        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:${Version.binaryCompatibilityValidator}"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${Version.dokkaGradlePlugin}"
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:${Version.ktlintGradle}"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:${Version.spotlessPluginGradle}"
+        classpath "org.jacoco:org.jacoco.core:${Version.jacocoGradlePlugin}"
+        classpath "com.vanniktech:gradle-maven-publish-plugin:${Version.mavenPublishPlugin}"
+        classpath "org.jetbrains.kotlinx:kover:${Version.kover}"
     }
 }
 
-apply from: 'buildsystem/dependencies.gradle'
-
 apply plugin: 'binary-compatibility-validator'
+apply plugin: 'kover'
 
 apiValidation {
+
 }
 
 allprojects {
@@ -37,7 +35,7 @@ allprojects {
 
     apply plugin: 'org.jlleitschuh.gradle.ktlint'
     ktlint {
-        version = versions.ktlint
+        version = Version.ktlint
         disabledRules = ["import-ordering"]
     }
 
@@ -63,5 +61,23 @@ allprojects {
         mavenPublish {
             sonatypeHost = "S01"
         }
+    }
+}
+
+koverMerged {
+    enable()
+
+    xmlReport {
+        onCheck.set(true)
+        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
+    }
+
+    htmlReport {
+        onCheck.set(true)
+        reportDir.set(layout.projectDirectory.dir("kover/html"))
+    }
+
+    verify {
+        onCheck.set(true)
     }
 }
