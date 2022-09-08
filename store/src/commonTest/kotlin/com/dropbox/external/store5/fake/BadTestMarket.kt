@@ -11,20 +11,19 @@ internal object BadTestMarket {
     val memoryLruCache = ShareableLruCache(10)
     val db = FakeDb()
 
-    private val memoryLruCacheStore = Store.Builder<String, Note, Note>()
-        .read { throw Exception() }
-        .write { _, _ -> throw Exception() }
-        .delete { throw Exception() }
-        .deleteAll { throw Exception() }
-        .build()
+    private val memoryLruCacheStore = Store<String, Note, Note>(
+        read = { throw Exception() },
+        write = { _, _ -> throw Exception() },
+        delete = { throw Exception() },
+        deleteAll = { throw Exception() }
+    )
 
-    private val dbStore = Store.Builder<String, Note, Note>()
-        .read { throw Exception() }
-        .write { _, _ -> throw Exception() }
-        .delete { throw Exception() }
-        .deleteAll { throw Exception() }
-        .build()
-
+    private val dbStore = Store<String, Note, Note>(
+        read = { throw Exception() },
+        write = { _, _ -> throw Exception() },
+        delete = { throw Exception() },
+        deleteAll = { throw Exception() },
+    )
 
     private val conflictResolver = ConflictResolver<String, Note, Note>(
         setLastFailedWriteTime = { key, updated -> db.setLastWriteTime(key, updated) },

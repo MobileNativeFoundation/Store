@@ -48,7 +48,7 @@ class UnstableConnectionMarketTests {
 
         market.delete(FakeNotes.One.key)
         val shouldBeEmpty = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Empty>(shouldBeEmpty)
+        assertIs<MarketResponse.Empty>(shouldBeEmpty)
 
         val newNote2 = newNote1.copy(content = "New Content")
         val writeRequest2 = factory.buildWriter<Note>(FakeNotes.One.key, newNote2, fail = true)
@@ -58,7 +58,7 @@ class UnstableConnectionMarketTests {
 
         market.read(refreshRequest)
         val last = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Success<Note>>(last)
+        assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(FakeNotes.One.note, last.value)
     }
 
@@ -83,9 +83,9 @@ class UnstableConnectionMarketTests {
         advanceUntilIdle()
 
         val last = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Success<Note>>(last)
+        assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote2, last.value)
-        assertEquals(Market.Response.Companion.Origin.Remote, last.origin)
+        assertEquals(MarketResponse.Companion.Origin.Remote, last.origin)
     }
 
 
@@ -96,18 +96,18 @@ class UnstableConnectionMarketTests {
         val sharedFlow = sharedFlowAsync.await()
         advanceUntilIdle()
         val last1 = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Success<Note>>(last1)
+        assertIs<MarketResponse.Success<Note>>(last1)
         assertEquals(FakeNotes.One.note, last1.value)
-        assertEquals(Market.Response.Companion.Origin.Remote, last1.origin)
+        assertEquals(MarketResponse.Companion.Origin.Remote, last1.origin)
 
         val failureReadRequest = factory.buildReader<Note>(FakeNotes.One.key, fail = true, refresh = true)
         market.read(failureReadRequest)
         advanceUntilIdle()
         val last2 = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Failure>(last2)
+        assertIs<MarketResponse.Failure>(last2)
 
-        val last2Success = sharedFlow.replayCache.filterIsInstance<Market.Response.Success<Note>>().last()
-        assertEquals(Market.Response.Companion.Origin.Store, last2Success.origin)
+        val last2Success = sharedFlow.replayCache.filterIsInstance<MarketResponse.Success<Note>>().last()
+        assertEquals(MarketResponse.Companion.Origin.Store, last2Success.origin)
         assertEquals(FakeNotes.One.note, last2Success.value)
 
         val memoryLruCacheValueAsync = async { memoryLruCache.read<Note>(FakeNotes.One.key).last() }

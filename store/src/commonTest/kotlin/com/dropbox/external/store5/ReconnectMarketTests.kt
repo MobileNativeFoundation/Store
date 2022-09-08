@@ -45,7 +45,7 @@ class ReconnectMarketTests {
 
         val response = market.read(readRequest)
         val last = response.replayCache.last()
-        assertIs<Market.Response.Success<Note>>(last)
+        assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
     }
 }

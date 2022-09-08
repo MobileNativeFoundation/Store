@@ -11,19 +11,19 @@ internal object OkTestMarket {
     val memoryLruCache = ShareableLruCache(10)
     val db = FakeDb()
 
-    private val memoryLruCacheStore = Store.Builder<String, Note, Note>()
-        .read { key -> memoryLruCache.read(key) }
-        .write { key, input -> memoryLruCache.write(key, input) }
-        .delete { key -> memoryLruCache.delete(key) }
-        .deleteAll { memoryLruCache.delete() }
-        .build()
+    private val memoryLruCacheStore = Store<String, Note, Note>(
+        read = { key -> memoryLruCache.read(key) },
+        write = { key, input -> memoryLruCache.write(key, input) },
+        delete = { key -> memoryLruCache.delete(key) },
+        deleteAll = { memoryLruCache.delete() },
+    )
 
-    private val dbStore = Store.Builder<String, Note, Note>()
-        .read { key -> db.read(key) }
-        .write { key, input -> db.write(key, input) }
-        .delete { key -> db.delete(key) }
-        .deleteAll { db.delete() }
-        .build()
+    private val dbStore = Store<String, Note, Note>(
+        read = { key -> db.read(key) },
+        write = { key, input -> db.write(key, input) },
+        delete = { key -> db.delete(key) },
+        deleteAll = { db.delete() },
+    )
 
     private val conflictResolver = ConflictResolver<String, Note, Note>(
         setLastFailedWriteTime = { key, updated -> db.setLastWriteTime(key, updated) },

@@ -45,9 +45,9 @@ class BadStoreTests {
         val response = market.read(request)
         advanceUntilIdle()
         val replayCache = response.replayCache
-        assertContains(replayCache, Market.Response.Loading)
+        assertContains(replayCache, MarketResponse.Loading)
         val last = replayCache.last()
-        assertIs<Market.Response.Failure>(last)
+        assertIs<MarketResponse.Failure>(last)
     }
 
     @Test

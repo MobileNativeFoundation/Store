@@ -2,9 +2,12 @@
 
 package com.dropbox.external.store5.fake
 
-import com.dropbox.external.store5.Fetch
-import com.dropbox.external.store5.Market
-import com.dropbox.external.store5.definition.Fetcher
+import com.dropbox.external.store5.Fetcher
+import com.dropbox.external.store5.OnMarketCompletion
+import com.dropbox.external.store5.OnRemoteCompletion
+import com.dropbox.external.store5.Reader
+import com.dropbox.external.store5.Updater
+import com.dropbox.external.store5.Writer
 import com.dropbox.external.store5.fake.api.Api
 import kotlinx.datetime.Clock
 import kotlinx.serialization.InternalSerializationApi
@@ -13,7 +16,7 @@ import kotlinx.serialization.serializer
 
 internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api: Api<Key, Output>) {
 
-    fun buildFetcher(fail: Boolean = false): Fetcher<Key, Input, Output> = Fetch.Request.Get(
+    fun buildFetcher(fail: Boolean = false): Fetcher<Key, Input, Output> = Fetcher(
         get = { key -> api.get(key, fail) },
         post = { key, input -> api.post(key, input as Output, fail) },
         converter = { it as Input }
@@ -24,18 +27,18 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         key: Key,
         refresh: Boolean = false,
         fail: Boolean = false,
-        onCompletionsProducer: () -> List<Market.Request.Reader.OnCompletion<Output>> = { listOf() }
+        onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() }
     ) =
-        Market.Request.Reader(
+        Reader(
             key = key,
-            request = buildFetcher(fail),
+            fetcher = buildFetcher(fail),
             refresh = refresh,
             serializer = T::class.serializer() as KSerializer<Output>,
             onCompletions = onCompletionsProducer()
         )
 
-    fun buildPostRequest(fail: Boolean = false, onCompletion: Fetch.OnCompletion<Output>? = null) =
-        Fetch.Request.Post<Key, Output, Output>(
+    fun buildUpdater(fail: Boolean = false, onCompletion: OnRemoteCompletion<Output>? = null) =
+        Updater<Key, Output, Output>(
             post = { key, input -> api.post(key, input, fail) },
             onCompletion = onCompletion ?: doNothingOnCompletion(),
             converter = { it },
@@ -47,18 +50,18 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         key: Key,
         input: Output,
         fail: Boolean = false,
-        onCompletionsProducer: () -> List<Market.Request.Writer.OnCompletion<Output>> = { listOf() },
-        postOnCompletion: Fetch.OnCompletion<Output>? = null
+        onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() },
+        postOnCompletion: OnRemoteCompletion<Output>? = null
     ) =
-        Market.Request.Writer<Key, Output, Output>(
+        Writer(
             key = key,
             input = input,
-            request = buildPostRequest(fail, postOnCompletion),
+            updater = buildUpdater(fail, postOnCompletion),
             serializer = T::class.serializer() as KSerializer<Output>,
             onCompletions = onCompletionsProducer()
         )
 
-    private fun <T : Any> doNothingOnCompletion() = Fetch.OnCompletion<T>(
+    private fun <T : Any> doNothingOnCompletion() = OnRemoteCompletion<T>(
         onSuccess = {},
         onFailure = {}
     )

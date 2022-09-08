@@ -3,19 +3,19 @@
 package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.ConflictResolver
-import com.dropbox.external.store5.Converter
-import com.dropbox.external.store5.Fetch
+import com.dropbox.external.store5.Fetcher
 import com.dropbox.external.store5.Market
-import com.dropbox.external.store5.Market.Response.Companion.Origin
-import com.dropbox.external.store5.PostRequest
+import com.dropbox.external.store5.MarketResponse
+import com.dropbox.external.store5.OnMarketCompletion
+import com.dropbox.external.store5.OnRemoteCompletion
+import com.dropbox.external.store5.Reader
+import com.dropbox.external.store5.RemoteResult
 import com.dropbox.external.store5.Store
+import com.dropbox.external.store5.Updater
 import com.dropbox.external.store5.Write
-import com.dropbox.external.store5.definition.AnyBroadcast
-import com.dropbox.external.store5.definition.AnyReadCompletionsQueue
-import com.dropbox.external.store5.definition.AnyWriteRequestQueue
-import com.dropbox.external.store5.definition.SomeBroadcast
-import com.dropbox.external.store5.definition.SomeWriteRequestQueue
-import com.dropbox.external.store5.definition.Updater
+import com.dropbox.external.store5.Writer
+import com.dropbox.external.store5.definition.Converter
+import com.dropbox.external.store5.definition.PostRequest
 import com.dropbox.external.store5.operator.shareableMutableMapOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -25,13 +25,21 @@ import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+
+typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
+typealias AnyWriteRequestQueue<Key> = ArrayDeque<Updater<Key, *, *>>
+typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<Updater<Key, Input, *>>
+typealias AnyBroadcast = MutableSharedFlow<MarketResponse<*>>
+typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
+
+
 /**
  * Thread-safe [Market] implementation.
  * @param stores List of [Store]. Order matters! [ShareableMarket] executes [read], [write], and [delete] operations iteratively.
  * @param conflictResolver Implementation of [ConflictResolver]. Used in [read] to eagerly resolve conflicts and in [write] to persist write request failures.
  * @property readCompletions Thread-safe mapping of Key to [AnyReadCompletionsQueue]. Queue size is checked before handling a market read request. All completion handlers in queue are processed on market read response.
  * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [Updater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we invoke [resetWriteRequestQueue]. On failure, we use [ConflictResolver.setLastFailedWriteTime]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
- * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [Market.Response]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
+ * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
 class ShareableMarket<Key : Any> internal constructor(
     private val scope: CoroutineScope,
@@ -42,17 +50,17 @@ class ShareableMarket<Key : Any> internal constructor(
     private val writeRequests = shareableMutableMapOf<Key, AnyWriteRequestQueue<Key>>()
     private val broadcasts = shareableMutableMapOf<Key, AnyBroadcast>()
 
-    override suspend fun <Input : Any, Output : Any> read(request: Market.Request.Reader<Key, Input, Output>): SomeBroadcast<Output> {
-        val conflictsMightExistDeferred = scope.async { conflictsMightExist<Output>(request.key) }
+    override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeBroadcast<Output> {
+        val conflictsMightExistDeferred = scope.async { conflictsMightExist<Output>(reader.key) }
         val conflictsMightExist = conflictsMightExistDeferred.await()
 
         val eagerlyResolveConflictsDeferred = scope.async {
             if (conflictsMightExist) {
                 val isResolved = scope.async {
                     eagerlyResolveConflicts(
-                        request.key,
-                        request.request.post,
-                        request.request.converter
+                        reader.key,
+                        reader.fetcher.post,
+                        reader.fetcher.converter
                     )
                 }
                 isResolved.await()
@@ -61,22 +69,21 @@ class ShareableMarket<Key : Any> internal constructor(
             }
         }
         eagerlyResolveConflictsDeferred.await()
-        val isResolved = eagerlyResolveConflictsDeferred.isCompleted
 
-        addOrInitReadCompletions(request.key, request.onCompletions.toMutableList())
+        addOrInitReadCompletions(reader.key, reader.onCompletions.toMutableList())
 
         val isBroadcasting = scope.async {
-            if (notBroadcasting(request.key)) {
-                startBroadcast<Output>(request.key)
-                val emittedLatest = async { getAndEmitLatest(request.key, request.request) }
+            if (notBroadcasting(reader.key)) {
+                startBroadcast<Output>(reader.key)
+                val emittedLatest = async { getAndEmitLatest(reader.key, reader.fetcher) }
                 emittedLatest.await()
             }
         }
         isBroadcasting.await()
-        if (request.refresh && readNotInProgress(request.key)) {
-            getAndEmitLatest(request.key, request.request)
+        if (reader.refresh && readNotInProgress(reader.key)) {
+            getAndEmitLatest(reader.key, reader.fetcher)
         }
-        return requireBroadcast(request.key)
+        return requireBroadcast(reader.key)
     }
 
     private fun <Input : Any, Output : Any> updateWriteRequestQueue(
@@ -93,8 +100,8 @@ class ShareableMarket<Key : Any> internal constructor(
             for (writeRequest in writeRequestQueue) {
                 if (writeRequest.created <= created) {
                     val output = converter(input)
-                    val fetchResponse = Fetch.Result.Success(output)
-                    (writeRequest.onCompletion as Fetch.OnCompletion<Output>).onSuccess(fetchResponse)
+                    val fetchResponse = RemoteResult.Success(output)
+                    (writeRequest.onCompletion as OnRemoteCompletion<Output>).onSuccess(fetchResponse)
                 } else {
                     outstandingWriteRequests.add(writeRequest)
                 }
@@ -103,46 +110,47 @@ class ShareableMarket<Key : Any> internal constructor(
         }
     }
 
-    private suspend fun <Input : Any, Output : Any> tryUpdateServer(request: Market.Request.Writer<Key, Input, Output>): Boolean {
-        return when (val result = tryPost<Input, Output>(request.key)) {
-            is Fetch.Result.Success -> {
+    private suspend fun <Input : Any, Output : Any> tryUpdateServer(writer: Writer<Key, Input, Output>): Boolean {
+        return when (val result = tryPost<Input, Output>(writer.key)) {
+            is RemoteResult.Success -> {
                 updateWriteRequestQueue(
-                    key = request.key,
+                    key = writer.key,
                     input = result.value,
-                    created = request.request.created,
-                    converter = request.request.converter
+                    created = writer.updater.created,
+                    converter = writer.updater.converter
                 )
 
-                val output = request.request.converter(result.value)
-                val marketResponse = Market.Response.Success(output, origin = Origin.Remote)
+                val output = writer.updater.converter(result.value)
+                val marketResponse = MarketResponse.Success(output, origin = MarketResponse.Companion.Origin.Remote)
 
-                conflictResolver.deleteFailedWriteRecord(request.key)
-                request.onCompletions.forEach { onCompletion -> onCompletion.onSuccess(marketResponse) }
+                conflictResolver.deleteFailedWriteRecord(writer.key)
+                writer.onCompletions.forEach { onCompletion -> onCompletion.onSuccess(marketResponse) }
                 true
             }
 
-            is Fetch.Result.Failure -> {
-                conflictResolver.setLastFailedWriteTime(request.key, Clock.System.now().epochSeconds)
+            is RemoteResult.Failure -> {
+                conflictResolver.setLastFailedWriteTime(writer.key, Clock.System.now().epochSeconds)
                 false
             }
         }
     }
 
-    override suspend fun <Input : Any, Output : Any> write(request: Market.Request.Writer<Key, Input, Output>): Boolean {
-        val broadcast = requireBroadcast<Output>(request.key)
+    override suspend fun <Input : Any, Output : Any> write(writer: Writer<Key, Input, Output>): Boolean {
+        val broadcast = requireBroadcast<Output>(writer.key)
 
-        val responseLocalWrite = Market.Response.Success(request.input as Output, origin = Origin.LocalWrite)
+        val responseLocalWrite =
+            MarketResponse.Success(writer.input as Output, origin = MarketResponse.Companion.Origin.LocalWrite)
         broadcast.emit(responseLocalWrite)
-        stores.forEach { store -> (store.write as Write<Key, Input>).invoke(request.key, request.input) }
+        stores.forEach { store -> (store.write as Write<Key, Input>).invoke(writer.key, writer.input) }
 
-        addOrInitWriteRequest(request.key, request.request)
+        addOrInitWriteRequest(writer.key, writer.updater)
 
-        return tryUpdateServer(request)
+        return tryUpdateServer(writer)
     }
 
     private fun <Output : Any> lastOrNull(key: Key): Output? {
         val last = getBroadcast<Output>(key)?.replayCache?.last()
-        if (last is Market.Response.Success) {
+        if (last is MarketResponse.Success) {
             return last.value
         }
         return null
@@ -155,30 +163,30 @@ class ShareableMarket<Key : Any> internal constructor(
             try {
                 val last = (store.read(key) as Flow<Output?>).lastOrNull()
                 if (last != null) {
-                    broadcast.emit(Market.Response.Success(last, origin = Origin.Store))
+                    broadcast.emit(MarketResponse.Success(last, origin = MarketResponse.Companion.Origin.Store))
                     return
                 }
             } catch (_: Throwable) {
             }
         }
 
-        broadcast.emit(Market.Response.Loading)
+        broadcast.emit(MarketResponse.Loading)
     }
 
-    private suspend fun <Input : Any, Output : Any> refresh(key: Key, request: Fetch.Request.Get<Key, Input, Output>) {
+    private suspend fun <Input : Any, Output : Any> refresh(key: Key, fetcher: Fetcher<Key, Input, Output>) {
 
         try {
-            val response = when (val result = request.get(key)) {
-                null -> Market.Response.Empty
-                else -> Market.Response.Success(result, origin = Origin.Remote)
+            val response = when (val result = fetcher.get(key)) {
+                null -> MarketResponse.Empty
+                else -> MarketResponse.Success(result, origin = MarketResponse.Companion.Origin.Remote)
             }
 
-            if (response is Market.Response.Success) {
+            if (response is MarketResponse.Success) {
                 stores.forEach { store -> (store.write as Write<Key, Output>).invoke(key, response.value) }
 
                 readCompletions.access {
                     it[key]!!.forEach { anyOnCompletion ->
-                        val onCompletion = anyOnCompletion as Market.Request.Reader.OnCompletion<Output>
+                        val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
                         onCompletion.onSuccess(response)
                     }
                 }
@@ -190,9 +198,9 @@ class ShareableMarket<Key : Any> internal constructor(
                 }
             }
         } catch (throwable: Throwable) {
-            val response = Market.Response.Failure(
+            val response = MarketResponse.Failure(
                 error = throwable,
-                origin = Origin.Remote
+                origin = MarketResponse.Companion.Origin.Remote
             )
 
             broadcasts.access {
@@ -203,23 +211,22 @@ class ShareableMarket<Key : Any> internal constructor(
 
             readCompletions.access {
                 it[key]!!.forEach { anyOnCompletion ->
-                    val onCompletion = anyOnCompletion as Market.Request.Reader.OnCompletion<Output>
+                    val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
                     onCompletion.onFailure(response)
                 }
             }
         }
     }
 
-    private suspend fun <Input : Any, Output : Any> tryPost(key: Key): Fetch.Result<Input> {
+    private suspend fun <Input : Any, Output : Any> tryPost(key: Key): RemoteResult<Input> {
         return try {
             val request = getLatestWriteRequest<Input, Output>(key)
             val last = lastOrNull<Input>(key) ?: throw Exception()
             return when (request.post(key, last)) {
-                null -> Fetch.Result.Failure(Exception())
-                else -> Fetch.Result.Success(last)
+                else -> RemoteResult.Success(last)
             }
         } catch (throwable: Throwable) {
-            Fetch.Result.Failure(throwable)
+            RemoteResult.Failure(throwable)
         }
     }
 
@@ -235,7 +242,7 @@ class ShareableMarket<Key : Any> internal constructor(
             }
         }
         val broadcast = requireBroadcast<Any>(key)
-        val response = Market.Response.Empty
+        val response = MarketResponse.Empty
         broadcast.emit(response)
         return true
     }
@@ -250,7 +257,7 @@ class ShareableMarket<Key : Any> internal constructor(
         }
 
         for (broadcast in broadcasts.access { it.values }) {
-            val response = Market.Response.Empty
+            val response = MarketResponse.Empty
             broadcast.emit(response)
         }
 
@@ -259,13 +266,13 @@ class ShareableMarket<Key : Any> internal constructor(
 
     private fun <Input : Any, Output : Any> getAndEmitLatest(
         key: Key,
-        request: Fetch.Request.Get<Key, Input, Output>
+        fetcher: Fetcher<Key, Input, Output>
     ) {
         scope.launch {
             val isBroadcasting = async { startIfNotBroadcasting<Output>(key) }
             isBroadcasting.await()
             load<Output>(key)
-            refresh(key, request)
+            refresh(key, fetcher)
         }
     }
 
@@ -276,7 +283,7 @@ class ShareableMarket<Key : Any> internal constructor(
                 broadcasts.access {
                     it[key] = MutableSharedFlow(4)
                     scope.launch {
-                        it[key]!!.emit(Market.Response.Loading)
+                        it[key]!!.emit(MarketResponse.Loading)
                     }
                 }
             }
@@ -312,17 +319,17 @@ class ShareableMarket<Key : Any> internal constructor(
 
     private fun <Input : Any, Output : Any> addOrInitWriteRequest(
         key: Key,
-        request: Fetch.Request.Post<Key, Input, Output>
+        updater: Updater<Key, Input, Output>
     ) {
         if (writeRequests.access { it[key] == null }) {
             writeRequests.access { it[key] = ArrayDeque() }
         }
 
-        writeRequests.access { it[key]!!.add(request) }
+        writeRequests.access { it[key]!!.add(updater) }
     }
 
     private fun <Input : Any, Output : Any> getLatestWriteRequest(key: Key) =
-        writeRequests.access { it[key]?.last() } as Fetch.Request.Post<Key, Input, Output>
+        writeRequests.access { it[key]?.last() } as Updater<Key, Input, Output>
 
     private fun readInProgress(key: Key) = readCompletions.access { it[key].isNullOrEmpty().not() }
 

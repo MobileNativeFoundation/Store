@@ -42,7 +42,7 @@ class OfflineMarketTests {
 
         val readRequest = factory.buildReader<Note>(FakeNotes.One.key)
 
-        val readResponse = async { market.read<Note, Note>(readRequest) }
+        val readResponse = async { market.read(readRequest) }
         val sharedFlow = readResponse.await()
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
@@ -55,39 +55,39 @@ class OfflineMarketTests {
 
         val last = sharedFlow.replayCache.last()
 
-        assertIs<Market.Response.Success<Note>>(last)
+        assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
-        assertEquals(Market.Response.Companion.Origin.LocalWrite, last.origin)
+        assertEquals(MarketResponse.Companion.Origin.LocalWrite, last.origin)
     }
 
     @Test
     fun failRefresh() = testScope.runTest {
         val readRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true, fail = true)
 
-        val readResponse = async { market.read<Note, Note>(readRequest) }
+        val readResponse = async { market.read(readRequest) }
         val sharedFlow = readResponse.await()
         val first = sharedFlow.replayCache.first()
-        assertIs<Market.Response.Loading>(first)
+        assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
         val second = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Failure>(second)
-        assertEquals(Market.Response.Companion.Origin.Remote, second.origin)
+        assertIs<MarketResponse.Failure>(second)
+        assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
 
-        val writeResponse = async { market.write<Note, Note>(writeRequest) }
+        val writeResponse = async { market.write(writeRequest) }
         val isSuccess = writeResponse.await()
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = sharedFlow.replayCache.findLast { it is Market.Response.Success<Note> }
+        val lastSuccess = sharedFlow.replayCache.findLast { it is MarketResponse.Success<Note> }
 
-        assertIs<Market.Response.Success<Note>>(lastSuccess)
+        assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)
-        assertEquals(Market.Response.Companion.Origin.LocalWrite, lastSuccess.origin)
+        assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastSuccess.origin)
     }
 
     @Test
@@ -95,7 +95,7 @@ class OfflineMarketTests {
 
         var readErrorsHandled = 0
 
-        val onCompletion = Market.Request.Reader.OnCompletion<Note>(
+        val onCompletion = OnMarketCompletion<Note>(
             onSuccess = {},
             onFailure = { readErrorsHandled++ }
         )
@@ -106,30 +106,30 @@ class OfflineMarketTests {
             fail = true
         ) { listOf(onCompletion) }
 
-        val readResponse = async { market.read<Note, Note>(readRequest) }
+        val readResponse = async { market.read(readRequest) }
         val sharedFlow = readResponse.await()
         val first = sharedFlow.replayCache.first()
-        assertIs<Market.Response.Loading>(first)
+        assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
         val second = sharedFlow.replayCache.last()
-        assertIs<Market.Response.Failure>(second)
-        assertEquals(Market.Response.Companion.Origin.Remote, second.origin)
+        assertIs<MarketResponse.Failure>(second)
+        assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
 
-        val writeResponse = async { market.write<Note, Note>(writeRequest) }
+        val writeResponse = async { market.write(writeRequest) }
         val isSuccess = writeResponse.await()
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = sharedFlow.replayCache.findLast { it is Market.Response.Success<Note> }
+        val lastSuccess = sharedFlow.replayCache.findLast { it is MarketResponse.Success<Note> }
 
-        assertIs<Market.Response.Success<Note>>(lastSuccess)
+        assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)
-        assertEquals(Market.Response.Companion.Origin.LocalWrite, lastSuccess.origin)
+        assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastSuccess.origin)
         assertEquals(1, readErrorsHandled)
     }
 }
