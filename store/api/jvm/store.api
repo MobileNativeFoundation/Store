@@ -1,0 +1,269 @@
+public final class com/dropbox/external/store5/ConflictResolver {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Lkotlin/jvm/functions/Function3;
+	public final fun component3 ()Lkotlin/jvm/functions/Function2;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/ConflictResolver;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/ConflictResolver;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/dropbox/external/store5/ConflictResolver;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDeleteFailedWriteRecord ()Lkotlin/jvm/functions/Function2;
+	public final fun getGetLastFailedWriteTime ()Lkotlin/jvm/functions/Function2;
+	public final fun getSetLastFailedWriteTime ()Lkotlin/jvm/functions/Function3;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/dropbox/external/store5/Fetch {
+}
+
+public final class com/dropbox/external/store5/Fetch$OnCompletion {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Fetch$OnCompletion;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Fetch$OnCompletion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/external/store5/Fetch$OnCompletion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOnFailure ()Lkotlin/jvm/functions/Function1;
+	public final fun getOnSuccess ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/dropbox/external/store5/Fetch$Request {
+}
+
+public final class com/dropbox/external/store5/Fetch$Request$Get : com/dropbox/external/store5/Fetch$Request {
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Lkotlin/jvm/functions/Function3;
+	public final fun component3 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Fetch$Request$Get;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Fetch$Request$Get;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/external/store5/Fetch$Request$Get;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConverter ()Lkotlin/jvm/functions/Function1;
+	public final fun getGet ()Lkotlin/jvm/functions/Function2;
+	public final fun getPost ()Lkotlin/jvm/functions/Function3;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Fetch$Request$Post : com/dropbox/external/store5/Fetch$Request {
+	public fun <init> (Lkotlin/jvm/functions/Function3;JLcom/dropbox/external/store5/Fetch$OnCompletion;Lkotlin/jvm/functions/Function1;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function3;
+	public final fun component2 ()J
+	public final fun component3 ()Lcom/dropbox/external/store5/Fetch$OnCompletion;
+	public final fun component4 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function3;JLcom/dropbox/external/store5/Fetch$OnCompletion;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Fetch$Request$Post;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Fetch$Request$Post;Lkotlin/jvm/functions/Function3;JLcom/dropbox/external/store5/Fetch$OnCompletion;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/external/store5/Fetch$Request$Post;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConverter ()Lkotlin/jvm/functions/Function1;
+	public final fun getCreated ()J
+	public final fun getOnCompletion ()Lcom/dropbox/external/store5/Fetch$OnCompletion;
+	public final fun getPost ()Lkotlin/jvm/functions/Function3;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/dropbox/external/store5/Fetch$Result {
+}
+
+public final class com/dropbox/external/store5/Fetch$Result$Failure : com/dropbox/external/store5/Fetch$Result {
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Throwable;)Lcom/dropbox/external/store5/Fetch$Result$Failure;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Fetch$Result$Failure;Ljava/lang/Throwable;ILjava/lang/Object;)Lcom/dropbox/external/store5/Fetch$Result$Failure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Fetch$Result$Success : com/dropbox/external/store5/Fetch$Result {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Lcom/dropbox/external/store5/Fetch$Result$Success;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Fetch$Result$Success;Ljava/lang/Object;ILjava/lang/Object;)Lcom/dropbox/external/store5/Fetch$Result$Success;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/dropbox/external/store5/Market {
+	public static final field Companion Lcom/dropbox/external/store5/Market$Companion;
+	public abstract fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun read (Lcom/dropbox/external/store5/Market$Request$Reader;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun write (Lcom/dropbox/external/store5/Market$Request$Writer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/dropbox/external/store5/Market$Companion {
+	public final fun of (Lkotlinx/coroutines/CoroutineScope;Ljava/util/List;Lcom/dropbox/external/store5/ConflictResolver;)Lcom/dropbox/external/store5/impl/ShareableMarket;
+}
+
+public abstract class com/dropbox/external/store5/Market$Request {
+	public abstract fun getKey ()Ljava/lang/Object;
+}
+
+public final class com/dropbox/external/store5/Market$Request$Reader : com/dropbox/external/store5/Market$Request {
+	public fun <init> (Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Get;Lkotlinx/serialization/KSerializer;Ljava/util/List;Z)V
+	public synthetic fun <init> (Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Get;Lkotlinx/serialization/KSerializer;Ljava/util/List;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Lcom/dropbox/external/store5/Fetch$Request$Get;
+	public final fun component3 ()Lkotlinx/serialization/KSerializer;
+	public final fun component4 ()Ljava/util/List;
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Get;Lkotlinx/serialization/KSerializer;Ljava/util/List;Z)Lcom/dropbox/external/store5/Market$Request$Reader;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Request$Reader;Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Get;Lkotlinx/serialization/KSerializer;Ljava/util/List;ZILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Request$Reader;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getKey ()Ljava/lang/Object;
+	public final fun getOnCompletions ()Ljava/util/List;
+	public final fun getRefresh ()Z
+	public final fun getRequest ()Lcom/dropbox/external/store5/Fetch$Request$Get;
+	public final fun getSerializer ()Lkotlinx/serialization/KSerializer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Market$Request$Reader$OnCompletion {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Market$Request$Reader$OnCompletion;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Request$Reader$OnCompletion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Request$Reader$OnCompletion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOnFailure ()Lkotlin/jvm/functions/Function1;
+	public final fun getOnSuccess ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Market$Request$Writer : com/dropbox/external/store5/Market$Request {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Post;Lkotlinx/serialization/KSerializer;Ljava/util/List;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun component3 ()Lcom/dropbox/external/store5/Fetch$Request$Post;
+	public final fun component4 ()Lkotlinx/serialization/KSerializer;
+	public final fun component5 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Post;Lkotlinx/serialization/KSerializer;Ljava/util/List;)Lcom/dropbox/external/store5/Market$Request$Writer;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Request$Writer;Ljava/lang/Object;Ljava/lang/Object;Lcom/dropbox/external/store5/Fetch$Request$Post;Lkotlinx/serialization/KSerializer;Ljava/util/List;ILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Request$Writer;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInput ()Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/Object;
+	public final fun getOnCompletions ()Ljava/util/List;
+	public final fun getRequest ()Lcom/dropbox/external/store5/Fetch$Request$Post;
+	public final fun getSerializer ()Lkotlinx/serialization/KSerializer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Market$Request$Writer$OnCompletion {
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Market$Request$Writer$OnCompletion;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Request$Writer$OnCompletion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Request$Writer$OnCompletion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOnFailure ()Lkotlin/jvm/functions/Function1;
+	public final fun getOnSuccess ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/dropbox/external/store5/Market$Response {
+	public static final field Companion Lcom/dropbox/external/store5/Market$Response$Companion;
+}
+
+public final class com/dropbox/external/store5/Market$Response$Companion {
+}
+
+public final class com/dropbox/external/store5/Market$Response$Companion$Origin : java/lang/Enum {
+	public static final field LocalWrite Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public static final field Remote Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public static final field Store Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public static fun valueOf (Ljava/lang/String;)Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public static fun values ()[Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+}
+
+public final class com/dropbox/external/store5/Market$Response$Empty : com/dropbox/external/store5/Market$Response {
+	public static final field INSTANCE Lcom/dropbox/external/store5/Market$Response$Empty;
+}
+
+public final class com/dropbox/external/store5/Market$Response$Failure : com/dropbox/external/store5/Market$Response {
+	public fun <init> (Ljava/lang/Throwable;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public final fun copy (Ljava/lang/Throwable;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;)Lcom/dropbox/external/store5/Market$Response$Failure;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Response$Failure;Ljava/lang/Throwable;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;ILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Response$Failure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Ljava/lang/Throwable;
+	public final fun getOrigin ()Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/dropbox/external/store5/Market$Response$Loading : com/dropbox/external/store5/Market$Response {
+	public static final field INSTANCE Lcom/dropbox/external/store5/Market$Response$Loading;
+}
+
+public final class com/dropbox/external/store5/Market$Response$Success : com/dropbox/external/store5/Market$Response {
+	public fun <init> (Ljava/lang/Object;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public final fun copy (Ljava/lang/Object;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;)Lcom/dropbox/external/store5/Market$Response$Success;
+	public static synthetic fun copy$default (Lcom/dropbox/external/store5/Market$Response$Success;Ljava/lang/Object;Lcom/dropbox/external/store5/Market$Response$Companion$Origin;ILjava/lang/Object;)Lcom/dropbox/external/store5/Market$Response$Success;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOrigin ()Lcom/dropbox/external/store5/Market$Response$Companion$Origin;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/dropbox/external/store5/Persister {
+	public abstract fun clear ()Z
+	public abstract fun delete (Ljava/lang/Object;)Z
+	public abstract fun read (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;)Z
+}
+
+public final class com/dropbox/external/store5/Store {
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getClear ()Lkotlin/jvm/functions/Function1;
+	public final fun getDelete ()Lkotlin/jvm/functions/Function2;
+	public final fun getRead ()Lkotlin/jvm/functions/Function2;
+	public final fun getWrite ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/dropbox/external/store5/Store$Builder {
+	public fun <init> ()V
+	public final fun build ()Lcom/dropbox/external/store5/Store;
+	public final fun clear (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Store$Builder;
+	public final fun delete (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/Store$Builder;
+	public final fun read (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/Store$Builder;
+	public final fun write (Lkotlin/jvm/functions/Function3;)Lcom/dropbox/external/store5/Store$Builder;
+}
+
+public final class com/dropbox/external/store5/impl/ShareableLruCache : com/dropbox/external/store5/Persister {
+	public static final field Companion Lcom/dropbox/external/store5/impl/ShareableLruCache$Companion;
+	public fun <init> (I)V
+	public fun clear ()Z
+	public synthetic fun delete (Ljava/lang/Object;)Z
+	public fun delete (Ljava/lang/String;)Z
+	public synthetic fun read (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public fun read (Ljava/lang/String;)Lkotlinx/coroutines/flow/Flow;
+	public synthetic fun write (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun write (Ljava/lang/String;Ljava/lang/Object;)Z
+}
+
+public final class com/dropbox/external/store5/impl/ShareableLruCache$Companion {
+}
+
+public final class com/dropbox/external/store5/impl/ShareableMarket : com/dropbox/external/store5/Market {
+	public fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun read (Lcom/dropbox/external/store5/Market$Request$Reader;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun write (Lcom/dropbox/external/store5/Market$Request$Writer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
