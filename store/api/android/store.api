@@ -98,8 +98,8 @@ public final class com/dropbox/external/store5/Fetch$Result$Success : com/dropbo
 
 public abstract interface class com/dropbox/external/store5/Market {
 	public static final field Companion Lcom/dropbox/external/store5/Market$Companion;
-	public abstract fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun read (Lcom/dropbox/external/store5/Market$Request$Reader;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun write (Lcom/dropbox/external/store5/Market$Request$Writer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -229,7 +229,7 @@ public final class com/dropbox/external/store5/Market$Response$Success : com/dro
 }
 
 public abstract interface class com/dropbox/external/store5/Persister {
-	public abstract fun clear ()Z
+	public abstract fun delete ()Z
 	public abstract fun delete (Ljava/lang/Object;)Z
 	public abstract fun read (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;)Z
@@ -237,8 +237,8 @@ public abstract interface class com/dropbox/external/store5/Persister {
 
 public final class com/dropbox/external/store5/Store {
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getClear ()Lkotlin/jvm/functions/Function1;
 	public final fun getDelete ()Lkotlin/jvm/functions/Function2;
+	public final fun getDeleteAll ()Lkotlin/jvm/functions/Function1;
 	public final fun getRead ()Lkotlin/jvm/functions/Function2;
 	public final fun getWrite ()Lkotlin/jvm/functions/Function3;
 }
@@ -246,8 +246,8 @@ public final class com/dropbox/external/store5/Store {
 public final class com/dropbox/external/store5/Store$Builder {
 	public fun <init> ()V
 	public final fun build ()Lcom/dropbox/external/store5/Store;
-	public final fun clear (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Store$Builder;
 	public final fun delete (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/Store$Builder;
+	public final fun deleteAll (Lkotlin/jvm/functions/Function1;)Lcom/dropbox/external/store5/Store$Builder;
 	public final fun read (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/Store$Builder;
 	public final fun write (Lkotlin/jvm/functions/Function3;)Lcom/dropbox/external/store5/Store$Builder;
 }
@@ -255,7 +255,7 @@ public final class com/dropbox/external/store5/Store$Builder {
 public final class com/dropbox/external/store5/impl/ShareableLruCache : com/dropbox/external/store5/Persister {
 	public static final field Companion Lcom/dropbox/external/store5/impl/ShareableLruCache$Companion;
 	public fun <init> (I)V
-	public fun clear ()Z
+	public fun delete ()Z
 	public synthetic fun delete (Ljava/lang/Object;)Z
 	public fun delete (Ljava/lang/String;)Z
 	public synthetic fun read (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
@@ -268,8 +268,8 @@ public final class com/dropbox/external/store5/impl/ShareableLruCache$Companion 
 }
 
 public final class com/dropbox/external/store5/impl/ShareableMarket : com/dropbox/external/store5/Market {
-	public fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun delete (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun read (Lcom/dropbox/external/store5/Market$Request$Reader;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun write (Lcom/dropbox/external/store5/Market$Request$Writer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

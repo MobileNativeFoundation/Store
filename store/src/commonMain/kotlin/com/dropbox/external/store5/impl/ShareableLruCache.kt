@@ -61,7 +61,7 @@ class ShareableLruCache(private val maxSize: Int) : Persister<String> {
         return true
     }
 
-    override fun clear(): Boolean {
+    override fun delete(): Boolean {
         cache.clear()
 
         cache.dispose()

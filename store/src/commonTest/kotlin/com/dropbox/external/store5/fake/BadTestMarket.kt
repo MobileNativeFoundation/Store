@@ -15,14 +15,14 @@ internal object BadTestMarket {
         .read { throw Exception() }
         .write { _, _ -> throw Exception() }
         .delete { throw Exception() }
-        .clear { throw Exception() }
+        .deleteAll { throw Exception() }
         .build()
 
     private val dbStore = Store.Builder<String, Note, Note>()
         .read { throw Exception() }
         .write { _, _ -> throw Exception() }
         .delete { throw Exception() }
-        .clear { throw Exception() }
+        .deleteAll { throw Exception() }
         .build()
 
 

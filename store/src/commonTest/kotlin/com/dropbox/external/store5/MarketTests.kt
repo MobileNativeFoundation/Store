@@ -306,7 +306,7 @@ class MarketTests {
         assertIs<Market.Response.Success<Note>>(lastTwo)
         assertEquals(FakeNotes.Two.note, lastTwo.value)
 
-        market.clear()
+        market.delete()
 
         testScope.advanceUntilIdle()
 

@@ -58,7 +58,7 @@ class BadStoreTests {
 
     @Test
     fun clearFailureIsHandled() = testScope.runTest {
-        val response = market.clear()
+        val response = market.delete()
         assertEquals(false, response)
     }
 }

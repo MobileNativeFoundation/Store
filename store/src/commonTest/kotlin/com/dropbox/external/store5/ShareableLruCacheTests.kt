@@ -143,7 +143,7 @@ class ShareableLruCacheTests {
             memoryLruCache.write(it.key, it.note)
         }
 
-        memoryLruCache.clear()
+        memoryLruCache.delete()
 
         val headPointer = headPointer()
         val tailPointer = tailPointer()

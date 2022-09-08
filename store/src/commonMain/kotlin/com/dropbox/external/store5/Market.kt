@@ -18,7 +18,7 @@ interface Market<Key : Any> {
     suspend fun <Input : Any, Output : Any> read(request: Request.Reader<Key, Input, Output>): MutableSharedFlow<Response<Output>>
     suspend fun <Input : Any, Output : Any> write(request: Request.Writer<Key, Input, Output>): Boolean
     suspend fun delete(key: Key): Boolean
-    suspend fun clear(): Boolean
+    suspend fun delete(): Boolean
 
     companion object {
         fun <Key : Any, Input : Any, Output : Any> of(

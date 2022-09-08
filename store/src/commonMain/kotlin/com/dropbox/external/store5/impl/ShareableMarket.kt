@@ -240,10 +240,10 @@ class ShareableMarket<Key : Any> internal constructor(
         return true
     }
 
-    override suspend fun clear(): Boolean {
+    override suspend fun delete(): Boolean {
         for (store in stores) {
             try {
-                store.clear.invoke()
+                store.deleteAll.invoke()
             } catch (throwable: Throwable) {
                 return false
             }
