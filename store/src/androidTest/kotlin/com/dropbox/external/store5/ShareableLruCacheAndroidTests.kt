@@ -12,15 +12,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
+import org.junit.Before
+import org.junit.Test
+import kotlin.concurrent.thread
 import kotlin.test.assertEquals
 
-class ShareableLruCacheTests {
+class ShareableLruCacheAndroidTests {
     private val testScope = TestScope()
     private lateinit var memoryLruCache: ShareableLruCache
 
-    @BeforeTest
+    @Before
     fun before() {
         memoryLruCache = ShareableLruCache(10, testScope)
     }
@@ -188,5 +189,31 @@ class ShareableLruCacheTests {
         assertEquals<Any>(ShareableLruCache.headPointer.value, tail!!.value)
         assertEquals<Any>(ShareableLruCache.tailPointer.value, head!!.value)
         assertEquals(0, memoryLruCache.cache.size)
+    }
+
+    @Test
+    fun multithreading() {
+
+        testScope.launch {
+            for (i in 1..11) {
+                thread {
+                    val note = FakeNotes.list()[i]
+                    memoryLruCache.write(note.key, note.note)
+                }
+            }
+        }
+
+        testScope.advanceUntilIdle()
+
+        val headPointer = headPointer()
+        val tailPointer = tailPointer()
+        val head = head()
+        val tail = tail()
+
+        assertEquals(ShareableLruCache.headPointer, headPointer)
+        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(FakeNotes.Eleven.note, head.value)
+        assertEquals(FakeNotes.Two.note, tail.value)
+        assertEquals(10, memoryLruCache.cache.size)
     }
 }

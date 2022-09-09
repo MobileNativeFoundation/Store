@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.dropbox.external.store5.fake
 
 import com.dropbox.external.store5.ConflictResolver
@@ -6,9 +8,11 @@ import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.ShareableLruCache
 import com.dropbox.external.store5.impl.ShareableMarket
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
 
 internal object BadTestMarket {
-    val memoryLruCache = ShareableLruCache(10)
+    val memoryLruCache = ShareableLruCache(10, TestScope())
     val db = FakeDb()
 
     private val memoryLruCacheStore = Store<String, Note, Note>(

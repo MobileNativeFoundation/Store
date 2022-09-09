@@ -2,26 +2,31 @@
 
 package com.dropbox.external.store5.impl
 
-import co.touchlab.stately.collections.IsoMutableMap
-import co.touchlab.stately.isolate.IsolateState
 import com.dropbox.external.store5.Persister
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * Thread-safe LRU cache implementation.
  */
-class ShareableLruCache(private val maxSize: Int) : Persister<String> {
-    internal var cache = shareableMutableMapOf<String, Node<*>>()
-    internal var head = shareableNodeOf(headPointer)
-    internal var tail = shareableNodeOf(tailPointer)
+class ShareableLruCache(private val maxSize: Int, private val scope: CoroutineScope) : Persister<String> {
+    internal var cache = mutableMapOf<String, Node<*>>()
+    internal var head = headPointer
+    internal var tail = tailPointer
+
+    private val lock = Mutex()
 
     init {
-        head.access { head -> head.next = tail.access { tail -> tail } }
-        tail.access { tail -> tail.prev = head.access { head -> head } }
+        head.next = tail
+        tail.prev = head
     }
 
     override fun <Output : Any> read(key: String): Flow<Output?> = flow {
+        lock.lock()
+
         if (cache.containsKey(key)) {
             val node = cache[key]!! as Node<Output>
             removeFromList(node)
@@ -30,58 +35,71 @@ class ShareableLruCache(private val maxSize: Int) : Persister<String> {
         } else {
             emit(null)
         }
+
+        lock.unlock()
     }
 
     override fun <Input : Any> write(key: String, input: Input): Boolean {
-        if (cache.containsKey(key)) {
-            val node = cache[key]!! as Node<Input>
-            removeFromList(node)
-            insertIntoHead(node)
-            node.value = input
-        } else {
-            if (cache.size >= maxSize) {
-                removeFromTail()
+        scope.launch {
+            lock.lock()
+
+            if (cache.containsKey(key)) {
+                val node = cache[key]!! as Node<Input>
+                removeFromList(node)
+                insertIntoHead(node)
+            } else {
+                if (cache.size >= maxSize) {
+                    removeFromTail()
+                }
             }
 
             val node = Node(key, input)
             cache[key] = node
             insertIntoHead(node)
+
+            lock.unlock()
         }
 
         return true
     }
 
     override fun delete(key: String): Boolean {
-        val node = cache[key]
-        cache.remove(key)
-        if (node != null) {
-            removeFromList(node)
+        scope.launch {
+            lock.lock()
+
+            val node = cache[key]
+            cache.remove(key)
+            if (node != null) {
+                removeFromList(node)
+            }
+
+            lock.unlock()
         }
 
         return true
     }
 
     override fun delete(): Boolean {
-        cache.clear()
+        scope.launch {
+            lock.lock()
 
-        cache.dispose()
-        tail.dispose()
-        head.dispose()
+            cache.clear()
 
-        cache = shareableMutableMapOf()
-        head = shareableNodeOf(headPointer)
-        tail = shareableNodeOf(tailPointer)
+            head = headPointer
+            tail = tailPointer
+            head.next = tail
+            tail.prev = head
 
-        head.access { head -> head.next = tail.access { tail -> tail } }
-        tail.access { tail -> tail.prev = head.access { head -> head } }
+            lock.unlock()
+        }
 
         return true
     }
 
     private fun <V : Any> insertIntoHead(node: Node<V>) {
-        val nextHead = head.access { it.next }!!
-        head.access { it.next = node }
-        node.prev = head.access { it }
+        val nextHead = head.next!!
+        head.next = node
+        node.prev = head
         node.next = nextHead
         nextHead.prev = node
     }
@@ -92,11 +110,11 @@ class ShareableLruCache(private val maxSize: Int) : Persister<String> {
     }
 
     private fun removeFromTail() {
-        if (tail.access { it.prev == null }) {
+        if (tail.prev == null) {
             return
         }
-        val tail = tail.access { it.prev }!!
 
+        val tail = tail.prev!!
         cache.remove(tail.key)
         removeFromList(tail)
     }
@@ -107,9 +125,6 @@ class ShareableLruCache(private val maxSize: Int) : Persister<String> {
         var next: Node<*>? = null,
         var prev: Node<*>? = null
     )
-
-    private inline fun <V : Any> shareableNodeOf(node: Node<V>) = IsolateState { node }
-    private inline fun <K : Any, V : Any> shareableMutableMapOf() = IsoMutableMap<K, V>()
 
     companion object {
         private const val HEAD_KEY = "HEAD"

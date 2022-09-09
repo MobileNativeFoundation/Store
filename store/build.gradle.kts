@@ -65,6 +65,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
+                implementation(Deps.Kotlinx.coroutinesCore)
                 with(Deps.Test) {
                     implementation(junit)
                     implementation(core)
