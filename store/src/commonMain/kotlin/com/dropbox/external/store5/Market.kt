@@ -19,6 +19,6 @@ interface Market<Key : Any> {
         fun <Key : Any, Input : Any, Output : Any> of(
             stores: List<Store<Key, Input, Output>>,
             conflictResolver: ConflictResolver<Key, Input, Output>
-        ) = RealMarket(stores, conflictResolver)
+        ): Market<Key> = RealMarket(stores, conflictResolver)
     }
 }
