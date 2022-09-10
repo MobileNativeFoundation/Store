@@ -20,7 +20,7 @@ import kotlin.test.assertIs
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MarketMultithreadedTests {
+class MarketMultithreadedAndroidTests {
     private val testScope = TestScope()
     private lateinit var api: FakeApi
     private lateinit var market: Market<String>

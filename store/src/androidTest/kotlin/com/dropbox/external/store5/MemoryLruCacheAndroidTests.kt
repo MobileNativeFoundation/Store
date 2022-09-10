@@ -88,7 +88,7 @@ class MemoryLruCacheAndroidTests {
     }
 
     @Test
-    fun write10() {
+    fun write10ShouldNotRemoveAny() {
 
         testScope.launch {
             FakeNotes.listN(10).forEach {
@@ -112,7 +112,7 @@ class MemoryLruCacheAndroidTests {
 
 
     @Test
-    fun write11() {
+    fun write11ShouldRemoveFirst() {
 
         testScope.launch {
             FakeNotes.listN(11).forEach {
