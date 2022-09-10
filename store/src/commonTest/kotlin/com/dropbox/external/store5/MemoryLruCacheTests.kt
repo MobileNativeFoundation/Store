@@ -1,37 +1,34 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
 @file:Suppress("UNCHECKED_CAST")
 
 package com.dropbox.external.store5
 
 import com.dropbox.external.store5.fake.FakeNotes
 import com.dropbox.external.store5.fake.model.Note
-import com.dropbox.external.store5.impl.ShareableLruCache
+import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
-import org.junit.Before
-import org.junit.Test
-import kotlin.concurrent.thread
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class ShareableLruCacheAndroidTests {
+class MemoryLruCacheTests {
     private val testScope = TestScope()
-    private lateinit var memoryLruCache: ShareableLruCache
+    private lateinit var memoryLruCache: MemoryLruCache
 
-    @Before
+    @BeforeTest
     fun before() {
-        memoryLruCache = ShareableLruCache(10)
+        memoryLruCache = MemoryLruCache(10)
     }
 
     private fun headPointer() = memoryLruCache.head
     private fun tailPointer() = memoryLruCache.tail
-    private fun head() = memoryLruCache.head.next as ShareableLruCache.Node<Note>
-    private fun tail() = memoryLruCache.tail.prev as ShareableLruCache.Node<Note>
+    private fun head() = memoryLruCache.head.next as MemoryLruCache.Node<Note>
+    private fun tail() = memoryLruCache.tail.prev as MemoryLruCache.Node<Note>
 
     @Test
     fun writeAndRead() {
@@ -46,8 +43,8 @@ class ShareableLruCacheAndroidTests {
         var head = head()
         var tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
         assertEquals(FakeNotes.One.note, head.value)
         assertEquals(FakeNotes.One.note, tail.value)
         assertEquals(1, memoryLruCache.cache.size)
@@ -64,10 +61,10 @@ class ShareableLruCacheAndroidTests {
         head = head()
         tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
-        assertEquals(FakeNotes.Two.note, head.value)
-        assertEquals(FakeNotes.One.note, tail.value)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(FakeNotes.Two.note, head?.value)
+        assertEquals(FakeNotes.One.note, tail?.value)
         assertEquals(2, memoryLruCache.cache.size)
 
         val result = memoryLruCache.read<Note>(FakeNotes.One.key)
@@ -81,10 +78,10 @@ class ShareableLruCacheAndroidTests {
         head = head()
         tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
-        assertEquals(FakeNotes.One.note, head.value)
-        assertEquals(FakeNotes.Two.note, tail.value)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(FakeNotes.One.note, head?.value)
+        assertEquals(FakeNotes.Two.note, tail?.value)
         assertEquals(2, memoryLruCache.cache.size)
     }
 
@@ -104,8 +101,8 @@ class ShareableLruCacheAndroidTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
         assertEquals(FakeNotes.Ten.note, head.value)
         assertEquals(FakeNotes.One.note, tail.value)
         assertEquals(10, memoryLruCache.cache.size)
@@ -128,8 +125,8 @@ class ShareableLruCacheAndroidTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
         assertEquals(FakeNotes.Eleven.note, head.value)
         assertEquals(FakeNotes.Two.note, tail.value)
         assertEquals(10, memoryLruCache.cache.size)
@@ -156,8 +153,8 @@ class ShareableLruCacheAndroidTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
         assertEquals(FakeNotes.Eight.note, head.value)
         assertEquals(FakeNotes.Two.note, tail.value)
         assertEquals(7, memoryLruCache.cache.size)
@@ -185,46 +182,11 @@ class ShareableLruCacheAndroidTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruCache.headPointer, headPointer)
+        assertEquals(MemoryLruCache.tailPointer, tailPointer)
 
-        assertEquals<Any>(ShareableLruCache.headPointer.value, tail.value)
-        assertEquals<Any>(ShareableLruCache.tailPointer.value, head.value)
+        assertEquals<Any>(MemoryLruCache.headPointer.value, tail!!.value)
+        assertEquals<Any>(MemoryLruCache.tailPointer.value, head!!.value)
         assertEquals(0, memoryLruCache.cache.size)
-    }
-
-    @Test
-    fun multithreading() = testScope.runTest {
-
-        val notes = FakeNotes.list()
-
-        val threads = mutableListOf<Thread>()
-
-        for (i in 0..10) {
-            threads.add(thread(start = true) {})
-        }
-
-        withContext(testScope.coroutineContext) {
-            for (i in 0..10) {
-                val note = notes[i]
-                val currentThread = threads[i]
-                currentThread.run {
-                    launch { memoryLruCache.write(note.key, note.note) }
-                }
-            }
-        }
-
-        advanceUntilIdle()
-
-        val headPointer = headPointer()
-        val tailPointer = tailPointer()
-        val head = head()
-        val tail = tail()
-
-        assertEquals(ShareableLruCache.headPointer, headPointer)
-        assertEquals(ShareableLruCache.tailPointer, tailPointer)
-        assertEquals(FakeNotes.Eleven.note, head.value)
-        assertEquals(FakeNotes.Two.note, tail.value)
-        assertEquals(10, memoryLruCache.cache.size)
     }
 }

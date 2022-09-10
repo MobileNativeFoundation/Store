@@ -10,7 +10,7 @@ import kotlinx.coroutines.sync.Mutex
 /**
  * Thread-safe LRU cache implementation.
  */
-class ShareableLruCache(private val maxSize: Int) : Persister<String> {
+class MemoryLruCache(private val maxSize: Int) : Persister<String> {
     internal var cache = mutableMapOf<String, Node<*>>()
     internal var head = headPointer
     internal var tail = tailPointer

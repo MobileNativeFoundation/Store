@@ -6,7 +6,7 @@ import com.dropbox.external.store5.fake.FakeFactory
 import com.dropbox.external.store5.fake.FakeNotes
 import com.dropbox.external.store5.fake.api.FakeApi
 import com.dropbox.external.store5.fake.model.Note
-import com.dropbox.external.store5.impl.ShareableLruCache
+import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestScope
@@ -24,7 +24,7 @@ class BadStoreTests {
     private lateinit var api: FakeApi
     private lateinit var market: Market<String>
     private lateinit var db: FakeDb
-    private lateinit var memoryLruCache: ShareableLruCache
+    private lateinit var memoryLruCache: MemoryLruCache
     private lateinit var factory: FakeFactory<String, Note, Note>
 
     @BeforeTest
