@@ -30,10 +30,11 @@ class UnstableConnectionMarketTests {
     @BeforeTest
     fun before() {
         api = FakeApi()
-        market = OkTestMarket.build(testScope)
+        market = OkTestMarket.build()
         db = OkTestMarket.db
         memoryLruCache = OkTestMarket.memoryLruCache
         factory = FakeFactory(api)
+        db.reset()
     }
 
     @Test
@@ -53,6 +54,9 @@ class UnstableConnectionMarketTests {
         val newNote2 = newNote1.copy(content = "New Content")
         val writeRequest2 = factory.buildWriter<Note>(FakeNotes.One.key, newNote2, fail = true)
         market.write(writeRequest2)
+
+        market.delete(FakeNotes.One.key)
+        testScope.advanceUntilIdle()
 
         val refreshRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true, fail = false)
 

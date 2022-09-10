@@ -31,10 +31,11 @@ class OfflineMarketTests {
     @BeforeTest
     fun before() {
         api = FakeApi()
-        market = OkTestMarket.build(testScope)
+        market = OkTestMarket.build()
         db = OkTestMarket.db
         memoryLruCache = OkTestMarket.memoryLruCache
         factory = FakeFactory(api)
+        db.reset()
     }
 
     @Test
@@ -42,7 +43,7 @@ class OfflineMarketTests {
 
         val readRequest = factory.buildReader<Note>(FakeNotes.One.key)
 
-        val readResponse = async { market.read(readRequest) }
+        val readResponse = testScope.async { market.read(readRequest) }
         val sharedFlow = readResponse.await()
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
@@ -52,6 +53,8 @@ class OfflineMarketTests {
         val isSuccess = writeResponse.await()
 
         assertEquals(false, isSuccess)
+
+        testScope.advanceUntilIdle()
 
         val last = sharedFlow.replayCache.last()
 

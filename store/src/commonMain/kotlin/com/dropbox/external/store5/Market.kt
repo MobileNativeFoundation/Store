@@ -1,7 +1,6 @@
 package com.dropbox.external.store5
 
 import com.dropbox.external.store5.impl.ShareableMarket
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
@@ -18,9 +17,8 @@ interface Market<Key : Any> {
 
     companion object {
         fun <Key : Any, Input : Any, Output : Any> of(
-            coroutineScope: CoroutineScope,
             stores: List<Store<Key, Input, Output>>,
             conflictResolver: ConflictResolver<Key, Input, Output>
-        ) = ShareableMarket(coroutineScope, stores, conflictResolver)
+        ) = ShareableMarket(stores, conflictResolver)
     }
 }
