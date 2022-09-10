@@ -22,7 +22,7 @@ class ShareableLruCacheTests {
 
     @BeforeTest
     fun before() {
-        memoryLruCache = ShareableLruCache(10, testScope)
+        memoryLruCache = ShareableLruCache(10)
     }
 
     private fun headPointer() = memoryLruCache.head

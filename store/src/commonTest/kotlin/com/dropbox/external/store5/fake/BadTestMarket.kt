@@ -7,12 +7,10 @@ import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.ShareableLruCache
 import com.dropbox.external.store5.impl.ShareableMarket
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestScope
 
 internal object BadTestMarket {
-    val memoryLruCache = ShareableLruCache(10, TestScope())
+    val memoryLruCache = ShareableLruCache(10)
     val db = FakeDb()
 
     private val memoryLruCacheStore = Store<String, Note, Note>(
@@ -35,8 +33,7 @@ internal object BadTestMarket {
         deleteFailedWriteRecord = { key -> db.deleteWriteRequest(key) }
     )
 
-    internal fun build(scope: CoroutineScope) = ShareableMarket(
-        scope = scope,
+    internal fun build() = ShareableMarket(
         stores = listOf(memoryLruCacheStore, dbStore),
         conflictResolver = conflictResolver
     )

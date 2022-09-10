@@ -19,12 +19,9 @@ import com.dropbox.external.store5.concurrent.AnyThread
 import com.dropbox.external.store5.concurrent.StoreSecurity
 import com.dropbox.external.store5.definition.Converter
 import com.dropbox.external.store5.definition.PostRequest
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.lastOrNull
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.Clock
 
@@ -45,7 +42,6 @@ typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
  * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
 class ShareableMarket<Key : Any> internal constructor(
-    private val scope: CoroutineScope,
     private val stores: List<Store<Key, *, *>>,
     private val conflictResolver: ConflictResolver<Key, *, *>
 ) : Market<Key> {
@@ -63,34 +59,18 @@ class ShareableMarket<Key : Any> internal constructor(
         marketSecurity.getOrPut(reader.key) { StoreSecurity() }
         masterLock.unlock()
 
-        val conflictsMightExistDeferred = scope.async { conflictsMightExist<Output>(reader.key) }
-        val conflictsMightExist = conflictsMightExistDeferred.await()
+        val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
-        val eagerlyResolveConflictsDeferred = scope.async {
-            if (conflictsMightExist) {
-                val isResolved = scope.async {
-                    eagerlyResolveConflicts(
-                        reader.key, reader.fetcher.post, reader.fetcher.converter
-                    )
-                }
-                isResolved.await()
-            } else {
-                true
-            }
+        if (conflictsMightExist) {
+            eagerlyResolveConflicts(reader.key, reader.fetcher.post, reader.fetcher.converter)
         }
-        eagerlyResolveConflictsDeferred.await()
 
         addOrInitReadCompletions(reader.key, reader.onCompletions.toMutableList())
 
-        val isBroadcasting = scope.async {
-            if (notBroadcasting(reader.key)) {
-                startBroadcast<Output>(reader.key)
-                val emittedLatest = async { getAndEmitLatest(reader.key, reader.fetcher) }
-                emittedLatest.await()
-            }
-        }
-        isBroadcasting.await()
-        if (reader.refresh && readNotInProgress(reader.key)) {
+        if (notBroadcasting(reader.key)) {
+            startBroadcast<Output>(reader.key)
+            getAndEmitLatest(reader.key, reader.fetcher)
+        } else if (reader.refresh && readNotInProgress(reader.key)) {
             getAndEmitLatest(reader.key, reader.fetcher)
         }
         return requireBroadcast(reader.key)
@@ -103,28 +83,27 @@ class ShareableMarket<Key : Any> internal constructor(
         created: Long,
         converter: Converter<Input, Output>
     ) {
-
         val writeRequestQueue = requireWriteRequestQueue<Input>(key)
         val outstandingWriteRequests: AnyWriteRequestQueue<Key> = ArrayDeque()
         val storeSecurity = requireStoreSecurity(key)
 
-        scope.launch {
-            storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
+        storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
 
-            for (writeRequest in writeRequestQueue) {
-                if (writeRequest.created <= created) {
-                    val output = converter(input)
-                    val fetchResponse = RemoteResult.Success(output)
-                    (writeRequest.onCompletion as OnRemoteCompletion<Output>).onSuccess(fetchResponse)
-                } else {
-                    outstandingWriteRequests.add(writeRequest)
-                }
+        for (writeRequest in writeRequestQueue) {
+            if (writeRequest.created <= created) {
+                val output = converter(input)
+                val fetchResponse = RemoteResult.Success(output)
+                (writeRequest.onCompletion as OnRemoteCompletion<Output>).onSuccess(fetchResponse)
+            } else {
+                outstandingWriteRequests.add(writeRequest)
             }
-
-            writeRequests[key] = outstandingWriteRequests
-
-            storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
         }
+
+        writeRequests[key] = outstandingWriteRequests
+
+        storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+
+        releaseStoreSecurity()
     }
 
     @AnyThread
@@ -247,6 +226,8 @@ class ShareableMarket<Key : Any> internal constructor(
             }
             storeSecurity.readCompletionsLightswitch.unlock(storeSecurity.readCompletionsLock)
         }
+
+        releaseStoreSecurity()
     }
 
     @AnyThread
@@ -305,15 +286,12 @@ class ShareableMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private fun <Input : Any, Output : Any> getAndEmitLatest(
+    private suspend fun <Input : Any, Output : Any> getAndEmitLatest(
         key: Key, fetcher: Fetcher<Key, Input, Output>
     ) {
-        scope.launch {
-            val isBroadcasting = async { startIfNotBroadcasting<Output>(key) }
-            isBroadcasting.await()
-            load<Output>(key)
-            refresh(key, fetcher)
-        }
+        startIfNotBroadcasting<Output>(key)
+        load<Output>(key)
+        refresh(key, fetcher)
     }
 
     @AnyThread
@@ -321,15 +299,13 @@ class ShareableMarket<Key : Any> internal constructor(
         val storeSecurity = requireStoreSecurity(key)
         storeSecurity.broadcastLock.acquire()
 
-        val result = scope.async {
-            if (broadcasts[key] == null) {
-                broadcasts[key] = MutableSharedFlow(4)
-                scope.launch {
-                    broadcasts[key]!!.emit(MarketResponse.Loading)
-                }
-            }
+        if (broadcasts[key] == null) {
+            broadcasts[key] = MutableSharedFlow(10)
+            broadcasts[key]!!.emit(MarketResponse.Loading)
         }
-        result.await()
+
+        storeSecurity.broadcastLock.release()
+        releaseStoreSecurity()
         return requireBroadcast(key)
     }
 
@@ -340,6 +316,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
         val broadcast = broadcasts[key] as? SomeBroadcast<Output>
         storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+        releaseStoreSecurity()
         return broadcast
     }
 
@@ -349,6 +326,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
         val broadcast = broadcasts[key] as SomeBroadcast<Output>
         storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+        releaseStoreSecurity()
         return broadcast
     }
 
@@ -358,6 +336,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
         val writeRequestQueue = writeRequests[key] as SomeWriteRequestQueue<Key, Input>
         storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+        releaseStoreSecurity()
         return writeRequestQueue
     }
 
@@ -367,6 +346,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.broadcastLock.acquire()
         val isBroadcasting = broadcasts[key] != null
         storeSecurity.broadcastLock.release()
+        releaseStoreSecurity()
         return isBroadcasting
     }
 
@@ -381,6 +361,7 @@ class ShareableMarket<Key : Any> internal constructor(
             readCompletions[key] = onCompletions
         }
         storeSecurity.readCompletionsLock.release()
+        releaseStoreSecurity()
     }
 
 
@@ -395,6 +376,7 @@ class ShareableMarket<Key : Any> internal constructor(
         }
         writeRequests[key]!!.add(updater)
         storeSecurity.writeRequestsLock.release()
+        releaseStoreSecurity()
     }
 
     @AnyThread
@@ -403,6 +385,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.writeRequestsLock.acquire()
         val updater = writeRequests[key]?.last() as Updater<Key, Input, Output>
         storeSecurity.writeRequestsLock.release()
+        releaseStoreSecurity()
         return updater
     }
 
@@ -414,6 +397,7 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.readCompletionsLightswitch.lock(storeSecurity.readCompletionsLock)
         val inProgress = readCompletions[key].isNullOrEmpty().not()
         storeSecurity.readCompletionsLightswitch.unlock(storeSecurity.readCompletionsLock)
+        releaseStoreSecurity()
         return inProgress
     }
 
@@ -438,13 +422,8 @@ class ShareableMarket<Key : Any> internal constructor(
     ): Boolean {
 
         return try {
-            val lastStored = scope.async { lastStored<Output>(key) }
-            if (lastStored.await() == null) {
-                return false
-            }
-
-            val proxyOutput = lastStored.await()
-            val input = converter(proxyOutput!!)
+            val lastStored = lastStored<Output>(key) ?: return false
+            val input = converter(lastStored)
             val output = request.invoke(key, input)
             val resolved = output != null
 
@@ -468,8 +447,8 @@ class ShareableMarket<Key : Any> internal constructor(
             return false
         }
 
-        val lastWriteTime = scope.async { conflictResolver.getLastFailedWriteTime(key) }
-        return lastWriteTime.await() != null || writeRequestsQueueIsNotEmpty(key)
+        val lastWriteTime = conflictResolver.getLastFailedWriteTime(key)
+        return lastWriteTime != null || writeRequestsQueueIsNotEmpty(key)
     }
 
     @AnyThread
@@ -478,15 +457,19 @@ class ShareableMarket<Key : Any> internal constructor(
         storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
         val isEmpty = writeRequests[key].isNullOrEmpty()
         storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+        releaseStoreSecurity()
         return isEmpty
     }
 
     @AnyThread
     private suspend fun requireStoreSecurity(key: Key): StoreSecurity {
         masterLock.lock()
-        val storeSecurity = marketSecurity[key]!!
+        return marketSecurity[key]!!
+    }
+
+    @AnyThread
+    private fun releaseStoreSecurity() {
         masterLock.unlock()
-        return storeSecurity
     }
 
     @Convenience

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface Persister<Key : Any> {
     fun <Output : Any> read(key: Key): Flow<Output?>
-    fun <Input : Any> write(key: Key, input: Input): Boolean
-    fun delete(key: Key): Boolean
-    fun delete(): Boolean
+    suspend fun <Input : Any> write(key: Key, input: Input): Boolean
+    suspend fun delete(key: Key): Boolean
+    suspend fun delete(): Boolean
 }
