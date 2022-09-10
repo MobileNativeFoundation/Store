@@ -297,14 +297,14 @@ class ShareableMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun <Output : Any> getOrSetBroadcast(key: Key): SomeBroadcast<Output> {
         val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLock.acquire()
+        storeSecurity.broadcastLock.lock()
 
         if (broadcasts[key] == null) {
             broadcasts[key] = MutableSharedFlow(10)
             broadcasts[key]!!.emit(MarketResponse.Loading)
         }
 
-        storeSecurity.broadcastLock.release()
+        storeSecurity.broadcastLock.unlock()
         releaseStoreSecurity()
         return requireBroadcast(key)
     }
@@ -343,9 +343,9 @@ class ShareableMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun broadcasting(key: Key): Boolean {
         val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLock.acquire()
+        storeSecurity.broadcastLock.lock()
         val isBroadcasting = broadcasts[key] != null
-        storeSecurity.broadcastLock.release()
+        storeSecurity.broadcastLock.unlock()
         releaseStoreSecurity()
         return isBroadcasting
     }
@@ -354,13 +354,13 @@ class ShareableMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun addOrInitReadCompletions(key: Key, onCompletions: AnyReadCompletionsQueue) {
         val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.readCompletionsLock.acquire()
+        storeSecurity.readCompletionsLock.lock()
         if (readCompletions[key] != null) {
             readCompletions[key]!!.addAll(onCompletions)
         } else {
             readCompletions[key] = onCompletions
         }
-        storeSecurity.readCompletionsLock.release()
+        storeSecurity.readCompletionsLock.unlock()
         releaseStoreSecurity()
     }
 
@@ -370,21 +370,21 @@ class ShareableMarket<Key : Any> internal constructor(
         key: Key, updater: Updater<Key, Input, Output>
     ) {
         val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLock.acquire()
+        storeSecurity.writeRequestsLock.lock()
         if (writeRequests[key] == null) {
             writeRequests[key] = ArrayDeque()
         }
         writeRequests[key]!!.add(updater)
-        storeSecurity.writeRequestsLock.release()
+        storeSecurity.writeRequestsLock.unlock()
         releaseStoreSecurity()
     }
 
     @AnyThread
     private suspend fun <Input : Any, Output : Any> getLatestWriteRequest(key: Key): Updater<Key, Input, Output> {
         val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLock.acquire()
+        storeSecurity.writeRequestsLock.lock()
         val updater = writeRequests[key]?.last() as Updater<Key, Input, Output>
-        storeSecurity.writeRequestsLock.release()
+        storeSecurity.writeRequestsLock.unlock()
         releaseStoreSecurity()
         return updater
     }

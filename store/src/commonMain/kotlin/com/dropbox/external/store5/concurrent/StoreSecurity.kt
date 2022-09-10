@@ -1,14 +1,14 @@
 package com.dropbox.external.store5.concurrent
 
-import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.Mutex
 
 internal data class StoreSecurity(
-    val writeRequestsLock: Semaphore = Semaphore(1),
+    val writeRequestsLock: Mutex = Mutex(),
     val writeRequestsLightswitch: Lightswitch = Lightswitch(),
 
-    val readCompletionsLock: Semaphore = Semaphore(1),
+    val readCompletionsLock: Mutex = Mutex(),
     val readCompletionsLightswitch: Lightswitch = Lightswitch(),
 
-    val broadcastLock: Semaphore = Semaphore(1),
+    val broadcastLock: Mutex = Mutex(),
     val broadcastLightswitch: Lightswitch = Lightswitch(),
 )

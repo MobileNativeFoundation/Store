@@ -1,26 +1,26 @@
 package com.dropbox.external.store5.concurrent
 
-import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.Mutex
 
 internal class Lightswitch {
     private var counter = 0
-    private val mutex = Semaphore(1)
+    private val mutex = Mutex()
 
-    suspend fun lock(semaphore: Semaphore) {
-        mutex.acquire()
+    suspend fun lock(room: Mutex) {
+        mutex.lock()
         counter += 1
         if (counter == 1) {
-            semaphore.acquire()
+            room.lock()
         }
-        mutex.release()
+        mutex.unlock()
     }
 
-    suspend fun unlock(semaphore: Semaphore) {
-        mutex.acquire()
+    suspend fun unlock(room: Mutex) {
+        mutex.lock()
         counter -= 1
         if (counter == 0) {
-            semaphore.release()
+            room.unlock()
         }
-        mutex.release()
+        mutex.unlock()
     }
 }
