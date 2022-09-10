@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.dropbox.external.store5
 
 import com.dropbox.external.store5.fake.FakeNotes
@@ -29,8 +27,8 @@ class MemoryLruCacheAndroidTests {
 
     private fun headPointer() = memoryLruCache.head
     private fun tailPointer() = memoryLruCache.tail
-    private fun head() = memoryLruCache.head.next as MemoryLruCache.Node<Note>
-    private fun tail() = memoryLruCache.tail.prev as MemoryLruCache.Node<Note>
+    private fun head() = memoryLruCache.head.next!!
+    private fun tail() = memoryLruCache.tail.prev!!
 
     @Test
     fun writeAndRead() {
@@ -187,8 +185,8 @@ class MemoryLruCacheAndroidTests {
         assertEquals(MemoryLruCache.headPointer, headPointer)
         assertEquals(MemoryLruCache.tailPointer, tailPointer)
 
-        assertEquals<Any>(MemoryLruCache.headPointer.value, tail.value)
-        assertEquals<Any>(MemoryLruCache.tailPointer.value, head.value)
+        assertEquals(MemoryLruCache.headPointer.value, tail.value)
+        assertEquals(MemoryLruCache.tailPointer.value, head.value)
         assertEquals(0, memoryLruCache.cache.size)
     }
 
