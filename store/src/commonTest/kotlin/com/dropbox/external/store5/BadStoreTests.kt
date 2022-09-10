@@ -47,7 +47,6 @@ class BadStoreTests {
         advanceUntilIdle()
         val response = responseAsync.await()
         val replayCache = response.replayCache
-        println(replayCache)
         assertContains(replayCache, MarketResponse.Loading)
         val last = replayCache.last()
         assertIs<MarketResponse.Failure>(last)
