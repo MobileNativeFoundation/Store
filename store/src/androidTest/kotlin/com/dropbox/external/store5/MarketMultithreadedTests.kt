@@ -60,17 +60,13 @@ class MarketMultithreadedTests {
                 currentThread.run {
                     val readResponse = market.read(readRequests[i])
                     readResponses.add(readResponse)
-                    advanceUntilIdle()
                     market.write(writeRequest)
                 }
             }
         }
 
-        advanceUntilIdle()
-
         notes.forEachIndexed { index, note ->
             val response = readResponses[index]
-            advanceUntilIdle()
             val last = response.replayCache.last()
             assertIs<MarketResponse.Success<Note>>(last)
             assertEquals(newNotes[index], last.value)
