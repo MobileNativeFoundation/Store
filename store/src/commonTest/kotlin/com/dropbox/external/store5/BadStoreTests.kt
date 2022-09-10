@@ -8,6 +8,7 @@ import com.dropbox.external.store5.fake.api.FakeApi
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.ShareableLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -42,9 +43,13 @@ class BadStoreTests {
             refresh = true,
             fail = true,
             onCompletionsProducer = { listOf() })
-        val response = market.read(request)
+        println("HITTING")
+        val responseAsync = async { market.read(request) }
+        println("HITTING")
         advanceUntilIdle()
+        val response = responseAsync.await()
         val replayCache = response.replayCache
+        println(replayCache)
         assertContains(replayCache, MarketResponse.Loading)
         val last = replayCache.last()
         assertIs<MarketResponse.Failure>(last)
