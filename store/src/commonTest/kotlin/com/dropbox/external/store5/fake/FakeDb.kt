@@ -14,17 +14,17 @@ internal class FakeDb : Persister<String> {
         emit(data[key] as? Output)
     }
 
-    override fun <Input : Any> write(key: String, input: Input): Boolean {
+    override suspend fun <Input : Any> write(key: String, input: Input): Boolean {
         data[key] = input
         return true
     }
 
-    override fun delete(key: String): Boolean {
+    override suspend fun delete(key: String): Boolean {
         data.remove(key)
         return true
     }
 
-    override fun delete(): Boolean {
+    override suspend fun delete(): Boolean {
         data.clear()
         return true
     }
@@ -39,5 +39,10 @@ internal class FakeDb : Persister<String> {
     fun deleteWriteRequest(key: String): Boolean {
         this.writeRequests.remove(key)
         return true
+    }
+
+    fun reset() {
+        data.clear()
+        this.writeRequests.clear()
     }
 }

@@ -23,7 +23,7 @@ class ShareableLruCacheAndroidTests {
 
     @Before
     fun before() {
-        memoryLruCache = ShareableLruCache(10, testScope)
+        memoryLruCache = ShareableLruCache(10)
     }
 
     private fun headPointer() = memoryLruCache.head
@@ -194,14 +194,15 @@ class ShareableLruCacheAndroidTests {
     @Test
     fun multithreading() {
 
-        testScope.launch {
-            for (i in 1..11) {
-                thread {
-                    val note = FakeNotes.list()[i]
+        for (i in 1..11) {
+            thread {
+                val note = FakeNotes.list()[i]
+                testScope.launch {
                     memoryLruCache.write(note.key, note.note)
                 }
             }
         }
+
 
         testScope.advanceUntilIdle()
 

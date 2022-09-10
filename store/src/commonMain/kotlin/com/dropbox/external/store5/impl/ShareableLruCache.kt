@@ -3,16 +3,14 @@
 package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.Persister
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
 /**
  * Thread-safe LRU cache implementation.
  */
-class ShareableLruCache(private val maxSize: Int, private val scope: CoroutineScope) : Persister<String> {
+class ShareableLruCache(private val maxSize: Int) : Persister<String> {
     internal var cache = mutableMapOf<String, Node<*>>()
     internal var head = headPointer
     internal var tail = tailPointer
@@ -39,60 +37,52 @@ class ShareableLruCache(private val maxSize: Int, private val scope: CoroutineSc
         lock.unlock()
     }
 
-    override fun <Input : Any> write(key: String, input: Input): Boolean {
-        scope.launch {
-            lock.lock()
+    override suspend fun <Input : Any> write(key: String, input: Input): Boolean {
+        lock.lock()
 
-            if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Input>
-                removeFromList(node)
-                insertIntoHead(node)
-            } else {
-                if (cache.size >= maxSize) {
-                    removeFromTail()
-                }
-            }
-
-            val node = Node(key, input)
-            cache[key] = node
+        if (cache.containsKey(key)) {
+            val node = cache[key]!! as Node<Input>
+            removeFromList(node)
             insertIntoHead(node)
-
-            lock.unlock()
-        }
-
-        return true
-    }
-
-    override fun delete(key: String): Boolean {
-        scope.launch {
-            lock.lock()
-
-            val node = cache[key]
-            cache.remove(key)
-            if (node != null) {
-                removeFromList(node)
+        } else {
+            if (cache.size >= maxSize) {
+                removeFromTail()
             }
-
-            lock.unlock()
         }
+
+        val node = Node(key, input)
+        cache[key] = node
+        insertIntoHead(node)
+
+        lock.unlock()
 
         return true
     }
 
-    override fun delete(): Boolean {
-        scope.launch {
-            lock.lock()
+    override suspend fun delete(key: String): Boolean {
+        lock.lock()
 
-            cache.clear()
-
-            head = headPointer
-            tail = tailPointer
-            head.next = tail
-            tail.prev = head
-
-            lock.unlock()
+        val node = cache[key]
+        cache.remove(key)
+        if (node != null) {
+            removeFromList(node)
         }
 
+        lock.unlock()
+        return true
+    }
+
+    override suspend fun delete(): Boolean {
+        lock.lock()
+
+        cache.clear()
+
+        head = headPointer
+        tail = tailPointer
+        head.next = tail
+        tail.prev = head
+
+        lock.unlock()
         return true
     }
 

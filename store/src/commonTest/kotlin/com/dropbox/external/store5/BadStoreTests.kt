@@ -29,7 +29,7 @@ class BadStoreTests {
     @BeforeTest
     fun before() {
         api = FakeApi()
-        market = BadTestMarket.build(testScope)
+        market = BadTestMarket.build()
         db = BadTestMarket.db
         memoryLruCache = BadTestMarket.memoryLruCache
         factory = FakeFactory(api)

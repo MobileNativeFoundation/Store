@@ -33,7 +33,7 @@ class MarketTests {
     @BeforeTest
     fun before() {
         api = FakeApi()
-        market = OkTestMarket.build(testScope)
+        market = OkTestMarket.build()
         db = OkTestMarket.db
         memoryLruCache = OkTestMarket.memoryLruCache
         factory = FakeFactory(api)
@@ -213,10 +213,12 @@ class MarketTests {
         )
         market.write(writeRequestOneA)
         testScope.advanceUntilIdle()
-        val firstResult = sharedFlow.replayCache.last()
-        assertIs<MarketResponse.Success<Note>>(firstResult)
-        assertEquals(MarketResponse.Companion.Origin.Remote, firstResult.origin)
-        assertEquals(FakeNotes.One.note, firstResult.value)
+        val firstResult = sharedFlow.replayCache.first()
+        assertIs<MarketResponse.Loading>(firstResult)
+
+        val firstSuccessResult = sharedFlow.replayCache.filterIsInstance<MarketResponse.Success<Note>>().first()
+        assertEquals(MarketResponse.Companion.Origin.Remote, firstSuccessResult.origin)
+        assertEquals(FakeNotes.One.note, firstSuccessResult.value)
         assertEquals(null, marketCompleted[FakeNotes.One.note.id])
         assertEquals(null, postCompleted[FakeNotes.One.note.id])
 
@@ -397,5 +399,38 @@ class MarketTests {
             completed[FakeNotes.One.note.id]
         )
         assertEquals(true, completed[FakeNotes.Two.note.id])
+    }
+
+    @Test
+    fun readWithoutRefreshAfterDeleteShouldReturnEmpty() = testScope.runTest {
+        val readRequest = factory.buildReader<Note>(FakeNotes.One.key)
+        val newNote = FakeNotes.One.note.copy(title = "New Title")
+        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote)
+
+        market.read(readRequest)
+        market.write(writeRequest)
+        market.delete(FakeNotes.One.key)
+
+        val response = market.read(readRequest)
+        testScope.advanceUntilIdle()
+        val last = response.replayCache.last()
+        assertIs<MarketResponse.Empty>(last)
+    }
+
+    @Test
+    fun readWithRefreshAfterDeleteShouldReturnRemote() = testScope.runTest {
+        val readRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true)
+        val newNote = FakeNotes.One.note.copy(title = "New Title")
+        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote)
+
+        market.read(readRequest)
+        market.write(writeRequest)
+        market.delete(FakeNotes.One.key)
+
+        val response = market.read(readRequest)
+        testScope.advanceUntilIdle()
+        val last = response.replayCache.last()
+        assertIs<MarketResponse.Success<Note>>(last)
+        assertEquals(newNote, last.value)
     }
 }
