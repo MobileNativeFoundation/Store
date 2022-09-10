@@ -6,7 +6,7 @@ import com.dropbox.external.store5.ConflictResolver
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
-import com.dropbox.external.store5.impl.ShareableMarket
+import com.dropbox.external.store5.impl.RealMarket
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 internal object OkTestMarket {
@@ -33,7 +33,7 @@ internal object OkTestMarket {
         deleteFailedWriteRecord = { key -> db.deleteWriteRequest(key) }
     )
 
-    internal fun build() = ShareableMarket(
+    internal fun build() = RealMarket(
         stores = listOf(memoryLruCacheStore, dbStore),
         conflictResolver = conflictResolver
     )

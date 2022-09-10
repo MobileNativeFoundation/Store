@@ -1,11 +1,11 @@
 package com.dropbox.external.store5
 
-import com.dropbox.external.store5.impl.ShareableMarket
+import com.dropbox.external.store5.impl.RealMarket
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
  * Integrates stores and a conflict resolution system.
- * @see [ShareableMarket]
+ * @see [RealMarket]
  * @see [Store]
  * @see [ConflictResolver]
  */
@@ -19,6 +19,6 @@ interface Market<Key : Any> {
         fun <Key : Any, Input : Any, Output : Any> of(
             stores: List<Store<Key, Input, Output>>,
             conflictResolver: ConflictResolver<Key, Input, Output>
-        ) = ShareableMarket(stores, conflictResolver)
+        ) = RealMarket(stores, conflictResolver)
     }
 }
