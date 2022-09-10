@@ -43,9 +43,7 @@ class BadStoreTests {
             refresh = true,
             fail = true,
             onCompletionsProducer = { listOf() })
-        println("HITTING")
         val responseAsync = async { market.read(request) }
-        println("HITTING")
         advanceUntilIdle()
         val response = responseAsync.await()
         val replayCache = response.replayCache
