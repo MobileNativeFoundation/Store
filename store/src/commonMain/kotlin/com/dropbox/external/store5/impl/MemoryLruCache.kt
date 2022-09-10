@@ -72,7 +72,7 @@ class MemoryLruCache(private val maxSize: Int) : Persister<String> {
         return true
     }
 
-    override suspend fun delete(): Boolean {
+    override suspend fun deleteAll(): Boolean {
         lock.lock()
 
         cache.clear()

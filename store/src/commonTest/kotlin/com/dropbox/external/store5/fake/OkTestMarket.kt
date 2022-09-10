@@ -17,14 +17,14 @@ internal object OkTestMarket {
         read = { key -> memoryLruCache.read(key) },
         write = { key, input -> memoryLruCache.write(key, input) },
         delete = { key -> memoryLruCache.delete(key) },
-        deleteAll = { memoryLruCache.delete() },
+        deleteAll = { memoryLruCache.deleteAll() },
     )
 
     private val dbStore = Store.by<String, Note, Note>(
         read = { key -> db.read(key) },
         write = { key, input -> db.write(key, input) },
         delete = { key -> db.delete(key) },
-        deleteAll = { db.delete() },
+        deleteAll = { db.deleteAll() },
     )
 
     private val conflictResolver = ConflictResolver<String, Note, Note>(

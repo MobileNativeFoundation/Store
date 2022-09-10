@@ -24,7 +24,7 @@ internal class FakeDb : Persister<String> {
         return true
     }
 
-    override suspend fun delete(): Boolean {
+    override suspend fun deleteAll(): Boolean {
         data.clear()
         return true
     }

@@ -174,7 +174,7 @@ class MemoryLruCacheAndroidTests {
                 memoryLruCache.write(it.key, it.note)
             }
 
-            memoryLruCache.delete()
+            memoryLruCache.deleteAll()
         }
 
         testScope.advanceUntilIdle()

@@ -12,5 +12,5 @@ interface Persister<Key : Any> {
     fun <Output : Any> read(key: Key): Flow<Output?>
     suspend fun <Input : Any> write(key: Key, input: Input): Boolean
     suspend fun delete(key: Key): Boolean
-    suspend fun delete(): Boolean
+    suspend fun deleteAll(): Boolean
 }
