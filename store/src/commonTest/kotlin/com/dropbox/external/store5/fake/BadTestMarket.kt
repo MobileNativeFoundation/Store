@@ -13,14 +13,14 @@ internal object BadTestMarket {
     val memoryLruCache = ShareableLruCache(10)
     val db = FakeDb()
 
-    private val memoryLruCacheStore = Store<String, Note, Note>(
+    private val memoryLruCacheStore = Store.by<String, Note, Note>(
         read = { throw Exception() },
         write = { _, _ -> throw Exception() },
         delete = { throw Exception() },
         deleteAll = { throw Exception() }
     )
 
-    private val dbStore = Store<String, Note, Note>(
+    private val dbStore = Store.by<String, Note, Note>(
         read = { throw Exception() },
         write = { _, _ -> throw Exception() },
         delete = { throw Exception() },

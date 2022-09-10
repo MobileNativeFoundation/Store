@@ -13,7 +13,6 @@ import com.dropbox.external.store5.Reader
 import com.dropbox.external.store5.RemoteResult
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.Updater
-import com.dropbox.external.store5.Write
 import com.dropbox.external.store5.Writer
 import com.dropbox.external.store5.concurrent.AnyThread
 import com.dropbox.external.store5.concurrent.StoreSecurity
@@ -139,9 +138,9 @@ class ShareableMarket<Key : Any> internal constructor(
         val responseLocalWrite =
             MarketResponse.Success(writer.input as Output, origin = MarketResponse.Companion.Origin.LocalWrite)
         broadcast.emit(responseLocalWrite)
-        stores.forEachIndexed { index, store ->
+        (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
             storeLocks[index].lock()
-            (store.write as Write<Key, Input>).invoke(writer.key, writer.input)
+            store.write(writer.key, writer.input)
             storeLocks[index].unlock()
         }
 
@@ -191,9 +190,10 @@ class ShareableMarket<Key : Any> internal constructor(
             }
 
             if (response is MarketResponse.Success) {
-                stores.forEachIndexed { index, store ->
+
+                (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].lock()
-                    (store.write as Write<Key, Output>).invoke(key, response.value)
+                    store.write(key, response.value as Input)
                     storeLocks[index].unlock()
                 }
 
