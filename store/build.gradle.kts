@@ -53,12 +53,6 @@ kotlin {
                     implementation(serializationJson)
                     implementation(dateTime)
                 }
-
-                with(Deps.Stately) {
-                    implementation(isolate)
-                    implementation(collections)
-                }
-
             }
         }
 

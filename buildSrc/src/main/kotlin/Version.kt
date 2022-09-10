@@ -13,7 +13,6 @@ object Version {
     const val junit = "4.13.2"
     const val kotlinxCoroutines = "1.6.4"
     const val kotlinxSerialization = "1.4.0"
-    const val stately = "1.2.0"
     const val testCore = "1.4.0"
     const val ktlint = "0.39.0"
     const val kover = "0.6.0"
