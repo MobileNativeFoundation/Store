@@ -4,10 +4,10 @@ import com.dropbox.external.store5.impl.RealMarket
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
- * Integrates stores and a conflict resolution system.
+ * Integrates stores and a bookkeeper.
  * @see [RealMarket]
  * @see [Store]
- * @see [ConflictResolver]
+ * @see [Bookkeeper]
  */
 interface Market<Key : Any> {
     suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): MutableSharedFlow<MarketResponse<Output>>
@@ -18,7 +18,7 @@ interface Market<Key : Any> {
     companion object {
         fun <Key : Any, Input : Any, Output : Any> of(
             stores: List<Store<Key, Input, Output>>,
-            conflictResolver: ConflictResolver<Key, Input, Output>
-        ): Market<Key> = RealMarket(stores, conflictResolver)
+            bookkeeper: Bookkeeper<Key>
+        ): Market<Key> = RealMarket(stores, bookkeeper)
     }
 }

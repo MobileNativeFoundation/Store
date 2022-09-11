@@ -41,6 +41,11 @@ internal class FakeDb : Persister<String> {
         return true
     }
 
+    fun deleteAllWriteRequests(): Boolean {
+        this.writeRequests.clear()
+        return true
+    }
+
     fun reset() {
         data.clear()
         this.writeRequests.clear()

@@ -2,7 +2,7 @@
 
 package com.dropbox.external.store5.fake
 
-import com.dropbox.external.store5.ConflictResolver
+import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
@@ -27,15 +27,16 @@ internal object OkTestMarket {
         deleteAll = { db.deleteAll() },
     )
 
-    private val conflictResolver = ConflictResolver<String, Note, Note>(
-        setLastFailedWriteTime = { key, updated -> db.setLastWriteTime(key, updated) },
-        getLastFailedWriteTime = { key -> db.getLastWriteTime(key) },
-        deleteFailedWriteRecord = { key -> db.deleteWriteRequest(key) }
+    private val bookkeeper = Bookkeeper.by<String>(
+        read = { key -> BadTestMarket.db.getLastWriteTime(key) },
+        write = { key, timestamp -> BadTestMarket.db.setLastWriteTime(key, timestamp) },
+        delete = { key -> BadTestMarket.db.deleteWriteRequest(key) },
+        deleteAll = { BadTestMarket.db.deleteAllWriteRequests() }
     )
 
     internal fun build() = RealMarket(
         stores = listOf(memoryLruCacheStore, dbStore),
-        conflictResolver = conflictResolver
+        bookkeeper = bookkeeper
     )
 }
 

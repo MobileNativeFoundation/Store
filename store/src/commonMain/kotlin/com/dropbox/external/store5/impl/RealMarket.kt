@@ -2,7 +2,7 @@
 
 package com.dropbox.external.store5.impl
 
-import com.dropbox.external.store5.ConflictResolver
+import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Convenience
 import com.dropbox.external.store5.Fetcher
 import com.dropbox.external.store5.Market
@@ -35,14 +35,14 @@ typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
 /**
  * Thread-safe [Market] implementation.
  * @param stores List of [Store]. Order matters! [RealMarket] executes [read], [write], and [delete] operations iteratively.
- * @param conflictResolver Implementation of [ConflictResolver]. Used in [read] to eagerly resolve conflicts and in [write] to persist write request failures.
+ * @param bookkeeper Implementation of [Bookkeeper]. Used in [read] to eagerly resolve conflicts and in [write] to persist write request failures.
  * @property readCompletions Thread-safe mapping of Key to [AnyReadCompletionsQueue]. Queue size is checked before handling a market read request. All completion handlers in queue are processed on market read response.
- * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [Updater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we reset the queue. On failure, we use [ConflictResolver.setLastFailedWriteTime]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
+ * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [Updater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we reset the queue. On failure, we use [Bookkeeper.write]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
  * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
 class RealMarket<Key : Any> internal constructor(
     private val stores: List<Store<Key, *, *>>,
-    private val conflictResolver: ConflictResolver<Key, *, *>
+    private val bookkeeper: Bookkeeper<Key>
 ) : Market<Key> {
     private val readCompletions = mutableMapOf<Key, AnyReadCompletionsQueue>()
     private val writeRequests = mutableMapOf<Key, AnyWriteRequestQueue<Key>>()
@@ -120,13 +120,13 @@ class RealMarket<Key : Any> internal constructor(
                 val output = writer.updater.converter(result.value)
                 val marketResponse = MarketResponse.Success(output, origin = MarketResponse.Companion.Origin.Remote)
 
-                conflictResolver.deleteFailedWriteRecord(writer.key)
+                bookkeeper.delete(writer.key)
                 writer.onCompletions.forEach { onCompletion -> onCompletion.onSuccess(marketResponse) }
                 true
             }
 
             is RemoteResult.Failure -> {
-                conflictResolver.setLastFailedWriteTime(writer.key, Clock.System.now().epochSeconds)
+                bookkeeper.write(writer.key, Clock.System.now().epochSeconds)
                 false
             }
         }
@@ -428,7 +428,7 @@ class RealMarket<Key : Any> internal constructor(
             val resolved = output != null
 
             if (resolved) {
-                conflictResolver.deleteFailedWriteRecord(key)
+                bookkeeper.delete(key)
                 updateWriteRequestQueue(key = key,
                     input = input,
                     created = Clock.System.now().epochSeconds,
@@ -447,7 +447,7 @@ class RealMarket<Key : Any> internal constructor(
             return false
         }
 
-        val lastWriteTime = conflictResolver.getLastFailedWriteTime(key)
+        val lastWriteTime = bookkeeper.read(key)
         return lastWriteTime != null || writeRequestsQueueIsNotEmpty(key)
     }
 
