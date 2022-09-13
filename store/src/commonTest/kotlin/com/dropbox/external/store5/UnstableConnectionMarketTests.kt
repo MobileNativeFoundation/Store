@@ -10,6 +10,7 @@ import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -44,11 +45,11 @@ class UnstableConnectionMarketTests {
         val newNote1 = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest1 = factory.buildWriter<Note>(FakeNotes.One.key, newNote1, fail = true)
 
-        val sharedFlow = market.read(readRequest)
+        val flow = market.read(readRequest)
         market.write(writeRequest1)
 
         market.delete(FakeNotes.One.key)
-        val shouldBeEmpty = sharedFlow.replayCache.last()
+        val shouldBeEmpty = flow.toList().last()
         assertIs<MarketResponse.Empty>(shouldBeEmpty)
 
         val newNote2 = newNote1.copy(content = "New Content")
@@ -61,7 +62,7 @@ class UnstableConnectionMarketTests {
         val refreshRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true, fail = false)
 
         market.read(refreshRequest)
-        val last = sharedFlow.replayCache.last()
+        val last = flow.toList().last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(FakeNotes.One.note, last.value)
     }
@@ -74,7 +75,7 @@ class UnstableConnectionMarketTests {
         val writeRequest1 = factory.buildWriter<Note>(FakeNotes.One.key, newNote1, fail = true)
 
         val waitingForSharedFlow = async { market.read(readRequest) }
-        val sharedFlow = waitingForSharedFlow.await()
+        val flow = waitingForSharedFlow.await()
         advanceUntilIdle()
 
         market.write(writeRequest1)
@@ -86,7 +87,7 @@ class UnstableConnectionMarketTests {
         market.read(refreshRequest)
         advanceUntilIdle()
 
-        val last = sharedFlow.replayCache.last()
+        val last = flow.toList().last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote2, last.value)
         assertEquals(MarketResponse.Companion.Origin.Remote, last.origin)
@@ -96,10 +97,10 @@ class UnstableConnectionMarketTests {
     @Test
     fun nonEmptyStoreShouldNotBeOverwrittenByFailedFetch() = testScope.runTest {
         val successReadRequest = factory.buildReader<Note>(FakeNotes.One.key, fail = false, refresh = true)
-        val sharedFlowAsync = async { market.read(successReadRequest) }
-        val sharedFlow = sharedFlowAsync.await()
+        val flowAsync = async { market.read(successReadRequest) }
+        val flow = flowAsync.await()
         advanceUntilIdle()
-        val last1 = sharedFlow.replayCache.last()
+        val last1 = flow.toList().last()
         assertIs<MarketResponse.Success<Note>>(last1)
         assertEquals(FakeNotes.One.note, last1.value)
         assertEquals(MarketResponse.Companion.Origin.Remote, last1.origin)
@@ -107,10 +108,10 @@ class UnstableConnectionMarketTests {
         val failureReadRequest = factory.buildReader<Note>(FakeNotes.One.key, fail = true, refresh = true)
         market.read(failureReadRequest)
         advanceUntilIdle()
-        val last2 = sharedFlow.replayCache.last()
+        val last2 = flow.toList().last()
         assertIs<MarketResponse.Failure>(last2)
 
-        val last2Success = sharedFlow.replayCache.filterIsInstance<MarketResponse.Success<Note>>().last()
+        val last2Success = flow.toList().filterIsInstance<MarketResponse.Success<Note>>().last()
         assertEquals(MarketResponse.Companion.Origin.Store, last2Success.origin)
         assertEquals(FakeNotes.One.note, last2Success.value)
 

@@ -20,17 +20,19 @@ import com.dropbox.external.store5.definition.Converter
 import com.dropbox.external.store5.definition.PostRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.datetime.Clock
-
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
 typealias AnyWriteRequestQueue<Key> = ArrayDeque<Updater<Key, *, *>>
 typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<Updater<Key, Input, *>>
 typealias AnyBroadcast = MutableSharedFlow<MarketResponse<*>>
 typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
-
+typealias AnyFlow = Flow<MarketResponse<*>>
+typealias SomeFlow<T> = Flow<MarketResponse<T>>
 
 /**
  * Thread-safe [Market] implementation.
@@ -53,7 +55,7 @@ class RealMarket<Key : Any> internal constructor(
     private val marketSecurity = mutableMapOf<Key, StoreSecurity>()
 
     @AnyThread
-    override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeBroadcast<Output> {
+    override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeFlow<Output> {
         masterLock.lock()
         marketSecurity.getOrPut(reader.key) { StoreSecurity() }
         masterLock.unlock()
@@ -72,7 +74,13 @@ class RealMarket<Key : Any> internal constructor(
         } else if (reader.refresh && readNotInProgress(reader.key)) {
             getAndEmitLatest(reader.key, reader.fetcher)
         }
-        return requireBroadcast(reader.key)
+
+
+        return flow {
+            requireBroadcast<Output>(reader.key).collect {
+                emit(it)
+            }
+        }
     }
 
     @AnyThread
@@ -208,7 +216,6 @@ class RealMarket<Key : Any> internal constructor(
             storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
             broadcasts[key]!!.emit(response)
             storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
-
         } catch (throwable: Throwable) {
             val response = MarketResponse.Failure(
                 error = throwable, origin = MarketResponse.Companion.Origin.Remote
@@ -309,7 +316,6 @@ class RealMarket<Key : Any> internal constructor(
         return requireBroadcast(key)
     }
 
-
     @AnyThread
     private suspend fun <Output : Any> getBroadcast(key: Key): SomeBroadcast<Output>? {
         val storeSecurity = requireStoreSecurity(key)
@@ -350,7 +356,6 @@ class RealMarket<Key : Any> internal constructor(
         return isBroadcasting
     }
 
-
     @AnyThread
     private suspend fun addOrInitReadCompletions(key: Key, onCompletions: AnyReadCompletionsQueue) {
         val storeSecurity = requireStoreSecurity(key)
@@ -363,7 +368,6 @@ class RealMarket<Key : Any> internal constructor(
         storeSecurity.readCompletionsLock.unlock()
         releaseStoreSecurity()
     }
-
 
     @AnyThread
     private suspend fun <Input : Any, Output : Any> addOrInitWriteRequest(
@@ -388,7 +392,6 @@ class RealMarket<Key : Any> internal constructor(
         releaseStoreSecurity()
         return updater
     }
-
 
     @AnyThread
     private suspend fun readInProgress(key: Key): Boolean {

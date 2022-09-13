@@ -8,6 +8,7 @@ import com.dropbox.external.store5.fake.api.FakeApi
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -47,7 +48,7 @@ class ReconnectMarketTests {
 
         val response = market.read(readRequest)
         testScope.advanceUntilIdle()
-        val last = response.replayCache.last()
+        val last = response.toList().last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
     }

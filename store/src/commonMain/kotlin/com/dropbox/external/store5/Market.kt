@@ -1,7 +1,7 @@
 package com.dropbox.external.store5
 
 import com.dropbox.external.store5.impl.RealMarket
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Integrates stores and a bookkeeper.
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
  * @see [Bookkeeper]
  */
 interface Market<Key : Any> {
-    suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): MutableSharedFlow<MarketResponse<Output>>
+    suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): Flow<MarketResponse<Output>>
     suspend fun <Input : Any, Output : Any> write(writer: Writer<Key, Input, Output>): Boolean
     suspend fun delete(key: Key): Boolean
     suspend fun delete(): Boolean

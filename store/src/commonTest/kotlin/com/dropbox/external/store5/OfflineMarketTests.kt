@@ -11,6 +11,7 @@ import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -44,7 +45,7 @@ class OfflineMarketTests {
         val readRequest = factory.buildReader<Note>(FakeNotes.One.key)
 
         val readResponse = testScope.async { market.read(readRequest) }
-        val sharedFlow = readResponse.await()
+        val flow = readResponse.await()
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
@@ -56,7 +57,7 @@ class OfflineMarketTests {
 
         testScope.advanceUntilIdle()
 
-        val last = sharedFlow.replayCache.last()
+        val last = flow.toList().last()
 
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
@@ -68,13 +69,13 @@ class OfflineMarketTests {
         val readRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true, fail = true)
 
         val readResponse = async { market.read(readRequest) }
-        val sharedFlow = readResponse.await()
-        val first = sharedFlow.replayCache.first()
+        val flow = readResponse.await()
+        val first = flow.toList().first()
         assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
-        val second = sharedFlow.replayCache.last()
+        val second = flow.toList().last()
         assertIs<MarketResponse.Failure>(second)
         assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
@@ -86,7 +87,7 @@ class OfflineMarketTests {
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = sharedFlow.replayCache.findLast { it is MarketResponse.Success<Note> }
+        val lastSuccess = flow.toList().findLast { it is MarketResponse.Success<Note> }
 
         assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)
@@ -110,13 +111,13 @@ class OfflineMarketTests {
         ) { listOf(onCompletion) }
 
         val readResponse = async { market.read(readRequest) }
-        val sharedFlow = readResponse.await()
-        val first = sharedFlow.replayCache.first()
+        val flow = readResponse.await()
+        val first = flow.toList().first()
         assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
-        val second = sharedFlow.replayCache.last()
+        val second = flow.toList().last()
         assertIs<MarketResponse.Failure>(second)
         assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
@@ -128,7 +129,7 @@ class OfflineMarketTests {
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = sharedFlow.replayCache.findLast { it is MarketResponse.Success<Note> }
+        val lastSuccess = flow.toList().findLast { it is MarketResponse.Success<Note> }
 
         assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)
