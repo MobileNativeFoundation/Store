@@ -8,7 +8,8 @@ import com.dropbox.external.store5.fake.api.FakeApi
 import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -38,17 +39,17 @@ class ReconnectMarketTests {
 
     @Test
     fun eagerlyResolveConflictsWithEmptyStore() = testScope.runTest {
-        val readRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true)
-        val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote)
+        val readRequest = factory.buildReader<Note>(FakeNotes.Two.key, refresh = true)
+        val newNote = FakeNotes.Two.note.copy(title = "New Title")
+        val writeRequest = factory.buildWriter<Note>(FakeNotes.Two.key, newNote)
 
         market.read(readRequest)
         market.write(writeRequest)
-        market.delete(FakeNotes.One.key)
+        market.delete(FakeNotes.Two.key)
 
         val response = market.read(readRequest)
         testScope.advanceUntilIdle()
-        val last = response.toList().last()
+        val last = response.take(4).last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
     }

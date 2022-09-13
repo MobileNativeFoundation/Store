@@ -11,6 +11,8 @@ import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -173,7 +175,7 @@ class MarketTests {
 
         assertEquals(true, isSuccess)
 
-        val responses = flow.toList()
+        val responses = flow.take(6).toList()
         val last = responses.last()
 
         assertIs<MarketResponse.Success<Note>>(last)
@@ -227,10 +229,10 @@ class MarketTests {
         )
         market.write(writeRequestOneA)
         testScope.advanceUntilIdle()
-        val firstResult = flow.toList().first()
+        val firstResult = flow.take(1).toList().first()
         assertIs<MarketResponse.Loading>(firstResult)
 
-        val firstSuccessResult = flow.toList().filterIsInstance<MarketResponse.Success<Note>>().first()
+        val firstSuccessResult = flow.filterIsInstance<MarketResponse.Success<Note>>().first()
         assertEquals(MarketResponse.Companion.Origin.Remote, firstSuccessResult.origin)
         assertEquals(FakeNotes.One.note, firstSuccessResult.value)
         assertEquals(null, marketCompleted[FakeNotes.One.note.id])
@@ -238,7 +240,7 @@ class MarketTests {
 
         market.write(writeRequestOneB)
         testScope.advanceUntilIdle()
-        val secondResult = flow.toList().last()
+        val secondResult = flow.take(3).toList().last()
         assertIs<MarketResponse.Success<Note>>(secondResult)
         assertEquals(1, marketCompleted[FakeNotes.One.note.id])
         assertEquals(2, postCompleted[FakeNotes.One.note.id])
@@ -256,7 +258,7 @@ class MarketTests {
         assertEquals(true, isSuccess)
 
         testScope.advanceUntilIdle()
-        val lastResult = flow.toList().last()
+        val lastResult = flow.take(6).toList().last()
 
         assertIs<MarketResponse.Success<Note>>(lastResult)
         assertEquals(newNoteTwo, lastResult.value)
@@ -280,8 +282,8 @@ class MarketTests {
 
         testScope.advanceUntilIdle()
 
-        val lastOne = flowOne.toList().last()
-        val lastTwo = flowTwo.toList().last()
+        val lastOne = flowOne.take(3).toList().last()
+        val lastTwo = flowTwo.take(3).toList().last()
 
         assertIs<MarketResponse.Success<Note>>(lastOne)
         assertEquals(FakeNotes.One.note, lastOne.value)
@@ -294,8 +296,8 @@ class MarketTests {
 
         testScope.advanceUntilIdle()
 
-        val lastOneAfterDelete = flowOne.toList().last()
-        val lastTwoAfterDelete = flowTwo.toList().last()
+        val lastOneAfterDelete = flowOne.take(4).last()
+        val lastTwoAfterDelete = flowTwo.take(4).last()
 
         assertIs<MarketResponse.Empty>(lastOneAfterDelete)
         assertIs<MarketResponse.Empty>(lastTwoAfterDelete)
@@ -314,8 +316,8 @@ class MarketTests {
 
         testScope.advanceUntilIdle()
 
-        val lastOne = flowOne.toList().last()
-        val lastTwo = flowTwo.toList().last()
+        val lastOne = flowOne.take(3).last()
+        val lastTwo = flowTwo.take(3).last()
 
         assertIs<MarketResponse.Success<Note>>(lastOne)
         assertEquals(FakeNotes.One.note, lastOne.value)
@@ -327,8 +329,8 @@ class MarketTests {
 
         testScope.advanceUntilIdle()
 
-        val lastOneAfterDelete = flowOne.toList().last()
-        val lastTwoAfterDelete = flowTwo.toList().last()
+        val lastOneAfterDelete = flowOne.take(4).last()
+        val lastTwoAfterDelete = flowTwo.take(4).last()
 
         assertIs<MarketResponse.Empty>(lastOneAfterDelete)
         assertIs<MarketResponse.Empty>(lastTwoAfterDelete)
@@ -357,12 +359,12 @@ class MarketTests {
 
         testScope.advanceUntilIdle()
 
-        val lastOne = flowOne.toList().last()
+        val lastOne = flowOne.take(3).last()
         assertIs<MarketResponse.Success<Note>>(lastOne)
         assertEquals(FakeNotes.One.note, lastOne.value)
         assertEquals(MarketResponse.Companion.Origin.Remote, lastOne.origin)
 
-        val lastTwo = flowTwo.toList().last()
+        val lastTwo = flowTwo.take(3).last()
         assertIs<MarketResponse.Success<Note>>(lastTwo)
         assertEquals(FakeNotes.Two.note, lastTwo.value)
         assertEquals(MarketResponse.Companion.Origin.Remote, lastTwo.origin)
@@ -427,7 +429,7 @@ class MarketTests {
 
         val response = market.read(readRequest)
         testScope.advanceUntilIdle()
-        val last = response.toList().last()
+        val last = response.take(5).last()
         assertIs<MarketResponse.Empty>(last)
     }
 
@@ -443,7 +445,7 @@ class MarketTests {
 
         val response = market.read(readRequest)
         testScope.advanceUntilIdle()
-        val last = response.toList().last()
+        val last = response.take(7).last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
     }

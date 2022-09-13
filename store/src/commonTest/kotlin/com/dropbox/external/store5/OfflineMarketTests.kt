@@ -11,7 +11,10 @@ import com.dropbox.external.store5.fake.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -42,23 +45,19 @@ class OfflineMarketTests {
     @Test
     fun failWriteAfterInit() = testScope.runTest {
 
-        val readRequest = factory.buildReader<Note>(FakeNotes.One.key)
+        val readRequest = factory.buildReader<Note>(FakeNotes.Eight.key)
+        val response = async { market.read(readRequest) }
+        val flow = response.await()
 
-        val readResponse = testScope.async { market.read(readRequest) }
-        val flow = readResponse.await()
-
-        val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
+        val newNote = FakeNotes.Eight.note.copy(title = "New Title")
+        val writeRequest = factory.buildWriter<Note>(FakeNotes.Eight.key, newNote, fail = true)
 
         val writeResponse = async { market.write(writeRequest) }
         val isSuccess = writeResponse.await()
-
         assertEquals(false, isSuccess)
 
         testScope.advanceUntilIdle()
-
-        val last = flow.toList().last()
-
+        val last = flow.take(4).last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote, last.value)
         assertEquals(MarketResponse.Companion.Origin.LocalWrite, last.origin)
@@ -70,12 +69,12 @@ class OfflineMarketTests {
 
         val readResponse = async { market.read(readRequest) }
         val flow = readResponse.await()
-        val first = flow.toList().first()
+        val first = flow.first()
         assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
-        val second = flow.toList().last()
+        val second = flow.take(3).last()
         assertIs<MarketResponse.Failure>(second)
         assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
@@ -87,7 +86,7 @@ class OfflineMarketTests {
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = flow.toList().findLast { it is MarketResponse.Success<Note> }
+        val lastSuccess = flow.take(4).filterIsInstance<MarketResponse.Success<Note>>().last()
 
         assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)
@@ -112,12 +111,12 @@ class OfflineMarketTests {
 
         val readResponse = async { market.read(readRequest) }
         val flow = readResponse.await()
-        val first = flow.toList().first()
+        val first = flow.first()
         assertIs<MarketResponse.Loading>(first)
 
         testScope.advanceUntilIdle()
 
-        val second = flow.toList().last()
+        val second = flow.take(3).last()
         assertIs<MarketResponse.Failure>(second)
         assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
 
@@ -129,7 +128,7 @@ class OfflineMarketTests {
 
         assertEquals(false, isSuccess)
 
-        val lastSuccess = flow.toList().findLast { it is MarketResponse.Success<Note> }
+        val lastSuccess = flow.take(4).filterIsInstance<MarketResponse.Success<Note>>().last()
 
         assertIs<MarketResponse.Success<Note>>(lastSuccess)
         assertEquals(newNote, lastSuccess.value)

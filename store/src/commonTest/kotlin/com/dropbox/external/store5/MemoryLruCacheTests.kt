@@ -63,8 +63,8 @@ class MemoryLruCacheTests {
 
         assertEquals(MemoryLruCache.headPointer, headPointer)
         assertEquals(MemoryLruCache.tailPointer, tailPointer)
-        assertEquals(FakeNotes.Two.note, head?.value)
-        assertEquals(FakeNotes.One.note, tail?.value)
+        assertEquals(FakeNotes.Two.note, head.value)
+        assertEquals(FakeNotes.One.note, tail.value)
         assertEquals(2, memoryLruCache.cache.size)
 
         val result = memoryLruCache.read<Note>(FakeNotes.One.key)
@@ -80,8 +80,8 @@ class MemoryLruCacheTests {
 
         assertEquals(MemoryLruCache.headPointer, headPointer)
         assertEquals(MemoryLruCache.tailPointer, tailPointer)
-        assertEquals(FakeNotes.One.note, head?.value)
-        assertEquals(FakeNotes.Two.note, tail?.value)
+        assertEquals(FakeNotes.One.note, head.value)
+        assertEquals(FakeNotes.Two.note, tail.value)
         assertEquals(2, memoryLruCache.cache.size)
     }
 
@@ -185,8 +185,8 @@ class MemoryLruCacheTests {
         assertEquals(MemoryLruCache.headPointer, headPointer)
         assertEquals(MemoryLruCache.tailPointer, tailPointer)
 
-        assertEquals<Any>(MemoryLruCache.headPointer.value, tail!!.value)
-        assertEquals<Any>(MemoryLruCache.tailPointer.value, head!!.value)
+        assertEquals<Any>(MemoryLruCache.headPointer.value, tail.value)
+        assertEquals<Any>(MemoryLruCache.tailPointer.value, head.value)
         assertEquals(0, memoryLruCache.cache.size)
     }
 }
