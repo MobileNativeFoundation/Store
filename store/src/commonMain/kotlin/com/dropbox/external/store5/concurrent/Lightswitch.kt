@@ -23,6 +23,7 @@ internal class Lightswitch {
     suspend fun unlock(room: Mutex) {
         mutex.lock()
         counter -= 1
+        check(counter >= 0)
         if (counter == 0) {
             room.unlock()
         }
