@@ -166,6 +166,11 @@ class RealMarket<Key : Any> internal constructor(
         return null
     }
 
+    /**
+     * Tries reading from [Store] until [MarketResponse.Success] or each [Store] in [stores] is checked.
+     * Swallows read exceptions.
+     * Emits [MarketResponse.Loading] if no [Store] has a value for [key].
+     */
     @AnyThread
     private suspend fun <Output : Any> load(key: Key) {
         val broadcast = requireBroadcast<Output>(key)
