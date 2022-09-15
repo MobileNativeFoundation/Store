@@ -2,7 +2,7 @@ package com.dropbox.external.store5.concurrent
 
 import kotlinx.coroutines.sync.Mutex
 
-internal data class StoreSecurity(
+internal data class StoreSafety(
     val writeRequestsLock: Mutex = Mutex(),
     val writeRequestsLightswitch: Lightswitch = Lightswitch(),
 

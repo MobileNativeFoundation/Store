@@ -15,12 +15,11 @@ import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.Updater
 import com.dropbox.external.store5.Writer
 import com.dropbox.external.store5.concurrent.AnyThread
-import com.dropbox.external.store5.concurrent.StoreSecurity
+import com.dropbox.external.store5.concurrent.StoreSafety
 import com.dropbox.external.store5.definition.Converter
 import com.dropbox.external.store5.definition.PostRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.sync.Mutex
@@ -52,12 +51,12 @@ class RealMarket<Key : Any> internal constructor(
 
     private val masterLock = Mutex()
     private val storeLocks = stores.map { Mutex() }
-    private val marketSecurity = mutableMapOf<Key, StoreSecurity>()
+    private val marketSecurity = mutableMapOf<Key, StoreSafety>()
 
     @AnyThread
     override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeFlow<Output> {
         masterLock.lock()
-        marketSecurity.getOrPut(reader.key) { StoreSecurity() }
+        marketSecurity.getOrPut(reader.key) { StoreSafety() }
         masterLock.unlock()
 
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
@@ -92,9 +91,9 @@ class RealMarket<Key : Any> internal constructor(
     ) {
         val writeRequestQueue = requireWriteRequestQueue<Input>(key)
         val outstandingWriteRequests: AnyWriteRequestQueue<Key> = ArrayDeque()
-        val storeSecurity = requireStoreSecurity(key)
+        val storeSafety = requireStoreSafety(key)
 
-        storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
+        storeSafety.writeRequestsLightswitch.lock(storeSafety.writeRequestsLock)
 
         for (writeRequest in writeRequestQueue) {
             if (writeRequest.created <= created) {
@@ -108,7 +107,7 @@ class RealMarket<Key : Any> internal constructor(
 
         writeRequests[key] = outstandingWriteRequests
 
-        storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+        storeSafety.writeRequestsLightswitch.unlock(storeSafety.writeRequestsLock)
 
         releaseStoreSecurity()
     }
@@ -189,7 +188,7 @@ class RealMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun <Input : Any, Output : Any> refresh(key: Key, fetcher: Fetcher<Key, Input, Output>) {
 
-        val storeSecurity = requireStoreSecurity(key)
+        val storeSafety = requireStoreSafety(key)
 
         try {
             val response = when (val result = fetcher.get(key)) {
@@ -205,33 +204,33 @@ class RealMarket<Key : Any> internal constructor(
                     storeLocks[index].unlock()
                 }
 
-                storeSecurity.readCompletionsLightswitch.lock(storeSecurity.readCompletionsLock)
+                storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
                 readCompletions[key]!!.forEach { anyOnCompletion ->
                     val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
                     onCompletion.onSuccess(response)
                 }
-                storeSecurity.readCompletionsLightswitch.unlock(storeSecurity.readCompletionsLock)
+                storeSafety.readCompletionsLightswitch.unlock(storeSafety.readCompletionsLock)
             }
 
-            storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
+            storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
             broadcasts[key]!!.emit(response)
-            storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+            storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
         } catch (throwable: Throwable) {
             val response = MarketResponse.Failure(
                 error = throwable, origin = MarketResponse.Companion.Origin.Remote
             )
 
-            storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
+            storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
             broadcasts[key]!!.emit(response)
-            storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+            storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
 
 
-            storeSecurity.readCompletionsLightswitch.lock(storeSecurity.readCompletionsLock)
+            storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
             readCompletions[key]!!.forEach { anyOnCompletion ->
                 val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
                 onCompletion.onFailure(response)
             }
-            storeSecurity.readCompletionsLightswitch.unlock(storeSecurity.readCompletionsLock)
+            storeSafety.readCompletionsLightswitch.unlock(storeSafety.readCompletionsLock)
         }
 
         releaseStoreSecurity()
@@ -303,69 +302,69 @@ class RealMarket<Key : Any> internal constructor(
 
     @AnyThread
     private suspend fun <Output : Any> getOrSetBroadcast(key: Key): SomeBroadcast<Output> {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLock.lock()
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.broadcastLock.lock()
 
         if (broadcasts[key] == null) {
             broadcasts[key] = MutableSharedFlow(10)
             broadcasts[key]!!.emit(MarketResponse.Loading)
         }
 
-        storeSecurity.broadcastLock.unlock()
+        storeSafety.broadcastLock.unlock()
         releaseStoreSecurity()
         return requireBroadcast(key)
     }
 
     @AnyThread
     private suspend fun <Output : Any> getBroadcast(key: Key): SomeBroadcast<Output>? {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
         val broadcast = broadcasts[key] as? SomeBroadcast<Output>
-        storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+        storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
         releaseStoreSecurity()
         return broadcast
     }
 
     @AnyThread
     private suspend fun <Output : Any> requireBroadcast(key: Key): SomeBroadcast<Output> {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLightswitch.lock(storeSecurity.broadcastLock)
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
         val broadcast = broadcasts[key] as SomeBroadcast<Output>
-        storeSecurity.broadcastLightswitch.unlock(storeSecurity.broadcastLock)
+        storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
         releaseStoreSecurity()
         return broadcast
     }
 
     @AnyThread
     private suspend fun <Input : Any> requireWriteRequestQueue(key: Key): SomeWriteRequestQueue<Key, Input> {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.writeRequestsLightswitch.lock(storeSafety.writeRequestsLock)
         val writeRequestQueue = writeRequests[key] as SomeWriteRequestQueue<Key, Input>
-        storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+        storeSafety.writeRequestsLightswitch.unlock(storeSafety.writeRequestsLock)
         releaseStoreSecurity()
         return writeRequestQueue
     }
 
     @AnyThread
     private suspend fun broadcasting(key: Key): Boolean {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.broadcastLock.lock()
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.broadcastLock.lock()
         val isBroadcasting = broadcasts[key] != null
-        storeSecurity.broadcastLock.unlock()
+        storeSafety.broadcastLock.unlock()
         releaseStoreSecurity()
         return isBroadcasting
     }
 
     @AnyThread
     private suspend fun addOrInitReadCompletions(key: Key, onCompletions: AnyReadCompletionsQueue) {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.readCompletionsLock.lock()
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.readCompletionsLock.lock()
         if (readCompletions[key] != null) {
             readCompletions[key]!!.addAll(onCompletions)
         } else {
             readCompletions[key] = onCompletions
         }
-        storeSecurity.readCompletionsLock.unlock()
+        storeSafety.readCompletionsLock.unlock()
         releaseStoreSecurity()
     }
 
@@ -373,33 +372,33 @@ class RealMarket<Key : Any> internal constructor(
     private suspend fun <Input : Any, Output : Any> addOrInitWriteRequest(
         key: Key, updater: Updater<Key, Input, Output>
     ) {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLock.lock()
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.writeRequestsLock.lock()
         if (writeRequests[key] == null) {
             writeRequests[key] = ArrayDeque()
         }
         writeRequests[key]!!.add(updater)
-        storeSecurity.writeRequestsLock.unlock()
+        storeSafety.writeRequestsLock.unlock()
         releaseStoreSecurity()
     }
 
     @AnyThread
     private suspend fun <Input : Any, Output : Any> getLatestWriteRequest(key: Key): Updater<Key, Input, Output> {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLock.lock()
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.writeRequestsLock.lock()
         val updater = writeRequests[key]?.last() as Updater<Key, Input, Output>
-        storeSecurity.writeRequestsLock.unlock()
+        storeSafety.writeRequestsLock.unlock()
         releaseStoreSecurity()
         return updater
     }
 
     @AnyThread
     private suspend fun readInProgress(key: Key): Boolean {
-        val storeSecurity = requireStoreSecurity(key)
+        val storeSafety = requireStoreSafety(key)
 
-        storeSecurity.readCompletionsLightswitch.lock(storeSecurity.readCompletionsLock)
+        storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
         val inProgress = readCompletions[key].isNullOrEmpty().not()
-        storeSecurity.readCompletionsLightswitch.unlock(storeSecurity.readCompletionsLock)
+        storeSafety.readCompletionsLightswitch.unlock(storeSafety.readCompletionsLock)
         releaseStoreSecurity()
         return inProgress
     }
@@ -456,16 +455,16 @@ class RealMarket<Key : Any> internal constructor(
 
     @AnyThread
     private suspend fun writeRequestsQueueIsEmpty(key: Key): Boolean {
-        val storeSecurity = requireStoreSecurity(key)
-        storeSecurity.writeRequestsLightswitch.lock(storeSecurity.writeRequestsLock)
+        val storeSafety = requireStoreSafety(key)
+        storeSafety.writeRequestsLightswitch.lock(storeSafety.writeRequestsLock)
         val isEmpty = writeRequests[key].isNullOrEmpty()
-        storeSecurity.writeRequestsLightswitch.unlock(storeSecurity.writeRequestsLock)
+        storeSafety.writeRequestsLightswitch.unlock(storeSafety.writeRequestsLock)
         releaseStoreSecurity()
         return isEmpty
     }
 
     @AnyThread
-    private suspend fun requireStoreSecurity(key: Key): StoreSecurity {
+    private suspend fun requireStoreSafety(key: Key): StoreSafety {
         masterLock.lock()
         return marketSecurity[key]!!
     }
