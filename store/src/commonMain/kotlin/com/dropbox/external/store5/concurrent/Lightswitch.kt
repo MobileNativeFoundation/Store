@@ -1,6 +1,7 @@
 package com.dropbox.external.store5.concurrent
 
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Locks when first reader starts and unlocks when last reader finishes.
@@ -12,21 +13,21 @@ internal class Lightswitch {
     private val mutex = Mutex()
 
     suspend fun lock(room: Mutex) {
-        mutex.lock()
-        counter += 1
-        if (counter == 1) {
-            room.lock()
+        mutex.withLock {
+            counter += 1
+            if (counter == 1) {
+                room.lock()
+            }
         }
-        mutex.unlock()
     }
 
     suspend fun unlock(room: Mutex) {
-        mutex.lock()
-        counter -= 1
-        check(counter >= 0)
-        if (counter == 0) {
-            room.unlock()
+        mutex.withLock {
+            counter -= 1
+            check(counter >= 0)
+            if (counter == 0) {
+                room.unlock()
+            }
         }
-        mutex.unlock()
     }
 }

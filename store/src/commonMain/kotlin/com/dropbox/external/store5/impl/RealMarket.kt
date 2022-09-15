@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
@@ -55,9 +56,9 @@ class RealMarket<Key : Any> internal constructor(
 
     @AnyThread
     override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeFlow<Output> {
-        masterLock.lock()
-        marketSecurity.getOrPut(reader.key) { StoreSafety() }
-        masterLock.unlock()
+        masterLock.withLock {
+            marketSecurity.getOrPut(reader.key) { StoreSafety() }
+        }
 
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
@@ -146,9 +147,9 @@ class RealMarket<Key : Any> internal constructor(
             MarketResponse.Success(writer.input as Output, origin = MarketResponse.Companion.Origin.LocalWrite)
         broadcast.emit(responseLocalWrite)
         (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
-            storeLocks[index].lock()
-            store.write(writer.key, writer.input)
-            storeLocks[index].unlock()
+            storeLocks[index].withLock {
+                store.write(writer.key, writer.input)
+            }
         }
 
         addOrInitWriteRequest(writer.key, writer.updater)
@@ -199,9 +200,9 @@ class RealMarket<Key : Any> internal constructor(
             if (response is MarketResponse.Success) {
 
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
-                    storeLocks[index].lock()
-                    store.write(key, response.value as Input)
-                    storeLocks[index].unlock()
+                    storeLocks[index].withLock {
+                        store.write(key, response.value as Input)
+                    }
                 }
 
                 storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
@@ -253,11 +254,11 @@ class RealMarket<Key : Any> internal constructor(
     override suspend fun delete(key: Key): Boolean {
         stores.forEachIndexed { index, store ->
             try {
-                storeLocks[index].lock()
-                if (!store.delete(key)) {
-                    throw Exception()
+                storeLocks[index].withLock {
+                    if (!store.delete(key)) {
+                        throw Exception()
+                    }
                 }
-                storeLocks[index].unlock()
             } catch (throwable: Throwable) {
                 return false
             }
@@ -303,14 +304,12 @@ class RealMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun <Output : Any> getOrSetBroadcast(key: Key): SomeBroadcast<Output> {
         val storeSafety = requireStoreSafety(key)
-        storeSafety.broadcastLock.lock()
-
-        if (broadcasts[key] == null) {
-            broadcasts[key] = MutableSharedFlow(10)
-            broadcasts[key]!!.emit(MarketResponse.Loading)
+        storeSafety.broadcastLock.withLock {
+            if (broadcasts[key] == null) {
+                broadcasts[key] = MutableSharedFlow(10)
+                broadcasts[key]!!.emit(MarketResponse.Loading)
+            }
         }
-
-        storeSafety.broadcastLock.unlock()
         releaseStoreSecurity()
         return requireBroadcast(key)
     }
@@ -358,13 +357,13 @@ class RealMarket<Key : Any> internal constructor(
     @AnyThread
     private suspend fun addOrInitReadCompletions(key: Key, onCompletions: AnyReadCompletionsQueue) {
         val storeSafety = requireStoreSafety(key)
-        storeSafety.readCompletionsLock.lock()
-        if (readCompletions[key] != null) {
-            readCompletions[key]!!.addAll(onCompletions)
-        } else {
-            readCompletions[key] = onCompletions
+        storeSafety.readCompletionsLock.withLock {
+            if (readCompletions[key] != null) {
+                readCompletions[key]!!.addAll(onCompletions)
+            } else {
+                readCompletions[key] = onCompletions
+            }
         }
-        storeSafety.readCompletionsLock.unlock()
         releaseStoreSecurity()
     }
 
@@ -373,12 +372,12 @@ class RealMarket<Key : Any> internal constructor(
         key: Key, updater: Updater<Key, Input, Output>
     ) {
         val storeSafety = requireStoreSafety(key)
-        storeSafety.writeRequestsLock.lock()
-        if (writeRequests[key] == null) {
-            writeRequests[key] = ArrayDeque()
+        storeSafety.writeRequestsLock.withLock {
+            if (writeRequests[key] == null) {
+                writeRequests[key] = ArrayDeque()
+            }
+            writeRequests[key]!!.add(updater)
         }
-        writeRequests[key]!!.add(updater)
-        storeSafety.writeRequestsLock.unlock()
         releaseStoreSecurity()
     }
 
