@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.Flow
 internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private val _read: Read<Key, Output>,
     private val _write: Write<Key, Input>,
-    private val _delete: Delete<Key>,
-    private val _deleteAll: DeleteAll
+    private val _delete: Delete<Key>? = null,
+    private val _deleteAll: DeleteAll? = null
 ) : Store<Key, Input, Output> {
     override suspend fun read(key: Key): Flow<Output?> = _read(key)
     override suspend fun write(key: Key, input: Input): Boolean = _write(key, input)
-    override suspend fun delete(key: Key): Boolean = _delete(key)
-    override suspend fun deleteAll(): Boolean = _deleteAll()
+    override suspend fun delete(key: Key): Boolean = _delete?.invoke(key) ?: false
+    override suspend fun deleteAll(): Boolean = _deleteAll?.invoke() ?: false
 }
