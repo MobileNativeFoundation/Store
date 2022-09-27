@@ -95,7 +95,7 @@ class UnstableConnectionMarketTests {
         println(2)
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(newNote2, last.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, last.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, last.origin)
     }
 
 
@@ -108,7 +108,7 @@ class UnstableConnectionMarketTests {
         val last1 = flow.take(3).last()
         assertIs<MarketResponse.Success<Note>>(last1)
         assertEquals(FakeNotes.Two.note, last1.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, last1.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, last1.origin)
 
         val failureReadRequest = factory.buildReader<Note>(FakeNotes.Two.key, fail = true, refresh = true)
         market.read(failureReadRequest)

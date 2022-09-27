@@ -9,7 +9,7 @@ sealed class MarketResponse<out Output> {
     companion object {
         enum class Origin {
             Store,
-            Remote,
+            Network,
             LocalWrite
         }
     }

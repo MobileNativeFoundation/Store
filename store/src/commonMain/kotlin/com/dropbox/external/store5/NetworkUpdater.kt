@@ -5,12 +5,13 @@ import com.dropbox.external.store5.definition.PostRequest
 
 
 /**
- * Posts to remote data source.
- * @see [Writer]
+ * Posts data to remote data source.
+ * @param post HTTP POST method.
+ * @see [MarketWriter]
  */
-data class Updater<Key : Any, Input : Any, Output : Any>(
+data class NetworkUpdater<Key : Any, Input : Any, Output : Any>(
     val post: PostRequest<Key, Input, Output>,
     val created: Long,
-    val onCompletion: OnRemoteCompletion<Output>,
+    val onCompletion: OnNetworkCompletion<Output>,
     val converter: Converter<Input, Output>
 )

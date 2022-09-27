@@ -80,7 +80,7 @@ class MarketTests {
         val last = responses.last()
         assertIs<MarketResponse.Success<Note>>(last)
         assertEquals(FakeNotes.One.note, last.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, last.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, last.origin)
     }
 
     @Test
@@ -101,12 +101,12 @@ class MarketTests {
         val lastOne = responsesOne.last()
         assertIs<MarketResponse.Success<Note>>(lastOne)
         assertEquals(FakeNotes.One.note, lastOne.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, lastOne.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, lastOne.origin)
 
         val lastTwo = responsesTwo.last()
         assertIs<MarketResponse.Success<Note>>(lastTwo)
         assertEquals(FakeNotes.Two.note, lastTwo.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, lastTwo.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, lastTwo.origin)
     }
 
     @Test
@@ -136,7 +136,7 @@ class MarketTests {
         val secondToLast = responsesBeforeWrite.last()
         assertIs<MarketResponse.Success<Note>>(secondToLast)
         assertEquals(FakeNotes.One.note, secondToLast.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, secondToLast.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, secondToLast.origin)
         assertEquals(FakeNotes.One.note, api.get(FakeNotes.One.key))
 
         val writeResponse = async { market.write(writeRequest) }
@@ -200,7 +200,7 @@ class MarketTests {
             onFailure = {}
         )
 
-        val postOnCompletion = OnRemoteCompletion<Note>(
+        val postOnCompletion = OnNetworkCompletion<Note>(
             onSuccess = { response ->
                 val countBefore = postCompleted[response.value.id] ?: 0
                 val countAfter = countBefore + 1
@@ -233,7 +233,7 @@ class MarketTests {
         assertIs<MarketResponse.Loading>(firstResult)
 
         val firstSuccessResult = flow.filterIsInstance<MarketResponse.Success<Note>>().first()
-        assertEquals(MarketResponse.Companion.Origin.Remote, firstSuccessResult.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, firstSuccessResult.origin)
         assertEquals(FakeNotes.One.note, firstSuccessResult.value)
         assertEquals(null, marketCompleted[FakeNotes.One.note.id])
         assertEquals(null, postCompleted[FakeNotes.One.note.id])
@@ -362,12 +362,12 @@ class MarketTests {
         val lastOne = flowOne.take(3).last()
         assertIs<MarketResponse.Success<Note>>(lastOne)
         assertEquals(FakeNotes.One.note, lastOne.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, lastOne.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, lastOne.origin)
 
         val lastTwo = flowTwo.take(3).last()
         assertIs<MarketResponse.Success<Note>>(lastTwo)
         assertEquals(FakeNotes.Two.note, lastTwo.value)
-        assertEquals(MarketResponse.Companion.Origin.Remote, lastTwo.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, lastTwo.origin)
 
         assertEquals(true, completed[FakeNotes.One.note.id])
         assertEquals(true, completed[FakeNotes.Two.note.id])

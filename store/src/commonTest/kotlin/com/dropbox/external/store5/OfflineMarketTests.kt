@@ -76,7 +76,7 @@ class OfflineMarketTests {
 
         val second = flow.take(3).last()
         assertIs<MarketResponse.Failure>(second)
-        assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, second.origin)
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
@@ -118,7 +118,7 @@ class OfflineMarketTests {
 
         val second = flow.take(3).last()
         assertIs<MarketResponse.Failure>(second)
-        assertEquals(MarketResponse.Companion.Origin.Remote, second.origin)
+        assertEquals(MarketResponse.Companion.Origin.Network, second.origin)
 
         val newNote = FakeNotes.One.note.copy(title = "New Title")
         val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
