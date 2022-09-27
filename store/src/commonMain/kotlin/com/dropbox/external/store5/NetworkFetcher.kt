@@ -3,15 +3,35 @@ package com.dropbox.external.store5
 import com.dropbox.external.store5.definition.Converter
 import com.dropbox.external.store5.definition.GetRequest
 import com.dropbox.external.store5.definition.PostRequest
+import com.dropbox.external.store5.impl.RealNetworkFetcher
 
 /**
  * Gets data from remote data source.
- * @param get HTTP GET method.
- * @param post HTTP POST method. Enables eager conflict resolution.
  * @see [MarketReader]
  */
-data class NetworkFetcher<Key : Any, Input : Any, Output : Any>(
-    val get: GetRequest<Key, Output>,
-    val post: PostRequest<Key, Input, Output>,
-    val converter: Converter<Output, Input>
-)
+interface NetworkFetcher<Key : Any, Input : Any, Output : Any> {
+    /**
+     * Makes HTTP GET request.
+     */
+    suspend fun get(key: Key): Output?
+
+    /**
+     * Makes HTTP POST request.
+     */
+    suspend fun post(key: Key, input: Input): Output?
+
+    /**
+     * Converts [Output] to [Input].
+     */
+    fun converter(output: Output): Input
+
+    companion object {
+        fun <Key : Any, Input : Any, Output : Any> by(
+            get: GetRequest<Key, Output>,
+            post: PostRequest<Key, Input, Output>,
+            converter: Converter<Output, Input>
+        ): NetworkFetcher<Key, Input, Output> = RealNetworkFetcher(
+            get, post, converter
+        )
+    }
+}

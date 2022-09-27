@@ -2,18 +2,18 @@
 
 package com.dropbox.external.store5.fake
 
+import com.dropbox.external.store5.MarketReader
+import com.dropbox.external.store5.MarketWriter
 import com.dropbox.external.store5.NetworkFetcher
+import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnMarketCompletion
 import com.dropbox.external.store5.OnNetworkCompletion
-import com.dropbox.external.store5.MarketReader
-import com.dropbox.external.store5.NetworkUpdater
-import com.dropbox.external.store5.MarketWriter
 import com.dropbox.external.store5.fake.api.Api
 import kotlinx.datetime.Clock
 
 internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api: Api<Key, Output>) {
 
-    fun buildFetcher(fail: Boolean = false): NetworkFetcher<Key, Input, Output> = NetworkFetcher(
+    fun buildFetcher(fail: Boolean = false): NetworkFetcher<Key, Input, Output> = NetworkFetcher.by(
         get = { key -> api.get(key, fail) },
         post = { key, input -> api.post(key, input as Output, fail) },
         converter = { it as Input }

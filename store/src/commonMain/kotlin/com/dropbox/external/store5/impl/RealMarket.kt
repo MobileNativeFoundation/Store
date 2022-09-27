@@ -4,16 +4,16 @@ package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Convenience
-import com.dropbox.external.store5.NetworkFetcher
 import com.dropbox.external.store5.Market
+import com.dropbox.external.store5.MarketReader
 import com.dropbox.external.store5.MarketResponse
+import com.dropbox.external.store5.MarketWriter
+import com.dropbox.external.store5.NetworkFetcher
+import com.dropbox.external.store5.NetworkResult
+import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnMarketCompletion
 import com.dropbox.external.store5.OnNetworkCompletion
-import com.dropbox.external.store5.MarketReader
-import com.dropbox.external.store5.NetworkResult
 import com.dropbox.external.store5.Store
-import com.dropbox.external.store5.NetworkUpdater
-import com.dropbox.external.store5.MarketWriter
 import com.dropbox.external.store5.concurrent.AnyThread
 import com.dropbox.external.store5.concurrent.StoreSafety
 import com.dropbox.external.store5.definition.Converter
@@ -63,7 +63,7 @@ class RealMarket<Key : Any> internal constructor(
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
         if (conflictsMightExist) {
-            eagerlyResolveConflicts(reader.key, reader.fetcher.post, reader.fetcher.converter)
+            eagerlyResolveConflicts(reader.key, reader.fetcher::post, reader.fetcher::converter)
         }
 
         addOrInitReadCompletions(reader.key, reader.onCompletions.toMutableList())
