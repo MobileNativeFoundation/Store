@@ -1,13 +1,15 @@
 package com.dropbox.external.store5
 
 import com.dropbox.external.store5.impl.RealBookkeeper
+import com.dropbox.external.store5.impl.RealMarket
 
 /**
  * Tracks when local changes fail to sync with network.
+ * [RealMarket] uses [Bookkeeper] to persist write request failures and eagerly resolve conflicts before completing a read request.
  */
 interface Bookkeeper<Key : Any> {
-    suspend fun read(key: Key): Long?
-    suspend fun write(key: Key, timestamp: Long): Boolean
+    suspend fun getTimestampLastFailedSync(key: Key): Long?
+    suspend fun setTimestampLastFailedSync(key: Key, timestamp: Long): Boolean
     suspend fun delete(key: Key): Boolean
     suspend fun deleteAll(): Boolean
 

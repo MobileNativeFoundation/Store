@@ -39,7 +39,7 @@ typealias SomeFlow<T> = Flow<MarketResponse<T>>
  * @param stores List of [Store]. Order matters! [RealMarket] executes [read], [write], and [delete] operations iteratively.
  * @param bookkeeper Implementation of [Bookkeeper]. Used in [read] to eagerly resolve conflicts and in [write] to persist write request failures.
  * @property readCompletions Thread-safe mapping of Key to [AnyReadCompletionsQueue]. Queue size is checked before handling a market read request. All completion handlers in queue are processed on market read response.
- * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [Updater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we reset the queue. On failure, we use [Bookkeeper.write]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
+ * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [Updater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we reset the queue. On failure, we use [Bookkeeper.setTimestampLastFailedSync]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
  * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
 class RealMarket<Key : Any> internal constructor(
@@ -134,7 +134,7 @@ class RealMarket<Key : Any> internal constructor(
             }
 
             is RemoteResult.Failure -> {
-                bookkeeper.write(writer.key, Clock.System.now().epochSeconds)
+                bookkeeper.setTimestampLastFailedSync(writer.key, Clock.System.now().epochSeconds)
                 false
             }
         }
@@ -453,7 +453,7 @@ class RealMarket<Key : Any> internal constructor(
             return false
         }
 
-        val lastWriteTime = bookkeeper.read(key)
+        val lastWriteTime = bookkeeper.getTimestampLastFailedSync(key)
         return lastWriteTime != null || writeRequestsQueueIsNotEmpty(key)
     }
 
