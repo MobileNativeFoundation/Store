@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/atlasgrotesk_medium"
+        app:font="@font/atlasgrotesk_medium"
+        app:fontWeight="500" />
+</font-family>

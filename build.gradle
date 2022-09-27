@@ -16,6 +16,9 @@ buildscript {
         classpath "org.jacoco:org.jacoco.core:${Version.jacocoGradlePlugin}"
         classpath "com.vanniktech:gradle-maven-publish-plugin:${Version.mavenPublishPlugin}"
         classpath "org.jetbrains.kotlinx:kover:${Version.kover}"
+        classpath "app.cash.molecule:molecule-gradle-plugin:0.4.0"
+        classpath "com.squareup.anvil:gradle-plugin:2.4.2"
+
     }
 }
 
