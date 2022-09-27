@@ -10,9 +10,6 @@ import com.dropbox.external.store5.Updater
 import com.dropbox.external.store5.Writer
 import com.dropbox.external.store5.fake.api.Api
 import kotlinx.datetime.Clock
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.serializer
 
 internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api: Api<Key, Output>) {
 
@@ -22,7 +19,6 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         converter = { it as Input }
     )
 
-    @OptIn(InternalSerializationApi::class)
     inline fun <reified T : Output> buildReader(
         key: Key,
         refresh: Boolean = false,
@@ -33,7 +29,6 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
             key = key,
             fetcher = buildFetcher(fail),
             refresh = refresh,
-            serializer = T::class.serializer() as KSerializer<Output>,
             onCompletions = onCompletionsProducer()
         )
 
@@ -45,7 +40,11 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
             created = Clock.System.now().epochSeconds
         )
 
-    @OptIn(InternalSerializationApi::class)
+    private fun <T : Any> doNothingOnCompletion() = OnRemoteCompletion<T>(
+        onSuccess = {},
+        onFailure = {}
+    )
+
     inline fun <reified T : Output> buildWriter(
         key: Key,
         input: Output,
@@ -57,12 +56,6 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
             key = key,
             input = input,
             updater = buildUpdater(fail, postOnCompletion),
-            serializer = T::class.serializer() as KSerializer<Output>,
             onCompletions = onCompletionsProducer()
         )
-
-    private fun <T : Any> doNothingOnCompletion() = OnRemoteCompletion<T>(
-        onSuccess = {},
-        onFailure = {}
-    )
 }
