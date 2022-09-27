@@ -50,13 +50,13 @@ class RealMarket<Key : Any> internal constructor(
     private val writeRequests = mutableMapOf<Key, AnyWriteRequestQueue<Key>>()
     private val broadcasts = mutableMapOf<Key, AnyBroadcast>()
 
-    private val masterLock = Mutex()
+    private val mainLock = Mutex()
     private val storeLocks = stores.map { Mutex() }
     private val marketSecurity = mutableMapOf<Key, StoreSafety>()
 
     @AnyThread
     override suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): SomeFlow<Output> {
-        masterLock.withLock {
+        mainLock.withLock {
             marketSecurity.getOrPut(reader.key) { StoreSafety() }
         }
 
@@ -469,13 +469,13 @@ class RealMarket<Key : Any> internal constructor(
 
     @AnyThread
     private suspend fun requireStoreSafety(key: Key): StoreSafety {
-        masterLock.lock()
+        mainLock.lock()
         return marketSecurity[key]!!
     }
 
     @AnyThread
     private fun releaseStoreSecurity() {
-        masterLock.unlock()
+        mainLock.unlock()
     }
 
     @Convenience
