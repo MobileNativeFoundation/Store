@@ -122,7 +122,7 @@ class RealMarket<Key : Any> internal constructor(
                     key = writer.key,
                     input = result.value,
                     created = writer.updater.created,
-                    converter = writer.updater.converter
+                    converter = writer.updater::converter
                 )
 
                 val output = writer.updater.converter(result.value)

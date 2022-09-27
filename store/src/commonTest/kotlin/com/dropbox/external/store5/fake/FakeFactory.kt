@@ -33,7 +33,7 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         )
 
     fun buildUpdater(fail: Boolean = false, onCompletion: OnNetworkCompletion<Output>? = null) =
-        NetworkUpdater<Key, Output, Output>(
+        NetworkUpdater.by<Key, Output, Output>(
             post = { key, input -> api.post(key, input, fail) },
             onCompletion = onCompletion ?: doNothingOnCompletion(),
             converter = { it },
