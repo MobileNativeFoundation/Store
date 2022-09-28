@@ -1,14 +1,24 @@
 package com.dropbox.external.store5
 
+import com.dropbox.external.store5.impl.RealMarketReader
+
 /**
  * Reads from [Market].
- * @param fetcher Gets data from remote data source.
  * @see [Market].
  * @see [NetworkFetcher]
  */
-data class MarketReader<Key : Any, Input : Any, Output : Any>(
-    val key: Key,
-    val fetcher: NetworkFetcher<Key, Input, Output>,
-    val onCompletions: List<OnMarketCompletion<Output>>,
-    val refresh: Boolean = false
-)
+interface MarketReader<Key : Any, Input : Any, Output : Any> {
+    val key: Key
+    val fetcher: NetworkFetcher<Key, Input, Output>
+    val onCompletions: List<OnMarketCompletion<Output>>
+    val refresh: Boolean
+
+    companion object {
+        fun <Key : Any, Input : Any, Output : Any> by(
+            key: Key,
+            fetcher: NetworkFetcher<Key, Input, Output>,
+            onCompletions: List<OnMarketCompletion<Output>>,
+            refresh: Boolean,
+        ): MarketReader<Key, Input, Output> = RealMarketReader(key, fetcher, onCompletions, refresh)
+    }
+}

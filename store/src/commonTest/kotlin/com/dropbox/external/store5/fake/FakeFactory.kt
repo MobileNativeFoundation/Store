@@ -24,13 +24,12 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         refresh: Boolean = false,
         fail: Boolean = false,
         onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() }
-    ) =
-        MarketReader(
-            key = key,
-            fetcher = buildFetcher(fail),
-            refresh = refresh,
-            onCompletions = onCompletionsProducer()
-        )
+    ) = MarketReader.by(
+        key = key,
+        fetcher = buildFetcher(fail),
+        refresh = refresh,
+        onCompletions = onCompletionsProducer()
+    )
 
     fun buildUpdater(fail: Boolean = false, onCompletion: OnNetworkCompletion<Output>? = null) =
         NetworkUpdater.by<Key, Output, Output>(
