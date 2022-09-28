@@ -50,11 +50,10 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         fail: Boolean = false,
         onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() },
         postOnCompletion: OnNetworkCompletion<Output>? = null
-    ) =
-        MarketWriter(
-            key = key,
-            input = input,
-            updater = buildUpdater(fail, postOnCompletion),
-            onCompletions = onCompletionsProducer()
-        )
+    ) = MarketWriter.by(
+        key = key,
+        input = input,
+        updater = buildUpdater(fail, postOnCompletion),
+        onCompletions = onCompletionsProducer()
+    )
 }
