@@ -16,10 +16,10 @@ Store provides a level of abstraction between UI elements and data operations.
 
 ## Concepts
 
-A `Market` is a composition of stores and systems. A `Store` interacts with one data source, or a `Persister`.
-A `ConflictResolver` settles discrepancies among remote and local data sources.
+A `Market` is a composition of stores and a bookkeeping system. A `Store` interacts with one data source, or a `Persister`.
+A `Bookkeeper` tracks when local changes fail to sync with the network data source.
 
-A market always has one conflict resolution strategy. However, Store is flexible and unopinionated on implementation.
+A market always has one bookkeeper. However, Store is flexible and unopinionated on implementation.
 An application can have N markets. And a market can have N stores and execute operations in any order.
 
 Typical applications have one market following a singleton pattern. Most of the time a market has two stores: a memory
