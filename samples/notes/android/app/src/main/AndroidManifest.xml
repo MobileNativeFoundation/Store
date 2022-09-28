@@ -6,8 +6,7 @@
 
     <application
         android:name="com.dropbox.external.store5.sample.notes.android.app.NotesApp"
-        android:label="Notes"
-        android:icon="@mipmap/icon_round.png">
+        android:label="Notes">
 
         <activity android:name="com.dropbox.external.store5.sample.notes.android.app.MainActivity"
                   android:exported="true">

@@ -42,7 +42,7 @@ dependencies {
     implementation(project(":store"))
     implementation(project(":samples:notes:android:common:scoping"))
 
-    with(Deps.Androidx){
+    with(Deps.Androidx) {
         implementation(activityCompose)
     }
 
