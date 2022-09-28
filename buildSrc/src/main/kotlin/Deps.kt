@@ -1,5 +1,21 @@
 object Deps {
 
+    object Androidx {
+        const val activityCompose = "androidx.activity:activity-compose:${Version.activityCompose}"
+    }
+
+    object Compose {
+        const val compiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
+        const val runtime = "androidx.compose.runtime:runtime:${Version.composeAndroidX}"
+        const val ui = "androidx.compose.ui:ui:${Version.composeAndroidX}"
+        const val material = "androidx.compose.material:material:${Version.composeAndroidX}"
+    }
+
+    object Dagger {
+        const val dagger = "com.google.dagger:dagger:${Version.dagger}"
+        const val daggerCompiler = "com.google.dagger:dagger-compiler:${Version.dagger}"
+    }
+
     object Kotlin {
         const val gradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.baseKotlin}"
     }

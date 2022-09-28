@@ -1,0 +1,97 @@
+public abstract interface class anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA : com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent {
+}
+
+public abstract interface class anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$ParentComponent : com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$ParentBindings {
+	public abstract fun userComponentFactory ()Lanvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$SubcomponentFactory;
+}
+
+public abstract interface class anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$SubcomponentFactory : com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$Factory {
+}
+
+public abstract class anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$SubcomponentModule {
+	public static final field $stable I
+	public fun <init> ()V
+	public abstract fun bindSubcomponentFactory (Lanvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$SubcomponentFactory;)Lcom/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$Factory;
+}
+
+public final class anvil/hint/merge/anvil/module/anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentAAnvilModuleKt {
+	public static final fun getAnvil_module_anvil_component_com_dropbox_external_store5_sample_notes_android_app_wiring_appcomponent_UserComponentAAnvilModule_reference ()Lkotlin/reflect/KClass;
+	public static final fun getAnvil_module_anvil_component_com_dropbox_external_store5_sample_notes_android_app_wiring_appcomponent_UserComponentAAnvilModule_scope0 ()Lkotlin/reflect/KClass;
+}
+
+public final class anvil/hint/merge/anvil/module/com/dropbox/external/store5/sample/notes/android/app/wiring/AppComponentAnvilModuleKt {
+	public static final fun getAnvil_module_com_dropbox_external_store5_sample_notes_android_app_wiring_AppComponentAnvilModule_reference ()Lkotlin/reflect/KClass;
+	public static final fun getAnvil_module_com_dropbox_external_store5_sample_notes_android_app_wiring_AppComponentAnvilModule_scope0 ()Lkotlin/reflect/KClass;
+}
+
+public final class anvil/hint/merge/com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent_ParentBindingsKt {
+	public static final fun getCom_dropbox_external_store5_sample_notes_android_app_wiring_UserComponent_ParentBindings_reference ()Lkotlin/reflect/KClass;
+	public static final fun getCom_dropbox_external_store5_sample_notes_android_app_wiring_UserComponent_ParentBindings_scope0 ()Lkotlin/reflect/KClass;
+}
+
+public final class anvil/hint/subcomponent/com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponentKt {
+	public static final fun getCom_dropbox_external_store5_sample_notes_android_app_wiring_UserComponent_reference ()Lkotlin/reflect/KClass;
+	public static final fun getCom_dropbox_external_store5_sample_notes_android_app_wiring_UserComponent_scope ()Lkotlin/reflect/KClass;
+}
+
+public final class anvil/module/anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentAAnvilModule {
+	public static final field $stable I
+	public static final field INSTANCE Lanvil/module/anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentAAnvilModule;
+}
+
+public final class anvil/module/com/dropbox/external/store5/sample/notes/android/app/wiring/AppComponentAnvilModule {
+	public static final field $stable I
+	public static final field INSTANCE Lanvil/module/com/dropbox/external/store5/sample/notes/android/app/wiring/AppComponentAnvilModule;
+}
+
+public final class com/dropbox/external/store5/sample/notes/android/app/ComposableSingletons$MainActivityKt {
+	public static final field INSTANCE Lcom/dropbox/external/store5/sample/notes/android/app/ComposableSingletons$MainActivityKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function2;
+	public fun <init> ()V
+	public final fun getLambda-1$app_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/dropbox/external/store5/sample/notes/android/app/MainActivity : androidx/activity/ComponentActivity, com/dropbox/external/store5/sample/notes/android/common/scoping/ComponentHolder {
+	public static final field $stable I
+	public field component Ljava/lang/Object;
+	public fun <init> ()V
+	public fun getComponent ()Ljava/lang/Object;
+	public fun setComponent (Ljava/lang/Object;)V
+}
+
+public final class com/dropbox/external/store5/sample/notes/android/app/NotesApp : android/app/Application {
+	public static final field $stable I
+	public fun <init> ()V
+}
+
+public abstract interface class com/dropbox/external/store5/sample/notes/android/app/wiring/AppComponent : anvil/component/com/dropbox/external/store5/sample/notes/android/app/wiring/appcomponent/UserComponentA$ParentComponent, com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$ParentBindings {
+}
+
+public final class com/dropbox/external/store5/sample/notes/android/app/wiring/DaggerAppComponent {
+	public static fun builder ()Lcom/dropbox/external/store5/sample/notes/android/app/wiring/DaggerAppComponent$Builder;
+	public static fun create ()Lcom/dropbox/external/store5/sample/notes/android/app/wiring/AppComponent;
+}
+
+public final class com/dropbox/external/store5/sample/notes/android/app/wiring/DaggerAppComponent$Builder {
+	public fun appComponentAnvilModule (Lanvil/module/com/dropbox/external/store5/sample/notes/android/app/wiring/AppComponentAnvilModule;)Lcom/dropbox/external/store5/sample/notes/android/app/wiring/DaggerAppComponent$Builder;
+	public fun build ()Lcom/dropbox/external/store5/sample/notes/android/app/wiring/AppComponent;
+}
+
+public abstract interface class com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent {
+}
+
+public abstract interface class com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$Factory {
+	public abstract fun create ()Lcom/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent;
+}
+
+public abstract interface class com/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$ParentBindings {
+	public abstract fun userComponentFactory ()Lcom/dropbox/external/store5/sample/notes/android/app/wiring/UserComponent$Factory;
+}
+
+public final class com/dropbox/notes/android/app/BuildConfig {
+	public static final field APPLICATION_ID Ljava/lang/String;
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public fun <init> ()V
+}
+
