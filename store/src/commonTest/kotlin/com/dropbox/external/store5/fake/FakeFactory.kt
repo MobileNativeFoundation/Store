@@ -23,11 +23,13 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         key: Key,
         refresh: Boolean = false,
         fail: Boolean = false,
+        storeOnly: Boolean = false,
         onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() }
     ) = MarketReader.by(
         key = key,
         fetcher = buildFetcher(fail),
         refresh = refresh,
+        storeOnly = storeOnly,
         onCompletions = onCompletionsProducer()
     )
 

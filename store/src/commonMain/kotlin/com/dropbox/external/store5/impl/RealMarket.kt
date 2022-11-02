@@ -70,11 +70,15 @@ class RealMarket<Key : Any> internal constructor(
 
         if (notBroadcasting(reader.key)) {
             startBroadcast<Output>(reader.key)
-            getAndEmitLatest(reader.key, reader.fetcher)
-        } else if (reader.refresh && readNotInProgress(reader.key)) {
-            getAndEmitLatest(reader.key, reader.fetcher)
         }
 
+        if (readNotInProgress(reader.key)) {
+            if (reader.storeOnly) {
+                getAndEmitStoreOnly<Output>(reader.key)
+            } else {
+                getAndEmitLatest(reader.key, reader.fetcher)
+            }
+        }
 
         return flow {
             requireBroadcast<Output>(reader.key).collect {
@@ -169,10 +173,11 @@ class RealMarket<Key : Any> internal constructor(
     /**
      * Tries reading from [Store] until [MarketResponse.Success] or each [Store] in [stores] is checked.
      * Swallows read exceptions.
-     * Emits [MarketResponse.Loading] if no [Store] has a value for [key].
+     * Emits [MarketResponse.Loading] if no [Store] has a value for [key] and not [storeOnly].
+     * Emits [MarketResponse.Empty] if no [Store] has a value for [key] and [storeOnly].
      */
     @AnyThread
-    private suspend fun <Output : Any> load(key: Key) {
+    private suspend fun <Output : Any> load(key: Key, storeOnly: Boolean = false) {
         val broadcast = requireBroadcast<Output>(key)
 
         stores.forEachIndexed { index, store ->
@@ -188,7 +193,11 @@ class RealMarket<Key : Any> internal constructor(
             }
         }
 
-        broadcast.emit(MarketResponse.Loading)
+        if (storeOnly) {
+            broadcast.emit(MarketResponse.Empty)
+        } else {
+            broadcast.emit(MarketResponse.Loading)
+        }
     }
 
     @AnyThread
@@ -295,6 +304,14 @@ class RealMarket<Key : Any> internal constructor(
         }
 
         return true
+    }
+
+    @AnyThread
+    private suspend fun <Output : Any> getAndEmitStoreOnly(
+        key: Key
+    ) {
+        startIfNotBroadcasting<Output>(key)
+        load<Output>(key, storeOnly = true)
     }
 
     @AnyThread

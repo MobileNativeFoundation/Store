@@ -337,6 +337,21 @@ class MarketTests {
     }
 
     @Test
+    fun storeOnlyWithEmptyMarketShouldReturnEmptyAndNotHitNetwork() = testScope.runTest {
+        val requestOne = factory.buildReader<Note>(key = FakeNotes.One.key, storeOnly = true)
+        val responseOne = async { market.read(requestOne)}
+        val flowOne = responseOne.await()
+
+        testScope.advanceUntilIdle()
+
+        val lastOne = flowOne.take(2).last()
+        assertIs<MarketResponse.Empty>(lastOne)
+
+        val numPostRequests = api.numPostRequests
+        assertEquals(0, numPostRequests)
+    }
+
+    @Test
     fun onCompleteRefresh() = testScope.runTest {
 
         val completed = mutableMapOf<String, Boolean>()

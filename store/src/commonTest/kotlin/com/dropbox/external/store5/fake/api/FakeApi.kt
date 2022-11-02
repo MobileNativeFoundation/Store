@@ -6,6 +6,9 @@ import com.dropbox.external.store5.fake.model.Note
 internal class FakeApi : Api<String, Note> {
     override val data = mutableMapOf<String, Note>()
 
+    internal var numGetRequests = 0
+    internal var numPostRequests = 0
+
     init {
         data[FakeNotes.One.key] = FakeNotes.One.note
         data[FakeNotes.Two.key] = FakeNotes.Two.note
@@ -21,6 +24,7 @@ internal class FakeApi : Api<String, Note> {
     }
 
     override fun get(key: String, fail: Boolean): Note? {
+        numGetRequests += 1
         if (fail) {
             throw Exception()
         }
@@ -29,6 +33,7 @@ internal class FakeApi : Api<String, Note> {
     }
 
     override fun post(key: String, value: Note, fail: Boolean): Note? {
+        numPostRequests += 1
         if (fail) {
             throw Exception()
         }
