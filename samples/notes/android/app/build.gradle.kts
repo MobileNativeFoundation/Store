@@ -69,8 +69,8 @@ dependencies {
     implementation(project(":samples:notes:android:feature:home"))
     implementation(project(":samples:notes:android:feature:explore"))
     implementation(project(":samples:notes:android:lib:navigation"))
-    implementation(project(":samples:notes:android:lib:presentation"))
     implementation(project(":samples:notes:android:lib:result"))
     implementation(project(":samples:notes:android:lib:fig"))
     implementation(project(":samples:notes:android:common:scoping"))
+    implementation(project(":samples:notes:android:common:entity"))
 }

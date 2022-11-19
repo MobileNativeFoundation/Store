@@ -3,10 +3,11 @@ include ':store'
 include ':samples:notes:android:app'
 
 include ':samples:notes:android:common:scoping'
+include ':samples:notes:android:common:entity'
 
 include ':samples:notes:android:lib:fig'
 include ':samples:notes:android:lib:navigation'
-include ':samples:notes:android:lib:presentation'
+include ':samples:notes:android:lib:model'
 include ':samples:notes:android:lib:result'
 
 include ':samples:notes:android:feature:account'
