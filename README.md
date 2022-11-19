@@ -1,46 +1,48 @@
-# Store 5
+# Store 5, a Kotlin Multiplatform Library for Building Network-Resilient Applications
 
-- [ ] TODO(Badges)
+## Problems
 
-Store is a Kotlin Multiplatform library for reading and writing data from and to remote and local sources.
-
-## The Problems:
-
-+ Modern software needs data representations to be fluid and always available.
-+ Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an application is
+- Modern software needs data representations to be fluid and always available.
+- Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an application is
   social, news or business-to-business, users expect a seamless experience both online and offline.
-+ International users expect minimal data downloads as many megabytes of downloaded data can quickly result in
+- International users expect minimal data downloads as many megabytes of downloaded data can quickly result in
   astronomical phone bills.
-
-Store provides a level of abstraction between UI elements and data operations.
 
 ## Concepts
 
-A `Market` is a composition of stores and a bookkeeping system. A `Store` interacts with one data source, or a `Persister`.
-A `Bookkeeper` tracks when local changes fail to sync with the network data source.
+1. `Market` is a composition of stores and bookkeeping systems.
+2. `Store` interacts with a local data source through a `Persister`.
+3. `Bookkeeper` tracks local changes and reports failures to sync with the network.
+4. An `App` generally has one `Market` following a singleton pattern. A `Market` generally has two `Store(s)`:
+   one bound to a memory cache then one bound to a database. However, an `App` can have _N_ `Market(s)`. And a `Market`
+   can have _N_ `Store(s)` and execute operations
+   in any order.
 
-A market always has one bookkeeper. However, Store is flexible and unopinionated on implementation.
-An application can have N markets. And a market can have N stores and execute operations in any order.
+## Provided
 
-Typical applications have one market following a singleton pattern. Most of the time a market has two stores: a memory
-store bound to a memory cache then a disk store bound to a database.
+### Thread-Safe Memory LRU Cache
 
-- [ ] TODO(Concepts)
+```kotlin
+class MemoryLruCache(private val maxSize: Int) : Persister<String> {
+    internal var cache: Map<String, Node<*>>
+
+    override fun <Output : Any> read(key: String): Flow<Output?>
+    override suspend fun <Input : Any> write(key: String, input: Input): Boolean
+    override suspend fun delete(key: String): Boolean
+    override suspend fun deleteAll(): Boolean
+}
+```
 
 ## Usage
 
-Artifacts are hosted on **Maven Central**.
-
-**Latest version:**
-
-```groovy
-def store_version = "5.0.0-alpha01"
+```kotlin
+STORE_VERSION = "5.0.0-alpha01"
 ```
 
 ### Android
 
 ```groovy
-implementation "com.dropbox.mobile.store:store5:${store_version}"
+implementation "org.mobilenativefoundation.store:store5:$STORE_VERSION"
 ```
 
 ### Multiplatform (Common, JS, Native)
@@ -48,23 +50,30 @@ implementation "com.dropbox.mobile.store:store5:${store_version}"
 ```kotlin
 commonMain {
     dependencies {
-        implementation("com.dropbox.mobile.store:market:${MARKET_VERSION}")
+        implementation("org.mobilenativefoundation.store:store5:$STORE_VERSION")
     }
 }
 ```
 
 ## Implementation
 
-- [ ] TODO(Implementation)
+### 2. Create a Memory Store
 
-## Examples
-
-- [ ] TODO(Examples)
+```kotlin
+fun <Key : Any, Input : Any, Output : Any> buildMemoryLruCacheStore(
+    memoryLruCache: MemoryLruCache
+): Store<Key, Input, Output> = Store.by(
+    reader = { key, _ -> memoryLruCache.read(serializer.encodeToString(key)) },
+    writer = { key, input -> memoryLruCache.write(serializer.encodeToString(key)) },
+    deleter = { key -> memoryLruCache.delete(serializer.encodeToString(key)) },
+    clearer = { memoryLruCache.deleteAll() }
+)
+```
 
 ## License
 
 ```text
-Copyright (c) 2022 Dropbox, Inc.
+Copyright (c) 2022 Mobile Native Foundation.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
