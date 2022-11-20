@@ -34,6 +34,10 @@ dependencies {
     implementation(project(":store"))
     implementation(project(":samples:notes:android:common:api"))
 
+    with(Deps.Androidx) {
+        implementation(activityCompose)
+    }
+
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
@@ -48,14 +52,15 @@ dependencies {
         implementation(lifecycleRuntimeKtx)
         implementation(activityCompose)
         implementation(coreKtx)
+        implementation(activityCompose)
     }
-
-    val dagger_version = "2.44"
-    implementation("com.google.dagger:dagger:$dagger_version")
-    kapt("com.google.dagger:dagger-compiler:$dagger_version")
 
     val ktor_version = "2.1.1"
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
-}
 
+    with(Deps.Dagger) {
+        implementation(dagger)
+        kapt(daggerCompiler)
+    }
+}

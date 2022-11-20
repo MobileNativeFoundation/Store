@@ -9,9 +9,9 @@ internal class RealBookkeeper<Key : Any>(
     private val _delete: suspend (key: Key) -> Boolean,
     private val _deleteAll: suspend () -> Boolean
 ) : Bookkeeper<Key> {
-    override suspend fun read(key: Key): Long? = _read(key)
+    override suspend fun getTimestampLastFailedSync(key: Key): Long? = _read(key)
 
-    override suspend fun write(key: Key, timestamp: Long): Boolean = _write(key, timestamp)
+    override suspend fun setTimestampLastFailedSync(key: Key, timestamp: Long): Boolean = _write(key, timestamp)
 
     override suspend fun delete(key: Key): Boolean = _delete(key)
 

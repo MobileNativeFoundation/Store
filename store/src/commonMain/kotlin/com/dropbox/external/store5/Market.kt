@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
  * @see [Bookkeeper]
  */
 interface Market<Key : Any> {
-    suspend fun <Input : Any, Output : Any> read(reader: Reader<Key, Input, Output>): Flow<MarketResponse<Output>>
-    suspend fun <Input : Any, Output : Any> write(writer: Writer<Key, Input, Output>): Boolean
+    suspend fun <Input : Any, Output : Any> read(reader: MarketReader<Key, Input, Output>): Flow<MarketResponse<Output>>
+    suspend fun <Input : Any, Output : Any> write(writer: MarketWriter<Key, Input, Output>): Boolean
     suspend fun delete(key: Key): Boolean
     suspend fun delete(): Boolean
 

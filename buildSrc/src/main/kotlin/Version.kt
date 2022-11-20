@@ -6,11 +6,11 @@ object Version {
     const val androidTargetSdk = androidCompileSdk
     const val anvilGradlePlugin = "2.4.2"
     const val baseKotlin = "1.7.10"
+    const val binaryCompatibilityValidator = "0.11.1"
     const val composeAndroidX = "1.3.0-beta02"
     const val composeJetbrains = "1.2.0-alpha01-dev755"
     const val composeCompiler = "1.3.0"
     const val dagger = "2.44"
-    const val binaryCompatibilityValidator = "0.11.1"
     const val dokkaGradlePlugin = "1.6.0"
     const val ktlintGradle = "10.2.1"
     const val lifecycleKtx = "2.4.0-rc01"

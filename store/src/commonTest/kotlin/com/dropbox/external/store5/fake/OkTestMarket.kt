@@ -14,17 +14,17 @@ internal object OkTestMarket {
     val db = FakeDb()
 
     private val memoryLruCacheStore = Store.by<String, Note, Note>(
-        read = { key -> memoryLruCache.read(key) },
-        write = { key, input -> memoryLruCache.write(key, input) },
-        delete = { key -> memoryLruCache.delete(key) },
-        deleteAll = { memoryLruCache.deleteAll() },
+        reader = { key -> memoryLruCache.read(key) },
+        writer = { key, input -> memoryLruCache.write(key, input) },
+        deleter = { key -> memoryLruCache.delete(key) },
+        clearer = { memoryLruCache.deleteAll() },
     )
 
     private val dbStore = Store.by<String, Note, Note>(
-        read = { key -> db.read(key) },
-        write = { key, input -> db.write(key, input) },
-        delete = { key -> db.delete(key) },
-        deleteAll = { db.deleteAll() },
+        reader = { key -> db.read(key) },
+        writer = { key, input -> db.write(key, input) },
+        deleter = { key -> db.delete(key) },
+        clearer = { db.deleteAll() },
     )
 
     private val bookkeeper = Bookkeeper.by<String>(

@@ -49,8 +49,6 @@ kotlin {
             dependencies {
                 with(Deps.Kotlinx) {
                     implementation(coroutinesCore)
-                    implementation(serializationCore)
-                    implementation(serializationJson)
                     implementation(dateTime)
                 }
             }

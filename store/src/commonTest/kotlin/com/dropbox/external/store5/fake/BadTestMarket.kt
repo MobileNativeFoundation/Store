@@ -14,17 +14,17 @@ internal object BadTestMarket {
     val db = FakeDb()
 
     private val memoryLruCacheStore = Store.by<String, Note, Note>(
-        read = { throw Exception() },
-        write = { _, _ -> throw Exception() },
-        delete = { throw Exception() },
-        deleteAll = { throw Exception() }
+        reader = { throw Exception() },
+        writer = { _, _ -> throw Exception() },
+        deleter = { throw Exception() },
+        clearer = { throw Exception() }
     )
 
     private val dbStore = Store.by<String, Note, Note>(
-        read = { throw Exception() },
-        write = { _, _ -> throw Exception() },
-        delete = { throw Exception() },
-        deleteAll = { throw Exception() },
+        reader = { throw Exception() },
+        writer = { _, _ -> throw Exception() },
+        deleter = { throw Exception() },
+        clearer = { throw Exception() },
     )
 
     private val bookkeeper = Bookkeeper.by<String>(
