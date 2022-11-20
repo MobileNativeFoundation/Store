@@ -5,17 +5,17 @@ CREATE TABLE writerFailed (
 
 CREATE INDEX writerFailed_key_datetime ON writerFailed(key, datetime);
 
-read:
+get:
 SELECT *
 FROM writerFailed
 WHERE key = ?;
 
-write:
+upsert:
 INSERT OR REPLACE INTO writerFailed VALUES ?;
 
 delete:
 DELETE FROM writerFailed
 WHERE key = ?;
 
-clear:
+deleteAll:
 DELETE FROM writerFailed;

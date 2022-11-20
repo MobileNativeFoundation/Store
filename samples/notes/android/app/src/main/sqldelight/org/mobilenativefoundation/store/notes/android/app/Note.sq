@@ -7,7 +7,7 @@ CREATE TABLE note (
 
 CREATE INDEX note_title_content ON note(id, key, title, content);
 
-read:
+get:
 SELECT *
 FROM note
 WHERE key = ?;
@@ -16,16 +16,12 @@ getAll:
 SELECT *
 FROM note;
 
-create:
-INSERT INTO note(id, key, title, content)
-VALUES (?, ?, ?, ?);
-
-write:
+upsert:
 INSERT OR REPLACE INTO note VALUES ?;
 
 delete:
 DELETE FROM note
 WHERE key = ?;
 
-clear:
+deleteAll:
 DELETE FROM note;
