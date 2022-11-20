@@ -32,7 +32,7 @@ android {
 
 dependencies {
     implementation(project(":store"))
-    implementation(project(":samples:notes:android:common:entity"))
+    implementation(project(":samples:notes:android:common:api"))
 
     with(Deps.Compose) {
         implementation(material)

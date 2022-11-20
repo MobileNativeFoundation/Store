@@ -9,6 +9,10 @@ object Deps {
         const val navigationCompose = "androidx.navigation:navigation-compose:${Version.navigationCompose}"
     }
 
+    object Coil {
+        const val compose = "io.coil-kt:coil-compose:2.2.2"
+    }
+
     object Compose {
         const val compiler = "androidx.compose.compiler:compiler:${Version.composeCompiler}"
         const val runtime = "androidx.compose.runtime:runtime:${Version.composeAndroidX}"
@@ -34,6 +38,16 @@ object Deps {
         const val coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinxCoroutines}"
         const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinxCoroutines}"
         const val dateTime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
+    }
+
+    object SqlDelight {
+        const val gradlePlugin = "com.squareup.sqldelight:gradle-plugin:${Version.sqlDelight}"
+        const val driverAndroid = "com.squareup.sqldelight:android-driver:${Version.sqlDelight}"
+        const val driverNative = "com.squareup.sqldelight:native-driver:${Version.sqlDelight}"
+        const val driverSqlite = "com.squareup.sqldelight:sqlite-driver:${Version.sqlDelight}"
+        const val runtime = "com.squareup.sqldelight:runtime:${Version.sqlDelight}"
+        const val coroutineExtensions = "com.squareup.sqldelight:coroutines-extensions:${Version.sqlDelight}"
+        const val driverNativeMacOS = "com.squareup.sqldelight:native-driver-macosx64:${Version.sqlDelight}"
     }
 
     object Test {

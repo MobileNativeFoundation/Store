@@ -3,7 +3,7 @@ include ':store'
 include ':samples:notes:android:app'
 
 include ':samples:notes:android:common:scoping'
-include ':samples:notes:android:common:entity'
+include ':samples:notes:android:common:api'
 
 include ':samples:notes:android:lib:fig'
 include ':samples:notes:android:lib:navigation'

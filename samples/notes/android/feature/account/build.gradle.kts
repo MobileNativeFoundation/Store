@@ -33,7 +33,7 @@ android {
 dependencies {
     implementation(project(":store"))
     implementation(project(":samples:notes:android:common:scoping"))
-    implementation(project(":samples:notes:android:common:entity"))
+    implementation(project(":samples:notes:android:common:api"))
 
     with(Deps.Compose) {
         implementation(material)
@@ -42,6 +42,10 @@ dependencies {
 
     implementation(Deps.Kotlinx.serializationCore)
     implementation(Deps.Kotlinx.serializationJson)
+
+    with(Deps.Coil) {
+        implementation(compose)
+    }
 
     with(Deps.Androidx) {
         implementation(appCompat)

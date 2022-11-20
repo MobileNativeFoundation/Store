@@ -7,6 +7,7 @@ plugins {
     id("kotlin-kapt")
     id("app.cash.molecule")
     id("com.squareup.anvil")
+    id("com.squareup.sqldelight")
 }
 
 group = "com.dropbox.notes.android"
@@ -65,6 +66,12 @@ dependencies {
         kapt(daggerCompiler)
     }
 
+    with(Deps.SqlDelight) {
+        implementation(runtime)
+        implementation(coroutineExtensions)
+        implementation(driverAndroid)
+    }
+
     implementation(project(":samples:notes:android:feature:account"))
     implementation(project(":samples:notes:android:feature:home"))
     implementation(project(":samples:notes:android:feature:explore"))
@@ -72,5 +79,11 @@ dependencies {
     implementation(project(":samples:notes:android:lib:result"))
     implementation(project(":samples:notes:android:lib:fig"))
     implementation(project(":samples:notes:android:common:scoping"))
-    implementation(project(":samples:notes:android:common:entity"))
+    implementation(project(":samples:notes:android:common:api"))
+}
+
+sqldelight {
+    database("NotesDatabase") {
+        packageName = "org.mobilenativefoundation.store.notes.android.app"
+    }
 }

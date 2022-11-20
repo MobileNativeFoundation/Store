@@ -1,0 +1,21 @@
+CREATE TABLE writerFailed (
+  key TEXT NOT NULL PRIMARY KEY,
+  datetime  INTEGER AS Long
+);
+
+CREATE INDEX writerFailed_key_datetime ON writerFailed(key, datetime);
+
+read:
+SELECT *
+FROM writerFailed
+WHERE key = ?;
+
+write:
+INSERT OR REPLACE INTO writerFailed VALUES ?;
+
+delete:
+DELETE FROM writerFailed
+WHERE key = ?;
+
+clear:
+DELETE FROM writerFailed;

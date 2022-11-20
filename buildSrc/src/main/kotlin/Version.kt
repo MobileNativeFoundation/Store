@@ -25,4 +25,5 @@ object Version {
     const val ktlint = "0.39.0"
     const val kover = "0.6.0"
     const val navigationCompose = "2.5.2"
+    const val sqlDelight = "1.5.3"
 }
