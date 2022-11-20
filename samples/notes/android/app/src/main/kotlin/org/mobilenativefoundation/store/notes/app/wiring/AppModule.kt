@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.notes.app.wiring
 
-import android.app.Application
 import android.content.Context
 import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Market
@@ -17,6 +16,7 @@ import org.mobilenativefoundation.store.notes.android.app.NotesDatabase
 import org.mobilenativefoundation.store.notes.android.common.api.Note
 import org.mobilenativefoundation.store.notes.android.common.scoping.AppScope
 import org.mobilenativefoundation.store.notes.android.common.scoping.SingleIn
+import org.mobilenativefoundation.store.notes.app.NotesApp
 import org.mobilenativefoundation.store.notes.app.extension.tryDeleteAllFailed
 import org.mobilenativefoundation.store.notes.app.extension.tryDeleteAllNotes
 import org.mobilenativefoundation.store.notes.app.extension.tryDeleteFailed
@@ -33,7 +33,7 @@ import javax.inject.Named
 object AppModule {
     @Provides
     @SingleIn(AppScope::class)
-    fun provideContext(application: Application): Context = application.applicationContext
+    fun provideContext(app: NotesApp): Context = app.applicationContext
 
     @Provides
     @SingleIn(AppScope::class)
@@ -48,20 +48,20 @@ object AppModule {
     @Provides
     @SingleIn(AppScope::class)
     fun provideMemoryLruCacheStore(): Store<Key, Note, Note> = Store.by(
-        read = { key -> memoryLruCache.read(key.encode()) },
-        write = { key, input -> memoryLruCache.write(key.encode(), input) },
-        delete = { key -> memoryLruCache.delete(key.encode()) },
-        deleteAll = { memoryLruCache.deleteAll() }
+        reader = { key -> memoryLruCache.read(key.encode()) },
+        writer = { key, input -> memoryLruCache.write(key.encode(), input) },
+        deleter = { key -> memoryLruCache.delete(key.encode()) },
+        clearer = { memoryLruCache.deleteAll() }
     )
 
     @Named(DATABASE_STORE)
     @Provides
     @SingleIn(AppScope::class)
     fun provideDatabaseStore(database: NotesDatabase): Store<Key, Note, Note> = Store.by(
-        read = { key -> database.tryGetNote(key.encode()) },
-        write = { key, input -> database.tryWriteNote(key.encode(), input) },
-        delete = { key -> database.tryDeleteNote(key.encode()) },
-        deleteAll = { database.tryDeleteAllNotes() }
+        reader = { key -> database.tryGetNote(key.encode()) },
+        writer = { key, input -> database.tryWriteNote(key.encode(), input) },
+        deleter = { key -> database.tryDeleteNote(key.encode()) },
+        clearer = { database.tryDeleteAllNotes() }
     )
 
     @Provides

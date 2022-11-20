@@ -23,7 +23,5 @@ sealed class Screen(
 ) {
     object Home : Screen(HOME_ROUTE, HOME, R.drawable.ic_dig_home_fill, R.drawable.ic_dig_home_line)
     object Account : Screen(ACCOUNT_ROUTE, ACCOUNT, R.drawable.ic_person_fill, R.drawable.ic_dig_person_line)
-    object Search : Screen(SEARCH_ROUTE, SEARCH, R.drawable.ic_dig_search_line, R.drawable.ic_dig_search_line)
-    object Settings : Screen(SETTINGS_ROUTE, SETTINGS, R.drawable.ic_dig_settings_fill, R.drawable.ic_dig_settings_line)
-    object Explore : Screen(EXPLORE_ROUTE, EXPLORE, R.drawable.ic_globe_fill, R.drawable.ic_globe_fill)
+    object Explore : Screen(EXPLORE_ROUTE, EXPLORE, R.drawable.ic_activity_fill, R.drawable.ic_dig_activity_line)
 }

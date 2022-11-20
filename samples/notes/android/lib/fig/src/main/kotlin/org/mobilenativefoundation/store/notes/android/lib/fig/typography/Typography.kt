@@ -1,24 +1,9 @@
 package org.mobilenativefoundation.store.notes.android.lib.fig.typography
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import org.mobilenativefoundation.store.notes.android.lib.fig.R
-
-@Stable
-val DefaultTitleFontFamily = FontFamily(
-    Font(R.font.sharp_grotesk_book)
-)
-
-@Stable
-val DefaultFontFamily = FontFamily(
-    Font(R.font.atlasgrotesk_regular),
-    Font(R.font.atlasgrotesk_medium, FontWeight.Medium)
-)
 
 @Immutable
 data class Typography internal constructor(
@@ -40,8 +25,8 @@ data class Typography internal constructor(
     val monoXSmall: TextStyle,
 ) {
     constructor(
-        defaultTitleFontFamily: FontFamily = DefaultTitleFontFamily,
-        defaultFontFamily: FontFamily = DefaultFontFamily,
+        defaultTitleFontFamily: FontFamily = FontFamily.Default,
+        defaultFontFamily: FontFamily = FontFamily.Default,
         titleLarge: TextStyle = TextStyle(
             fontSize = 28.sp,
             lineHeight = 36.sp
