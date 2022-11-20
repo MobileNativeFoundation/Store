@@ -2,6 +2,7 @@
 
 package com.dropbox.external.store5.fake
 
+import com.dropbox.external.store5.GoodValidator
 import com.dropbox.external.store5.MarketReader
 import com.dropbox.external.store5.MarketWriter
 import com.dropbox.external.store5.NetworkFetcher
@@ -19,6 +20,9 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         converter = { it as Input }
     )
 
+    fun buildValidator(isValid: Boolean?): GoodValidator<Output>? =
+        if (isValid != null) GoodValidator.by { isValid } else null
+
     inline fun <reified T : Output> buildReader(
         key: Key,
         refresh: Boolean = false,
@@ -28,6 +32,20 @@ internal class FakeFactory<Key : Any, Input : Any, Output : Any>(private val api
         key = key,
         fetcher = buildFetcher(fail),
         refresh = refresh,
+        onCompletions = onCompletionsProducer()
+    )
+
+    inline fun <reified T : Output> buildReaderWithValidator(
+        key: Key,
+        isValid: Boolean? = null,
+        refresh: Boolean = false,
+        fail: Boolean = false,
+        onCompletionsProducer: () -> List<OnMarketCompletion<Output>> = { listOf() },
+    ) = MarketReader.by(
+        key = key,
+        fetcher = buildFetcher(fail),
+        refresh = refresh,
+        validator = buildValidator(isValid),
         onCompletions = onCompletionsProducer()
     )
 
