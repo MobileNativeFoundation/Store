@@ -80,7 +80,7 @@ class RealMarket<Key : Any> internal constructor(
             getAndEmitLatest(reader.key, reader.fetcher)
         } else if (reader.refresh && readNotInProgress(reader.key)) {
             getAndEmitLatest(reader.key, reader.fetcher)
-        } else {
+        } else if (readNotInProgress(reader.key)) {
             load<Output>(reader.key)
         }
 
