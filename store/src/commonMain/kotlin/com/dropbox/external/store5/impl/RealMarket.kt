@@ -4,6 +4,7 @@ package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Convenience
+import com.dropbox.external.store5.GoodValidator
 import com.dropbox.external.store5.Market
 import com.dropbox.external.store5.MarketReader
 import com.dropbox.external.store5.MarketResponse
@@ -54,6 +55,12 @@ class RealMarket<Key : Any> internal constructor(
     private val storeLocks = stores.map { Mutex() }
     private val marketSecurity = mutableMapOf<Key, StoreSafety>()
 
+
+    /**
+     * Reads from [Market].
+     * Gets the latest value from network if first request or [MarketReader.refresh].
+     * Validates [Store] goods if [MarketReader] contains [GoodValidator].
+     */
     @AnyThread
     override suspend fun <Input : Any, Output : Any> read(reader: MarketReader<Key, Input, Output>): SomeFlow<Output> {
         mainLock.withLock {
@@ -75,10 +82,16 @@ class RealMarket<Key : Any> internal constructor(
             getAndEmitLatest(reader.key, reader.fetcher)
         }
 
-
         return flow {
             requireBroadcast<Output>(reader.key).collect {
-                emit(it)
+                if (it is MarketResponse.Success &&
+                    it.origin == MarketResponse.Companion.Origin.Store &&
+                    reader.validator?.isValid(it.value) == false
+                ) {
+                    getAndEmitLatest(reader.key, reader.fetcher)
+                } else {
+                    emit(it)
+                }
             }
         }
     }
