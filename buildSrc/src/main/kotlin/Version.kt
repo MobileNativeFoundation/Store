@@ -13,8 +13,12 @@ object Version {
     const val dagger = "2.44"
     const val dokkaGradlePlugin = "1.6.0"
     const val ktlintGradle = "10.2.1"
+    const val lifecycleKtx = "2.4.0-rc01"
+    const val lifecycleRuntimeKtx = lifecycleKtx
+    const val lifecycleViewmodelKtx = lifecycleKtx
     const val jacocoGradlePlugin = "0.8.7"
     const val mavenPublishPlugin = "0.18.0"
+    const val moleculeGradlePlugin = "0.4.0"
     const val spotlessPluginGradle = "6.4.1"
     const val junit = "4.13.2"
     const val kotlinxCoroutines = "1.6.4"
@@ -22,4 +26,7 @@ object Version {
     const val testCore = "1.4.0"
     const val ktlint = "0.39.0"
     const val kover = "0.6.0"
+    const val navigationCompose = "2.5.2"
+    const val sqlDelight = "1.5.3"
+    const val sqlDelightGradlePlugin = sqlDelight
 }

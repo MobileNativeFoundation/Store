@@ -1,0 +1,27 @@
+CREATE TABLE note (
+  id TEXT NOT NULL PRIMARY KEY,
+  key TEXT UNIQUE,
+  title TEXT,
+  content TEXT
+);
+
+CREATE INDEX note_title_content ON note(id, key, title, content);
+
+get:
+SELECT *
+FROM note
+WHERE key = ?;
+
+getAll:
+SELECT *
+FROM note;
+
+upsert:
+INSERT OR REPLACE INTO note VALUES ?;
+
+delete:
+DELETE FROM note
+WHERE key = ?;
+
+deleteAll:
+DELETE FROM note;
