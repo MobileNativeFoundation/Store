@@ -6,14 +6,14 @@ name: Build project & run tests
 
 on:
   push:
-    branches: [ main, Kmp ]
+    branches: [ main, Kmp, store5 ]
   pull_request:
     branches: [ main ]
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.repository == 'dropbox/Store' && github.ref == 'refs/heads/main'
+    if: github.repository == 'MobileNativeFoundation/Store' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
