@@ -28,7 +28,7 @@ memCache.get(key, new Callable<T>() {
  https://github.com/google/guava/wiki/CachesExplained
 
 ```groovy
-	implementation "com.dropbox.mobile.store:store4:${store_version}"
+	implementation "org.mobilenativefoundation.store:store4:${store_version}"
 ```
 Please refer to the [Store Readme](https://github.com/dropbox/Store/blob/main/README.md#latest-version) for the latest version.
 

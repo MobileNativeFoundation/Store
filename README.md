@@ -1,6 +1,6 @@
 # Store 4
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.mobile.store/store4/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.mobilenativefoundation.store/store4/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.mobilenativefoundation.store/store4/)
 
 [![codecov](https://codecov.io/gh/dropbox/Store/branch/master/graph/badge.svg)](https://codecov.io/gh/dropbox/Store)
 
@@ -35,7 +35,7 @@ def store_version = "4.0.5"
 ###### Add the dependency to your `build.gradle`:
 
 ```groovy
-implementation "com.dropbox.mobile.store:store4:${store_version}"
+implementation "org.mobilenativefoundation.store:store4:${store_version}"
 ```
 
 ###### Set the source & target compatibilities to `1.8`
