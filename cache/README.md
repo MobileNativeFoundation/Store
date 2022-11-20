@@ -19,7 +19,7 @@ Latest version of this library is aligned with [Store 4](https://github.com/drop
 ###### Add the dependency to your `build.gradle`:
 
 ```groovy
-implementation 'com.dropbox.mobile.store:cache4:${store_version}'
+implementation 'org.mobilenativefoundation.store:cache4:${store_version}'
 ```
 
 ###### Set the source & target compatibilities to `1.8`
