@@ -4,6 +4,10 @@ Change Log
 
 The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
+Version 4.0.6 (2022-11-20)
+----------------------------
+* Flip coordinates from `com.dropbox.mobile.store` to `org.mobilenativefoundation.store`
+
 Version 4.0.5 (2021-03-30)
 ----------------------------
 * Update to Kotlin 1.6.10
