@@ -17,7 +17,7 @@ ext.versions = [
         mavenPublishPlugin          : "0.22.0",
 
         cache                       : '3.1.1',
-        store                       : '4.0.5',
+        store                       : '4.0.7',
 
         // UI libs.
         picasso                     : '2.5.2',
@@ -52,8 +52,8 @@ ext.versions = [
 ]
 
 ext.libraries = [
-        store                      : "com.dropbox.mobile.store:store4:$versions.store",
-        filesystem                  : "com.dropbox.mobile.store:filesystem4:$versions.store",
+        store                      : "org.mobilenativefoundation.store:store4:$versions.store",
+        filesystem                  : "org.mobilenativefoundation.store:filesystem4:$versions.store",
         // depend on cache via jar to avoid building java code
         cache                      : "com.nytimes.android:cache3:$versions.cache",
         // UI libs.
