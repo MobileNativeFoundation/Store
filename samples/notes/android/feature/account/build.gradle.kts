@@ -5,12 +5,10 @@ plugins {
     id("com.android.library")
     kotlin("android")
     id("kotlin-kapt")
-    id("app.cash.molecule")
     id("com.squareup.anvil")
 }
 
 group = "com.dropbox.notes.android"
-
 
 android {
     compileSdk = Version.androidCompileSdk

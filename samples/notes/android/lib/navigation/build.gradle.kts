@@ -29,15 +29,17 @@ android {
 
 dependencies {
     implementation(project(":store"))
-
+    implementation(project(":samples:notes:android:lib:fig"))
 
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
     }
 
-    implementation(Deps.Kotlinx.serializationCore)
-    implementation(Deps.Kotlinx.serializationJson)
+    with(Deps.Kotlinx) {
+        implementation(serializationCore)
+        implementation(serializationJson)
+    }
 
     with(Deps.Androidx) {
         implementation(appCompat)
@@ -46,7 +48,5 @@ dependencies {
         implementation(activityCompose)
         implementation(coreKtx)
     }
-
-    implementation(project(":samples:notes:android:lib:fig"))
 }
 

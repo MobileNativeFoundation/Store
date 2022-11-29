@@ -5,7 +5,6 @@ plugins {
     id("com.android.library")
     kotlin("android")
     id("kotlin-kapt")
-    id("app.cash.molecule")
     id("com.squareup.anvil")
 }
 
@@ -43,8 +42,10 @@ dependencies {
         implementation(ui)
     }
 
-    implementation(Deps.Kotlinx.serializationCore)
-    implementation(Deps.Kotlinx.serializationJson)
+    with(Deps.Kotlinx) {
+        implementation(serializationCore)
+        implementation(serializationJson)
+    }
 
     with(Deps.Androidx) {
         implementation(appCompat)
@@ -55,9 +56,10 @@ dependencies {
         implementation(activityCompose)
     }
 
-    val ktor_version = "2.1.1"
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    with(Deps.Ktor) {
+        implementation(clientCore)
+        implementation(clientCio)
+    }
 
     with(Deps.Dagger) {
         implementation(dagger)
