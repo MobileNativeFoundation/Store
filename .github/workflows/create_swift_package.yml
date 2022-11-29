@@ -2,9 +2,7 @@ name: Create Swift Package
 
 on:
   push:
-    branches: [ main, Kmp, store5 ]
-  pull_request:
-    branches: [ main, store5 ]
+    branches: [ store5]
 
 jobs:
   build:
