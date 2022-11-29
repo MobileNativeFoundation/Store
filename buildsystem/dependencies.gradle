@@ -14,7 +14,7 @@ ext.versions = [
         jacocoGradlePlugin          : '0.8.7',
         binaryCompatibilityValidator: '0.4.0',
         atomicFuPlugin              : '0.15.1',
-        mavenPublishPlugin          : "0.18.0",
+        mavenPublishPlugin          : "0.22.0",
 
         cache                       : '3.1.1',
         store                       : '4.0.5',
