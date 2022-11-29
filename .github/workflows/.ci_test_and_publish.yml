@@ -6,14 +6,14 @@ name: Build project & run tests
 
 on:
   push:
-    branches: [ main, Kmp ]
+    branches: [ main, Kmp, store5 ]
   pull_request:
     branches: [ main ]
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.repository == 'dropbox/Store' && github.ref == 'refs/heads/main'
+    if: github.repository == 'MobileNativeFoundation/Store' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/store5')
 
     steps:
       - name: Checkout
@@ -42,7 +42,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
-
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -54,20 +53,20 @@ jobs:
           - 29
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up our JDK environment
-      uses: actions/setup-java@v2
-      with:
-        distribution: zulu
-        java-version: 11
-    - name: Run tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-            api-level: 29
-            script: ./gradlew check --rerun-tasks --stacktrace
-      env:
-        API_LEVEL: ${{ matrix.api-level }}
-    - name: Upload code coverage
-      run: bash <(curl -s https://codecov.io/bash)
+      - name: Set up our JDK environment
+        uses: actions/setup-java@v2
+        with:
+          distribution: zulu
+          java-version: 11
+      - name: Run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew check --rerun-tasks --stacktrace
+        env:
+          API_LEVEL: ${{ matrix.api-level }}
+      - name: Upload code coverage
+        run: bash <(curl -s https://codecov.io/bash)
