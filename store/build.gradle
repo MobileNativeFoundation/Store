@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 buildscript {
     tasks.withType(JavaCompile) {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -49,4 +51,9 @@ compileTestKotlin {
                 '-Xopt-in=kotlin.RequiresOptIn',
         ]
     }
+}
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
+    signAllPublications()
 }
