@@ -13,18 +13,7 @@ plugins {
     id("com.android.library")
     id("com.vanniktech.maven.publish.base")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlin.native.cocoapods")
-    id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
     id("org.jetbrains.kotlinx.kover")
-}
-
-multiplatformSwiftPackage {
-    packageName("Store5")
-    swiftToolsVersion("5.3")
-    targetPlatforms {
-        iOS { v("13") }
-    }
-    outputDirectory(File(projectDir, "swift/package"))
 }
 
 kotlin {
@@ -37,12 +26,6 @@ kotlin {
             baseName = "Store5"
             xcf.add(this)
         }
-    }
-
-    cocoapods {
-        summary = "Store5"
-        homepage = "https://github.com/MobileNativeFoundation/Store"
-        version = "5.0.0-alpha01"
     }
 
     sourceSets {
