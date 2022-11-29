@@ -1,9 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.android.build.gradle.internal.scope.ProjectInfo.Companion.getBaseName
-import com.vanniktech.maven.publish.JavadocJar.Dokka
-import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost.S01
 import org.jetbrains.dokka.gradle.DokkaTask
 
@@ -11,7 +7,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.android.library")
-    id("com.vanniktech.maven.publish.base")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
@@ -78,12 +74,6 @@ tasks.withType<DokkaTask>().configureEach {
         skipDeprecated.set(true)
         jdkVersion.set(8)
     }
-}
-
-configure<MavenPublishBaseExtension> {
-    configure(
-        KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
-    )
 }
 
 mavenPublishing {
