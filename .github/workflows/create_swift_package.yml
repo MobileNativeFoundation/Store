@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.repository == 'MobileNativeFoundation/Store' && github.ref == 'refs/heads/store5'
+    if: github.repository == 'MobileNativeFoundation/Store'
 
     steps:
       - uses: actions/checkout@v3
