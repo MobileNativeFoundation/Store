@@ -1,15 +1,10 @@
 name: Create Swift Package
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ store5]
+    branches: [ main, store5 ]
 
 jobs:
-  build:
-    runs-on: macos-latest
-    if: github.repository == 'MobileNativeFoundation/Store'
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Create Swift Package
-        run: ./gradlew :store:createSwiftPackage
+  publish:
+    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildbranches.yml@v0.6
