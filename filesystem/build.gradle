@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 buildscript {
     tasks.withType(JavaCompile) {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -25,3 +27,8 @@ dependencies {
 apply from: rootProject.file("gradle/jacoco.gradle")
 
 apply plugin: 'com.vanniktech.maven.publish'
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
+    signAllPublications()
+}
