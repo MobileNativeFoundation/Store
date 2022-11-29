@@ -17,7 +17,7 @@ object Version {
     const val lifecycleRuntimeKtx = lifecycleKtx
     const val lifecycleViewmodelKtx = lifecycleKtx
     const val jacocoGradlePlugin = "0.8.7"
-    const val mavenPublishPlugin = "0.18.0"
+    const val mavenPublishPlugin = "0.22.0"
     const val moleculeGradlePlugin = "0.4.0"
     const val spotlessPluginGradle = "6.4.1"
     const val junit = "4.13.2"

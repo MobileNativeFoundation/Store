@@ -1,0 +1,15 @@
+name: Create Swift Package
+
+on:
+  push:
+    branches: [ store5]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    if: github.repository == 'MobileNativeFoundation/Store'
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create Swift Package
+        run: ./gradlew :store:createSwiftPackage
