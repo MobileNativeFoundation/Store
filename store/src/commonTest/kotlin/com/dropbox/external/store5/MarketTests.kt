@@ -10,11 +10,9 @@ import com.dropbox.external.store5.data.marketWriter
 import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
