@@ -20,7 +20,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class OfflineMarketTests {
     private val testScope = TestScope()

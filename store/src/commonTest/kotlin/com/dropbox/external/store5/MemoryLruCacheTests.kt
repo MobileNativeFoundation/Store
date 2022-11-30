@@ -37,7 +37,6 @@ class MemoryLruCacheTests {
         }
         testScope.advanceUntilIdle()
 
-
         var headPointer = headPointer()
         var tailPointer = tailPointer()
         var head = head()
@@ -53,8 +52,6 @@ class MemoryLruCacheTests {
             memoryLruCache.write(FakeNotes.Two.key, FakeNotes.Two.note)
         }
         testScope.advanceUntilIdle()
-
-
 
         headPointer = headPointer()
         tailPointer = tailPointer()
@@ -108,7 +105,6 @@ class MemoryLruCacheTests {
         assertEquals(10, memoryLruCache.cache.size)
     }
 
-
     @Test
     fun write11ShouldRemoveFirst() {
 
@@ -146,7 +142,6 @@ class MemoryLruCacheTests {
         }
 
         testScope.advanceUntilIdle()
-
 
         val headPointer = headPointer()
         val tailPointer = tailPointer()

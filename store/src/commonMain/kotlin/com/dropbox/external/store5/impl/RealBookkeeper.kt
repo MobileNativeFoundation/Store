@@ -2,7 +2,6 @@ package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.Bookkeeper
 
-
 internal class RealBookkeeper<Key : Any>(
     private val _read: suspend (key: Key) -> Long?,
     private val _write: suspend (key: Key, timestamp: Long) -> Boolean,

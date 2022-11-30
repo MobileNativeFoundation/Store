@@ -235,7 +235,6 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
             broadcasts[key]!!.emit(response)
             storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
 
-
             storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
             readCompletions[key]!!.forEach { anyOnCompletion ->
                 val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
@@ -304,7 +303,8 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
 
     @AnyThread
     private suspend fun <Input : Any, Output : Any> getAndEmitLatest(
-        key: Key, fetcher: NetworkFetcher<Key, Input, Output>
+        key: Key,
+        fetcher: NetworkFetcher<Key, Input, Output>
     ) {
         startIfNotBroadcasting<Output>(key)
         load<Output>(key)
@@ -427,7 +427,9 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
 
     @AnyThread
     private suspend fun eagerlyResolveConflicts(
-        key: Key, request: PostRequest<Key, Input, Output>, converter: Converter<Output, Input>
+        key: Key,
+        request: PostRequest<Key, Input, Output>,
+        converter: Converter<Output, Input>
     ): Boolean {
 
         return try {

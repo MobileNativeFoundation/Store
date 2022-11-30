@@ -61,7 +61,6 @@ internal object FakeMarket {
         ) = updater(api, onCompletion = onCompletion)
     }
 
-
     private fun bookkeeper(database: FakeDatabase) = Bookkeeper.by<String>(
         read = { key -> database.getLastWriteTime(key) },
         write = { key, timestamp -> database.setLastWriteTime(key, timestamp) },

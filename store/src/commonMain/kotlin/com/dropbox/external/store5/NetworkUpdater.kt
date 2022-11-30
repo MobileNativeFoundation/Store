@@ -4,7 +4,6 @@ import com.dropbox.external.store5.definition.Converter
 import com.dropbox.external.store5.definition.PostRequest
 import com.dropbox.external.store5.impl.RealNetworkUpdater
 
-
 /**
  * Posts data to remote data source.
  * @see [MarketWriter]
