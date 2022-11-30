@@ -1,12 +1,12 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.dropbox.external.store5.fake
+package com.dropbox.external.store5.data.fake
 
 import com.dropbox.external.store5.Persister
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-internal class FakeDb : Persister<String> {
+internal class FakeDatabase : Persister<String> {
     private val data: MutableMap<String, Any> = mutableMapOf()
     private val writeRequests: MutableMap<String, Long?> = mutableMapOf()
 

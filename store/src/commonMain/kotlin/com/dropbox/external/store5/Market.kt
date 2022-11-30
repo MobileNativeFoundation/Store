@@ -9,16 +9,18 @@ import kotlinx.coroutines.flow.Flow
  * @see [Store]
  * @see [Bookkeeper]
  */
-interface Market<Key : Any> {
-    suspend fun <Input : Any, Output : Any> read(reader: MarketReader<Key, Input, Output>): Flow<MarketResponse<Output>>
-    suspend fun <Input : Any, Output : Any> write(writer: MarketWriter<Key, Input, Output>): Boolean
+interface Market<Key : Any, Input : Any, Output : Any> {
+    suspend fun read(reader: MarketReader<Key, Input, Output>): Flow<MarketResponse<Output>>
+    suspend fun write(writer: MarketWriter<Key, Input, Output>): Boolean
     suspend fun delete(key: Key): Boolean
     suspend fun delete(): Boolean
 
     companion object {
         fun <Key : Any, Input : Any, Output : Any> of(
             stores: List<Store<Key, Input, Output>>,
-            bookkeeper: Bookkeeper<Key>
-        ): Market<Key> = RealMarket(stores, bookkeeper)
+            bookkeeper: Bookkeeper<Key>,
+            fetcher: NetworkFetcher<Key, Input, Output>,
+            updater: NetworkUpdater<Key, Input, Output>
+        ): Market<Key, Input, Output> = RealMarket(stores, bookkeeper, fetcher, updater)
     }
 }

@@ -3,8 +3,8 @@
 
 package com.dropbox.external.store5
 
-import com.dropbox.external.store5.fake.FakeNotes
-import com.dropbox.external.store5.fake.model.Note
+import com.dropbox.external.store5.data.fake.FakeNotes
+import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.last

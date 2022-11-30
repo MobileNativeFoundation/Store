@@ -1,7 +1,7 @@
-package com.dropbox.external.store5.fake.api
+package com.dropbox.external.store5.data.fake
 
-import com.dropbox.external.store5.fake.FakeNotes
-import com.dropbox.external.store5.fake.model.Note
+import com.dropbox.external.store5.data.Api
+import com.dropbox.external.store5.data.model.Note
 
 internal class FakeApi : Api<String, Note> {
     override val data = mutableMapOf<String, Note>()

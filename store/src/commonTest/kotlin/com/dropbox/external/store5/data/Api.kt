@@ -1,4 +1,4 @@
-package com.dropbox.external.store5.fake.api
+package com.dropbox.external.store5.data
 
 internal interface Api<Key : Any, Output : Any> {
     val data: MutableMap<Key, Output>

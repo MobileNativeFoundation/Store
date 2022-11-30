@@ -1,17 +1,14 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.dropbox.external.store5
 
-import com.dropbox.external.store5.fake.FakeDb
-import com.dropbox.external.store5.fake.FakeFactory
-import com.dropbox.external.store5.fake.FakeNotes
-import com.dropbox.external.store5.fake.OkTestMarket
-import com.dropbox.external.store5.fake.api.FakeApi
-import com.dropbox.external.store5.fake.model.Note
+import com.dropbox.external.store5.data.fake.FakeDatabase
+import com.dropbox.external.store5.data.fake.FakeMarket
+import com.dropbox.external.store5.data.fake.FakeNotes
+import com.dropbox.external.store5.data.market
+import com.dropbox.external.store5.data.marketReader
+import com.dropbox.external.store5.data.marketWriter
+import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
@@ -23,116 +20,71 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class OfflineMarketTests {
     private val testScope = TestScope()
-    private lateinit var api: FakeApi
-    private lateinit var market: Market<String>
-    private lateinit var db: FakeDb
+    private lateinit var database: FakeDatabase
     private lateinit var memoryLruCache: MemoryLruCache
-    private lateinit var factory: FakeFactory<String, Note, Note>
 
     @BeforeTest
     fun before() {
-        api = FakeApi()
-        market = OkTestMarket.build()
-        db = OkTestMarket.db
-        memoryLruCache = OkTestMarket.memoryLruCache
-        factory = FakeFactory(api)
-        db.reset()
+        database = FakeMarket.Success.database
+        memoryLruCache = FakeMarket.Success.memoryLruCache
+        database.reset()
     }
 
     @Test
-    fun failWriteAfterInit() = testScope.runTest {
+    fun `GIVEN non-empty offline market WHEN write THEN success from local write`() =
+        testScope.runTest {
+            val market = market(failWrite = true)
+            val readerOne = marketReader(FakeNotes.One.key)
+            val flowOne = market.read(readerOne)
+            testScope.advanceUntilIdle()
 
-        val readRequest = factory.buildReader<Note>(FakeNotes.Eight.key)
-        val response = async { market.read(readRequest) }
-        val flow = response.await()
+            val newNote = FakeNotes.One.note.copy(title = "New Title")
+            val writerOne = marketWriter(FakeNotes.One.key, newNote)
 
-        val newNote = FakeNotes.Eight.note.copy(title = "New Title")
-        val writeRequest = factory.buildWriter<Note>(FakeNotes.Eight.key, newNote, fail = true)
+            val writeResponseOne = market.write(writerOne)
+            assertEquals(false, writeResponseOne)
+            testScope.advanceUntilIdle()
 
-        val writeResponse = async { market.write(writeRequest) }
-        val isSuccess = writeResponse.await()
-        assertEquals(false, isSuccess)
-
-        testScope.advanceUntilIdle()
-        val last = flow.take(4).last()
-        assertIs<MarketResponse.Success<Note>>(last)
-        assertEquals(newNote, last.value)
-        assertEquals(MarketResponse.Companion.Origin.LocalWrite, last.origin)
-    }
-
-    @Test
-    fun failRefresh() = testScope.runTest {
-        val readRequest = factory.buildReader<Note>(FakeNotes.One.key, refresh = true, fail = true)
-
-        val readResponse = async { market.read(readRequest) }
-        val flow = readResponse.await()
-        val first = flow.first()
-        assertIs<MarketResponse.Loading>(first)
-
-        testScope.advanceUntilIdle()
-
-        val second = flow.take(3).last()
-        assertIs<MarketResponse.Failure>(second)
-        assertEquals(MarketResponse.Companion.Origin.Network, second.origin)
-
-        val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
-
-        val writeResponse = async { market.write(writeRequest) }
-        val isSuccess = writeResponse.await()
-
-        assertEquals(false, isSuccess)
-
-        val lastSuccess = flow.take(4).filterIsInstance<MarketResponse.Success<Note>>().last()
-
-        assertIs<MarketResponse.Success<Note>>(lastSuccess)
-        assertEquals(newNote, lastSuccess.value)
-        assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastSuccess.origin)
-    }
+            val lastResponseOne = flowOne.take(4).last()
+            assertIs<MarketResponse.Success<Note>>(lastResponseOne)
+            assertEquals(newNote, lastResponseOne.value)
+            assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastResponseOne.origin)
+        }
 
     @Test
-    fun onCompletionFailRefresh() = testScope.runTest {
+    fun `GIVEN non-empty offline market WHEN refresh with on-completions THEN correct on-completions executed`() =
+        testScope.runTest {
+            val market = market(
+                failRead = true,
+                failWrite = true
+            )
 
-        var readErrorsHandled = 0
+            var readErrorsHandled = 0
 
-        val onCompletion = OnMarketCompletion<Note>(
-            onSuccess = {},
-            onFailure = { readErrorsHandled++ }
-        )
+            val onCompletion = OnMarketCompletion<Note>(
+                onSuccess = {},
+                onFailure = { readErrorsHandled++ }
+            )
 
-        val readRequest = factory.buildReader<Note>(
-            key = FakeNotes.One.key,
-            refresh = true,
-            fail = true
-        ) { listOf(onCompletion) }
+            val readerOne = marketReader(
+                key = FakeNotes.One.key,
+                refresh = true,
+                onCompletions = listOf(onCompletion)
+            )
+            val flowOne = market.read(readerOne)
+            val firstResponseOne = flowOne.first()
+            assertIs<MarketResponse.Loading>(firstResponseOne)
 
-        val readResponse = async { market.read(readRequest) }
-        val flow = readResponse.await()
-        val first = flow.first()
-        assertIs<MarketResponse.Loading>(first)
+            testScope.advanceUntilIdle()
 
-        testScope.advanceUntilIdle()
+            val secondResponseOne = flowOne.take(3).last()
+            assertIs<MarketResponse.Failure>(secondResponseOne)
+            assertEquals(MarketResponse.Companion.Origin.Network, secondResponseOne.origin)
 
-        val second = flow.take(3).last()
-        assertIs<MarketResponse.Failure>(second)
-        assertEquals(MarketResponse.Companion.Origin.Network, second.origin)
-
-        val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writeRequest = factory.buildWriter<Note>(FakeNotes.One.key, newNote, fail = true)
-
-        val writeResponse = async { market.write(writeRequest) }
-        val isSuccess = writeResponse.await()
-
-        assertEquals(false, isSuccess)
-
-        val lastSuccess = flow.take(4).filterIsInstance<MarketResponse.Success<Note>>().last()
-
-        assertIs<MarketResponse.Success<Note>>(lastSuccess)
-        assertEquals(newNote, lastSuccess.value)
-        assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastSuccess.origin)
-        assertEquals(1, readErrorsHandled)
-    }
+            assertEquals(1, readErrorsHandled)
+        }
 }

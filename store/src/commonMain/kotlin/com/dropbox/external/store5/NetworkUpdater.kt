@@ -16,11 +16,6 @@ interface NetworkUpdater<Key : Any, Input : Any, Output : Any> {
     suspend fun post(key: Key, input: Input): Output?
 
     /**
-     * Represents datetime of creation. Enables [Bookkeeper] to track sync failures.
-     */
-    val created: Long
-
-    /**
      * Executes on network completion.
      */
     val onCompletion: OnNetworkCompletion<Output>
@@ -33,11 +28,10 @@ interface NetworkUpdater<Key : Any, Input : Any, Output : Any> {
     companion object {
         fun <Key : Any, Input : Any, Output : Any> by(
             post: PostRequest<Key, Input, Output>,
-            created: Long,
             onCompletion: OnNetworkCompletion<Output>,
             converter: Converter<Input, Output>
         ): NetworkUpdater<Key, Input, Output> = RealNetworkUpdater(
-            post, created, onCompletion, converter
+            post, onCompletion, converter
         )
     }
 }
