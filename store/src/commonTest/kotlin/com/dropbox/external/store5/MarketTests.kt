@@ -38,6 +38,8 @@ class MarketTests {
         database = FakeMarket.Success.database
         memoryLruCache = FakeMarket.Success.memoryLruCache
         database.reset()
+        FakeMarket.Success.api.reset()
+        FakeMarket.Failure.api.reset()
     }
 
     @Test
