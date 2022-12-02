@@ -1,4 +1,4 @@
-# Store 5, a Kotlin Multiplatform Library for Building Network-Resilient Applications
+# Store 5
 
 ## Problems
 
@@ -269,11 +269,35 @@ fun provideBookkeeper(database: Database): Bookkeeper<NoteKey> = Bookkeeper.by(
 
 ### 6. Implement NetworkFetcher
 
-- [ ] TODO
+```kotlin
+fun provideNetworkFetcher(
+    api: Api
+): NetworkFetcher<NoteKey, NoteInput, NoteOutput> = NetworkFetcher.by(
+    get = { key -> api.getNote(key.id) },
+    post = { key, input -> api.putNote(key.id!!) },
+    converter = { it }
+)
+```
 
 ### 7. Implement NetworkUpdater
 
-- [ ] TODO
+```kotlin
+fun provideNetworkUpdater(
+    api: Api
+): NetworkUpdater<NoteKey, NoteInput, NoteOutput> = NetworkUpdater.by(
+    post = { key, input ->
+        when (key.id) {
+            null -> api.postNote(input)
+            else -> api.putNote(key.id, input)
+        }
+    },
+    onCompletion = OnNetworkCompletion(
+        onSuccess = {},
+        onFailure = {}
+    ),
+    converter = { it }
+)
+```
 
 ### 8. Provide Market
 
