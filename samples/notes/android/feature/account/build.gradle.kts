@@ -13,7 +13,6 @@ group = "com.dropbox.notes.android"
 android {
     compileSdk = Version.androidCompileSdk
 
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -61,4 +60,3 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
 }
-

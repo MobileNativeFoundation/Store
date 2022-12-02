@@ -8,10 +8,8 @@ plugins {
 
 group = "com.dropbox.notes.android"
 
-
 android {
     compileSdk = Version.androidCompileSdk
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -30,10 +28,8 @@ android {
 dependencies {
     implementation(project(":store"))
 
-
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
     }
 }
-

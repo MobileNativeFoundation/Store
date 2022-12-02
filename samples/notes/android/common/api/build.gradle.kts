@@ -7,10 +7,8 @@ plugins {
 
 group = "com.dropbox.notes.android"
 
-
 android {
     compileSdk = Version.androidCompileSdk
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -26,4 +24,3 @@ dependencies {
         kapt(daggerCompiler)
     }
 }
-

@@ -3,6 +3,9 @@ package org.mobilenativefoundation.store.notes.app.wiring
 import android.content.Context
 import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Market
+import com.dropbox.external.store5.NetworkFetcher
+import com.dropbox.external.store5.NetworkUpdater
+import com.dropbox.external.store5.OnNetworkCompletion
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.impl.MemoryLruCache
 import com.squareup.anvil.annotations.ContributesTo
@@ -13,9 +16,11 @@ import dagger.Provides
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mobilenativefoundation.store.notes.android.app.NotesDatabase
+import org.mobilenativefoundation.store.notes.android.common.api.Api
 import org.mobilenativefoundation.store.notes.android.common.api.Note
 import org.mobilenativefoundation.store.notes.android.common.scoping.AppScope
 import org.mobilenativefoundation.store.notes.android.common.scoping.SingleIn
+import org.mobilenativefoundation.store.notes.android.lib.result.Result
 import org.mobilenativefoundation.store.notes.app.NotesApp
 import org.mobilenativefoundation.store.notes.app.extension.tryDeleteAllFailed
 import org.mobilenativefoundation.store.notes.app.extension.tryDeleteAllNotes
@@ -76,12 +81,55 @@ object AppModule {
     @Provides
     @SingleIn(AppScope::class)
     fun provideMarket(
+        api: Api,
         @Named(MEMORY_LRU_CACHE_STORE) memoryLruCacheStore: Store<Key, Note, Note>,
         @Named(DATABASE_STORE) databaseStore: Store<Key, Note, Note>,
         bookkeeper: Bookkeeper<Key>
-    ): Market<Key> = Market.of(
+    ): Market<Key, Note, Note> = Market.of(
         stores = listOf(memoryLruCacheStore, databaseStore),
-        bookkeeper = bookkeeper
+        bookkeeper = bookkeeper,
+        updater = NetworkUpdater.by(
+            post = { key, input ->
+                when (val result = if (key.id != null) {
+                    api.putNote(key.id, input.title, input.content)
+
+                } else {
+                    api.postNote(input.title, input.content)
+                }) {
+                    is Result.Failure -> null
+                    is Result.Success -> result.component1()
+                }
+            },
+            onCompletion = OnNetworkCompletion(
+                onSuccess = {},
+                onFailure = {}
+            ),
+            converter = { it }
+        ),
+        fetcher = NetworkFetcher.by(
+            post = { key, input ->
+                when (val result = if (key.id != null) {
+                    api.putNote(key.id, input.title, input.content)
+
+                } else {
+                    api.postNote(input.title, input.content)
+                }) {
+                    is Result.Failure -> null
+                    is Result.Success -> result.component1()
+                }
+            },
+            get = { key ->
+                if (key.id == null) {
+                    null
+                } else {
+                    when (val result = api.getNote(key.id)) {
+                        is Result.Failure -> null
+                        is Result.Success -> result.component1()
+                    }
+                }
+            },
+            converter = { it }
+        )
     )
 
     private val memoryLruCache = MemoryLruCache(10)

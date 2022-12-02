@@ -9,8 +9,8 @@ interface Api {
     fun getFollowing(userId: String): Result<List<User>, Throwable>
     fun getNotes(userId: String): Result<List<Note>, Throwable>
     fun getNote(noteId: String): Result<Note, Throwable>
-    fun postNote(title: String, content: String, isPublic: Boolean)
-    fun putNote(noteId: String, title: String, content: String, isPublic: Boolean)
-    fun deleteNote(noteId: String)
-    fun deleteAllNotes()
+    fun postNote(title: String, content: String): Result<Note, Throwable>
+    fun putNote(noteId: String, title: String, content: String): Result<Note, Throwable>
+    fun deleteNote(noteId: String): Result<Boolean, Throwable>
+    fun deleteAllNotes(): Result<Boolean, Throwable>
 }
