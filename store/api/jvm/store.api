@@ -13,6 +13,15 @@ public final class com/dropbox/external/store5/Bookkeeper$Companion {
 public abstract interface annotation class com/dropbox/external/store5/Convenience : java/lang/annotation/Annotation {
 }
 
+public abstract interface class com/dropbox/external/store5/ItemValidator {
+	public static final field Companion Lcom/dropbox/external/store5/ItemValidator$Companion;
+	public abstract fun isValid (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/dropbox/external/store5/ItemValidator$Companion {
+	public final fun by (Lkotlin/jvm/functions/Function2;)Lcom/dropbox/external/store5/ItemValidator;
+}
+
 public abstract interface class com/dropbox/external/store5/Market {
 	public static final field Companion Lcom/dropbox/external/store5/Market$Companion;
 	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -30,10 +39,12 @@ public abstract interface class com/dropbox/external/store5/MarketReader {
 	public abstract fun getKey ()Ljava/lang/Object;
 	public abstract fun getOnCompletions ()Ljava/util/List;
 	public abstract fun getRefresh ()Z
+	public abstract fun getValidator ()Lcom/dropbox/external/store5/ItemValidator;
 }
 
 public final class com/dropbox/external/store5/MarketReader$Companion {
-	public final fun by (Ljava/lang/Object;Ljava/util/List;Z)Lcom/dropbox/external/store5/MarketReader;
+	public final fun by (Ljava/lang/Object;Ljava/util/List;Lcom/dropbox/external/store5/ItemValidator;Z)Lcom/dropbox/external/store5/MarketReader;
+	public static synthetic fun by$default (Lcom/dropbox/external/store5/MarketReader$Companion;Ljava/lang/Object;Ljava/util/List;Lcom/dropbox/external/store5/ItemValidator;ZILjava/lang/Object;)Lcom/dropbox/external/store5/MarketReader;
 }
 
 public abstract class com/dropbox/external/store5/MarketResponse {
