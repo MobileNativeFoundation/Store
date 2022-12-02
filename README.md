@@ -295,35 +295,69 @@ fun provideMarket(
 ### 9. Read From and Write To Market
 
 ```kotlin
-class NoteRepository(
+class NoteViewModel(
+    private val key: NoteKey,
     private val coroutineScope: CoroutineScope,
     private val market: Market<NoteKey>
 ) {
-    override fun read(
-        key: NoteKey,
-        refresh: Boolean,
-        onCompletions: List<OnMarketCompletion<NoteOutput>>
-    ): Flow<MarketResponse<Note>> = channelFlow {
+    private val stateFlow = MutableStateFlow<NoteState>(NoteState(NoteViewState.Initial))
+    val state: StateFlow<NoteState> = stateFlow
+
+    init {
+        loadState(refresh = true)
+    }
+
+    fun loadState(
+        refresh: Boolean = false,
+        onCompletions: List<OnMarketCompletion<NoteOutput>> = listOf()
+    ) {
         val reader = MarketReader.by(
             key = key,
             onCompletions = onCompletions,
             refresh = refresh
         )
         coroutineScope.launch {
-            market.read(reader).collect { send(it) }
+            market.read(reader).collect { marketResponse ->
+                val viewState = when (marketResponse) {
+                    Loading -> marketResponse.toLoadingViewState()
+                    is Success -> marketResponse.toSuccessViewState()
+                    is Failure -> marketResponse.toFailureViewState()
+                    Empty -> marketResponse.toEmptyViewState()
+                }
+
+                val state = NoteState(viewState)
+
+                stateFlow.value = state
+            }
         }
     }
-    override suspend fun write(
-        key: NoteKey,
-        input: NoteInput,
-        onCompletions: List<OnMarketCompletion<NoteOutput>>
-    ): Boolean {
-        val writer = MarketWriter.by(
-            key = key,
-            input = input,
-            onCompletions = onCompletions
-        )
-        return market.write(writer)
+
+    fun updateTitle(
+        nextTitle: String,
+        onCompletions: List<OnMarketCompletion<NoteOutput>> = listOf()
+    ) {
+        val viewState = state.value.viewState
+
+        if (viewState is NoteViewState.Success) {
+            val nextNote = viewState.note.copy(title = title)
+            val nextViewState = viewState.copy(note = nextNote)
+            val nextState = state.value.copy(viewState = nextViewState)
+            stateFlow.value = nextState
+
+            val writer = MarketWriter.by(
+                key = key,
+                input = nextNote,
+                onCompletions = onCompletions
+            )
+
+            coroutineScope.launch {
+                val ok = market.write(writer)
+                if (!ok) {
+                    val nextState = state.value.copy(error = WRITE_ERROR)
+                    stateFlow.value = nextState
+                }
+            }
+        }
     }
 }
 ```
