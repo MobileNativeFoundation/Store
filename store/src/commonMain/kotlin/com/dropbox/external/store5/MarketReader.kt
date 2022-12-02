@@ -9,16 +9,17 @@ import com.dropbox.external.store5.impl.RealMarketReader
  */
 interface MarketReader<Key : Any, Input : Any, Output : Any> {
     val key: Key
-    val fetcher: NetworkFetcher<Key, Input, Output>
     val onCompletions: List<OnMarketCompletion<Output>>
+    val validator: ItemValidator<Output>?
     val refresh: Boolean
 
     companion object {
         fun <Key : Any, Input : Any, Output : Any> by(
             key: Key,
-            fetcher: NetworkFetcher<Key, Input, Output>,
             onCompletions: List<OnMarketCompletion<Output>>,
+            validator: ItemValidator<Output>? = null,
             refresh: Boolean,
-        ): MarketReader<Key, Input, Output> = RealMarketReader(key, fetcher, onCompletions, refresh)
+        ): MarketReader<Key, Input, Output> =
+            RealMarketReader(key, onCompletions, validator, refresh)
     }
 }

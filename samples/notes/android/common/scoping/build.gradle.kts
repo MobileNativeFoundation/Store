@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
+    kotlin("plugin.serialization")
     id("com.android.library")
     kotlin("android")
     id("kotlin-kapt")
@@ -9,10 +10,8 @@ plugins {
 
 group = "com.dropbox.notes.android"
 
-
 android {
     compileSdk = Version.androidCompileSdk
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -26,10 +25,16 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Version.composeCompiler
     }
+
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 31
+    }
 }
 
 dependencies {
     implementation(project(":store"))
+    implementation(project(":samples:notes:android:common:api"))
 
     with(Deps.Androidx) {
         implementation(activityCompose)
@@ -38,6 +43,25 @@ dependencies {
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
+    }
+
+    with(Deps.Kotlinx) {
+        implementation(serializationCore)
+        implementation(serializationJson)
+    }
+
+    with(Deps.Androidx) {
+        implementation(appCompat)
+        implementation(lifecycleViewmodelKtx)
+        implementation(lifecycleRuntimeKtx)
+        implementation(activityCompose)
+        implementation(coreKtx)
+        implementation(activityCompose)
+    }
+
+    with(Deps.Ktor) {
+        implementation(clientCore)
+        implementation(clientCio)
     }
 
     with(Deps.Dagger) {
