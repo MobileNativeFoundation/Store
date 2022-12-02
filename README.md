@@ -106,7 +106,7 @@ class RealNoteApi(private val client: HttpClient) : Api {
 }
 ```
 
-### 3. Provide Memory LRU Cache Store[^1]
+### 3. Provide Memory LRU Cache Store [^1]
 
 ```kotlin
 private val memoryLruCache = MemoryLruCache(maxSize = 100)
@@ -121,7 +121,7 @@ fun provideMemoryLruCacheStore(): Store<NoteKey, NoteInput, NoteOutput> = Store.
 )
 ```
 
-### 4. Provide [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) Store[^1]
+### 4. Provide [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) Store [^1]
 
 ##### Install SQL Delight
 
@@ -368,5 +368,6 @@ class NoteViewModel(
 Copyright (c) 2022 Mobile Native Foundation.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
+```
 
 [^1]: `Market` can be backed by any `Store`
