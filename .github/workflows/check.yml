@@ -9,7 +9,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Run check with Gradle Wrapper
-        run: ./gradlew :check
+        run: ./gradlew :store:check
 
   coverage:
     runs-on: ubuntu-latest

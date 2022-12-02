@@ -15,5 +15,4 @@ internal class RealNetworkFetcher<Key : Any, Input : Any, Output : Any>(
     override suspend fun post(key: Key, input: Input): Output? = realPost(key, input)
 
     override fun converter(output: Output): Input = realConverter(output)
-
 }

@@ -22,7 +22,6 @@ buildscript {
 }
 
 apply plugin: 'binary-compatibility-validator'
-apply plugin: 'kover'
 
 apiValidation {
 
@@ -55,23 +54,5 @@ subprojects {
         kotlin {
             target 'src/**/*.kt'
         }
-    }
-}
-
-koverMerged {
-    enable()
-
-    xmlReport {
-        onCheck.set(true)
-        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
-    }
-
-    htmlReport {
-        onCheck.set(true)
-        reportDir.set(layout.projectDirectory.dir("kover/html"))
-    }
-
-    verify {
-        onCheck.set(true)
     }
 }

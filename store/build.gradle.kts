@@ -19,7 +19,6 @@ kotlin {
     android()
     jvm()
     ios()
-    iosSimulatorArm64()
     cocoapods {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
@@ -60,6 +59,11 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 31
 
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 31
+    }
+
     lint {
         disable += "ComposableModifierFactory"
         disable += "ModifierFactoryExtensionFunction"
@@ -87,4 +91,22 @@ kmmbridge {
     githubReleaseVersions()
     versionPrefix.set("5.0.0-alpha0")
     spm()
+}
+
+koverMerged {
+    enable()
+
+    xmlReport {
+        onCheck.set(true)
+        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
+    }
+
+    htmlReport {
+        onCheck.set(true)
+        reportDir.set(layout.projectDirectory.dir("kover/html"))
+    }
+
+    verify {
+        onCheck.set(true)
+    }
 }

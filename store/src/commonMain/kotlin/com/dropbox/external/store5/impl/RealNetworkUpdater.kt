@@ -7,7 +7,6 @@ import com.dropbox.external.store5.definition.PostRequest
 
 internal class RealNetworkUpdater<Key : Any, Input : Any, Output : Any>(
     val realPost: PostRequest<Key, Input, Output>,
-    override val created: Long,
     override val onCompletion: OnNetworkCompletion<Output>,
     val realConverter: Converter<Input, Output>
 ) : NetworkUpdater<Key, Input, Output> {

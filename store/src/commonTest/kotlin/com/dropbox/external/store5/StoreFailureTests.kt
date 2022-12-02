@@ -1,14 +1,12 @@
 package com.dropbox.external.store5
 
-import com.dropbox.external.store5.fake.BadTestMarket
-import com.dropbox.external.store5.fake.FakeDb
-import com.dropbox.external.store5.fake.FakeFactory
-import com.dropbox.external.store5.fake.FakeNotes
-import com.dropbox.external.store5.fake.api.FakeApi
-import com.dropbox.external.store5.fake.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.data.fake.FakeApi
+import com.dropbox.external.store5.data.fake.FakeDatabase
+import com.dropbox.external.store5.data.fake.FakeMarket
+import com.dropbox.external.store5.data.fake.FakeNotes
+import com.dropbox.external.store5.data.market
+import com.dropbox.external.store5.data.model.Note
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
@@ -21,33 +19,29 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class BadStoreTests {
+class StoreFailureTests {
     private val testScope = TestScope()
     private lateinit var api: FakeApi
-    private lateinit var market: Market<String>
-    private lateinit var db: FakeDb
-    private lateinit var memoryLruCache: MemoryLruCache
-    private lateinit var factory: FakeFactory<String, Note, Note>
+    private lateinit var market: Market<String, Note, Note>
+    private lateinit var database: FakeDatabase
 
     @BeforeTest
     fun before() {
         api = FakeApi()
-        market = BadTestMarket.build()
-        db = BadTestMarket.db
-        memoryLruCache = BadTestMarket.memoryLruCache
-        factory = FakeFactory(api)
+        market = market(failRead = true, failWrite = true)
+        database = FakeMarket.Failure.database
     }
 
     @Test
     fun readFailureIsHandled() = testScope.runTest {
-        val request = factory.buildReader<Note>(
-            FakeNotes.One.key,
-            refresh = true,
-            fail = true,
-            onCompletionsProducer = { listOf() })
-        val responseAsync = async { market.read(request) }
+        val reader = MarketReader.by<String, Note, Note>(
+            key = FakeNotes.One.key,
+            onCompletions = listOf(),
+            refresh = true
+        )
+
+        val flow = market.read(reader)
         advanceUntilIdle()
-        val flow = responseAsync.await()
         val responses = flow.take(3).toList()
         assertContains(responses, MarketResponse.Loading)
         val last = responses.last()

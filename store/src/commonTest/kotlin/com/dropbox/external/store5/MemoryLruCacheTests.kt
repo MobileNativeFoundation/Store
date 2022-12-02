@@ -3,8 +3,8 @@
 
 package com.dropbox.external.store5
 
-import com.dropbox.external.store5.fake.FakeNotes
-import com.dropbox.external.store5.fake.model.Note
+import com.dropbox.external.store5.data.fake.FakeNotes
+import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruCache
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.last
@@ -37,7 +37,6 @@ class MemoryLruCacheTests {
         }
         testScope.advanceUntilIdle()
 
-
         var headPointer = headPointer()
         var tailPointer = tailPointer()
         var head = head()
@@ -53,8 +52,6 @@ class MemoryLruCacheTests {
             memoryLruCache.write(FakeNotes.Two.key, FakeNotes.Two.note)
         }
         testScope.advanceUntilIdle()
-
-
 
         headPointer = headPointer()
         tailPointer = tailPointer()
@@ -108,7 +105,6 @@ class MemoryLruCacheTests {
         assertEquals(10, memoryLruCache.cache.size)
     }
 
-
     @Test
     fun write11ShouldRemoveFirst() {
 
@@ -146,7 +142,6 @@ class MemoryLruCacheTests {
         }
 
         testScope.advanceUntilIdle()
-
 
         val headPointer = headPointer()
         val tailPointer = tailPointer()
