@@ -5,16 +5,13 @@ plugins {
     id("com.android.library")
     kotlin("android")
     id("kotlin-kapt")
-    id("app.cash.molecule")
     id("com.squareup.anvil")
 }
 
 group = "com.dropbox.notes.android"
 
-
 android {
     compileSdk = Version.androidCompileSdk
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -27,6 +24,11 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion = Version.composeCompiler
+    }
+
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 31
     }
 }
 
@@ -63,4 +65,3 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
 }
-

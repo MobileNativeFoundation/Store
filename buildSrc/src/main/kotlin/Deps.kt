@@ -40,6 +40,11 @@ object Deps {
         const val dateTime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     }
 
+    object Ktor {
+        const val clientCore = "io.ktor:ktor-client-core:${Version.ktor}"
+        const val clientCio = "io.ktor:ktor-client-cio:${Version.ktor}"
+    }
+
     object SqlDelight {
         const val gradlePlugin = "com.squareup.sqldelight:gradle-plugin:${Version.sqlDelight}"
         const val driverAndroid = "com.squareup.sqldelight:android-driver:${Version.sqlDelight}"

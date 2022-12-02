@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
     spec.summary                  = 'Store5'
     spec.vendored_frameworks      = 'build/cocoapods/framework/store.framework'
     spec.libraries                = 'c++'
-                
+    spec.ios.deployment_target = '13'
                 
                 
     spec.pod_target_xcconfig = {

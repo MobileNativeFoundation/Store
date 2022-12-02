@@ -5,7 +5,6 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("kotlin-kapt")
-    id("app.cash.molecule")
     id("com.squareup.anvil")
     id("com.squareup.sqldelight")
 }
@@ -43,14 +42,24 @@ android {
 
 dependencies {
     implementation(project(":store"))
+    implementation(project(":samples:notes:android:feature:account"))
+    implementation(project(":samples:notes:android:feature:home"))
+    implementation(project(":samples:notes:android:feature:explore"))
+    implementation(project(":samples:notes:android:lib:navigation"))
+    implementation(project(":samples:notes:android:lib:result"))
+    implementation(project(":samples:notes:android:lib:fig"))
+    implementation(project(":samples:notes:android:common:scoping"))
+    implementation(project(":samples:notes:android:common:api"))
 
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
     }
 
-    implementation(Deps.Kotlinx.serializationCore)
-    implementation(Deps.Kotlinx.serializationJson)
+    with(Deps.Kotlinx) {
+        implementation(serializationCore)
+        implementation(serializationJson)
+    }
 
     with(Deps.Androidx) {
         implementation(appCompat)
@@ -71,15 +80,6 @@ dependencies {
         implementation(coroutineExtensions)
         implementation(driverAndroid)
     }
-
-    implementation(project(":samples:notes:android:feature:account"))
-    implementation(project(":samples:notes:android:feature:home"))
-    implementation(project(":samples:notes:android:feature:explore"))
-    implementation(project(":samples:notes:android:lib:navigation"))
-    implementation(project(":samples:notes:android:lib:result"))
-    implementation(project(":samples:notes:android:lib:fig"))
-    implementation(project(":samples:notes:android:common:scoping"))
-    implementation(project(":samples:notes:android:common:api"))
 }
 
 sqldelight {

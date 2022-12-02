@@ -4,16 +4,15 @@ package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Convenience
-import com.dropbox.external.store5.GoodValidator
 import com.dropbox.external.store5.Market
 import com.dropbox.external.store5.MarketReader
 import com.dropbox.external.store5.MarketResponse
+import com.dropbox.external.store5.MarketResponse.Companion.Origin
 import com.dropbox.external.store5.MarketWriter
 import com.dropbox.external.store5.NetworkFetcher
 import com.dropbox.external.store5.NetworkResult
 import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnMarketCompletion
-import com.dropbox.external.store5.OnNetworkCompletion
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.concurrent.AnyThread
 import com.dropbox.external.store5.concurrent.StoreSafety
@@ -28,11 +27,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
-typealias AnyWriteRequestQueue<Key> = ArrayDeque<NetworkUpdater<Key, *, *>>
-typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<NetworkUpdater<Key, Input, *>>
+typealias AnyWriteRequestQueue<Key> = ArrayDeque<MarketWriter<Key, *, *>>
+typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<MarketWriter<Key, Input, *>>
 typealias AnyBroadcast = MutableSharedFlow<MarketResponse<*>>
 typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
-typealias AnyFlow = Flow<MarketResponse<*>>
 typealias SomeFlow<T> = Flow<MarketResponse<T>>
 
 /**
@@ -43,10 +41,12 @@ typealias SomeFlow<T> = Flow<MarketResponse<T>>
  * @property writeRequests Thread-safe mapping of Key to [AnyWriteRequestQueue], an alias of an [NetworkUpdater] queue. All requests are put in the queue. In [tryPost], we get the most recent request from the queue. Then we get the last value from [SomeBroadcast]. On response, write requests are handled based on their time of creation. On success, we reset the queue. On failure, we use [Bookkeeper.setTimestampLastFailedSync]. This map is only saved in memory. However, last failed write time and last local value will persist as long as the [Market] contains a persistent [Store].
  * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
-class RealMarket<Key : Any> internal constructor(
-    private val stores: List<Store<Key, *, *>>,
-    private val bookkeeper: Bookkeeper<Key>
-) : Market<Key> {
+class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
+    private val stores: List<Store<Key, Input, Output>>,
+    private val bookkeeper: Bookkeeper<Key>,
+    private val fetcher: NetworkFetcher<Key, Input, Output>,
+    private val updater: NetworkUpdater<Key, Input, Output>,
+) : Market<Key, Input, Output> {
     private val readCompletions = mutableMapOf<Key, AnyReadCompletionsQueue>()
     private val writeRequests = mutableMapOf<Key, AnyWriteRequestQueue<Key>>()
     private val broadcasts = mutableMapOf<Key, AnyBroadcast>()
@@ -55,14 +55,8 @@ class RealMarket<Key : Any> internal constructor(
     private val storeLocks = stores.map { Mutex() }
     private val marketSecurity = mutableMapOf<Key, StoreSafety>()
 
-
-    /**
-     * Reads from [Market].
-     * Gets the latest value from network if first request or [MarketReader.refresh].
-     * Validates [Store] goods if [MarketReader] contains [GoodValidator].
-     */
     @AnyThread
-    override suspend fun <Input : Any, Output : Any> read(reader: MarketReader<Key, Input, Output>): SomeFlow<Output> {
+    override suspend fun read(reader: MarketReader<Key, Input, Output>): SomeFlow<Output> {
         mainLock.withLock {
             marketSecurity.getOrPut(reader.key) { StoreSafety() }
         }
@@ -70,40 +64,32 @@ class RealMarket<Key : Any> internal constructor(
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
         if (conflictsMightExist) {
-            eagerlyResolveConflicts(reader.key, reader.fetcher::post, reader.fetcher::converter)
+            eagerlyResolveConflicts(reader.key, fetcher::post, fetcher::converter)
         }
 
         addOrInitReadCompletions(reader.key, reader.onCompletions.toMutableList())
 
         if (notBroadcasting(reader.key)) {
             startBroadcast<Output>(reader.key)
-            getAndEmitLatest(reader.key, reader.fetcher)
+            getAndEmitLatest(reader.key, fetcher)
         } else if (reader.refresh && readNotInProgress(reader.key)) {
-            getAndEmitLatest(reader.key, reader.fetcher)
+            getAndEmitLatest(reader.key, fetcher)
         } else if (readNotInProgress(reader.key)) {
             load<Output>(reader.key)
         }
 
         return flow {
             requireBroadcast<Output>(reader.key).collect {
-                if (it is MarketResponse.Success &&
-                    it.origin == MarketResponse.Companion.Origin.Store &&
-                    reader.validator?.isValid(it.value) == false
-                ) {
-                    getAndEmitLatest(reader.key, reader.fetcher)
-                } else {
-                    emit(it)
-                }
+                emit(it)
             }
         }
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> updateWriteRequestQueue(
+    private suspend fun updateWriteRequestQueue(
         key: Key,
         input: Input,
         created: Long,
-        converter: Converter<Input, Output>
     ) {
         val writeRequestQueue = requireWriteRequestQueue<Input>(key)
         val outstandingWriteRequests: AnyWriteRequestQueue<Key> = ArrayDeque()
@@ -113,9 +99,15 @@ class RealMarket<Key : Any> internal constructor(
 
         for (writeRequest in writeRequestQueue) {
             if (writeRequest.created <= created) {
-                val output = converter(input)
+                val output = updater.converter(input)
                 val fetchResponse = NetworkResult.Success(output)
-                (writeRequest.onCompletion as OnNetworkCompletion<Output>).onSuccess(fetchResponse)
+                val marketResponse = MarketResponse.Success(output, origin = Origin.Network)
+
+                updater.onCompletion.onSuccess(fetchResponse)
+
+                writeRequest.onCompletions.forEach {
+                    (it as OnMarketCompletion<Output>).onSuccess(marketResponse)
+                }
             } else {
                 outstandingWriteRequests.add(writeRequest)
             }
@@ -129,22 +121,16 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> tryUpdateServer(writer: MarketWriter<Key, Input, Output>): Boolean {
-        return when (val result = tryPost<Input, Output>(writer.key)) {
+    private suspend fun tryUpdateServer(writer: MarketWriter<Key, Input, Output>): Boolean {
+        return when (val result = tryPost(writer.key)) {
             is NetworkResult.Success -> {
-
                 updateWriteRequestQueue(
                     key = writer.key,
                     input = result.value,
-                    created = writer.updater.created,
-                    converter = writer.updater::converter
+                    created = writer.created,
                 )
 
-                val output = writer.updater.converter(result.value)
-                val marketResponse = MarketResponse.Success(output, origin = MarketResponse.Companion.Origin.Network)
-
                 bookkeeper.delete(writer.key)
-                writer.onCompletions.forEach { onCompletion -> onCompletion.onSuccess(marketResponse) }
                 true
             }
 
@@ -156,18 +142,20 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    override suspend fun <Input : Any, Output : Any> write(writer: MarketWriter<Key, Input, Output>): Boolean {
+    override suspend fun write(writer: MarketWriter<Key, Input, Output>): Boolean {
         val broadcast = requireBroadcast<Output>(writer.key)
-        val responseLocalWrite =
-            MarketResponse.Success(writer.input as Output, origin = MarketResponse.Companion.Origin.LocalWrite)
+        val responseLocalWrite = MarketResponse.Success(
+            writer.input as Output,
+            origin = Origin.LocalWrite
+        )
         broadcast.emit(responseLocalWrite)
-        (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
+        stores.forEachIndexed { index, store ->
             storeLocks[index].withLock {
                 store.writer(writer.key, writer.input)
             }
         }
 
-        addOrInitWriteRequest(writer.key, writer.updater)
+        addOrInitWriteRequest(writer)
 
         return tryUpdateServer(writer)
     }
@@ -196,7 +184,7 @@ class RealMarket<Key : Any> internal constructor(
                 val last = (store.reader(key) as Flow<Output?>).lastOrNull()
                 storeLocks[index].unlock()
                 if (last != null) {
-                    broadcast.emit(MarketResponse.Success(last, origin = MarketResponse.Companion.Origin.Store))
+                    broadcast.emit(MarketResponse.Success(last, origin = Origin.Store))
                     return
                 }
             } catch (_: Throwable) {
@@ -207,18 +195,20 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> refresh(key: Key, fetcher: NetworkFetcher<Key, Input, Output>) {
+    private suspend fun <Input : Any, Output : Any> refresh(
+        key: Key,
+        fetcher: NetworkFetcher<Key, Input, Output>
+    ) {
 
         val storeSafety = requireStoreSafety(key)
 
         try {
             val response = when (val result = fetcher.get(key)) {
                 null -> MarketResponse.Empty
-                else -> MarketResponse.Success(result, origin = MarketResponse.Companion.Origin.Network)
+                else -> MarketResponse.Success(result, origin = Origin.Network)
             }
 
             if (response is MarketResponse.Success) {
-
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
                         store.writer(key, response.value as Input)
@@ -245,7 +235,6 @@ class RealMarket<Key : Any> internal constructor(
             broadcasts[key]!!.emit(response)
             storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
 
-
             storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
             readCompletions[key]!!.forEach { anyOnCompletion ->
                 val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
@@ -258,12 +247,12 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> tryPost(key: Key): NetworkResult<Input> {
+    private suspend fun tryPost(key: Key): NetworkResult<Input> {
         return try {
-            val request = getLatestWriteRequest<Input, Output>(key)
-            val last = lastOrNull<Input>(key) ?: throw Exception()
-            return when (request.post(key, last)) {
-                else -> NetworkResult.Success(last)
+            val writer = getLatestWriteRequest(key)
+
+            return when (updater.post(key, writer.input)) {
+                else -> NetworkResult.Success(writer.input)
             }
         } catch (throwable: Throwable) {
             NetworkResult.Failure(throwable)
@@ -314,7 +303,8 @@ class RealMarket<Key : Any> internal constructor(
 
     @AnyThread
     private suspend fun <Input : Any, Output : Any> getAndEmitLatest(
-        key: Key, fetcher: NetworkFetcher<Key, Input, Output>
+        key: Key,
+        fetcher: NetworkFetcher<Key, Input, Output>
     ) {
         startIfNotBroadcasting<Output>(key)
         load<Output>(key)
@@ -388,27 +378,25 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> addOrInitWriteRequest(
-        key: Key, updater: NetworkUpdater<Key, Input, Output>
-    ) {
-        val storeSafety = requireStoreSafety(key)
+    private suspend fun addOrInitWriteRequest(writer: MarketWriter<Key, *, *>) {
+        val storeSafety = requireStoreSafety(writer.key)
         storeSafety.writeRequestsLock.withLock {
-            if (writeRequests[key] == null) {
-                writeRequests[key] = ArrayDeque()
+            if (writeRequests[writer.key] == null) {
+                writeRequests[writer.key] = ArrayDeque()
             }
-            writeRequests[key]!!.add(updater)
+            writeRequests[writer.key]!!.add(writer)
         }
         releaseStoreSecurity()
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> getLatestWriteRequest(key: Key): NetworkUpdater<Key, Input, Output> {
+    private suspend fun getLatestWriteRequest(key: Key): MarketWriter<Key, Input, Output> {
         val storeSafety = requireStoreSafety(key)
         storeSafety.writeRequestsLock.lock()
-        val updater = writeRequests[key]?.last() as NetworkUpdater<Key, Input, Output>
+        val writer = writeRequests[key]?.last() as MarketWriter<Key, Input, Output>
         storeSafety.writeRequestsLock.unlock()
         releaseStoreSecurity()
-        return updater
+        return writer
     }
 
     @AnyThread
@@ -438,8 +426,10 @@ class RealMarket<Key : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> eagerlyResolveConflicts(
-        key: Key, request: PostRequest<Key, Input, Output>, converter: Converter<Output, Input>
+    private suspend fun eagerlyResolveConflicts(
+        key: Key,
+        request: PostRequest<Key, Input, Output>,
+        converter: Converter<Output, Input>
     ): Boolean {
 
         return try {
@@ -450,10 +440,11 @@ class RealMarket<Key : Any> internal constructor(
 
             if (resolved) {
                 bookkeeper.delete(key)
-                updateWriteRequestQueue(key = key,
+                updateWriteRequestQueue(
+                    key = key,
                     input = input,
-                    created = Clock.System.now().epochSeconds,
-                    converter = { output!! })
+                    created = Clock.System.now().epochSeconds
+                )
             }
 
             resolved

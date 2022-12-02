@@ -8,10 +8,8 @@ plugins {
 
 group = "com.dropbox.notes.android"
 
-
 android {
     compileSdk = Version.androidCompileSdk
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -25,19 +23,26 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Version.composeCompiler
     }
+
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 31
+    }
 }
 
 dependencies {
     implementation(project(":store"))
-
+    implementation(project(":samples:notes:android:lib:fig"))
 
     with(Deps.Compose) {
         implementation(material)
         implementation(ui)
     }
 
-    implementation(Deps.Kotlinx.serializationCore)
-    implementation(Deps.Kotlinx.serializationJson)
+    with(Deps.Kotlinx) {
+        implementation(serializationCore)
+        implementation(serializationJson)
+    }
 
     with(Deps.Androidx) {
         implementation(appCompat)
@@ -46,7 +51,4 @@ dependencies {
         implementation(activityCompose)
         implementation(coreKtx)
     }
-
-    implementation(project(":samples:notes:android:lib:fig"))
 }
-

@@ -1,7 +1,7 @@
-package com.dropbox.external.store5.fake
+package com.dropbox.external.store5.data.fake
 
-import com.dropbox.external.store5.fake.model.Note
-import com.dropbox.external.store5.fake.model.NoteEntry
+import com.dropbox.external.store5.data.model.Note
+import com.dropbox.external.store5.data.model.NoteEntry
 
 internal object FakeNotes {
     val One = NoteEntry("KEY-1", Note("1", "TITLE-1", "CONTENT-1"))

@@ -16,14 +16,12 @@ buildscript {
         classpath "org.jacoco:org.jacoco.core:${Version.jacocoGradlePlugin}"
         classpath "com.vanniktech:gradle-maven-publish-plugin:${Version.mavenPublishPlugin}"
         classpath "org.jetbrains.kotlinx:kover:${Version.kover}"
-        classpath "app.cash.molecule:molecule-gradle-plugin:${Version.moleculeGradlePlugin}"
         classpath "com.squareup.anvil:gradle-plugin:${Version.anvilGradlePlugin}"
         classpath("com.squareup.sqldelight:gradle-plugin:${Version.sqlDelightGradlePlugin}")
     }
 }
 
 apply plugin: 'binary-compatibility-validator'
-apply plugin: 'kover'
 
 apiValidation {
 
@@ -56,31 +54,5 @@ subprojects {
         kotlin {
             target 'src/**/*.kt'
         }
-    }
-}
-
-allprojects {
-    plugins.withId("com.vanniktech.maven.publish") {
-        mavenPublish {
-            sonatypeHost = "S01"
-        }
-    }
-}
-
-koverMerged {
-    enable()
-
-    xmlReport {
-        onCheck.set(true)
-        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
-    }
-
-    htmlReport {
-        onCheck.set(true)
-        reportDir.set(layout.projectDirectory.dir("kover/html"))
-    }
-
-    verify {
-        onCheck.set(true)
     }
 }

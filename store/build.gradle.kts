@@ -1,46 +1,28 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.vanniktech.maven.publish.JavadocJar.Dokka
-import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost.S01
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.android.library")
-    id("com.vanniktech.maven.publish.base")
+    id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlin.native.cocoapods")
-    id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
     id("org.jetbrains.kotlinx.kover")
-}
-
-multiplatformSwiftPackage {
-    packageName("Store5")
-    swiftToolsVersion("5.3")
-    targetPlatforms {
-        iOS { v("13") }
-    }
-    outputDirectory(File(projectDir, "swift/package"))
+    id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
+    `maven-publish`
+    kotlin("native.cocoapods")
 }
 
 kotlin {
     android()
     jvm()
-
-    val xcf = XCFramework("Store5")
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
-        it.binaries.framework {
-            baseName = "Store5"
-            xcf.add(this)
-        }
-    }
-
+    ios()
     cocoapods {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
+        ios.deploymentTarget = "13"
         version = "5.0.0-alpha01"
     }
 
@@ -68,24 +50,19 @@ kotlin {
         }
 
         val jvmMain by getting
-
         val androidMain by getting
-
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
-        }
+        val iosMain by getting
     }
 }
 
 android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 31
+
+    defaultConfig {
+        minSdk = 24
+        targetSdk = 31
+    }
 
     lint {
         disable += "ComposableModifierFactory"
@@ -103,8 +80,33 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
-configure<MavenPublishBaseExtension> {
-    configure(
-        KotlinMultiplatform(javadocJar = Dokka("dokkaGfm"))
-    )
+mavenPublishing {
+    publishToMavenCentral(S01)
+    signAllPublications()
+}
+
+addGithubPackagesRepository()
+kmmbridge {
+    githubReleaseArtifacts()
+    githubReleaseVersions()
+    versionPrefix.set("5.0.0-alpha0")
+    spm()
+}
+
+koverMerged {
+    enable()
+
+    xmlReport {
+        onCheck.set(true)
+        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
+    }
+
+    htmlReport {
+        onCheck.set(true)
+        reportDir.set(layout.projectDirectory.dir("kover/html"))
+    }
+
+    verify {
+        onCheck.set(true)
+    }
 }
