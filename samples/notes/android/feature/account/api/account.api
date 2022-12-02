@@ -1,0 +1,20 @@
+public final class anvil/hint/merge/org/mobilenativefoundation/store/notes/android/feature/account/AccountTabUserDependenciesKt {
+	public static final fun getOrg_mobilenativefoundation_store_notes_android_feature_account_AccountTabUserDependencies_reference ()Lkotlin/reflect/KClass;
+	public static final fun getOrg_mobilenativefoundation_store_notes_android_feature_account_AccountTabUserDependencies_scope0 ()Lkotlin/reflect/KClass;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/feature/account/AccountTabKt {
+	public static final fun AccountTab (Lorg/mobilenativefoundation/store/notes/android/feature/account/AccountTabUserDependencies;Landroidx/compose/runtime/Composer;II)V
+}
+
+public abstract interface class org/mobilenativefoundation/store/notes/android/feature/account/AccountTabUserDependencies {
+	public abstract fun getUser ()Lorg/mobilenativefoundation/store/notes/android/common/api/User;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/feature/account/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+

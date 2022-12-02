@@ -11,14 +11,9 @@ sealed class Result<out S : Any, out F : Throwable> {
     class Failure<F : Throwable>(private val throwable: F) : Result<Nothing, F>() {
         override fun component2(): F = throwable
     }
-
-    object Loading : Result<Nothing, Nothing>()
-
     companion object {
         fun <F : Throwable> asFailure(throwable: F) = Failure(throwable)
         fun <S : Any> asSuccess(value: S) = Success(value)
-        fun asLoading() = Loading
-
         inline fun <S : Any, reified F : Throwable> from(transform: () -> S): Result<S, F> = doTry(onTry = {
             asSuccess(transform())
         }, onCatch = {

@@ -1,0 +1,32 @@
+public final class org/mobilenativefoundation/store/notes/android/lib/result/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/result/DoTryKt {
+	public static final fun doTry (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public abstract class org/mobilenativefoundation/store/notes/android/lib/result/Result {
+	public static final field Companion Lorg/mobilenativefoundation/store/notes/android/lib/result/Result$Companion;
+	public fun component1 ()Ljava/lang/Object;
+	public fun component2 ()Ljava/lang/Throwable;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/result/Result$Companion {
+	public final fun asFailure (Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result$Failure;
+	public final fun asSuccess (Ljava/lang/Object;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result$Success;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/result/Result$Failure : org/mobilenativefoundation/store/notes/android/lib/result/Result {
+	public fun <init> (Ljava/lang/Throwable;)V
+	public fun component2 ()Ljava/lang/Throwable;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/result/Result$Success : org/mobilenativefoundation/store/notes/android/lib/result/Result {
+	public fun <init> (Ljava/lang/Object;)V
+	public fun component1 ()Ljava/lang/Object;
+}
+

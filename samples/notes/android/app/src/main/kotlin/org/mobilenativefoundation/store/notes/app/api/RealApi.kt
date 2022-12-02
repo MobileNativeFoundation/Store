@@ -35,19 +35,19 @@ class RealApi @Inject constructor() : Api {
         TODO("Not yet implemented")
     }
 
-    override fun postNote(title: String, content: String, isPublic: Boolean) {
+    override fun postNote(title: String, content: String): Result<Note, Throwable> {
         TODO("Not yet implemented")
     }
 
-    override fun putNote(noteId: String, title: String, content: String, isPublic: Boolean) {
+    override fun putNote(noteId: String, title: String, content: String): Result<Note, Throwable> {
         TODO("Not yet implemented")
     }
 
-    override fun deleteNote(noteId: String) {
+    override fun deleteNote(noteId: String): Result<Boolean, Throwable> {
         TODO("Not yet implemented")
     }
 
-    override fun deleteAllNotes() {
+    override fun deleteAllNotes(): Result<Boolean, Throwable> {
         TODO("Not yet implemented")
     }
 }

@@ -1,0 +1,31 @@
+public final class org/mobilenativefoundation/store/notes/android/lib/navigation/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public abstract class org/mobilenativefoundation/store/notes/android/lib/navigation/Screen {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getIconNotSelected ()I
+	public final fun getIconSelected ()I
+	public final fun getRoute ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Account : org/mobilenativefoundation/store/notes/android/lib/navigation/Screen {
+	public static final field $stable I
+	public static final field INSTANCE Lorg/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Account;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Explore : org/mobilenativefoundation/store/notes/android/lib/navigation/Screen {
+	public static final field $stable I
+	public static final field INSTANCE Lorg/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Explore;
+}
+
+public final class org/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Home : org/mobilenativefoundation/store/notes/android/lib/navigation/Screen {
+	public static final field $stable I
+	public static final field INSTANCE Lorg/mobilenativefoundation/store/notes/android/lib/navigation/Screen$Home;
+}
+
