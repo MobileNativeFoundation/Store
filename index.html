@@ -371,26 +371,6 @@
     Install SQL Delight
   </a>
   
-    <nav class="md-nav" aria-label="Install SQL Delight">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#root-level-gradle" class="md-nav__link">
-    Root-Level Gradle
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#project-level-gradle" class="md-nav__link">
-    Project-Level Gradle
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -609,26 +589,6 @@
     Install SQL Delight
   </a>
   
-    <nav class="md-nav" aria-label="Install SQL Delight">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#root-level-gradle" class="md-nav__link">
-    Root-Level Gradle
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#project-level-gradle" class="md-nav__link">
-    Project-Level Gradle
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -830,15 +790,13 @@
 </code></pre></div>
 <h3 id="4-provide-sqldelight-store-1">4. Provide <a href="https://cashapp.github.io/sqldelight/multiplatform_sqlite/">SQLDelight</a> Store <sup id="fnref2:1"><a class="footnote-ref" href="#fn:1">1</a></sup></h3>
 <h5 id="install-sql-delight">Install SQL Delight</h5>
-<h6 id="root-level-gradle">Root-Level Gradle</h6>
 <div class="highlight"><span class="filename">Root-Level Gradle</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">buildscript</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">        </span><span class="n">classpath</span><span class="p">(</span><span class="s">&quot;com.squareup.sqldelight:gradle-plugin:</span><span class="si">$</span><span class="n">SQLDELIGHT_VERSION</span><span class="s">&quot;</span><span class="p">)</span><span class="w"></span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="p">}</span><span class="w"></span>
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span><span class="w"></span>
 </code></pre></div>
-<h6 id="project-level-gradle">Project-Level Gradle</h6>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">plugins</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight"><span class="filename">Project-Level Gradle</span><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">plugins</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="n">id</span><span class="p">(</span><span class="s">&quot;com.squareup.slqdelight&quot;</span><span class="p">)</span><span class="w"></span>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">}</span><span class="w"></span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">kotlin</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
