@@ -128,8 +128,6 @@ fun provideMemoryLruCacheStore(): Store<NoteKey, NoteInput, NoteOutput> = Store.
 
 ##### Install SQL Delight
 
-###### Root-Level Gradle
-
 ```kotlin title="Root-Level Gradle"
 buildscript {
     dependencies {
@@ -138,9 +136,7 @@ buildscript {
 }
 ```
 
-###### Project-Level Gradle
-
-```kotlin
+```kotlin title="Project-Level Gradle"
 plugins {
     id("com.squareup.slqdelight")
 }
