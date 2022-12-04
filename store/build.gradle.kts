@@ -23,7 +23,7 @@ kotlin {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
-        version = "5.0.0-alpha01"
+        version = "5.0.0-alpha1"
     }
 
     sourceSets {
@@ -89,7 +89,7 @@ addGithubPackagesRepository()
 kmmbridge {
     githubReleaseArtifacts()
     githubReleaseVersions()
-    versionPrefix.set("5.0.0-alpha0")
+    versionPrefix.set("5.0.0-alpha")
     spm()
 }
 
