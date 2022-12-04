@@ -46,8 +46,6 @@ commonMain {
 }
 ```
 
-
-
 ## Define your data types and delegates 
 
 ### 1. Here, we create a Note Type
