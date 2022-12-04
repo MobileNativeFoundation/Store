@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 @file:Suppress("UNCHECKED_CAST")
 
 package com.dropbox.external.store5
@@ -8,7 +8,6 @@ import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -31,10 +30,8 @@ class MemoryLruStoreTests {
     private fun tail() = memoryLruStore.tail.prev as MemoryLruStore.Node<Note>
 
     @Test
-    fun writeAndRead() {
-        testScope.launch {
-            memoryLruStore.write(FakeNotes.One.key, FakeNotes.One.note)
-        }
+    fun writeAndRead() = testScope.runTest {
+        memoryLruStore.write(FakeNotes.One.key, FakeNotes.One.note)
         testScope.advanceUntilIdle()
 
         var headPointer = headPointer()
@@ -48,9 +45,7 @@ class MemoryLruStoreTests {
         assertEquals(FakeNotes.One.note, tail.value)
         assertEquals(1, memoryLruStore.cache.size)
 
-        testScope.launch {
-            memoryLruStore.write(FakeNotes.Two.key, FakeNotes.Two.note)
-        }
+        memoryLruStore.write(FakeNotes.Two.key, FakeNotes.Two.note)
         testScope.advanceUntilIdle()
 
         headPointer = headPointer()
@@ -66,9 +61,7 @@ class MemoryLruStoreTests {
 
         val result = memoryLruStore.read(FakeNotes.One.key)
 
-        testScope.runTest {
-            assertEquals(FakeNotes.One.note, result.last())
-        }
+        assertEquals(FakeNotes.One.note, result.last())
 
         headPointer = headPointer()
         tailPointer = tailPointer()
@@ -83,12 +76,10 @@ class MemoryLruStoreTests {
     }
 
     @Test
-    fun write10ShouldNotRemoveAny() {
+    fun write10ShouldNotRemoveAny() = testScope.runTest {
 
-        testScope.launch {
-            FakeNotes.listN(10).forEach {
-                memoryLruStore.write(it.key, it.note)
-            }
+        FakeNotes.listN(10).forEach {
+            memoryLruStore.write(it.key, it.note)
         }
 
         testScope.advanceUntilIdle()
@@ -106,12 +97,10 @@ class MemoryLruStoreTests {
     }
 
     @Test
-    fun write11ShouldRemoveFirst() {
+    fun write11ShouldRemoveFirst() = testScope.runTest {
 
-        testScope.launch {
-            FakeNotes.listN(11).forEach {
-                memoryLruStore.write(it.key, it.note)
-            }
+        FakeNotes.listN(11).forEach {
+            memoryLruStore.write(it.key, it.note)
         }
 
         testScope.advanceUntilIdle()
@@ -129,17 +118,15 @@ class MemoryLruStoreTests {
     }
 
     @Test
-    fun delete() {
+    fun delete() = testScope.runTest {
 
-        testScope.launch {
-            FakeNotes.listN(10).forEach {
-                memoryLruStore.write(it.key, it.note)
-            }
-
-            memoryLruStore.delete(FakeNotes.Ten.key)
-            memoryLruStore.delete(FakeNotes.Nine.key)
-            memoryLruStore.delete(FakeNotes.One.key)
+        FakeNotes.listN(10).forEach {
+            memoryLruStore.write(it.key, it.note)
         }
+
+        memoryLruStore.delete(FakeNotes.Ten.key)
+        memoryLruStore.delete(FakeNotes.Nine.key)
+        memoryLruStore.delete(FakeNotes.One.key)
 
         testScope.advanceUntilIdle()
 
@@ -160,15 +147,13 @@ class MemoryLruStoreTests {
     }
 
     @Test
-    fun clear() {
+    fun clear() = testScope.runTest {
 
-        testScope.launch {
-            FakeNotes.list().forEach {
-                memoryLruStore.write(it.key, it.note)
-            }
-
-            memoryLruStore.clear()
+        FakeNotes.list().forEach {
+            memoryLruStore.write(it.key, it.note)
         }
+
+        memoryLruStore.clear()
 
         testScope.advanceUntilIdle()
 

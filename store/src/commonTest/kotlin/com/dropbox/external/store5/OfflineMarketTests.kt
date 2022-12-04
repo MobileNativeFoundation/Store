@@ -4,9 +4,9 @@ import com.dropbox.external.store5.data.fake.FakeDatabase
 import com.dropbox.external.store5.data.fake.FakeMarket
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.market
+import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.data.readRequest
 import com.dropbox.external.store5.data.writeRequest
-import com.dropbox.external.store5.data.model.Note
 import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -34,7 +34,7 @@ class OfflineMarketTests {
     }
 
     @Test
-    fun `GIVEN non-empty offline market WHEN write THEN success from local write`() =
+    fun givenNonEmptyOfflineMarketWhenWriteThenSuccessFromLocalWrite() =
         testScope.runTest {
             val market = market(failWrite = true)
             val readerOne = readRequest(FakeNotes.One.key)
@@ -55,7 +55,7 @@ class OfflineMarketTests {
         }
 
     @Test
-    fun `GIVEN non-empty offline market WHEN refresh with on-completions THEN correct on-completions executed`() =
+    fun givenNonEmptyOfflineMarketWhenRefreshWithOnCompletionsThenCorrectOnCompletionsExecuted() =
         testScope.runTest {
             val market = market(
                 failRead = true,

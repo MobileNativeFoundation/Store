@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'store'
-    spec.version                  = '5.0.0-alpha01'
+    spec.version                  = '5.0.0-alpha1'
     spec.homepage                 = 'https://github.com/MobileNativeFoundation/Store'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
