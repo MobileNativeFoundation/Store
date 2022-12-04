@@ -27,7 +27,7 @@ Store is a Kotlin library for loading data from remote and local sources.
 ### Add Store dependency
 
 ```kotlin
-STORE_VERSION = "5.0.0-SNAPSHOT"
+STORE_VERSION = "5.0.0-alpha1"
 ```
 
 ### Android

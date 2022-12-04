@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [5.0.0-alpha1] (2022-12-04)
+* Introduce Market
+* Support local and remote writes with conflict resolution based on Google's offline-first guidance
+* Target iOS and Android
+
 ## [4.0.5] (2021-03-30)
 
 * Update to Kotlin 1.6.10
