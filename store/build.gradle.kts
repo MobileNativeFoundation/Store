@@ -18,7 +18,8 @@ plugins {
 kotlin {
     android()
     jvm()
-    ios()
+    iosArm64()
+    iosX64()
     js {
         browser()
         nodejs()
@@ -55,7 +56,9 @@ kotlin {
 
         val jvmMain by getting
         val androidMain by getting
-        val iosMain by getting
+        val nativeMain by creating {
+            dependsOn(commonMain)
+        }
     }
 }
 
