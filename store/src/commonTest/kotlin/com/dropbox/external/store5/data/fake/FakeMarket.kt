@@ -6,11 +6,11 @@ import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnNetworkCompletion
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 
 internal object FakeMarket {
     object Failure {
-        val database = FakeDatabase()
+        val database = FakeDatabase<Note>()
         val api = FakeApi()
 
         val memoryLruCacheStore = Store.by<String, Note, Note>(
@@ -33,22 +33,22 @@ internal object FakeMarket {
     }
 
     object Success {
-        val memoryLruCache = MemoryLruCache(10)
-        val database = FakeDatabase()
+        val memoryLruStore = MemoryLruStore<Note>(10)
+        val database = FakeDatabase<Note>()
         val api = FakeApi()
 
         val memoryLruCacheStore = Store.by<String, Note, Note>(
-            reader = { key -> memoryLruCache.read(key) },
-            writer = { key, input -> memoryLruCache.write(key, input) },
-            deleter = { key -> memoryLruCache.delete(key) },
-            clearer = { memoryLruCache.deleteAll() },
+            reader = { key -> memoryLruStore.read(key) },
+            writer = { key, input -> memoryLruStore.write(key, input) },
+            deleter = { key -> memoryLruStore.delete(key) },
+            clearer = { memoryLruStore.clear() },
         )
 
         val databaseStore = Store.by<String, Note, Note>(
             reader = { key -> database.read(key) },
             writer = { key, input -> database.write(key, input) },
             deleter = { key -> database.delete(key) },
-            clearer = { database.deleteAll() },
+            clearer = { database.clear() },
         )
 
         val bookkeeper = bookkeeper(database)
@@ -61,7 +61,7 @@ internal object FakeMarket {
         ) = updater(api, onCompletion = onCompletion)
     }
 
-    private fun bookkeeper(database: FakeDatabase) = Bookkeeper.by<String>(
+    private fun bookkeeper(database: FakeDatabase<Note>) = Bookkeeper.by<String>(
         read = { key -> database.getLastWriteTime(key) },
         write = { key, timestamp -> database.setLastWriteTime(key, timestamp) },
         delete = { key -> database.deleteWriteRequest(key) },

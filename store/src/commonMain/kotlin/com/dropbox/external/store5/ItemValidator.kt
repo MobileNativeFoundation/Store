@@ -4,7 +4,7 @@ import com.dropbox.external.store5.impl.RealItemValidator
 
 /**
  * Enables custom validation of [Store] items.
- * @see [MarketReader]
+ * @see [ReadRequest]
  */
 interface ItemValidator<Item : Any> {
     /**

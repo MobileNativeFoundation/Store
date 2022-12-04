@@ -3,7 +3,7 @@ package com.dropbox.external.store5
 import com.dropbox.external.store5.impl.RealStore
 import kotlinx.coroutines.flow.Flow
 
-typealias StoreReader<Key, Output> = suspend (key: Key) -> Flow<Output?>
+typealias StoreReader<Key, Output> = (key: Key) -> Flow<Output?>
 typealias StoreWriter<Key, Input> = suspend (key: Key, input: Input) -> Boolean
 typealias StoreDeleter<Key> = suspend (key: Key) -> Boolean
 typealias StoreClearer = suspend () -> Boolean
@@ -20,22 +20,22 @@ interface Store<Key : Any, Input : Any, Output : Any> {
     /**
      * Reads data from [Store] using [Key].
      */
-    suspend fun reader(key: Key): Flow<Output?>
+    fun read(key: Key): Flow<Output?>
 
     /**
      * Writes data to [Store] using [Key] and [Input].
      */
-    suspend fun writer(key: Key, input: Input): Boolean
+    suspend fun write(key: Key, input: Input): Boolean
 
     /**
      * Deletes data from [Store] associated to [Key].
      */
-    suspend fun deleter(key: Key): Boolean
+    suspend fun delete(key: Key): Boolean
 
     /**
      * Deletes all data from [Store].
      */
-    suspend fun clearer(): Boolean
+    suspend fun clear(): Boolean
 
     companion object {
         fun <Key : Any, Input : Any, Output : Any> by(

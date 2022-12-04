@@ -23,7 +23,7 @@ class StoreFailureTests {
     private val testScope = TestScope()
     private lateinit var api: FakeApi
     private lateinit var market: Market<String, Note, Note>
-    private lateinit var database: FakeDatabase
+    private lateinit var database: FakeDatabase<Note>
 
     @BeforeTest
     fun before() {
@@ -34,7 +34,7 @@ class StoreFailureTests {
 
     @Test
     fun readFailureIsHandled() = testScope.runTest {
-        val reader = MarketReader.by<String, Note, Note>(
+        val reader = ReadRequest.of<String, Note, Note>(
             key = FakeNotes.One.key,
             onCompletions = listOf(),
             refresh = true

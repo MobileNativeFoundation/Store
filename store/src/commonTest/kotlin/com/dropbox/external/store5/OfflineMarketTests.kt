@@ -4,10 +4,10 @@ import com.dropbox.external.store5.data.fake.FakeDatabase
 import com.dropbox.external.store5.data.fake.FakeMarket
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.market
-import com.dropbox.external.store5.data.marketReader
-import com.dropbox.external.store5.data.marketWriter
+import com.dropbox.external.store5.data.readRequest
+import com.dropbox.external.store5.data.writeRequest
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.last
@@ -23,13 +23,13 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class OfflineMarketTests {
     private val testScope = TestScope()
-    private lateinit var database: FakeDatabase
-    private lateinit var memoryLruCache: MemoryLruCache
+    private lateinit var database: FakeDatabase<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<Note>
 
     @BeforeTest
     fun before() {
         database = FakeMarket.Success.database
-        memoryLruCache = FakeMarket.Success.memoryLruCache
+        memoryLruStore = FakeMarket.Success.memoryLruStore
         database.reset()
     }
 
@@ -37,12 +37,12 @@ class OfflineMarketTests {
     fun `GIVEN non-empty offline market WHEN write THEN success from local write`() =
         testScope.runTest {
             val market = market(failWrite = true)
-            val readerOne = marketReader(FakeNotes.One.key)
+            val readerOne = readRequest(FakeNotes.One.key)
             val flowOne = market.read(readerOne)
             testScope.advanceUntilIdle()
 
             val newNote = FakeNotes.One.note.copy(title = "New Title")
-            val writerOne = marketWriter(FakeNotes.One.key, newNote)
+            val writerOne = writeRequest(FakeNotes.One.key, newNote)
 
             val writeResponseOne = market.write(writerOne)
             assertEquals(false, writeResponseOne)
@@ -69,7 +69,7 @@ class OfflineMarketTests {
                 onFailure = { readErrorsHandled++ }
             )
 
-            val readerOne = marketReader(
+            val readerOne = readRequest(
                 key = FakeNotes.One.key,
                 refresh = true,
                 onCompletions = listOf(onCompletion)

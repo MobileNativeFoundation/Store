@@ -1,7 +1,7 @@
 package com.dropbox.external.store5.impl
 
 import com.dropbox.external.store5.ItemValidator
-import com.dropbox.external.store5.MarketReader
+import com.dropbox.external.store5.ReadRequest
 import com.dropbox.external.store5.OnMarketCompletion
 
 internal data class RealMarketReader<Key : Any, Input : Any, Output : Any>(
@@ -9,4 +9,4 @@ internal data class RealMarketReader<Key : Any, Input : Any, Output : Any>(
     override val onCompletions: List<OnMarketCompletion<Output>>,
     override val validator: ItemValidator<Output>?,
     override val refresh: Boolean = false
-) : MarketReader<Key, Input, Output>
+) : ReadRequest<Key, Input, Output>

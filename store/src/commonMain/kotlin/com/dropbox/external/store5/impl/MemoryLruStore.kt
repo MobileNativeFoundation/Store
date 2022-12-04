@@ -2,8 +2,7 @@
 
 package com.dropbox.external.store5.impl
 
-import com.dropbox.external.store5.Persister
-import kotlinx.coroutines.flow.Flow
+import com.dropbox.external.store5.Store
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,8 +10,8 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Thread-safe LRU cache implementation.
  */
-class MemoryLruCache(private val maxSize: Int) : Persister<String> {
-    internal var cache = mutableMapOf<String, Node<*>>()
+class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Input, Input> {
+    internal var cache = LinkedHashMap<String, Node<*>>()
     internal var head = headPointer
     internal var tail = tailPointer
 
@@ -23,10 +22,10 @@ class MemoryLruCache(private val maxSize: Int) : Persister<String> {
         tail.prev = head
     }
 
-    override fun <Output : Any> read(key: String): Flow<Output?> = flow {
+    override fun read(key: String) = flow {
         lock.withLock {
             if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Output>
+                val node = cache[key]!! as Node<Input>
                 removeFromList(node)
                 insertIntoHead(node)
                 emit(node.value)
@@ -36,7 +35,7 @@ class MemoryLruCache(private val maxSize: Int) : Persister<String> {
         }
     }
 
-    override suspend fun <Input : Any> write(key: String, input: Input): Boolean {
+    override suspend fun write(key: String, input: Input): Boolean {
         lock.withLock {
             if (cache.containsKey(key)) {
                 val node = cache[key]!! as Node<Input>
@@ -66,7 +65,7 @@ class MemoryLruCache(private val maxSize: Int) : Persister<String> {
         return true
     }
 
-    override suspend fun deleteAll(): Boolean {
+    override suspend fun clear(): Boolean {
         lock.withLock {
             cache.clear()
 

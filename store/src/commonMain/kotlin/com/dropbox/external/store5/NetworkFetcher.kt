@@ -7,7 +7,7 @@ import com.dropbox.external.store5.impl.RealNetworkFetcher
 
 /**
  * Gets data from remote data source.
- * @see [MarketReader]
+ * @see [ReadRequest]
  */
 interface NetworkFetcher<Key : Any, Input : Any, Output : Any> {
     /**

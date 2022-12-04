@@ -7,7 +7,7 @@ import com.dropbox.external.store5.NetworkFetcher
 import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnNetworkCompletion
 import com.dropbox.external.store5.Store
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 import com.squareup.anvil.annotations.ContributesTo
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
@@ -52,11 +52,12 @@ object AppModule {
     @Named(MEMORY_LRU_CACHE_STORE)
     @Provides
     @SingleIn(AppScope::class)
+    //We delegate to change types from Key to String
     fun provideMemoryLruCacheStore(): Store<Key, Note, Note> = Store.by(
-        reader = { key -> memoryLruCache.read(key.encode()) },
-        writer = { key, input -> memoryLruCache.write(key.encode(), input) },
-        deleter = { key -> memoryLruCache.delete(key.encode()) },
-        clearer = { memoryLruCache.deleteAll() }
+        reader = { key -> memoryLruStore.read(key.encode()) },
+        writer = { key, input -> memoryLruStore.write(key.encode(), input) },
+        deleter = { key -> memoryLruStore.delete(key.encode()) },
+        clearer = { memoryLruStore.clear() }
     )
 
     @Named(DATABASE_STORE)
@@ -132,7 +133,7 @@ object AppModule {
         )
     )
 
-    private val memoryLruCache = MemoryLruCache(10)
+    private val memoryLruStore: Store<String, Note, Note>  = MemoryLruStore(10)
     private val serializer = Json { ignoreUnknownKeys = true }
     private fun Key.encode(): String = serializer.encodeToString(this)
 

@@ -6,7 +6,7 @@ import com.dropbox.external.store5.impl.RealNetworkUpdater
 
 /**
  * Posts data to remote data source.
- * @see [MarketWriter]
+ * @see [WriteRequest]
  */
 interface NetworkUpdater<Key : Any, Input : Any, Output : Any> {
     /**
