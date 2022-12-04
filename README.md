@@ -1,6 +1,6 @@
 # Store 5
 
-## Why we made Store
+## Why We Made Store
 
 - Modern software needs data representations to be fluid and always available.
 - Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an
@@ -14,7 +14,7 @@ Store is a Kotlin library for loading data from remote and local sources.
 ## Concepts
 
 1. `Store` delegate to local data sources when reading/writing/deleting items.
-2. `Market` is a composition of stores and systems.
+2. `Market` is a composition of Stores.
 3. `Bookkeeper` tracks local changes and reports failures to sync with the network.
 4. `ItemValidator` reports whether a `Store` item is valid.
 5. An `App` generally has one `Market` following a singleton pattern for each type of `Item`.
@@ -22,9 +22,9 @@ Store is a Kotlin library for loading data from remote and local sources.
    database. However, an `App` can have _N_ `Market(s)`. And a `Market` can have _N_ `Store(s)` and
    execute operations in any order.
 
-## 0 to offline first data flow
+## From 0 to offline hero
 
-### Add dependency
+### Add Store dependency
 
 ```kotlin
 STORE_VERSION = "5.0.0-SNAPSHOT"
@@ -50,7 +50,7 @@ commonMain {
 
 ## Define your data types and delegates 
 
-### 1. We create a Note Type
+### 1. Here, we create a Note Type
 
 ```kotlin
 class Note {
@@ -100,13 +100,13 @@ class RealNoteApi(private val client: HttpClient) : Api {
 
 ### 3. Using Store [^1]
 
-#### We provide a memory lru store for you to use
+#### We provide a memory lru store for you to use but you can always make your own stores as well
 ```kotlin
 private val memoryLruCache = MemoryLruStore<Note>(maxSize = 100)
 ```
 
 
-### 4. Provide a databaes Store for instance  using [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) [^1]
+### 4. Create a database Store for example delegating to [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) [^1]
 
 ##### Install SQL Delight
 
