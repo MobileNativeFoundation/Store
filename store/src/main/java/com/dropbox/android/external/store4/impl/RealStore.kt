@@ -15,26 +15,16 @@
  */
 package com.dropbox.android.external.store4.impl
 
-import com.dropbox.android.external.store4.CacheType
-import com.dropbox.android.external.store4.ExperimentalStoreApi
-import com.dropbox.android.external.store4.Fetcher
-import com.dropbox.android.external.store4.MemoryPolicy
-import com.dropbox.android.external.store4.ResponseOrigin
-import com.dropbox.android.external.store4.SourceOfTruth
-import com.dropbox.android.external.store4.Store
-import com.dropbox.android.external.store4.StoreRequest
-import com.dropbox.android.external.store4.StoreResponse
+import com.dropbox.android.external.cache3.CacheBuilder
+import com.dropbox.android.external.cache3.RemovalListener
+import com.dropbox.android.external.store4.*
 import com.dropbox.android.external.store4.impl.operators.Either
 import com.dropbox.android.external.store4.impl.operators.merge
-import com.nytimes.android.external.cache3.CacheBuilder
+import com.dropbox.android.external.store4.utils.listenerScoped
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 
@@ -57,6 +47,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             SourceOfTruthWithBarrier(it)
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val memCache = memoryPolicy?.let {
         CacheBuilder.newBuilder().apply {
             if (memoryPolicy.hasAccessPolicy) {
@@ -78,6 +69,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             if (memoryPolicy.hasMaxWeight) {
                 maximumWeight(memoryPolicy.maxWeight)
                 weigher { k: Key, v: Output -> memoryPolicy.weigher.weigh(k, v) }
+            }
+            memoryPolicy.removalListener?.let { listener ->
+                listener.listenerScoped(scope) { callback ->
+                    removalListener(RemovalListener<Key, Output> {
+                        callback?.invoke(it.key, it.value, it.cause)
+                    })
+                }
             }
         }.build<Key, Output>()
     }

@@ -13,7 +13,7 @@ public final class RemovalNotification<K, V> implements Map.Entry<K, V> {
 
   private final K key;
     private final V value;
-  @Nullable
+  @Nonnull
   private final RemovalCause cause;
 
   /**
@@ -53,6 +53,10 @@ public final class RemovalNotification<K, V> implements Map.Entry<K, V> {
 //    return cause.wasEvicted();
 //  }
 // --Commented out by Inspection STOP (11/29/16, 5:04 PM)
+
+    @Nonnull public RemovalCause getCause() {
+    return cause;
+  }
 
     @Override public K getKey() {
     return key;

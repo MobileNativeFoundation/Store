@@ -16,7 +16,7 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.cache
+    implementation project(path: ':cache')
     implementation project(path: ':multicast')
     implementation libraries.coroutinesCore
 
