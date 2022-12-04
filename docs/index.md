@@ -1,6 +1,6 @@
 # Store 5
 
-## Problems
+## Why We Made Store
 
 - Modern software needs data representations to be fluid and always available.
 - Users expect their UI experience to never be compromised (blocked) by new data loads. Whether an
@@ -9,10 +9,12 @@
 - International users expect minimal data downloads as many megabytes of downloaded data can quickly
   result in astronomical phone bills.
 
+Store is a Kotlin library for loading data from remote and local sources.
+
 ## Concepts
 
-1. `Market` is a composition of stores and systems.
-2. `Store` interacts with a local source of `Item(s)` through a `Persister`.
+1. `Store` delegate to local data sources when reading/writing/deleting items.
+2. `Market` is a composition of Stores.
 3. `Bookkeeper` tracks local changes and reports failures to sync with the network.
 4. `ItemValidator` reports whether a `Store` item is valid.
 5. An `App` generally has one `Market` following a singleton pattern for each type of `Item`.
@@ -20,10 +22,12 @@
    database. However, an `App` can have _N_ `Market(s)`. And a `Market` can have _N_ `Store(s)` and
    execute operations in any order.
 
-## Usage
+## From 0 to offline hero
+
+### Add Store dependency
 
 ```kotlin
-STORE_VERSION = "5.0.0-SNAPSHOT"
+STORE_VERSION = "5.0.0-alpha1"
 ```
 
 ### Android
@@ -42,33 +46,19 @@ commonMain {
 }
 ```
 
-## Provided
+## Define your data types and delegates
 
-### Thread-Safe Memory LRU Cache
-
-```kotlin
-class MemoryLruCache(private val maxSize: Int) : Persister<String> {
-    internal var cache: Map<String, Node<*>>
-    override fun <Output : Any> read(key: String): Flow<Output?>
-    override suspend fun <Input : Any> write(key: String, input: Input): Boolean
-    override suspend fun delete(key: String): Boolean
-    override suspend fun deleteAll(): Boolean
-}
-```
-
-## Implementation
-
-### 1. Model Market Items
+### 1. Here, we create a Note Type
 
 ```kotlin
-interface Note {
+class Note {
     val id: Int
     val title: String
     val content: String
 }
 ```
 
-### 2. Define and Implement API
+### 2. Next, an API to read/write Notes from a web service
 
 ```kotlin
 interface NoteApi {
@@ -80,23 +70,20 @@ interface NoteApi {
 
 ```kotlin
 class RealNoteApi(private val client: HttpClient) : Api {
-    override suspend fun getNote(id: Int): Result<Note, NoteException> = 
-    try {
+    override suspend fun getNote(id: Int): Result<Note, NoteException> = try {
         client.get("$ROOT_API_URL/notes/$id")
     } catch (throwable: Throwable) {
         NoteException(throwable)
     }
-    
     override suspend fun postNote(note: Note): Boolean = try {
         val response = client.post("$ROOT_API_URL/notes") {
             setBody(note)
             contentType(ContentType.Application.Json)
         }
         response.status == HttpStatusCode.Ok
-    } catch (_: Throwable) { 
-        false 
+    } catch (_: Throwable) {
+        false
     }
-    
     override suspend fun putNote(id: Int, note: Note): Boolean = try {
         val response = client.post("$ROOT_API_URL/notes/$id") {
             setBody(note)
@@ -109,26 +96,21 @@ class RealNoteApi(private val client: HttpClient) : Api {
 }
 ```
 
-### 3. Provide Memory LRU Cache Store [^1]
+### 3. Using Store [^1]
 
+#### We provide a memory lru store for you to use but you can always make your own stores as well
 ```kotlin
-private val memoryLruCache = MemoryLruCache(maxSize = 100)
+private val memoryLruCache = MemoryLruStore<Note>(maxSize = 100)
 ```
 
-```kotlin
-fun provideMemoryLruCacheStore(): Store<NoteKey, NoteInput, NoteOutput> = Store.by(
-    reader = { key -> memoryLruCache.read(key.encode()) },
-    writer = { key, input -> memoryLruCache.write(key.encode(), input) },
-    deleter = { key -> memoryLruCache.delete(key.encode()) },
-    clearer = { memoryLruCache.deleteAll() }
-)
-```
 
-### 4. Provide [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) Store [^1]
+### 4. Create a database Store for example delegating to [SQLDelight](https://cashapp.github.io/sqldelight/multiplatform_sqlite/) [^1]
 
 ##### Install SQL Delight
 
-```kotlin title="Root-Level Gradle"
+###### Root-Level Gradle
+
+```kotlin
 buildscript {
     dependencies {
         classpath("com.squareup.sqldelight:gradle-plugin:$SQLDELIGHT_VERSION")
@@ -136,7 +118,9 @@ buildscript {
 }
 ```
 
-```kotlin title="Project-Level Gradle"
+###### Project-Level Gradle
+
+```kotlin
 plugins {
     id("com.squareup.slqdelight")
 }
@@ -195,6 +179,7 @@ DELETE FROM note;
 ```
 
 ###### Create FailedWrite Table
+This table will be used for conflict resolution
 
 ```roomsql
 CREATE TABLE failedWrite (
@@ -218,7 +203,7 @@ deleteAll:
 DELETE FROM failedWrite;
 ```
 
-##### Provide SQLDelight Store
+##### Create Accessors for your Database
 
 ```kotlin
 fun Database.tryGetNote(key: String): Flow<Note?> = try {
@@ -245,7 +230,7 @@ fun Database.tryDeleteAllNotes(key: String): Boolean = try {
     false
 }
 ```
-
+##### Provide SQLDelight Store
 ```kotlin
 fun provideSqlDelightStore(database: Database): Store<NoteKey, NoteInput, NoteOutput> = Store.by(
     reader = { key -> database.tryGetNote(key.encode()) },
@@ -256,7 +241,9 @@ fun provideSqlDelightStore(database: Database): Store<NoteKey, NoteInput, NoteOu
 ```
 
 ### 5. Provide Bookkeeper
-
+We need to give Store a way to track write failures
+(see here for more info https://developer.android.com/topic/architecture/data-layer/offline-first#conflict-resolution)
+We will use the DB table we created above
 ```kotlin
 fun provideBookkeeper(database: Database): Bookkeeper<NoteKey> = Bookkeeper.by(
     read = { key -> database.tryGetFailedWrite(key.encode()) },
@@ -266,7 +253,7 @@ fun provideBookkeeper(database: Database): Bookkeeper<NoteKey> = Bookkeeper.by(
 )
 ```
 
-### 6. Implement NetworkFetcher
+### 6. Implementing NetworkFetcher
 
 ```kotlin
 fun provideNetworkFetcher(
@@ -298,7 +285,7 @@ fun provideNetworkUpdater(
 )
 ```
 
-### 8. Provide Market
+### 8. Bringing it all together in a Market
 
 ```kotlin
 fun provideMarket(
@@ -315,7 +302,7 @@ fun provideMarket(
 )
 ```
 
-### 9. Read From and Write To Market
+### 9. Using your Market
 
 ```kotlin
 class NoteViewModel(
@@ -334,7 +321,7 @@ class NoteViewModel(
         refresh: Boolean = false,
         onCompletions: List<OnMarketCompletion<NoteOutput>> = listOf()
     ) {
-        val reader = MarketReader.by(
+        val reader = ReadRequest.by(
             key = key,
             onCompletions = onCompletions,
             refresh = refresh
@@ -367,7 +354,7 @@ class NoteViewModel(
             val nextState = state.value.copy(viewState = nextViewState)
             stateFlow.value = nextState
 
-            val writer = MarketWriter.by(
+            val writer = WriteRequest.by(
                 key = key,
                 input = nextNote,
                 onCompletions = onCompletions
@@ -383,6 +370,14 @@ class NoteViewModel(
         }
     }
 }
+```
+
+## License
+
+```text
+Copyright (c) 2022 Mobile Native Foundation.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
 ```
 
 [^1]: `Market` can be backed by any `Store`
