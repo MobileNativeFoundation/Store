@@ -18,11 +18,11 @@ import kotlin.test.assertEquals
 
 class MemoryLruStoreTests {
     private val testScope = TestScope()
-    private lateinit var memoryLruStore: MemoryLruStore
+    private lateinit var memoryLruStore: MemoryLruStore<Note>
 
     @BeforeTest
     fun before() {
-        memoryLruStore = MemoryLruStore(10)
+        memoryLruStore = MemoryLruStore<Note>(10)
     }
 
     private fun headPointer() = memoryLruStore.head
@@ -64,7 +64,7 @@ class MemoryLruStoreTests {
         assertEquals(FakeNotes.One.note, tail.value)
         assertEquals(2, memoryLruStore.cache.size)
 
-        val result = memoryLruStore.read<Note>(FakeNotes.One.key)
+        val result = memoryLruStore.read(FakeNotes.One.key)
 
         testScope.runTest {
             assertEquals(FakeNotes.One.note, result.last())
@@ -167,7 +167,7 @@ class MemoryLruStoreTests {
                 memoryLruStore.write(it.key, it.note)
             }
 
-            memoryLruStore.deleteAll()
+            memoryLruStore.clear()
         }
 
         testScope.advanceUntilIdle()

@@ -11,9 +11,9 @@ import kotlinx.coroutines.sync.withLock
  * Thread-safe LRU cache implementation.
  */
 class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Input, Input> {
-    private var cache = LinkedHashMap<String, Node<*>>()
-    private var head = headPointer
-    private var tail = tailPointer
+    internal var cache = LinkedHashMap<String, Node<*>>()
+    internal var head = headPointer
+    internal var tail = tailPointer
 
     private val lock = Mutex()
 

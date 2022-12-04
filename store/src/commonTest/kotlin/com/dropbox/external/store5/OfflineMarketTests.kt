@@ -23,8 +23,8 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class OfflineMarketTests {
     private val testScope = TestScope()
-    private lateinit var database: FakeDatabase
-    private lateinit var memoryLruStore: MemoryLruStore
+    private lateinit var database: FakeDatabase<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<Note>
 
     @BeforeTest
     fun before() {

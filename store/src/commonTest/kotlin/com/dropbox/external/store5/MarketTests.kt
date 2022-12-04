@@ -27,8 +27,8 @@ import kotlin.test.assertIs
 class MarketTests {
     private val testScope = TestScope()
     private lateinit var market: Market<String, Note, Note>
-    private lateinit var database: FakeDatabase
-    private lateinit var memoryLruStore: MemoryLruStore
+    private lateinit var database: FakeDatabase<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<Note>
 
     @BeforeTest
     fun before() {
