@@ -19,6 +19,10 @@ kotlin {
     android()
     jvm()
     ios()
+    js {
+        browser()
+        nodejs()
+    }
     cocoapods {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"

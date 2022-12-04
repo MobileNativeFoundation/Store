@@ -4,8 +4,8 @@ import com.dropbox.external.store5.data.fake.FakeDatabase
 import com.dropbox.external.store5.data.fake.FakeMarket
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.market
-import com.dropbox.external.store5.data.readRequestWithValidator
 import com.dropbox.external.store5.data.model.Note
+import com.dropbox.external.store5.data.readRequestWithValidator
 import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.take
@@ -36,7 +36,7 @@ class ItemValidatorTests {
     }
 
     @Test
-    fun `GIVEN validator and empty Market WHEN read THEN success originating from network`() =
+    fun givenValidatorAndEmptyMarketWhenReadThenSuccessOriginatingFromNetwork() =
         testScope.runTest {
             val readerOne = readRequestWithValidator(FakeNotes.One.key, isValid = true)
             val flowOne = market.read(readerOne)
@@ -51,7 +51,7 @@ class ItemValidatorTests {
         }
 
     @Test
-    fun `GIVEN validator and non-empty Market with valid good WHEN read THEN success originating from Store`() =
+    fun givenValidatorAndNonEmptyMarketWithValidGoodWhenReadThenSuccessOriginatingFromStore() =
         testScope.runTest {
             val readerOne = readRequestWithValidator(FakeNotes.One.key)
             market.read(readerOne)
@@ -71,7 +71,7 @@ class ItemValidatorTests {
         }
 
     @Test
-    fun `GIVEN validator and non-empty Market with invalid good WHEN read THEN success originating from network`() =
+    fun givenValidatorAndNonEmptyMarketWithInvalidGoodWhenReadThenSuccessOriginatingFromNetwork() =
         testScope.runTest {
             val readerOne = readRequestWithValidator(FakeNotes.One.key)
             market.read(readerOne)
