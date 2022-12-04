@@ -60,7 +60,7 @@ class Note {
 }
 ```
 
-### 2. Next, an API to read/write Notes from a web servie
+### 2. Next, an API to read/write Notes from a web service
 
 ```kotlin
 interface NoteApi {
