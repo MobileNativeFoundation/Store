@@ -9,13 +9,13 @@ plugins {
     id("com.squareup.sqldelight")
 }
 
-group = "com.dropbox.notes.android"
+group = "org.mobilenativefoundation.store.notes.android"
 
 android {
     compileSdk = Version.androidCompileSdk
 
     defaultConfig {
-        applicationId = "com.dropbox.notes.android"
+        applicationId = "org.mobilenativefoundation.store.notes.android"
         minSdkVersion(Version.androidMinSdk)
         targetSdkVersion(Version.androidTargetSdk)
     }
