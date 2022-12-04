@@ -5,10 +5,10 @@ import com.dropbox.external.store5.data.fake.FakeDatabase
 import com.dropbox.external.store5.data.fake.FakeMarket
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.market
-import com.dropbox.external.store5.data.marketReader
-import com.dropbox.external.store5.data.marketWriter
+import com.dropbox.external.store5.data.readRequest
+import com.dropbox.external.store5.data.writeRequest
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
@@ -28,13 +28,13 @@ class MarketTests {
     private val testScope = TestScope()
     private lateinit var market: Market<String, Note, Note>
     private lateinit var database: FakeDatabase
-    private lateinit var memoryLruCache: MemoryLruCache
+    private lateinit var memoryLruStore: MemoryLruStore
 
     @BeforeTest
     fun before() {
         market = market()
         database = FakeMarket.Success.database
-        memoryLruCache = FakeMarket.Success.memoryLruCache
+        memoryLruStore = FakeMarket.Success.memoryLruStore
         database.reset()
         FakeMarket.Success.api.reset()
         FakeMarket.Failure.api.reset()
@@ -42,7 +42,7 @@ class MarketTests {
 
     @Test
     fun `GIVEN empty market WHEN read THEN last from network`() = testScope.runTest {
-        val reader = marketReader(FakeNotes.One.key)
+        val reader = readRequest(FakeNotes.One.key)
         val flow = market.read(reader)
 
         val responses = flow.take(3).toList()
@@ -61,7 +61,7 @@ class MarketTests {
     @Test
     fun `GIVEN non-empty market WHEN read THEN last from store`() =
         testScope.runTest {
-            val reader = marketReader(FakeNotes.One.key)
+            val reader = readRequest(FakeNotes.One.key)
             market.read(reader)
             testScope.advanceUntilIdle()
 
@@ -78,8 +78,8 @@ class MarketTests {
     @Test
     fun `GIVEN empty market WHEN multiple reads THEN multiple successes from network`() =
         testScope.runTest {
-            val readerOne = marketReader(FakeNotes.One.key)
-            val readerTwo = marketReader(FakeNotes.Two.key)
+            val readerOne = readRequest(FakeNotes.One.key)
+            val readerTwo = readRequest(FakeNotes.Two.key)
 
             val flowOne = market.read(readerOne)
             market.read(readerTwo)
@@ -102,7 +102,7 @@ class MarketTests {
     @Test
     fun `GIVEN empty market WHEN write THEN emit failure`() = testScope.runTest {
         val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writer = marketWriter(FakeNotes.One.key, newNote)
+        val writer = writeRequest(FakeNotes.One.key, newNote)
 
         assertFails { market.write(writer) }
     }
@@ -110,12 +110,12 @@ class MarketTests {
     @Test
     fun `GIVEN non-empty market WHEN write THEN success from local write and API updated`() =
         testScope.runTest {
-            val reader = marketReader(FakeNotes.One.key)
+            val reader = readRequest(FakeNotes.One.key)
             val flow = market.read(reader)
             advanceUntilIdle()
 
             val newNote = FakeNotes.One.note.copy(title = "New Title")
-            val writer = marketWriter(FakeNotes.One.key, newNote)
+            val writer = writeRequest(FakeNotes.One.key, newNote)
             val writeResponse = market.write(writer)
             advanceUntilIdle()
             assertEquals(true, writeResponse)
@@ -132,22 +132,22 @@ class MarketTests {
     @Test
     fun `GIVEN non-empty market WHEN multiple writes THEN multiple successes from local write and API updated`() =
         testScope.runTest {
-            val readerOne = marketReader(FakeNotes.One.key)
+            val readerOne = readRequest(FakeNotes.One.key)
             val flowOne = market.read(readerOne)
             advanceUntilIdle()
 
             val newNoteOne = FakeNotes.One.note.copy(title = "New Title")
-            val writerOne = marketWriter(FakeNotes.One.key, newNoteOne)
+            val writerOne = writeRequest(FakeNotes.One.key, newNoteOne)
             val writeResponseOne = market.write(writerOne)
             advanceUntilIdle()
             assertEquals(true, writeResponseOne)
 
-            val readerTwo = marketReader(FakeNotes.Two.key)
+            val readerTwo = readRequest(FakeNotes.Two.key)
             val flowTwo = market.read(readerTwo)
             advanceUntilIdle()
 
             val newNoteTwo = FakeNotes.Two.note.copy(title = "New Title")
-            val writerTwo = marketWriter(FakeNotes.Two.key, newNoteTwo)
+            val writerTwo = writeRequest(FakeNotes.Two.key, newNoteTwo)
             val writeResponseTwo = market.write(writerTwo)
             advanceUntilIdle()
             assertEquals(true, writeResponseTwo)
@@ -214,18 +214,18 @@ class MarketTests {
 
             val market = market(onNetworkCompletion = onNetworkCompletion())
 
-            val readerOne = marketReader(FakeNotes.One.key)
+            val readerOne = readRequest(FakeNotes.One.key)
             market.read(readerOne)
 
             val newNoteOneA = FakeNotes.One.note.copy(title = "New Title - A")
             val newNoteOneB = FakeNotes.One.note.copy(title = "New Title - B")
-            val writerOneA = marketWriter(
+            val writerOneA = writeRequest(
                 FakeNotes.One.key,
                 newNoteOneA,
                 onCompletions = listOf(onMarketCompletion(FakeNotes.One.key))
             )
 
-            val writerOneB = marketWriter(
+            val writerOneB = writeRequest(
                 FakeNotes.One.key,
                 newNoteOneB,
                 onCompletions = listOf(onMarketCompletion(FakeNotes.One.key))
@@ -245,8 +245,8 @@ class MarketTests {
 
     @Test
     fun `GIVEN non-empty market WHEN delete THEN empty`() = testScope.runTest {
-        val readerOne = marketReader(FakeNotes.One.key)
-        val readerTwo = marketReader(FakeNotes.Two.key)
+        val readerOne = readRequest(FakeNotes.One.key)
+        val readerTwo = readRequest(FakeNotes.Two.key)
 
         val flowOne = market.read(readerOne)
         val flowTwo = market.read(readerTwo)
@@ -276,8 +276,8 @@ class MarketTests {
 
     @Test
     fun `GIVEN non-empty market WHEN clear THEN empty`() = testScope.runTest {
-        val readerOne = marketReader(FakeNotes.One.key)
-        val readerTwo = marketReader(FakeNotes.Two.key)
+        val readerOne = readRequest(FakeNotes.One.key)
+        val readerTwo = readRequest(FakeNotes.Two.key)
 
         val flowOne = market.read(readerOne)
         val flowTwo = market.read(readerTwo)
@@ -314,13 +314,13 @@ class MarketTests {
                 onFailure = {}
             )
 
-            val readerOne = marketReader(
+            val readerOne = readRequest(
                 key = FakeNotes.One.key,
                 refresh = true,
                 onCompletions = listOf(onCompletion)
             )
 
-            val readerTwo = marketReader(
+            val readerTwo = readRequest(
                 key = FakeNotes.Two.key,
                 refresh = true,
                 onCompletions = listOf(onCompletion)
@@ -349,9 +349,9 @@ class MarketTests {
     @Test
     fun `GIVEN non-empty market WHEN read without refresh after delete THEN empty`() =
         testScope.runTest {
-            val readerOne = marketReader(FakeNotes.One.key)
+            val readerOne = readRequest(FakeNotes.One.key)
             val newNote = FakeNotes.One.note.copy(title = "New Title")
-            val writerOne = marketWriter(FakeNotes.One.key, newNote)
+            val writerOne = writeRequest(FakeNotes.One.key, newNote)
 
             market.read(readerOne)
             market.write(writerOne)
@@ -366,9 +366,9 @@ class MarketTests {
     @Test
     fun `GIVEN non-empty market WHEN read with refresh after delete THEN success from network`() =
         testScope.runTest {
-            val readerOne = marketReader(FakeNotes.One.key, refresh = true)
+            val readerOne = readRequest(FakeNotes.One.key, refresh = true)
             val newNote = FakeNotes.One.note.copy(title = "New Title")
-            val writerOne = marketWriter(FakeNotes.One.key, newNote)
+            val writerOne = writeRequest(FakeNotes.One.key, newNote)
 
             market.read(readerOne)
             market.write(writerOne)
@@ -385,9 +385,9 @@ class MarketTests {
     fun `GIVEN empty market WHEN refresh THEN eagerly resolve`() = testScope.runTest {
         val market = market()
 
-        val readerOne = marketReader(FakeNotes.One.key, refresh = true)
+        val readerOne = readRequest(FakeNotes.One.key, refresh = true)
         val newNote = FakeNotes.One.note.copy(title = "New Title")
-        val writerOne = marketWriter(FakeNotes.One.key, newNote)
+        val writerOne = writeRequest(FakeNotes.One.key, newNote)
 
         market.read(readerOne)
         market.write(writerOne)

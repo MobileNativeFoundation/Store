@@ -4,9 +4,9 @@ import com.dropbox.external.store5.data.fake.FakeDatabase
 import com.dropbox.external.store5.data.fake.FakeMarket
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.market
-import com.dropbox.external.store5.data.marketReaderWithValidator
+import com.dropbox.external.store5.data.readRequestWithValidator
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -22,14 +22,14 @@ import kotlin.test.assertIs
 class ItemValidatorTests {
     private val testScope = TestScope()
     private lateinit var market: Market<String, Note, Note>
-    private lateinit var database: FakeDatabase
-    private lateinit var memoryLruCache: MemoryLruCache
+    private lateinit var database: FakeDatabase<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<Note>
 
     @BeforeTest
     fun before() {
         market = market()
         database = FakeMarket.Success.database
-        memoryLruCache = FakeMarket.Success.memoryLruCache
+        memoryLruStore = FakeMarket.Success.memoryLruStore
         database.reset()
         FakeMarket.Success.api.reset()
         FakeMarket.Failure.api.reset()
@@ -38,7 +38,7 @@ class ItemValidatorTests {
     @Test
     fun `GIVEN validator and empty Market WHEN read THEN success originating from network`() =
         testScope.runTest {
-            val readerOne = marketReaderWithValidator(FakeNotes.One.key, isValid = true)
+            val readerOne = readRequestWithValidator(FakeNotes.One.key, isValid = true)
             val flowOne = market.read(readerOne)
             val responsesOne = flowOne.take(3).toList()
 
@@ -53,12 +53,12 @@ class ItemValidatorTests {
     @Test
     fun `GIVEN validator and non-empty Market with valid good WHEN read THEN success originating from Store`() =
         testScope.runTest {
-            val readerOne = marketReaderWithValidator(FakeNotes.One.key)
+            val readerOne = readRequestWithValidator(FakeNotes.One.key)
             market.read(readerOne)
             testScope.advanceUntilIdle()
 
             testScope.advanceUntilIdle()
-            val readerTwo = marketReaderWithValidator(FakeNotes.One.key, isValid = true)
+            val readerTwo = readRequestWithValidator(FakeNotes.One.key, isValid = true)
             val flowTwo = market.read(readerTwo)
             val responsesTwo = flowTwo.take(4).toList()
 
@@ -73,12 +73,12 @@ class ItemValidatorTests {
     @Test
     fun `GIVEN validator and non-empty Market with invalid good WHEN read THEN success originating from network`() =
         testScope.runTest {
-            val readerOne = marketReaderWithValidator(FakeNotes.One.key)
+            val readerOne = readRequestWithValidator(FakeNotes.One.key)
             market.read(readerOne)
             testScope.advanceUntilIdle()
 
             testScope.advanceUntilIdle()
-            val readerTwo = marketReaderWithValidator(FakeNotes.One.key, isValid = false)
+            val readerTwo = readRequestWithValidator(FakeNotes.One.key, isValid = false)
             val flowTwo = market.read(readerTwo)
             val responsesTwo = flowTwo.take(4).toList()
 

@@ -6,7 +6,7 @@ import com.dropbox.external.store5.NetworkUpdater
 import com.dropbox.external.store5.OnNetworkCompletion
 import com.dropbox.external.store5.Store
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 
 internal object FakeMarket {
     object Failure {
@@ -33,15 +33,15 @@ internal object FakeMarket {
     }
 
     object Success {
-        val memoryLruCache = MemoryLruCache(10)
+        val memoryLruStore = MemoryLruStore(10)
         val database = FakeDatabase()
         val api = FakeApi()
 
         val memoryLruCacheStore = Store.by<String, Note, Note>(
-            reader = { key -> memoryLruCache.read(key) },
-            writer = { key, input -> memoryLruCache.write(key, input) },
-            deleter = { key -> memoryLruCache.delete(key) },
-            clearer = { memoryLruCache.deleteAll() },
+            reader = { key -> memoryLruStore.read(key) },
+            writer = { key, input -> memoryLruStore.write(key, input) },
+            deleter = { key -> memoryLruStore.delete(key) },
+            clearer = { memoryLruStore.deleteAll() },
         )
 
         val databaseStore = Store.by<String, Note, Note>(

@@ -34,7 +34,7 @@ class StoreFailureTests {
 
     @Test
     fun readFailureIsHandled() = testScope.runTest {
-        val reader = MarketReader.by<String, Note, Note>(
+        val reader = ReadRequest.of<String, Note, Note>(
             key = FakeNotes.One.key,
             onCompletions = listOf(),
             refresh = true

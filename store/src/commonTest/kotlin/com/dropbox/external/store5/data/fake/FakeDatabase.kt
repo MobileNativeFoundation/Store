@@ -2,19 +2,19 @@
 
 package com.dropbox.external.store5.data.fake
 
-import com.dropbox.external.store5.Persister
+import com.dropbox.external.store5.Store
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-internal class FakeDatabase : Persister<String> {
-    private val data: MutableMap<String, Any> = mutableMapOf()
+internal class FakeDatabase<T:Any> : Store<String,T, T> {
+    private val data: MutableMap<String, T> = mutableMapOf()
     private val writeRequests: MutableMap<String, Long?> = mutableMapOf()
 
-    override fun <Output : Any> read(key: String): Flow<Output?> = flow {
-        emit(data[key] as? Output)
+    override fun read(key: String): Flow<T?> = flow {
+        emit(data[key] as? T)
     }
 
-    override suspend fun <Input : Any> write(key: String, input: Input): Boolean {
+    override suspend fun write(key: String, input: T): Boolean {
         data[key] = input
         return true
     }
@@ -24,7 +24,7 @@ internal class FakeDatabase : Persister<String> {
         return true
     }
 
-    override suspend fun deleteAll(): Boolean {
+    override suspend fun clear(): Boolean {
         data.clear()
         return true
     }

@@ -5,7 +5,7 @@ package com.dropbox.external.store5
 
 import com.dropbox.external.store5.data.fake.FakeNotes
 import com.dropbox.external.store5.data.model.Note
-import com.dropbox.external.store5.impl.MemoryLruCache
+import com.dropbox.external.store5.impl.MemoryLruStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
@@ -16,24 +16,24 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MemoryLruCacheTests {
+class MemoryLruStoreTests {
     private val testScope = TestScope()
-    private lateinit var memoryLruCache: MemoryLruCache
+    private lateinit var memoryLruStore: MemoryLruStore
 
     @BeforeTest
     fun before() {
-        memoryLruCache = MemoryLruCache(10)
+        memoryLruStore = MemoryLruStore(10)
     }
 
-    private fun headPointer() = memoryLruCache.head
-    private fun tailPointer() = memoryLruCache.tail
-    private fun head() = memoryLruCache.head.next as MemoryLruCache.Node<Note>
-    private fun tail() = memoryLruCache.tail.prev as MemoryLruCache.Node<Note>
+    private fun headPointer() = memoryLruStore.head
+    private fun tailPointer() = memoryLruStore.tail
+    private fun head() = memoryLruStore.head.next as MemoryLruStore.Node<Note>
+    private fun tail() = memoryLruStore.tail.prev as MemoryLruStore.Node<Note>
 
     @Test
     fun writeAndRead() {
         testScope.launch {
-            memoryLruCache.write(FakeNotes.One.key, FakeNotes.One.note)
+            memoryLruStore.write(FakeNotes.One.key, FakeNotes.One.note)
         }
         testScope.advanceUntilIdle()
 
@@ -42,14 +42,14 @@ class MemoryLruCacheTests {
         var head = head()
         var tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.One.note, head.value)
         assertEquals(FakeNotes.One.note, tail.value)
-        assertEquals(1, memoryLruCache.cache.size)
+        assertEquals(1, memoryLruStore.cache.size)
 
         testScope.launch {
-            memoryLruCache.write(FakeNotes.Two.key, FakeNotes.Two.note)
+            memoryLruStore.write(FakeNotes.Two.key, FakeNotes.Two.note)
         }
         testScope.advanceUntilIdle()
 
@@ -58,13 +58,13 @@ class MemoryLruCacheTests {
         head = head()
         tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.Two.note, head.value)
         assertEquals(FakeNotes.One.note, tail.value)
-        assertEquals(2, memoryLruCache.cache.size)
+        assertEquals(2, memoryLruStore.cache.size)
 
-        val result = memoryLruCache.read<Note>(FakeNotes.One.key)
+        val result = memoryLruStore.read<Note>(FakeNotes.One.key)
 
         testScope.runTest {
             assertEquals(FakeNotes.One.note, result.last())
@@ -75,11 +75,11 @@ class MemoryLruCacheTests {
         head = head()
         tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.One.note, head.value)
         assertEquals(FakeNotes.Two.note, tail.value)
-        assertEquals(2, memoryLruCache.cache.size)
+        assertEquals(2, memoryLruStore.cache.size)
     }
 
     @Test
@@ -87,7 +87,7 @@ class MemoryLruCacheTests {
 
         testScope.launch {
             FakeNotes.listN(10).forEach {
-                memoryLruCache.write(it.key, it.note)
+                memoryLruStore.write(it.key, it.note)
             }
         }
 
@@ -98,11 +98,11 @@ class MemoryLruCacheTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.Ten.note, head.value)
         assertEquals(FakeNotes.One.note, tail.value)
-        assertEquals(10, memoryLruCache.cache.size)
+        assertEquals(10, memoryLruStore.cache.size)
     }
 
     @Test
@@ -110,7 +110,7 @@ class MemoryLruCacheTests {
 
         testScope.launch {
             FakeNotes.listN(11).forEach {
-                memoryLruCache.write(it.key, it.note)
+                memoryLruStore.write(it.key, it.note)
             }
         }
 
@@ -121,11 +121,11 @@ class MemoryLruCacheTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.Eleven.note, head.value)
         assertEquals(FakeNotes.Two.note, tail.value)
-        assertEquals(10, memoryLruCache.cache.size)
+        assertEquals(10, memoryLruStore.cache.size)
     }
 
     @Test
@@ -133,12 +133,12 @@ class MemoryLruCacheTests {
 
         testScope.launch {
             FakeNotes.listN(10).forEach {
-                memoryLruCache.write(it.key, it.note)
+                memoryLruStore.write(it.key, it.note)
             }
 
-            memoryLruCache.delete(FakeNotes.Ten.key)
-            memoryLruCache.delete(FakeNotes.Nine.key)
-            memoryLruCache.delete(FakeNotes.One.key)
+            memoryLruStore.delete(FakeNotes.Ten.key)
+            memoryLruStore.delete(FakeNotes.Nine.key)
+            memoryLruStore.delete(FakeNotes.One.key)
         }
 
         testScope.advanceUntilIdle()
@@ -148,15 +148,15 @@ class MemoryLruCacheTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
         assertEquals(FakeNotes.Eight.note, head.value)
         assertEquals(FakeNotes.Two.note, tail.value)
-        assertEquals(7, memoryLruCache.cache.size)
+        assertEquals(7, memoryLruStore.cache.size)
 
-        assertEquals(null, memoryLruCache.cache[FakeNotes.Ten.key])
-        assertEquals(null, memoryLruCache.cache[FakeNotes.Nine.key])
-        assertEquals(null, memoryLruCache.cache[FakeNotes.One.key])
+        assertEquals(null, memoryLruStore.cache[FakeNotes.Ten.key])
+        assertEquals(null, memoryLruStore.cache[FakeNotes.Nine.key])
+        assertEquals(null, memoryLruStore.cache[FakeNotes.One.key])
     }
 
     @Test
@@ -164,10 +164,10 @@ class MemoryLruCacheTests {
 
         testScope.launch {
             FakeNotes.list().forEach {
-                memoryLruCache.write(it.key, it.note)
+                memoryLruStore.write(it.key, it.note)
             }
 
-            memoryLruCache.deleteAll()
+            memoryLruStore.deleteAll()
         }
 
         testScope.advanceUntilIdle()
@@ -177,11 +177,11 @@ class MemoryLruCacheTests {
         val head = head()
         val tail = tail()
 
-        assertEquals(MemoryLruCache.headPointer, headPointer)
-        assertEquals(MemoryLruCache.tailPointer, tailPointer)
+        assertEquals(MemoryLruStore.headPointer, headPointer)
+        assertEquals(MemoryLruStore.tailPointer, tailPointer)
 
-        assertEquals<Any>(MemoryLruCache.headPointer.value, tail.value)
-        assertEquals<Any>(MemoryLruCache.tailPointer.value, head.value)
-        assertEquals(0, memoryLruCache.cache.size)
+        assertEquals<Any>(MemoryLruStore.headPointer.value, tail.value)
+        assertEquals<Any>(MemoryLruStore.tailPointer.value, head.value)
+        assertEquals(0, memoryLruStore.cache.size)
     }
 }

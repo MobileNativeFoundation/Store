@@ -13,8 +13,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private val realDeleter: StoreDeleter<Key>? = null,
     private val realClearer: StoreClearer? = null
 ) : Store<Key, Input, Output> {
-    override suspend fun reader(key: Key): Flow<Output?> = realReader(key)
-    override suspend fun writer(key: Key, input: Input): Boolean = realWriter(key, input)
-    override suspend fun deleter(key: Key): Boolean = realDeleter?.invoke(key) ?: false
-    override suspend fun clearer(): Boolean = realClearer?.invoke() ?: false
+    override  fun read(key: Key): Flow<Output?> = realReader(key)
+    override suspend fun write(key: Key, input: Input): Boolean = realWriter(key, input)
+    override suspend fun delete(key: Key): Boolean = realDeleter?.invoke(key) ?: false
+    override suspend fun clear(): Boolean = realClearer?.invoke() ?: false
 }

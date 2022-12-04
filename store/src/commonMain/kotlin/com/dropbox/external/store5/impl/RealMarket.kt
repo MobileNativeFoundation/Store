@@ -6,10 +6,10 @@ import com.dropbox.external.store5.Bookkeeper
 import com.dropbox.external.store5.Convenience
 import com.dropbox.external.store5.ItemValidator
 import com.dropbox.external.store5.Market
-import com.dropbox.external.store5.MarketReader
+import com.dropbox.external.store5.ReadRequest
 import com.dropbox.external.store5.MarketResponse
 import com.dropbox.external.store5.MarketResponse.Companion.Origin
-import com.dropbox.external.store5.MarketWriter
+import com.dropbox.external.store5.WriteRequest
 import com.dropbox.external.store5.NetworkFetcher
 import com.dropbox.external.store5.NetworkResult
 import com.dropbox.external.store5.NetworkUpdater
@@ -28,8 +28,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
-typealias AnyWriteRequestQueue<Key> = ArrayDeque<MarketWriter<Key, *, *>>
-typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<MarketWriter<Key, Input, *>>
+typealias AnyWriteRequestQueue<Key> = ArrayDeque<WriteRequest<Key, *, *>>
+typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<WriteRequest<Key, Input, *>>
 typealias AnyBroadcast = MutableSharedFlow<MarketResponse<*>>
 typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
 typealias SomeFlow<T> = Flow<MarketResponse<T>>
@@ -58,11 +58,11 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
 
     /**
      * Reads from [Market].
-     * Gets the latest value from network if first request or [MarketReader.refresh].
-     * Validates [Store] items if [MarketReader] contains [ItemValidator].
+     * Gets the latest value from network if first request or [ReadRequest.refresh].
+     * Validates [Store] items if [ReadRequest] contains [ItemValidator].
      */
     @AnyThread
-    override suspend fun read(reader: MarketReader<Key, Input, Output>): SomeFlow<Output> {
+    override suspend fun read(reader: ReadRequest<Key, Input, Output>): SomeFlow<Output> {
         mainLock.withLock {
             marketSecurity.getOrPut(reader.key) { StoreSafety() }
         }
@@ -134,7 +134,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun tryUpdateServer(writer: MarketWriter<Key, Input, Output>): Boolean {
+    private suspend fun tryUpdateServer(writer: WriteRequest<Key, Input, Output>): Boolean {
         return when (val result = tryPost(writer.key)) {
             is NetworkResult.Success -> {
                 updateWriteRequestQueue(
@@ -155,7 +155,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    override suspend fun write(writer: MarketWriter<Key, Input, Output>): Boolean {
+    override suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean {
         val broadcast = requireBroadcast<Output>(writer.key)
         val responseLocalWrite = MarketResponse.Success(
             writer.input as Output,
@@ -164,7 +164,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         broadcast.emit(responseLocalWrite)
         stores.forEachIndexed { index, store ->
             storeLocks[index].withLock {
-                store.writer(writer.key, writer.input)
+                store.write(writer.key, writer.input)
             }
         }
 
@@ -194,7 +194,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         stores.forEachIndexed { index, store ->
             try {
                 storeLocks[index].lock()
-                val last = (store.reader(key) as Flow<Output?>).lastOrNull()
+                val last = (store.read(key) as Flow<Output?>).lastOrNull()
                 storeLocks[index].unlock()
                 if (last != null) {
                     broadcast.emit(MarketResponse.Success(last, origin = Origin.Store))
@@ -224,7 +224,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
             if (response is MarketResponse.Success) {
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
-                        store.writer(key, response.value as Input)
+                        store.write(key, response.value as Input)
                     }
                 }
 
@@ -277,7 +277,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         stores.forEachIndexed { index, store ->
             try {
                 storeLocks[index].withLock {
-                    if (!store.deleter(key)) {
+                    if (!store.delete(key)) {
                         throw Exception()
                     }
                 }
@@ -297,7 +297,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         stores.forEach { store ->
             try {
                 storeLocks.forEach { it.lock() }
-                if (!store.clearer()) {
+                if (!store.clear()) {
                     throw Exception()
                 }
                 storeLocks.forEach { it.unlock() }
@@ -391,7 +391,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun addOrInitWriteRequest(writer: MarketWriter<Key, *, *>) {
+    private suspend fun addOrInitWriteRequest(writer: WriteRequest<Key, *, *>) {
         val storeSafety = requireStoreSafety(writer.key)
         storeSafety.writeRequestsLock.withLock {
             if (writeRequests[writer.key] == null) {
@@ -403,10 +403,10 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun getLatestWriteRequest(key: Key): MarketWriter<Key, Input, Output> {
+    private suspend fun getLatestWriteRequest(key: Key): WriteRequest<Key, Input, Output> {
         val storeSafety = requireStoreSafety(key)
         storeSafety.writeRequestsLock.lock()
-        val writer = writeRequests[key]?.last() as MarketWriter<Key, Input, Output>
+        val writer = writeRequests[key]?.last() as WriteRequest<Key, Input, Output>
         storeSafety.writeRequestsLock.unlock()
         releaseStoreSecurity()
         return writer
@@ -427,7 +427,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     private suspend fun <Output : Any> lastStored(key: Key): Output? {
         for (store in stores) {
             try {
-                val last = (store.reader(key) as Flow<Output?>).lastOrNull()
+                val last = (store.read(key) as Flow<Output?>).lastOrNull()
                 if (last != null) {
                     return last
                 }
