@@ -7,4 +7,5 @@ on:
 
 jobs:
   publish:
+    if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
     uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildbranches.yml@v0.6
