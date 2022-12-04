@@ -3,7 +3,7 @@ package com.dropbox.external.store5
 import com.dropbox.external.store5.impl.RealStore
 import kotlinx.coroutines.flow.Flow
 
-typealias StoreReader<Key, Output> =  (key: Key) -> Flow<Output?>
+typealias StoreReader<Key, Output> = (key: Key) -> Flow<Output?>
 typealias StoreWriter<Key, Input> = suspend (key: Key, input: Input) -> Boolean
 typealias StoreDeleter<Key> = suspend (key: Key) -> Boolean
 typealias StoreClearer = suspend () -> Boolean

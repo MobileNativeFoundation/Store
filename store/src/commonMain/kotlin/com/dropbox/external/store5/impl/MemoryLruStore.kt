@@ -116,6 +116,4 @@ class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Inpu
         internal val headPointer = Node(HEAD_KEY, HEAD_VALUE)
         internal val tailPointer = Node(TAIL_KEY, TAIL_VALUE)
     }
-
-
 }
