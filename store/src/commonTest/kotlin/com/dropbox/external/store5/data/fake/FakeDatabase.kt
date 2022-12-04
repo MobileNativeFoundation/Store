@@ -6,7 +6,7 @@ import com.dropbox.external.store5.Store
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-internal class FakeDatabase<T:Any> : Store<String,T, T> {
+internal class FakeDatabase<T : Any> : Store<String, T, T> {
     private val data: MutableMap<String, T> = mutableMapOf()
     private val writeRequests: MutableMap<String, Long?> = mutableMapOf()
 
