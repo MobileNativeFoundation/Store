@@ -5,7 +5,7 @@ plugins {
     id("com.squareup.anvil")
 }
 
-group = "com.dropbox.notes.android"
+group = "org.mobilenativefoundation.store.notes.android"
 
 android {
     compileSdk = Version.androidCompileSdk

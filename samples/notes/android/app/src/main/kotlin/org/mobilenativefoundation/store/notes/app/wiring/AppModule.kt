@@ -1,13 +1,13 @@
 package org.mobilenativefoundation.store.notes.app.wiring
 
 import android.content.Context
-import com.dropbox.external.store5.Bookkeeper
-import com.dropbox.external.store5.Market
-import com.dropbox.external.store5.NetworkFetcher
-import com.dropbox.external.store5.NetworkUpdater
-import com.dropbox.external.store5.OnNetworkCompletion
-import com.dropbox.external.store5.Store
-import com.dropbox.external.store5.impl.MemoryLruStore
+import org.mobilenativefoundation.store.store5.Bookkeeper
+import org.mobilenativefoundation.store.store5.Market
+import org.mobilenativefoundation.store.store5.NetworkFetcher
+import org.mobilenativefoundation.store.store5.NetworkUpdater
+import org.mobilenativefoundation.store.store5.OnNetworkCompletion
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
 import com.squareup.anvil.annotations.ContributesTo
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
@@ -133,7 +133,7 @@ object AppModule {
         )
     )
 
-    private val memoryLruStore: Store<String, Note, Note>  = MemoryLruStore(10)
+    private val memoryLruStore: Store<String, Note, Note> = MemoryLruStore(10)
     private val serializer = Json { ignoreUnknownKeys = true }
     private fun Key.encode(): String = serializer.encodeToString(this)
 

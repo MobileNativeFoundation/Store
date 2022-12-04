@@ -8,7 +8,7 @@ internal object Users {
         const val ID = "1"
         const val FEED_ID = "1"
         const val NAME = "Tag Ramotar"
-        const val EMAIL = "tag@dropbox.com"
+        const val EMAIL = "tag@mobilenativefoundation.org"
         const val AVATAR_URL = "https://i.imgur.com/TkVUZa7.jpeg"
     }
 
@@ -16,7 +16,7 @@ internal object Users {
         const val ID = "2"
         const val FEED_ID = "2"
         const val NAME = "Trot Ramotar"
-        const val EMAIL = "trot@dropbox.com"
+        const val EMAIL = "trot@mobilenativefoundation.org"
         const val AVATAR_URL = "https://i.imgur.com/VHkV7Bj.png"
     }
 
