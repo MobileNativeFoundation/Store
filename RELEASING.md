@@ -4,6 +4,7 @@ Releasing
 1. Change the version in top level `gradle.properties` to a non-SNAPSHOT version.
 2. Update the `cocoapods` version in `build.gradle.kts` in `:store`.
 3. Modify `create_swift_package.yml` workflow to run on `store5` push.
+    * https://github.com/MobileNativeFoundation/Store/blob/e526400cdf51aa2f78b6b7e9e87f4a6845e6dcea/.github/workflows/create_swift_package.yml
 4. Update the `CHANGELOG.md` for the impending release.
 5. Update the `README.md` with the new version.
 6. `git commit -sam "Prepare for release X.Y.Z."` (where X.Y.Z is the new version)

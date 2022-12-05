@@ -28,7 +28,7 @@ kotlin {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
-        version = "5.0.0-alpha1"
+        version = "5.0.0-alpha02"
     }
 
     sourceSets {

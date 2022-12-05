@@ -2,10 +2,16 @@
 
 ## [Unreleased]
 
+## [5.0.0-alpha02] (2022-12-04)
+
+* Target iOS and JS
+* Rename packages
+
 ## [5.0.0-alpha1] (2022-12-04)
+
 * Introduce Market
 * Support local and remote writes with conflict resolution based on Google's offline-first guidance
-* Target iOS and Android
+* Target Android and JVM
 
 ## [4.0.5] (2021-03-30)
 
@@ -61,19 +67,22 @@
 
 * Fix a leak of non-global coroutine contexts. (#199)
 * Update to Kotlin 1.4.0 and Coroutines 1.3.9 (#195)
-* Update to Coroutines 1.3.5 and remove `@FlowPreview` and `@ExperimentalCoroutinesApi` annotations. (#166)
+* Update to Coroutines 1.3.5 and remove `@FlowPreview` and `@ExperimentalCoroutinesApi`
+  annotations. (#166)
 
 ## [4.0.0-alpha06] (2020-04-29)
 
 **Major API change!** (#123)
 
-This release introduces a major change to `StoreBuilder`'s API. This should be the LAST major API change to store before
+This release introduces a major change to `StoreBuilder`'s API. This should be the LAST major API
+change to store before
 we'll move to beta.
 
 * The typealias `Fetcher` was added to standardize the input type for a `StoreBuilder`
 * `SourceOfTruth` in now a top level interface and part of `Store`'s public API
 * `StoreBuilder` can now only be created using a `Fetcher` and optionally a `SourceOfTruth`
-* All the overloads for creating a `StoreBuilder` were moved to `Fetcher` and `SourceOfTruth` as appropriate.
+* All the overloads for creating a `StoreBuilder` were moved to `Fetcher` and `SourceOfTruth` as
+  appropriate.
 * Rx artifacts were updated accordingly to match main artifacts.
 
 ## [4.0.0-alpha05] (2020-04-03)
@@ -190,11 +199,13 @@ This is a first alpha release of Store ported to RxJava 2.
 **New Features**
 
 * (#155) Port to RxJava 2
-* (#220) Packages have been renamed to store3 to allow use of this artifact alongside the original Store
+* (#220) Packages have been renamed to store3 to allow use of this artifact alongside the original
+  Store
 * (#185) Return Single/Maybe where appropriate
 * (#189) Add lambdas to Store and Filesystem modules
 * (#214) expireAfterAccess added to MemoryPolicy
-* (#214) Deprecate setExpireAfter and getExpireAfter -- use new expireAfterWrite or expireAfterAccess, see #199 for
+* (#214) Deprecate setExpireAfter and getExpireAfter -- use new expireAfterWrite or
+  expireAfterAccess, see #199 for
   MemoryPolicy changes
 * (#214) Add Raw to BufferedSource transformer
 
@@ -202,7 +213,8 @@ This is a first alpha release of Store ported to RxJava 2.
 
 * (#214) Fix networkBeforeStale on cold start with no connectivity
 * (#214) Add a missing source.close() call
-* (#164) FileSystemPersister.persisterIsStale() should return false if record is missing or policy is unspecified
+* (#164) FileSystemPersister.persisterIsStale() should return false if record is missing or policy
+  is unspecified
 * (#166) Remove apt dependency and use annotationProcessor instead
 * (#214) Standardize store.stream() to emit only new items
 * (#214) Fix typos
@@ -210,7 +222,8 @@ This is a first alpha release of Store ported to RxJava 2.
 
 ## [1.x]
 
-* The change log for Store version 1.x can be found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
+* The change log for Store version 1.x can be
+  found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
 [Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v4.0.5...HEAD
 
