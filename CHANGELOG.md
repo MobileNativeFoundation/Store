@@ -227,6 +227,10 @@ This is a first alpha release of Store ported to RxJava 2.
 
 [Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v4.0.5...HEAD
 
+[5.0.0-alpha02]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha02
+
+[5.0.0-alpha1]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha1
+
 [4.0.5]: https://github.com/MobileNativeFoundation/Store/releases/tag/4.0.5
 
 [4.0.4-KT15]: https://github.com/MobileNativeFoundation/Store/releases/tag/4.0.4-KT15
