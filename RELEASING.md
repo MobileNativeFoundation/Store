@@ -14,13 +14,15 @@ Releasing
     * This should be pushed to your fork.
 9. Create a PR with this commit and merge it.
 10. Update the top level `build.gradle` to the next SNAPSHOT version.
-11. `git commit -am "Prepare next development version."`
-12. Create a PR with this commit and merge it.
-13. Login to Sonatype to promote the artifacts https://central.sonatype.org/pages/releasing-the-deployment.html
+11. Modify `create_swift_package.yml` workflow to only run manually.
+    * https://github.com/MobileNativeFoundation/Store/blob/de9ed1764408eeaafe5e58fe602205c875a8b0b0/.github/workflows/create_swift_package.yml
+12. `git commit -am "Prepare next development version."`
+13. Create a PR with this commit and merge it.
+14. Login to Sonatype to promote the artifacts https://central.sonatype.org/pages/releasing-the-deployment.html
     * This part is automated. If it fails in CI, follow the steps below.
     * Click on Staging Repositories under Build Promotion
     * Select all the Repositories that contain the content you want to release
     * Click on Close and refresh until the Release button is active
     * Click Release and submit
-14. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
+15. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
  
