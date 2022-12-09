@@ -62,21 +62,21 @@ internal fun complexMarket(
     )
 
     failWrite -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruCacheStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
         bookkeeper = FakeComplexMarket.Failure.bookkeeper,
         updater = FakeComplexMarket.Failure.updater(),
         fetcher = FakeComplexMarket.Success.fetcher
     )
 
     failRead -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruCacheStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
         bookkeeper = FakeComplexMarket.Failure.bookkeeper,
         updater = FakeComplexMarket.Success.updater(),
         fetcher = FakeComplexMarket.Failure.fetcher
     )
 
     else -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruCacheStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
         bookkeeper = FakeComplexMarket.Success.bookkeeper,
         updater = FakeComplexMarket.Success.updater(onNetworkCompletion),
         fetcher = FakeComplexMarket.Success.fetcher
