@@ -20,7 +20,6 @@ internal fun writeRequest(
     onCompletions = onCompletions,
 )
 
-
 internal fun complexWriteRequest(
     key: NoteMarketKey,
     input: NoteMarketInput,

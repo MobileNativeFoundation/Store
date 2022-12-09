@@ -110,7 +110,6 @@ internal object FakeComplexMarket {
             override suspend fun clear(): Boolean = store.clear()
         }
 
-
         val memoryLruStore = MemoryLruStoreWrapper()
         val database = FakeComplexDatabase()
         val api = FakeComplexApi()
@@ -159,7 +158,6 @@ internal object FakeComplexMarket {
             )
         ) = updater(api, onCompletion = onCompletion, fail = true)
     }
-
 
     private fun bookkeeper(database: FakeComplexDatabase) = Bookkeeper.by<NoteMarketKey>(
         read = { key -> database.getLastWriteTime(key.toString()) },

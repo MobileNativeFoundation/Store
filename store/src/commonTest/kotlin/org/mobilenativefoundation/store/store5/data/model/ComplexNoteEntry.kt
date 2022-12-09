@@ -14,7 +14,6 @@ internal sealed class NoteMarketKey {
     data class Write(val note: Note) : NoteMarketKey()
 }
 
-
 internal data class NoteMarketInput(
     val data: MarketData<Note>? = null
 )
@@ -27,4 +26,3 @@ sealed class MarketData<Item : Any> {
     data class Single<Item : Any>(val item: Item) : MarketData<Item>()
     data class Collection<Item : Any>(val items: List<Item>) : MarketData<Item>()
 }
-

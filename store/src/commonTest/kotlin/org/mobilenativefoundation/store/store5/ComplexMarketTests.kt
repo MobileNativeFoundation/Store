@@ -26,7 +26,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertIs
 
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class ComplexMarketTests {
     private val testScope = TestScope()
@@ -259,7 +258,6 @@ class ComplexMarketTests {
                 NoteMarketInput(MarketData.Single(newNoteOneA)),
                 onCompletions = listOf(onMarketCompletion(FakeComplexNotes.GetById.One.key.toString()))
             )
-
 
             val writerOneB = complexWriteRequest(
                 FakeComplexNotes.GetById.One.key,
