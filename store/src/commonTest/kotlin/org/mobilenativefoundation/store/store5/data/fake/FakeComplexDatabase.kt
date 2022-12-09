@@ -31,8 +31,44 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
     }
 
     override suspend fun write(key: NoteMarketKey, input: NoteMarketInput): Boolean {
-        return if (key is NoteMarketKey.Write) {
-            when (input.data) {
+        return when (key) {
+            is NoteMarketKey.Read.GetById -> when (input.data) {
+                is MarketData.Collection -> {
+                    input.data.items.forEach {
+                        data[key] = NoteMarketOutput.Read(MarketData.Single(it))
+                    }
+                    true
+                }
+
+                is MarketData.Single -> {
+                    data[key] = NoteMarketOutput.Read(input.data)
+                    true
+                }
+
+                null -> {
+                    false
+                }
+            }
+
+            is NoteMarketKey.Read.Paginate -> when (input.data) {
+                is MarketData.Collection -> {
+                    input.data.items.forEach {
+                        data[key] = NoteMarketOutput.Read(MarketData.Single(it))
+                    }
+                    true
+                }
+
+                is MarketData.Single -> {
+                    data[key] = NoteMarketOutput.Read(input.data)
+                    true
+                }
+
+                null -> {
+                    false
+                }
+            }
+
+            is NoteMarketKey.Write -> when (input.data) {
                 is MarketData.Collection -> {
                     input.data.items.forEach {
                         data[key.convert()] = NoteMarketOutput.Read(MarketData.Single(it))
@@ -49,8 +85,6 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
                     false
                 }
             }
-        } else {
-            false
         }
     }
 

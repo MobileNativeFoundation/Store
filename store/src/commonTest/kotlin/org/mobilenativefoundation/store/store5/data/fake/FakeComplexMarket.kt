@@ -40,8 +40,8 @@ internal object FakeComplexMarket {
             }
 
             override suspend fun write(key: NoteMarketKey, input: NoteMarketInput): Boolean {
-                return if (key is NoteMarketKey.Write) {
-                    when (input.data) {
+                return when (key) {
+                    is NoteMarketKey.Read.GetById -> when (input.data) {
                         is MarketData.Collection -> {
                             input.data.items.forEach {
                                 store.write(key.toString(), NoteMarketOutput.Read(MarketData.Single(it)))
@@ -58,8 +58,46 @@ internal object FakeComplexMarket {
                             false
                         }
                     }
-                } else {
-                    false
+
+                    is NoteMarketKey.Read.Paginate -> {
+                        when (input.data) {
+                            is MarketData.Collection -> {
+                                input.data.items.forEach {
+                                    store.write(key.toString(), NoteMarketOutput.Read(MarketData.Single(it)))
+                                }
+                                true
+                            }
+
+                            is MarketData.Single -> {
+                                store.write(key.toString(), input.convert())
+                                true
+                            }
+
+                            null -> {
+                                false
+                            }
+                        }
+                    }
+
+                    is NoteMarketKey.Write -> {
+                        when (input.data) {
+                            is MarketData.Collection -> {
+                                input.data.items.forEach {
+                                    store.write(key.toString(), NoteMarketOutput.Read(MarketData.Single(it)))
+                                }
+                                true
+                            }
+
+                            is MarketData.Single -> {
+                                store.write(key.toString(), input.convert())
+                                true
+                            }
+
+                            null -> {
+                                false
+                            }
+                        }
+                    }
                 }
             }
 

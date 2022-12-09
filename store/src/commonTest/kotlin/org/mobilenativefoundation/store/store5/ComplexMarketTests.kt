@@ -192,13 +192,13 @@ class ComplexMarketTests {
             assertIs<NoteMarketOutput.Read>(lastResponseAfterWriteTwoValue)
             val lastResponseAfterWriteTwoValueData = lastResponseAfterWriteTwoValue.data
             assertIs<MarketData.Single<Note>>(lastResponseAfterWriteTwoValueData)
-            assertEquals(newNoteOne, lastResponseAfterWriteTwoValueData.item)
+            assertEquals(newNoteTwo, lastResponseAfterWriteTwoValueData.item)
             assertEquals(Origin.LocalWrite, lastResponseAfterWriteTwo.origin)
-            val apiValueTwo = FakeComplexMarket.Success.api.get(FakeComplexNotes.GetById.One.key)
+            val apiValueTwo = FakeComplexMarket.Success.api.get(FakeComplexNotes.GetById.Two.key)
             assertIs<NoteMarketOutput.Read>(apiValueTwo)
             val apiValueTwoData = apiValueTwo.data
             assertIs<MarketData.Single<Note>>(apiValueTwoData)
-            assertEquals(newNoteOne, apiValueTwoData.item)
+            assertEquals(newNoteTwo, apiValueTwoData.item)
         }
 
     @Test
@@ -287,7 +287,7 @@ class ComplexMarketTests {
         val flowOne = market.read(readerOne)
         val flowTwo = market.read(readerTwo)
 
-        testScope.advanceUntilIdle()
+        advanceUntilIdle()
 
         val lastResponseOne = flowOne.take(3).toList().last()
         val lastResponseTwo = flowTwo.take(3).toList().last()
