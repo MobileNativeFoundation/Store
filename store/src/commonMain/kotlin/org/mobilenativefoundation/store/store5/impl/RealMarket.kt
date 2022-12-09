@@ -2,23 +2,6 @@
 
 package org.mobilenativefoundation.store.store5.impl
 
-import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Convenience
-import org.mobilenativefoundation.store.store5.ItemValidator
-import org.mobilenativefoundation.store.store5.Market
-import org.mobilenativefoundation.store.store5.ReadRequest
-import org.mobilenativefoundation.store.store5.MarketResponse
-import org.mobilenativefoundation.store.store5.MarketResponse.Companion.Origin
-import org.mobilenativefoundation.store.store5.WriteRequest
-import org.mobilenativefoundation.store.store5.NetworkFetcher
-import org.mobilenativefoundation.store.store5.NetworkResult
-import org.mobilenativefoundation.store.store5.NetworkUpdater
-import org.mobilenativefoundation.store.store5.OnMarketCompletion
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.concurrent.AnyThread
-import org.mobilenativefoundation.store.store5.concurrent.StoreSafety
-import org.mobilenativefoundation.store.store5.definition.Converter
-import org.mobilenativefoundation.store.store5.definition.PostRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
@@ -26,6 +9,23 @@ import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
+import org.mobilenativefoundation.store.store5.Bookkeeper
+import org.mobilenativefoundation.store.store5.Convenience
+import org.mobilenativefoundation.store.store5.ItemValidator
+import org.mobilenativefoundation.store.store5.Market
+import org.mobilenativefoundation.store.store5.MarketResponse
+import org.mobilenativefoundation.store.store5.MarketResponse.Companion.Origin
+import org.mobilenativefoundation.store.store5.NetworkFetcher
+import org.mobilenativefoundation.store.store5.NetworkResult
+import org.mobilenativefoundation.store.store5.NetworkUpdater
+import org.mobilenativefoundation.store.store5.OnMarketCompletion
+import org.mobilenativefoundation.store.store5.ReadRequest
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.WriteRequest
+import org.mobilenativefoundation.store.store5.concurrent.AnyThread
+import org.mobilenativefoundation.store.store5.concurrent.StoreSafety
+import org.mobilenativefoundation.store.store5.definition.Converter
+import org.mobilenativefoundation.store.store5.definition.PostRequest
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
 typealias AnyWriteRequestQueue<Key> = ArrayDeque<WriteRequest<Key, *, *>>
@@ -157,8 +157,11 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     @AnyThread
     override suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean {
         val broadcast = requireBroadcast<Output>(writer.key)
+
+        val output = updater.converter(writer.input)
+
         val responseLocalWrite = MarketResponse.Success(
-            writer.input as Output,
+            output,
             origin = Origin.LocalWrite
         )
         broadcast.emit(responseLocalWrite)
@@ -224,7 +227,8 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
             if (response is MarketResponse.Success) {
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
-                        store.write(key, response.value as Input)
+                        val input = fetcher.converter(response.value)
+                        store.write(key, input)
                     }
                 }
 
