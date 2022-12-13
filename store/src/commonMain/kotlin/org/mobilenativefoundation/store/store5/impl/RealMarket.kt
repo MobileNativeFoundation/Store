@@ -1,4 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
 
 package org.mobilenativefoundation.store.store5.impl
 
@@ -27,6 +26,7 @@ import org.mobilenativefoundation.store.store5.concurrent.StoreSafety
 import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.PostRequest
 
+
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
 typealias AnyWriteRequestQueue<Key> = ArrayDeque<WriteRequest<Key, *, *>>
 typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<WriteRequest<Key, Input, *>>
@@ -45,8 +45,8 @@ typealias SomeFlow<T> = Flow<MarketResponse<T>>
 class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     private val stores: List<Store<Key, Input, Output>>,
     private val bookkeeper: Bookkeeper<Key>,
-    private val fetcher: NetworkFetcher<Key, Input, Output>,
-    private val updater: NetworkUpdater<Key, Input, Output>,
+    private val fetcher: NetworkFetcher<Key, Input>,
+    private val updater: NetworkUpdater<Key, Input>,
 ) : Market<Key, Input, Output> {
     private val readCompletions = mutableMapOf<Key, AnyReadCompletionsQueue>()
     private val writeRequests = mutableMapOf<Key, AnyWriteRequestQueue<Key>>()
@@ -70,7 +70,8 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
         if (conflictsMightExist) {
-            eagerlyResolveConflicts(reader.key, fetcher::post, fetcher::converter)
+            //TODO MIKE - check with Matt about flipping to updater below
+            eagerlyResolveConflicts(reader.key, updater::post)
         }
 
         addOrInitReadCompletions(reader.key, reader.onCompletions.toMutableList())
@@ -112,14 +113,13 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
 
         for (writeRequest in writeRequestQueue) {
             if (writeRequest.created <= created) {
-                val output = updater.converter(input)
-                val fetchResponse = NetworkResult.Success(output)
-                val marketResponse = MarketResponse.Success(output, origin = Origin.Network)
+                val fetchResponse = NetworkResult.Success(input)
+                val marketResponse = MarketResponse.Success(input, origin = Origin.Network)
 
                 updater.onCompletion.onSuccess(fetchResponse)
 
                 writeRequest.onCompletions.forEach {
-                    (it as OnMarketCompletion<Output>).onSuccess(marketResponse)
+                    (it as OnMarketCompletion<Input>).onSuccess(marketResponse)
                 }
             } else {
                 outstandingWriteRequests.add(writeRequest)
@@ -157,11 +157,8 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     @AnyThread
     override suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean {
         val broadcast = requireBroadcast<Output>(writer.key)
-
-        val output = updater.converter(writer.input)
-
         val responseLocalWrite = MarketResponse.Success(
-            output,
+            writer.input as Output,
             origin = Origin.LocalWrite
         )
         broadcast.emit(responseLocalWrite)
@@ -211,9 +208,9 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> refresh(
+    private suspend fun <Input : Any> refresh(
         key: Key,
-        fetcher: NetworkFetcher<Key, Input, Output>
+        fetcher: NetworkFetcher<Key, Input>
     ) {
 
         val storeSafety = requireStoreSafety(key)
@@ -227,14 +224,13 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
             if (response is MarketResponse.Success) {
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
-                        val input = fetcher.converter(response.value)
-                        store.write(key, input)
+                        store.write(key, response.value)
                     }
                 }
 
                 storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
                 readCompletions[key]!!.forEach { anyOnCompletion ->
-                    val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
+                    val onCompletion = anyOnCompletion as OnMarketCompletion<Input>
                     onCompletion.onSuccess(response)
                 }
                 storeSafety.readCompletionsLightswitch.unlock(storeSafety.readCompletionsLock)
@@ -319,12 +315,12 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any, Output : Any> getAndEmitLatest(
+    private suspend fun getAndEmitLatest(
         key: Key,
-        fetcher: NetworkFetcher<Key, Input, Output>
+        fetcher: NetworkFetcher<Key, Input>
     ) {
-        startIfNotBroadcasting<Output>(key)
-        load<Output>(key)
+        startIfNotBroadcasting<Input>(key)
+        load<Input>(key)
         refresh(key, fetcher)
     }
 
@@ -445,13 +441,12 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     @AnyThread
     private suspend fun eagerlyResolveConflicts(
         key: Key,
-        request: PostRequest<Key, Input, Output>,
-        converter: Converter<Output, Input>
+        request: PostRequest<Key, Input>
     ): Boolean {
 
         return try {
-            val lastStored = lastStored<Output>(key) ?: return false
-            val input = converter(lastStored)
+            val lastStored = lastStored<Input>(key) ?: return false
+            val input = lastStored
             val output = request.invoke(key, input)
             val resolved = output != null
 

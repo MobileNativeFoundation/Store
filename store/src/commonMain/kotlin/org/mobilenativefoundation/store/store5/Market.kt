@@ -19,8 +19,8 @@ interface Market<Key : Any, Input : Any, Output : Any> {
         fun <Key : Any, Input : Any, Output : Any> of(
             stores: List<Store<Key, Input, Output>>,
             bookkeeper: Bookkeeper<Key>,
-            fetcher: NetworkFetcher<Key, Input, Output>,
-            updater: NetworkUpdater<Key, Input, Output>
+            fetcher: NetworkFetcher<Key, Input>,
+            updater: NetworkUpdater<Key, Input>
         ): Market<Key, Input, Output> = RealMarket(stores, bookkeeper, fetcher, updater)
     }
 }

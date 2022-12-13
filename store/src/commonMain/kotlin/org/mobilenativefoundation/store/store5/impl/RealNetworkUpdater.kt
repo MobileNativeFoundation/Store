@@ -5,11 +5,9 @@ import org.mobilenativefoundation.store.store5.OnNetworkCompletion
 import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.PostRequest
 
-internal class RealNetworkUpdater<Key : Any, Input : Any, Output : Any>(
-    val realPost: PostRequest<Key, Input, Output>,
-    override val onCompletion: OnNetworkCompletion<Output>,
-    val realConverter: Converter<Input, Output>
-) : NetworkUpdater<Key, Input, Output> {
-    override suspend fun post(key: Key, input: Input): Output? = realPost(key, input)
-    override fun converter(input: Input): Output = realConverter(input)
+internal class RealNetworkUpdater<Key : Any, Input : Any>(
+    val realPost: PostRequest<Key, Input>,
+    override val onCompletion: OnNetworkCompletion<Input>,
+) : NetworkUpdater<Key, Input> {
+    override suspend fun post(key: Key, input: Input): Input? = realPost(key, input)
 }
