@@ -5,6 +5,12 @@ internal data class ComplexNoteEntry(
     val note: NoteMarketOutput
 )
 
+internal data class ComplexNetworkNoteEntry(
+    val key: NoteMarketKey,
+    val note: NoteMarketInput
+)
+
+
 internal sealed class NoteMarketKey {
     sealed class Read : NoteMarketKey() {
         data class GetById(val noteId: String) : Read()

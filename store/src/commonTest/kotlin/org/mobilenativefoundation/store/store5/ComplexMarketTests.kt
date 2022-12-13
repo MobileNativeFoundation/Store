@@ -226,10 +226,10 @@ class ComplexMarketTests {
                 }
             )
 
-            fun onNetworkCompletion() = OnNetworkCompletion<NoteMarketOutput>(
+            fun onNetworkCompletion() = OnNetworkCompletion<NoteMarketInput>(
                 onSuccess = { result ->
                     val output = result.value
-                    require(output is NoteMarketOutput.Read && output.data is MarketData.Single<Note>)
+                    require(output.data is MarketData.Single<Note>)
                     val counts = networkOnCompletions[output.data.item.id] ?: mutableMapOf()
                     val successesBefore = counts[successCount] ?: 0
                     val successesAfter = successesBefore + 1
@@ -370,7 +370,7 @@ class ComplexMarketTests {
             val flowTwo = market.read(readerTwo)
             testScope.advanceUntilIdle()
 
-            val lastResponseOne = flowOne.take(3).last()
+            val lastResponseOne: MarketResponse<NoteMarketOutput> = flowOne.take(3).last()
             assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
             assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
             assertEquals(Origin.Network, lastResponseOne.origin)

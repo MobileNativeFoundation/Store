@@ -1,8 +1,10 @@
 package org.mobilenativefoundation.store.store5.data.fake
 
+import org.mobilenativefoundation.store.store5.data.model.ComplexNetworkNoteEntry
 import org.mobilenativefoundation.store.store5.data.model.ComplexNoteEntry
 import org.mobilenativefoundation.store.store5.data.model.MarketData
 import org.mobilenativefoundation.store.store5.data.model.Note
+import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
 
@@ -39,6 +41,21 @@ internal object FakeComplexNotes {
         val Twelve = ComplexNoteEntry(NoteMarketKey.Read.GetById(Notes.Twelve.id), NoteMarketOutput.Read(MarketData.Single(Notes.Twelve)))
     }
 
+    object GetByNetworkId {
+        val One = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.One.id), NoteMarketInput(MarketData.Single(Notes.One)))
+        val Two = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Two.id), NoteMarketInput(MarketData.Single(Notes.Two)))
+        val Three = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Three.id), NoteMarketInput(MarketData.Single(Notes.Three)))
+        val Four = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Four.id), NoteMarketInput(MarketData.Single(Notes.Four)))
+        val Five = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Five.id), NoteMarketInput(MarketData.Single(Notes.Five)))
+        val Six = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Six.id), NoteMarketInput(MarketData.Single(Notes.Six)))
+        val Seven = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Seven.id), NoteMarketInput(MarketData.Single(Notes.Seven)))
+        val Eight = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Eight.id), NoteMarketInput(MarketData.Single(Notes.Eight)))
+        val Nine = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Nine.id), NoteMarketInput(MarketData.Single(Notes.Nine)))
+        val Ten = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Ten.id), NoteMarketInput(MarketData.Single(Notes.Ten)))
+        val Eleven = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Eleven.id), NoteMarketInput(MarketData.Single(Notes.Eleven)))
+        val Twelve = ComplexNetworkNoteEntry(NoteMarketKey.Read.GetById(Notes.Twelve.id), NoteMarketInput(MarketData.Single(Notes.Twelve)))
+    }
+
     object Paginate {
         val First = ComplexNoteEntry(
             NoteMarketKey.Read.Paginate(0, 3), NoteMarketOutput.Read(MarketData.Collection(listOf(Notes.One, Notes.Two, Notes.Three)))
@@ -54,6 +71,24 @@ internal object FakeComplexNotes {
 
         val Fourth = ComplexNoteEntry(
             NoteMarketKey.Read.Paginate(9, 3), NoteMarketOutput.Read(MarketData.Collection(listOf(Notes.Ten, Notes.Eleven, Notes.Twelve)))
+        )
+    }
+
+    object PaginateNetwork {
+        val First = ComplexNetworkNoteEntry(
+            NoteMarketKey.Read.Paginate(0, 3), NoteMarketInput(MarketData.Collection(listOf(Notes.One, Notes.Two, Notes.Three)))
+        )
+
+        val Second = ComplexNetworkNoteEntry(
+            NoteMarketKey.Read.Paginate(3, 3), NoteMarketInput(MarketData.Collection(listOf(Notes.Four, Notes.Five, Notes.Six)))
+        )
+
+        val Third = ComplexNetworkNoteEntry(
+            NoteMarketKey.Read.Paginate(6, 3), NoteMarketInput(MarketData.Collection(listOf(Notes.Seven, Notes.Eight, Notes.Nine)))
+        )
+
+        val Fourth = ComplexNetworkNoteEntry(
+            NoteMarketKey.Read.Paginate(9, 3), NoteMarketInput(MarketData.Collection(listOf(Notes.Ten, Notes.Eleven, Notes.Twelve)))
         )
     }
 

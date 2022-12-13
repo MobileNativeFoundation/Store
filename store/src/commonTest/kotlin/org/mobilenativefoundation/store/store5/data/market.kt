@@ -49,7 +49,7 @@ internal fun market(
 internal fun complexMarket(
     failRead: Boolean = false,
     failWrite: Boolean = false,
-    onNetworkCompletion: OnNetworkCompletion<NoteMarketOutput> = OnNetworkCompletion(
+    onNetworkCompletion: OnNetworkCompletion<NoteMarketInput> = OnNetworkCompletion(
         onSuccess = {},
         onFailure = {}
     )

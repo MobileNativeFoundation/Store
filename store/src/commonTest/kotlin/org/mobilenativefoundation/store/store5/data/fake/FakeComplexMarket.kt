@@ -20,12 +20,6 @@ internal object FakeComplexMarket {
         null -> NoteMarketOutput.Read(null)
     }
 
-    fun NoteMarketOutput.convert(): NoteMarketInput = when (this) {
-        is NoteMarketOutput.Read -> NoteMarketInput(this.data)
-    }
-
-    fun NoteMarketKey.Write.convert(): NoteMarketKey.Read = NoteMarketKey.Read.GetById(note.id)
-
     object Success {
 
         class MemoryLruStoreWrapper : Store<NoteMarketKey, NoteMarketInput, NoteMarketOutput> {
@@ -124,7 +118,7 @@ internal object FakeComplexMarket {
         val bookkeeper = bookkeeper(database)
         val fetcher = fetcher(api)
         fun updater(
-            onCompletion: OnNetworkCompletion<NoteMarketOutput> = OnNetworkCompletion(
+            onCompletion: OnNetworkCompletion<NoteMarketInput> = OnNetworkCompletion(
                 onSuccess = {},
                 onFailure = {}
             )
@@ -151,12 +145,16 @@ internal object FakeComplexMarket {
 
         val bookkeeper = bookkeeper(database)
         val fetcher = fetcher(api, fail = true)
+
         fun updater(
-            onCompletion: OnNetworkCompletion<NoteMarketOutput> = OnNetworkCompletion(
+            onCompletion: OnNetworkCompletion<NoteMarketInput> = OnNetworkCompletion(
                 onSuccess = {},
                 onFailure = {}
             )
-        ) = updater(api, onCompletion = onCompletion, fail = true)
+        ) =  NetworkUpdater.by<NoteMarketKey, NoteMarketInput>(
+            post = { key, input -> api.post(key, input) },
+            onCompletion = onCompletion
+        )
     }
 
     private fun bookkeeper(database: FakeComplexDatabase) = Bookkeeper.by<NoteMarketKey>(
@@ -167,23 +165,20 @@ internal object FakeComplexMarket {
     )
 
     private fun fetcher(api: FakeComplexApi, fail: Boolean = false) =
-        NetworkFetcher.by<NoteMarketKey, NoteMarketInput, NoteMarketOutput>(
-            get = { key -> api.get(key, fail) },
-            post = { key, input -> api.post(key, input.convert(), fail) },
-            converter = { it.convert() }
+        NetworkFetcher.by<NoteMarketKey, NoteMarketInput>(
+            get = { key -> api.get(key, fail) }
         )
 
     private fun updater(
         api: FakeComplexApi,
         fail: Boolean = false,
-        onCompletion: OnNetworkCompletion<NoteMarketOutput> = OnNetworkCompletion(
+        onCompletion: OnNetworkCompletion<NoteMarketInput> = OnNetworkCompletion(
             onSuccess = {},
             onFailure = {}
         )
     ) =
-        NetworkUpdater.by<NoteMarketKey, NoteMarketInput, NoteMarketOutput>(
-            post = { key, input -> api.post(key, input.convert(), fail) },
-            onCompletion = onCompletion,
-            converter = { it.convert() }
+        NetworkUpdater.by<NoteMarketKey, NoteMarketInput>(
+            post = { key, input -> api.post(key, input, fail) },
+            onCompletion = onCompletion
         )
 }

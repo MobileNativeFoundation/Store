@@ -1,25 +1,26 @@
 package org.mobilenativefoundation.store.store5.data.fake
 
 import org.mobilenativefoundation.store.store5.data.Api
+import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
 
-internal class FakeComplexApi : Api<NoteMarketKey, NoteMarketOutput> {
-    override val data = mutableMapOf<NoteMarketKey, NoteMarketOutput>()
+internal class FakeComplexApi : Api<NoteMarketKey, NoteMarketInput> {
+    override val data = mutableMapOf<NoteMarketKey, NoteMarketInput>()
 
     init {
         reset()
     }
 
-    override fun get(key: NoteMarketKey, fail: Boolean): NoteMarketOutput? {
+    override fun get(key: NoteMarketKey, fail: Boolean): NoteMarketInput {
         if (fail) {
             throw Exception()
         }
 
-        return data[key]
+        return data[key]!!
     }
 
-    override fun post(key: NoteMarketKey, value: NoteMarketOutput, fail: Boolean): NoteMarketOutput? {
+    override fun post(key: NoteMarketKey, value: NoteMarketInput, fail: Boolean): NoteMarketInput? {
         if (fail) {
             throw Exception()
         }
@@ -28,7 +29,7 @@ internal class FakeComplexApi : Api<NoteMarketKey, NoteMarketOutput> {
     }
 
     fun reset() {
-        with(FakeComplexNotes.GetById) {
+        with(FakeComplexNotes.GetByNetworkId) {
             data[One.key] = One.note
             data[Two.key] = Two.note
             data[Three.key] = Three.note
@@ -43,7 +44,7 @@ internal class FakeComplexApi : Api<NoteMarketKey, NoteMarketOutput> {
             data[Twelve.key] = Twelve.note
         }
 
-        with(FakeComplexNotes.Paginate) {
+        with(FakeComplexNotes.PaginateNetwork) {
             data[First.key] = First.note
             data[Second.key] = Second.note
             data[Third.key] = Third.note
