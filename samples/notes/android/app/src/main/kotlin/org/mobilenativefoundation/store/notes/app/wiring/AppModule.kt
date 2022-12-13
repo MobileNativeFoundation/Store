@@ -105,31 +105,11 @@ object AppModule {
                 onSuccess = {},
                 onFailure = {}
             ),
-            converter = { it }
         ),
         fetcher = NetworkFetcher.by(
-            post = { key, input ->
-                when (val result = if (key.id != null) {
-                    api.putNote(key.id, input.title, input.content)
-
-                } else {
-                    api.postNote(input.title, input.content)
-                }) {
-                    is Result.Failure -> null
-                    is Result.Success -> result.component1()
-                }
-            },
             get = { key ->
-                if (key.id == null) {
-                    null
-                } else {
-                    when (val result = api.getNote(key.id)) {
-                        is Result.Failure -> null
-                        is Result.Success -> result.component1()
-                    }
-                }
+                 api.getNote(key.id!!).component1()!!
             },
-            converter = { it }
         )
     )
 

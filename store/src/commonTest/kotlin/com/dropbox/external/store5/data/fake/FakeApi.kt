@@ -10,12 +10,12 @@ internal class FakeApi : Api<String, Note> {
         reset()
     }
 
-    override fun get(key: String, fail: Boolean): Note? {
+    override fun get(key: String, fail: Boolean): Note {
         if (fail) {
             throw Exception()
         }
 
-        return data[key]
+        return data[key]!!
     }
 
     override fun post(key: String, value: Note, fail: Boolean): Note? {
