@@ -123,8 +123,7 @@ class MarketTests {
             val responsesAfterWrite = flow.take(4).toList()
             val lastResponseAfterWrite = responsesAfterWrite.last()
 
-            assertIs<MarketResponse.Success<Note>>(lastResponseAfterWrite)
-            assertEquals(newNote, lastResponseAfterWrite.value)
+            assertIs<MarketResponse.WriteSuccess>(lastResponseAfterWrite)
             assertEquals(Origin.LocalWrite, lastResponseAfterWrite.origin)
             assertEquals(newNote, FakeMarket.Success.api.get(FakeNotes.One.key))
         }
@@ -155,16 +154,14 @@ class MarketTests {
             val responsesAfterWriteOne = flowOne.take(4).toList()
             val lastResponseAfterWriteOne = responsesAfterWriteOne.last()
 
-            assertIs<MarketResponse.Success<Note>>(lastResponseAfterWriteOne)
-            assertEquals(newNoteOne, lastResponseAfterWriteOne.value)
+            assertIs<MarketResponse.WriteSuccess>(lastResponseAfterWriteOne)
             assertEquals(Origin.LocalWrite, lastResponseAfterWriteOne.origin)
             assertEquals(newNoteOne, FakeMarket.Success.api.get(FakeNotes.One.key))
 
             val responsesAfterWriteTwo = flowTwo.take(4).toList()
             val lastResponseAfterWriteTwo = responsesAfterWriteTwo.last()
 
-            assertIs<MarketResponse.Success<Note>>(lastResponseAfterWriteTwo)
-            assertEquals(newNoteTwo, lastResponseAfterWriteTwo.value)
+            assertIs<MarketResponse.WriteSuccess>(lastResponseAfterWriteTwo)
             assertEquals(Origin.LocalWrite, lastResponseAfterWriteTwo.origin)
             assertEquals(newNoteTwo, FakeMarket.Success.api.get(FakeNotes.Two.key))
         }
@@ -401,10 +398,10 @@ class MarketTests {
         assertEquals(newNote, lastResponseOne.value)
         assertEquals(MarketResponse.Companion.Origin.Network, lastResponseOne.origin)
 
-        assertContains(
-            lastResponsesOne,
-            MarketResponse.Success(newNote, Origin.LocalWrite)
-        )
+//        assertContains(
+//            lastResponsesOne,
+//            MarketResponse.Success(newNote, Origin.LocalWrite)
+//        )
 
         assertContains(
             lastResponsesOne,
