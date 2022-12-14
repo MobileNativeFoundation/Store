@@ -151,7 +151,7 @@ internal object FakeComplexMarket {
                 onSuccess = {},
                 onFailure = {}
             )
-        ) =  NetworkUpdater.by<NoteMarketKey, NoteMarketInput>(
+        ) = NetworkUpdater.by<NoteMarketKey, NoteMarketInput>(
             post = { key, input -> api.post(key, input) },
             onCompletion = onCompletion
         )

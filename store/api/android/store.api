@@ -90,15 +90,26 @@ public final class org/mobilenativefoundation/store/store5/MarketResponse$Succes
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class org/mobilenativefoundation/store/store5/MarketResponse$WriteSuccess : org/mobilenativefoundation/store/store5/MarketResponse {
+	public fun <init> ()V
+	public fun <init> (Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;)V
+	public synthetic fun <init> (Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;
+	public final fun copy (Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;)Lorg/mobilenativefoundation/store/store5/MarketResponse$WriteSuccess;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/MarketResponse$WriteSuccess;Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/MarketResponse$WriteSuccess;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOrigin ()Lorg/mobilenativefoundation/store/store5/MarketResponse$Companion$Origin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class org/mobilenativefoundation/store/store5/NetworkFetcher {
 	public static final field Companion Lorg/mobilenativefoundation/store/store5/NetworkFetcher$Companion;
-	public abstract fun converter (Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun get (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun post (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class org/mobilenativefoundation/store/store5/NetworkFetcher$Companion {
-	public final fun by (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/NetworkFetcher;
+	public final fun by (Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/store5/NetworkFetcher;
 }
 
 public abstract class org/mobilenativefoundation/store/store5/NetworkResult {
@@ -128,13 +139,12 @@ public final class org/mobilenativefoundation/store/store5/NetworkResult$Success
 
 public abstract interface class org/mobilenativefoundation/store/store5/NetworkUpdater {
 	public static final field Companion Lorg/mobilenativefoundation/store/store5/NetworkUpdater$Companion;
-	public abstract fun converter (Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun getOnCompletion ()Lorg/mobilenativefoundation/store/store5/OnNetworkCompletion;
 	public abstract fun post (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class org/mobilenativefoundation/store/store5/NetworkUpdater$Companion {
-	public final fun by (Lkotlin/jvm/functions/Function3;Lorg/mobilenativefoundation/store/store5/OnNetworkCompletion;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/NetworkUpdater;
+	public final fun by (Lkotlin/jvm/functions/Function3;Lorg/mobilenativefoundation/store/store5/OnNetworkCompletion;)Lorg/mobilenativefoundation/store/store5/NetworkUpdater;
 }
 
 public final class org/mobilenativefoundation/store/store5/OnMarketCompletion {

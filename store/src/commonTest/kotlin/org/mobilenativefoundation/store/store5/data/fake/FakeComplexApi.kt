@@ -3,7 +3,6 @@ package org.mobilenativefoundation.store.store5.data.fake
 import org.mobilenativefoundation.store.store5.data.Api
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
-import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
 
 internal class FakeComplexApi : Api<NoteMarketKey, NoteMarketInput> {
     override val data = mutableMapOf<NoteMarketKey, NoteMarketInput>()

@@ -49,8 +49,7 @@ class OfflineMarketTests {
             testScope.advanceUntilIdle()
 
             val lastResponseOne = flowOne.take(4).last()
-            assertIs<MarketResponse.Success<Note>>(lastResponseOne)
-            assertEquals(newNote, lastResponseOne.value)
+            assertIs<MarketResponse.WriteSuccess>(lastResponseOne)
             assertEquals(MarketResponse.Companion.Origin.LocalWrite, lastResponseOne.origin)
         }
 

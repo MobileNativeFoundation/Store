@@ -165,7 +165,7 @@ class ComplexMarketTests {
             assertEquals(true, writeResponseTwo)
 
             val responsesAfterWriteOne = flowOne.take(4).toList()
-            val lastResponseAfterWriteOne= responsesAfterWriteOne.last()
+            val lastResponseAfterWriteOne = responsesAfterWriteOne.last()
 
             assertIs<MarketResponse.WriteSuccess>(lastResponseAfterWriteOne)
 //            val lastResponseAfterWriteOneValue = lastResponseAfterWriteOne.value
@@ -180,7 +180,7 @@ class ComplexMarketTests {
             assertIs<MarketData.Single<Note>>(apiValueDataOne)
             assertEquals(newNoteOne, apiValueDataOne.item)
 
-            val responsesAfterWriteTwo:List<MarketResponse> = flowTwo.take(4).toList()
+            val responsesAfterWriteTwo: List<MarketResponse> = flowTwo.take(4).toList()
             val lastResponseAfterWriteTwo = responsesAfterWriteTwo.last()
 
             assertIs<MarketResponse.WriteSuccess>(lastResponseAfterWriteTwo)
@@ -432,7 +432,7 @@ class ComplexMarketTests {
         val flowOne = market.read(readerOne)
         testScope.advanceUntilIdle()
 
-        val lastResponsesOne :List<MarketResponse> = flowOne.take(7).toList()
+        val lastResponsesOne: List<MarketResponse> = flowOne.take(7).toList()
         val lastResponseOne = flowOne.take(7).last()
         assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
         val lastResponseOneValue = lastResponseOne.value
@@ -441,7 +441,7 @@ class ComplexMarketTests {
         assertIs<MarketData.Single<Note>>(lastResponseOneValueData)
         assertEquals(newNoteOne, lastResponseOneValueData.item)
         assertEquals(MarketResponse.Companion.Origin.Network, lastResponseOne.origin)
-        //Todo fix assert
+        // Todo fix assert
 //        assertContains(
 //            lastResponsesOne,
 //            MarketResponse.Success<NoteMarketOutput>(NoteMarketOutput.Read(MarketData.Single(newNoteOne)), Origin.LocalWrite)

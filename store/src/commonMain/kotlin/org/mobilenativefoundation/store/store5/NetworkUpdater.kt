@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5
 
-import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.PostRequest
 import org.mobilenativefoundation.store.store5.impl.RealNetworkUpdater
 
@@ -18,7 +17,6 @@ interface NetworkUpdater<Key : Any, Input : Any> {
      * Executes on network completion.
      */
     val onCompletion: OnNetworkCompletion<Input>
-
 
     companion object {
         fun <Key : Any, Input : Any> by(

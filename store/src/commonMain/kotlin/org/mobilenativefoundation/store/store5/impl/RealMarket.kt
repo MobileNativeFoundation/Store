@@ -2,7 +2,6 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.lastOrNull
@@ -24,9 +23,7 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.WriteRequest
 import org.mobilenativefoundation.store.store5.concurrent.AnyThread
 import org.mobilenativefoundation.store.store5.concurrent.StoreSafety
-import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.PostRequest
-
 
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
 typealias AnyWriteRequestQueue<Key> = ArrayDeque<WriteRequest<Key, *, *>>
@@ -71,7 +68,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         val conflictsMightExist = conflictsMightExist<Output>(reader.key)
 
         if (conflictsMightExist) {
-            //TODO MIKE - check with Matt about flipping to updater below
+            // TODO MIKE - check with Matt about flipping to updater below
             eagerlyResolveConflicts(reader.key, updater::post)
         }
 
@@ -225,7 +222,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
                     storeLocks[index].withLock {
                         store.write(key, response.value as Input)
                         if (index == 0) {
-                            //we just wrote read should always succeed
+                            // we just wrote read should always succeed
                             firstOutput = store.read(key).last()!!
                         }
                     }

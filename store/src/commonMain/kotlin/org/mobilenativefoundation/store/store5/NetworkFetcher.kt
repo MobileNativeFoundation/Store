@@ -1,8 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
-import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.GetRequest
-import org.mobilenativefoundation.store.store5.definition.PostRequest
 import org.mobilenativefoundation.store.store5.impl.RealNetworkFetcher
 
 /**
@@ -14,7 +12,6 @@ interface NetworkFetcher<Key : Any, Input> {
      * Makes HTTP GET request.
      */
     suspend fun get(key: Key): Input?
-
 
     companion object {
         fun <Key : Any, Input : Any> by(
