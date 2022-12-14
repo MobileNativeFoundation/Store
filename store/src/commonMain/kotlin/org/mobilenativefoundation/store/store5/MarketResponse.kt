@@ -1,10 +1,12 @@
 package org.mobilenativefoundation.store.store5
 
-sealed class MarketResponse<out Output> {
-    object Loading : MarketResponse<Nothing>()
-    data class Success<Output>(val value: Output, val origin: Origin) : MarketResponse<Output>()
-    data class Failure(val error: Throwable, val origin: Origin) : MarketResponse<Nothing>()
-    object Empty : MarketResponse<Nothing>()
+sealed class MarketResponse {
+    object Loading : MarketResponse()
+    data class Success<Output>(val value: Output, val origin: Origin) : MarketResponse()
+    data class WriteSuccess(val origin: Origin = Origin.LocalWrite) : MarketResponse()
+
+    data class Failure(val error: Throwable, val origin: Origin) : MarketResponse()
+    object Empty : MarketResponse()
 
     companion object {
         enum class Origin {

@@ -31,9 +31,9 @@ import org.mobilenativefoundation.store.store5.definition.PostRequest
 typealias AnyReadCompletionsQueue = MutableList<OnMarketCompletion<*>>
 typealias AnyWriteRequestQueue<Key> = ArrayDeque<WriteRequest<Key, *, *>>
 typealias SomeWriteRequestQueue<Key, Input> = ArrayDeque<WriteRequest<Key, Input, *>>
-typealias AnyBroadcast = MutableSharedFlow<MarketResponse<*>>
-typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse<T>>
-typealias SomeFlow<T> = Flow<MarketResponse<T>>
+typealias AnyBroadcast = MutableSharedFlow<MarketResponse>
+typealias SomeBroadcast<T> = MutableSharedFlow<MarketResponse>
+typealias SomeFlow<T> = Flow<MarketResponse>
 
 /**
  * Thread-safe [Market] implementation.
@@ -83,14 +83,14 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         } else if (reader.refresh && readNotInProgress(reader.key)) {
             getAndEmitLatest(reader.key, fetcher)
         } else if (readNotInProgress(reader.key)) {
-            load<Output>(reader.key)
+            load(reader.key)
         }
 
         return flow {
-            requireBroadcast<Output>(reader.key).collect {
-                if (it is MarketResponse.Success &&
+            requireBroadcast(reader.key).collect {
+                if (it is MarketResponse.Success<*> &&
                     it.origin == MarketResponse.Companion.Origin.Store &&
-                    reader.validator?.isValid(it.value) == false
+                    reader.validator?.isValid(it.value as Output) == false
                 ) {
                     getAndEmitLatest(reader.key, fetcher)
                 } else {
@@ -106,7 +106,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         input: Input,
         created: Long,
     ) {
-        val writeRequestQueue = requireWriteRequestQueue<Input>(key)
+        val writeRequestQueue = requireWriteRequestQueue(key)
         val outstandingWriteRequests: AnyWriteRequestQueue<Key> = ArrayDeque()
         val storeSafety = requireStoreSafety(key)
 
@@ -157,11 +157,8 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
 
     @AnyThread
     override suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean {
-        val broadcast = requireBroadcast<Output>(writer.key)
-        val responseLocalWrite = MarketResponse.Success(
-            writer.input as Output,
-            origin = Origin.LocalWrite
-        )
+        val broadcast = requireBroadcast(writer.key)
+        val responseLocalWrite = MarketResponse.WriteSuccess()
         broadcast.emit(responseLocalWrite)
         stores.forEachIndexed { index, store ->
             storeLocks[index].withLock {
@@ -175,10 +172,10 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Output : Any> lastOrNull(key: Key): Output? {
-        val last = getBroadcast<Output>(key)?.replayCache?.last()
-        if (last is MarketResponse.Success) {
-            return last.value
+    private suspend fun lastOrNull(key: Key): Output? {
+        val last = getBroadcast(key)?.replayCache?.last()
+        if (last is MarketResponse.Success<*>) {
+            return last.value as Output
         }
         return null
     }
@@ -189,13 +186,13 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
      * Emits [MarketResponse.Loading] if no [Store] has a value for [key].
      */
     @AnyThread
-    private suspend fun <Output : Any> load(key: Key) {
-        val broadcast = requireBroadcast<Output>(key)
+    private suspend fun load(key: Key) {
+        val broadcast = requireBroadcast(key)
 
         stores.forEachIndexed { index, store ->
             try {
                 storeLocks[index].lock()
-                val last = (store.read(key) as Flow<Output?>).lastOrNull()
+                val last = (store.read(key)).lastOrNull()
                 storeLocks[index].unlock()
                 if (last != null) {
                     broadcast.emit(MarketResponse.Success(last, origin = Origin.Store))
@@ -209,7 +206,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any> refresh(
+    private suspend fun refresh(
         key: Key,
         fetcher: NetworkFetcher<Key, Input>
     ) {
@@ -222,11 +219,11 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
                 else -> MarketResponse.Success(result, origin = Origin.Network)
             }
             var firstOutput: Output? = null
-            if (response is MarketResponse.Success) {
+            if (response is MarketResponse.Success<*>) {
 
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
-                        store.write(key, response.value)
+                        store.write(key, response.value as Input)
                         if (index == 0) {
                             //we just wrote read should always succeed
                             firstOutput = store.read(key).last()!!
@@ -295,7 +292,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
             }
         }
 
-        val broadcast = requireBroadcast<Any>(key)
+        val broadcast = requireBroadcast(key)
         val response = MarketResponse.Empty
         broadcast.emit(response)
         return true
@@ -329,12 +326,12 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
         fetcher: NetworkFetcher<Key, Input>
     ) {
         startIfNotBroadcasting<Input>(key)
-        load<Input>(key)
+        load(key)
         refresh(key, fetcher)
     }
 
     @AnyThread
-    private suspend fun <Output : Any> getOrSetBroadcast(key: Key): SomeBroadcast<Output> {
+    private suspend fun getOrSetBroadcast(key: Key): SomeBroadcast<Output> {
         val storeSafety = requireStoreSafety(key)
         storeSafety.broadcastLock.withLock {
             if (broadcasts[key] == null) {
@@ -347,7 +344,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Output : Any> getBroadcast(key: Key): SomeBroadcast<Output>? {
+    private suspend fun getBroadcast(key: Key): SomeBroadcast<Output>? {
         val storeSafety = requireStoreSafety(key)
         storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
         val broadcast = broadcasts[key] as? SomeBroadcast<Output>
@@ -357,7 +354,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Output : Any> requireBroadcast(key: Key): SomeBroadcast<Output> {
+    private suspend fun requireBroadcast(key: Key): SomeBroadcast<Output> {
         val storeSafety = requireStoreSafety(key)
         storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
         val broadcast = broadcasts[key] as SomeBroadcast<Output>
@@ -367,7 +364,7 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
     }
 
     @AnyThread
-    private suspend fun <Input : Any> requireWriteRequestQueue(key: Key): SomeWriteRequestQueue<Key, Input> {
+    private suspend fun requireWriteRequestQueue(key: Key): SomeWriteRequestQueue<Key, Input> {
         val storeSafety = requireStoreSafety(key)
         storeSafety.writeRequestsLightswitch.lock(storeSafety.writeRequestsLock)
         val writeRequestQueue = writeRequests[key] as SomeWriteRequestQueue<Key, Input>
