@@ -92,7 +92,9 @@ class ComplexMarketTests {
             val responsesOne = flowOne.take(3).toList()
             val lastResponseOne = responsesOne.last()
             assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
-            assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
+            val expected: NoteMarketOutput = FakeComplexNotes.GetById.One.note
+            val actual: NoteMarketOutput = lastResponseOne.value
+            assertEquals(expected, actual)
             assertEquals(Origin.Network, lastResponseOne.origin)
 
             val responsesTwo = flowOne.take(3).toList()
@@ -168,7 +170,7 @@ class ComplexMarketTests {
             assertEquals(true, writeResponseTwo)
 
             val responsesAfterWriteOne = flowOne.take(4).toList()
-            val lastResponseAfterWriteOne = responsesAfterWriteOne.last()
+            val lastResponseAfterWriteOne: MarketResponse<NoteMarketOutput> = responsesAfterWriteOne.last()
 
             assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseAfterWriteOne)
             val lastResponseAfterWriteOneValue = lastResponseAfterWriteOne.value

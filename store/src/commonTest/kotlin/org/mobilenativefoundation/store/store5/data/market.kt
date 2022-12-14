@@ -75,7 +75,7 @@ internal fun complexMarket(
         fetcher = FakeComplexMarket.Failure.fetcher
     )
 
-    else -> Market.of(
+    else -> Market.of<NoteMarketKey, NoteMarketInput, NoteMarketOutput>(
         stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
         bookkeeper = FakeComplexMarket.Success.bookkeeper,
         updater = FakeComplexMarket.Success.updater(onNetworkCompletion),

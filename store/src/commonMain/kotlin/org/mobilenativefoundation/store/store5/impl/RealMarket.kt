@@ -1,9 +1,10 @@
-
 package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -220,24 +221,32 @@ class RealMarket<Key : Any, Input : Any, Output : Any> internal constructor(
                 null -> MarketResponse.Empty
                 else -> MarketResponse.Success(result, origin = Origin.Network)
             }
-
+            var firstOutput: Output? = null
             if (response is MarketResponse.Success) {
+
                 (stores as List<Store<Key, Input, Output>>).forEachIndexed { index, store ->
                     storeLocks[index].withLock {
                         store.write(key, response.value)
+                        if (index == 0) {
+                            //we just wrote read should always succeed
+                            firstOutput = store.read(key).last()!!
+                        }
                     }
                 }
 
                 storeSafety.readCompletionsLightswitch.lock(storeSafety.readCompletionsLock)
                 readCompletions[key]!!.forEach { anyOnCompletion ->
-                    val onCompletion = anyOnCompletion as OnMarketCompletion<Input>
-                    onCompletion.onSuccess(response)
+                    val onCompletion = anyOnCompletion as OnMarketCompletion<Output>
+                    onCompletion.onSuccess(MarketResponse.Success(firstOutput!!, Origin.Network))
                 }
                 storeSafety.readCompletionsLightswitch.unlock(storeSafety.readCompletionsLock)
             }
 
             storeSafety.broadcastLightswitch.lock(storeSafety.broadcastLock)
-            broadcasts[key]!!.emit(response)
+            if (firstOutput == null)
+                broadcasts[key]!!.emit(MarketResponse.Empty)
+            else
+                broadcasts[key]!!.emit(MarketResponse.Success(firstOutput, Origin.Network))
             storeSafety.broadcastLightswitch.unlock(storeSafety.broadcastLock)
         } catch (throwable: Throwable) {
             val response = MarketResponse.Failure(
