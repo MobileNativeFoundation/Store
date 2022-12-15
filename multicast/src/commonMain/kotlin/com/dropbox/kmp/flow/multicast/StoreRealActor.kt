@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dropbox.flow.multicast
+package com.dropbox.kmp.flow.multicast
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
 
 /**
  * Simple actor implementation abstracting away Coroutine.actor since it is deprecated.
@@ -39,7 +38,7 @@ internal abstract class StoreRealActor<T>(
             capacity = 0
         ) {
             try {
-                for (msg in channel) {
+                for (msg in it) {
                     if (msg === CLOSE_TOKEN) {
                         doClose()
                         break

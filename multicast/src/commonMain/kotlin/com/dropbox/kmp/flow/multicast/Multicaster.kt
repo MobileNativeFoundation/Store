@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dropbox.flow.multicast
+package com.dropbox.kmp.flow.multicast
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
