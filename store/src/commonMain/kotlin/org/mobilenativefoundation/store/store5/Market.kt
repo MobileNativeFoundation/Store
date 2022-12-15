@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
-import org.mobilenativefoundation.store.store5.impl.RealMarket
 import kotlinx.coroutines.flow.Flow
+import org.mobilenativefoundation.store.store5.impl.RealMarket
 
 /**
  * Integrates stores and a bookkeeper.
@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.Flow
  * @see [Store]
  * @see [Bookkeeper]
  */
-interface Market<Key : Any, Input : Any, Output : Any> {
-    suspend fun read(reader: ReadRequest<Key, Input, Output>): Flow<MarketResponse<Output>>
-    suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean
+interface Market<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any> {
+    suspend fun read(reader: ReadRequest<Key, NetworkRepresentation, CommonRepresentation>): Flow<MarketResponse<CommonRepresentation>>
+    suspend fun write(writer: WriteRequest<Key, NetworkRepresentation, CommonRepresentation>): Boolean
     suspend fun delete(key: Key): Boolean
     suspend fun delete(): Boolean
 
