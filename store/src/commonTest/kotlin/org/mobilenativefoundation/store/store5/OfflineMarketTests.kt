@@ -24,7 +24,7 @@ import kotlin.test.assertIs
 class OfflineMarketTests {
     private val testScope = TestScope()
     private lateinit var database: FakeDatabase<Note>
-    private lateinit var memoryLruStore: MemoryLruStore<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<String, Note>
 
     @BeforeTest
     fun before() {

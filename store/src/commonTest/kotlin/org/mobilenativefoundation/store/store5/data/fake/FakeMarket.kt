@@ -33,7 +33,7 @@ internal object FakeMarket {
     }
 
     object Success {
-        val memoryLruStore = MemoryLruStore<Note>(10)
+        val memoryLruStore = MemoryLruStore<String, Note>(10)
         val database = FakeDatabase<Note>()
         val api = FakeApi()
 

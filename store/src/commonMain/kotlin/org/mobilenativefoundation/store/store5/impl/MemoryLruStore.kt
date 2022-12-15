@@ -2,118 +2,160 @@
 
 package org.mobilenativefoundation.store.store5.impl
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.mobilenativefoundation.store.store5.Store
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+
+internal typealias Weigher<Key, Value> = (Key, Value?) -> Int
 
 /**
- * Thread-safe LRU cache implementation.
+ * Multiplatform LRU cache implementation.
+ *
+ * Implementation is based on usage of [LinkedHashMap] as a container for the cache and custom
+ * double linked queue to track LRU property.
+ *
+ * [maxSize] - maximum size of the cache, can be anything bytes, number of entries etc. By default is number o entries.
+ * [weigher] - to be called to calculate the estimated size (weight) of the cache entry defined by its [Key] and [Value].
+ *             By default it returns 1.
+ *
+ * Cache trim performed only on new entry insertion.
  */
-class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Input, Input> {
-    internal var cache = LinkedHashMap<String, Node<*>>()
-    internal var head = headPointer
-    internal var tail = tailPointer
+internal class MemoryLruStore<Key : Any, Value : Any>(
+    private val maxSize: Int,
+    private val weigher: Weigher<Key, Value> = { _, _ -> 1 }
+) : Store<Key, Value, Value> {
+    private val cache = LinkedHashMap<Key, Node<Key, Value>>(0, 0.75f)
+    private var headNode: Node<Key, Value>? = null
+    private var tailNode: Node<Key, Value>? = null
+    private var size: Int = 0
 
-    private val lock = Mutex()
-
-    init {
-        head.next = tail
-        tail.prev = head
+    override fun read(key: Key): Flow<Value?> {
+        val node = cache[key]
+        if (node != null) {
+            moveNodeToHead(node)
+        }
+        return flowOf(node?.value)
     }
 
-    override fun read(key: String) = flow {
-        lock.withLock {
-            if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Input>
-                removeFromList(node)
-                insertIntoHead(node)
-                emit(node.value)
-            } else {
-                emit(null)
-            }
+    override suspend fun write(key: Key, value: Value):Boolean {
+        val node = cache[key]
+        if (node == null) {
+            cache[key] = addNode(key, value)
+            return true
+        } else {
+            node.value = value
+            moveNodeToHead(node)
+            return true
         }
+
+        trim()
     }
 
-    override suspend fun write(key: String, input: Input): Boolean {
-        lock.withLock {
-            if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Input>
-                removeFromList(node)
-                insertIntoHead(node)
-            } else {
-                if (cache.size >= maxSize) {
-                    removeFromTail()
-                }
-            }
-
-            val node = Node(key, input)
-            cache[key] = node
-            insertIntoHead(node)
-        }
-        return true
+    override suspend fun delete(key: Key): Boolean {
+        return removeUnsafe(key) != null
     }
 
-    override suspend fun delete(key: String): Boolean {
-        lock.withLock {
-            val node = cache[key]
-            cache.remove(key)
-            if (node != null) {
-                removeFromList(node)
-            }
+    fun keys() = cache.keys
+
+    private fun removeUnsafe(key: Key): Value? {
+        val nodeToRemove = cache.remove(key)
+        val value = nodeToRemove?.value
+        if (nodeToRemove != null) {
+            unlinkNode(nodeToRemove)
         }
-        return true
+        return value
+    }
+
+    fun remove(keys: Collection<Key>) {
+        keys.forEach { key -> removeUnsafe(key) }
     }
 
     override suspend fun clear(): Boolean {
-        lock.withLock {
-            cache.clear()
-
-            head = headPointer
-            tail = tailPointer
-            head.next = tail
-            tail.prev = head
-        }
+        cache.clear()
+        headNode = null
+        tailNode = null
+        size = 0
         return true
     }
 
-    private fun <V : Any> insertIntoHead(node: Node<V>) {
-        val nextHead = head.next!!
-        head.next = node
-        node.prev = head
-        node.next = nextHead
-        nextHead.prev = node
+    fun size(): Int {
+        return size
     }
 
-    private fun <V : Any> removeFromList(node: Node<V>) {
-        node.prev?.next = node.next
-        node.next?.prev = node.prev
+    fun dump(): Map<Key, Value> {
+        return cache.mapValues { (_, value) -> value.value as Value }
     }
 
-    private fun removeFromTail() {
-        if (tail.prev == null) {
+    private fun trim() {
+        var nodeToRemove = tailNode
+        while (nodeToRemove != null && size > maxSize) {
+            cache.remove(nodeToRemove.key)
+            unlinkNode(nodeToRemove)
+            nodeToRemove = tailNode
+        }
+    }
+
+    private fun addNode(key: Key, value: Value?): Node<Key, Value> {
+        val node = Node(
+            key = key,
+            value = value,
+            next = headNode,
+            prev = null,
+        )
+
+        headNode = node
+
+        if (node.next == null) {
+            tailNode = headNode
+        } else {
+            node.next?.prev = headNode
+        }
+
+        size += weigher(key, value)
+
+        return node
+    }
+
+    private fun moveNodeToHead(node: Node<Key, Value>) {
+        if (node.prev == null) {
             return
         }
 
-        val tail = tail.prev!!
-        cache.remove(tail.key)
-        removeFromList(tail)
+        node.prev?.next = node.next
+        node.next?.prev = node.prev
+
+        node.next = headNode?.next
+        node.prev = null
+
+        headNode?.prev = node
+        headNode = node
     }
 
-    internal data class Node<V : Any>(
-        val key: String,
-        var value: V,
-        var next: Node<*>? = null,
-        var prev: Node<*>? = null
+    private fun unlinkNode(node: Node<Key, Value>) {
+        if (node.prev == null) {
+            this.headNode = node.next
+        } else {
+            node.prev?.next = node.next
+        }
+
+        if (node.next == null) {
+            this.tailNode = node.prev
+        } else {
+            node.next?.prev = node.prev
+        }
+
+        size -= weigher(node.key!!, node.value)
+
+        node.key = null
+        node.value = null
+        node.next = null
+        node.prev = null
+    }
+
+    private class Node<Key, Value>(
+        var key: Key?,
+        var value: Value?,
+        var next: Node<Key, Value>?,
+        var prev: Node<Key, Value>?,
     )
-
-    companion object {
-        private const val HEAD_KEY = "HEAD"
-        private const val HEAD_VALUE = 0
-        private const val TAIL_KEY = "TAIL"
-        private const val TAIL_VALUE = -1
-
-        internal val headPointer = Node(HEAD_KEY, HEAD_VALUE)
-        internal val tailPointer = Node(TAIL_KEY, TAIL_VALUE)
-    }
 }

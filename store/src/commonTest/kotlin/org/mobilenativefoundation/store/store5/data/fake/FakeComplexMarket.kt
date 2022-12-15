@@ -29,7 +29,7 @@ internal object FakeComplexMarket {
     object Success {
 
         class MemoryLruStoreWrapper : Store<NoteMarketKey, NoteMarketInput, NoteMarketOutput> {
-            private val store = MemoryLruStore<NoteMarketOutput>(10)
+            private val store = MemoryLruStore<String, NoteMarketOutput>(10)
 
             override fun read(key: NoteMarketKey): Flow<NoteMarketOutput?> = channelFlow {
                 if (key is NoteMarketKey.Read) {

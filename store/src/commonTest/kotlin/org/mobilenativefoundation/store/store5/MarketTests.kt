@@ -28,7 +28,7 @@ class MarketTests {
     private val testScope = TestScope()
     private lateinit var market: Market<String, Note, Note>
     private lateinit var database: FakeDatabase<Note>
-    private lateinit var memoryLruStore: MemoryLruStore<Note>
+    private lateinit var memoryLruStore: MemoryLruStore<String, Note>
 
     @BeforeTest
     fun before() {
