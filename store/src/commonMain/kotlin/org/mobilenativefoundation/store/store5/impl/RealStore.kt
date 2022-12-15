@@ -19,14 +19,14 @@ internal class RealStore<Key : Any, StoreRepresentation : Any, CommonRepresentat
 ) : Store<Key, StoreRepresentation, CommonRepresentation> {
     override fun read(key: Key): Flow<CommonRepresentation?> = realReader(key).map {
         if (it != null) {
-            converter?.convert(it) ?: it as? CommonRepresentation
+            converter?.toCommonRepresentation(it) ?: it as? CommonRepresentation
         } else {
             null
         }
     }
 
     override suspend fun write(key: Key, input: CommonRepresentation): Boolean {
-        val storeRepresentation = converter?.convert(input) ?: input as? StoreRepresentation
+        val storeRepresentation = converter?.toStoreRepresentation(input) ?: input as? StoreRepresentation
         return if (storeRepresentation != null) {
             realWriter(key, storeRepresentation)
         } else {

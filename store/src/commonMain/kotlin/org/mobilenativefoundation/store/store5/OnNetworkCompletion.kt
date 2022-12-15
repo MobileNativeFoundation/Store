@@ -1,6 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
 data class OnNetworkCompletion<T : Any>(
-    val onSuccess: (NetworkResult.Success<T>) -> Unit,
-    val onFailure: (NetworkResult.Failure) -> Unit
+    val onSuccess: (NetworkReadResult.Success<T>) -> Unit,
+    val onFailure: (NetworkReadResult.Failure) -> Unit
 )

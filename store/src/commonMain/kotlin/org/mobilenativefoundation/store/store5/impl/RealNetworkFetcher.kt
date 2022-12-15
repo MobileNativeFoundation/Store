@@ -1,18 +1,17 @@
 package org.mobilenativefoundation.store.store5.impl
 
 import org.mobilenativefoundation.store.store5.NetworkFetcher
+import org.mobilenativefoundation.store.store5.NetworkUpdater
 import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.GetRequest
-import org.mobilenativefoundation.store.store5.definition.PostRequest
 
-internal class RealNetworkFetcher<Key : Any, CommonRepresentation : Any, NetworkRepresentation : Any>(
-    private val realGet: GetRequest<Key, NetworkRepresentation>,
-    private val realPost: PostRequest<Key, CommonRepresentation, NetworkRepresentation>,
+internal class RealNetworkFetcher<Key : Any, CommonRepresentation : Any, NetworkRepresentation : Any, NetworkWriteResponse : Any>(
+    private val get: GetRequest<Key, NetworkRepresentation>,
+    private val updater: NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse>,
     private val realConverter: Converter<NetworkRepresentation, CommonRepresentation>
-) : NetworkFetcher<Key, CommonRepresentation, NetworkRepresentation> {
-    override suspend fun get(key: Key): NetworkRepresentation? = realGet(key)
+) : NetworkFetcher<Key, CommonRepresentation, NetworkRepresentation, NetworkWriteResponse>,
+    NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse> by updater {
+    override suspend fun get(key: Key): NetworkRepresentation? = get(key)
 
-    override suspend fun post(key: Key, input: CommonRepresentation): NetworkRepresentation? = realPost(key, input)
-
-    override fun converter(output: NetworkRepresentation): CommonRepresentation = realConverter(output)
+    override fun converter(networkRepresentation: NetworkRepresentation): CommonRepresentation = realConverter(networkRepresentation)
 }

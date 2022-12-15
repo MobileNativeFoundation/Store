@@ -40,8 +40,8 @@ interface Store<Key : Any, StoreRepresentation : Any, CommonRepresentation : Any
     val converter: Converter<StoreRepresentation, CommonRepresentation>?
 
     interface Converter<StoreRepresentation : Any, CommonRepresentation : Any> {
-        fun convert(storeRepresentation: StoreRepresentation): CommonRepresentation
-        fun convert(commonRepresentation: CommonRepresentation): StoreRepresentation
+        fun toCommonRepresentation(storeRepresentation: StoreRepresentation): CommonRepresentation
+        fun toStoreRepresentation(commonRepresentation: CommonRepresentation): StoreRepresentation
     }
 
     companion object {

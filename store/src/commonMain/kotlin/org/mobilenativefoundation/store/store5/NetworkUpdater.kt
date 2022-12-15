@@ -8,29 +8,29 @@ import org.mobilenativefoundation.store.store5.impl.RealNetworkUpdater
  * Posts data to remote data source.
  * @see [WriteRequest]
  */
-interface NetworkUpdater<Key : Any, Input : Any, Output : Any> {
+interface NetworkUpdater<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
     /**
      * Makes HTTP POST request.
      */
-    suspend fun post(key: Key, input: Input): Output?
+    suspend fun post(key: Key, input: CommonRepresentation): NetworkWriteResponse
 
     /**
      * Executes on network completion.
      */
-    val onCompletion: OnNetworkCompletion<Output>
+    val onCompletion: OnNetworkCompletion<NetworkWriteResponse>
 
-    /**
-     * Converts [Input] to [Output].
-     */
-    fun converter(input: Input): Output
+    val responseValidator: (NetworkWriteResponse) -> Boolean
+
+    val converter: Converter<CommonRepresentation, NetworkWriteResponse>
 
     companion object {
-        fun <Key : Any, Input : Any, Output : Any> by(
-            post: PostRequest<Key, Input, Output>,
-            onCompletion: OnNetworkCompletion<Output>,
-            converter: Converter<Input, Output>
-        ): NetworkUpdater<Key, Input, Output> = RealNetworkUpdater(
-            post, onCompletion, converter
+        fun <Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> by(
+            post: PostRequest<Key, CommonRepresentation, NetworkWriteResponse>,
+            converter: Converter<CommonRepresentation, NetworkWriteResponse>,
+            responseValidator: (NetworkWriteResponse) -> Boolean,
+            onCompletion: OnNetworkCompletion<NetworkWriteResponse>,
+        ): NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse> = RealNetworkUpdater(
+            post, converter, responseValidator, onCompletion
         )
     }
 }

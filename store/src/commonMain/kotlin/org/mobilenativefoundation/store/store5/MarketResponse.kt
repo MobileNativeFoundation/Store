@@ -1,8 +1,8 @@
 package org.mobilenativefoundation.store.store5
 
-sealed class MarketResponse<out Output> {
+sealed class MarketResponse<out CommonRepresentation : Any> {
     object Loading : MarketResponse<Nothing>()
-    data class Success<Output>(val value: Output, val origin: Origin) : MarketResponse<Output>()
+    data class Success<CommonRepresentation : Any>(val value: CommonRepresentation, val origin: Origin) : MarketResponse<CommonRepresentation>()
     data class Failure(val error: Throwable, val origin: Origin) : MarketResponse<Nothing>()
     object Empty : MarketResponse<Nothing>()
 
