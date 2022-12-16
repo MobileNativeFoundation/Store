@@ -1,0 +1,15 @@
+public final class org/mobilenativefoundation/store/multicast5/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public final class org/mobilenativefoundation/store/multicast5/Multicaster {
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;ILkotlinx/coroutines/flow/Flow;ZZLkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineScope;ILkotlinx/coroutines/flow/Flow;ZZLkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun close (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun newDownstream (Z)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun newDownstream$default (Lorg/mobilenativefoundation/store/multicast5/Multicaster;ZILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+

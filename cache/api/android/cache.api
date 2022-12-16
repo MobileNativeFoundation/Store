@@ -1,0 +1,34 @@
+public final class org/mobilenativefoundation/store/cache5/BuildConfig {
+	public static final field BUILD_TYPE Ljava/lang/String;
+	public static final field DEBUG Z
+	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
+	public fun <init> ()V
+}
+
+public abstract interface class org/mobilenativefoundation/store/cache5/Cache {
+	public abstract fun getAllPresent (Ljava/util/List;)Ljava/util/Map;
+	public abstract fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getOrPut (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public abstract fun invalidate (Ljava/lang/Object;)V
+	public abstract fun invalidateAll ()V
+	public abstract fun invalidateAll (Ljava/util/List;)V
+	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun putAll (Ljava/util/Map;)V
+	public abstract fun size ()J
+}
+
+public final class org/mobilenativefoundation/store/cache5/CacheBuilder {
+	public static final field Companion Lorg/mobilenativefoundation/store/cache5/CacheBuilder$Companion;
+	public fun <init> ()V
+	public final fun build ()Lorg/mobilenativefoundation/store/cache5/Cache;
+	public final fun concurrencyLevel (Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun expireAfterAccess-LRDsOJo (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun expireAfterWrite-LRDsOJo (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun maximumSize (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun ticker (Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun weigher (JLkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+}
+
+public final class org/mobilenativefoundation/store/cache5/CacheBuilder$Companion {
+}
+

@@ -1,6 +1,7 @@
 plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("com.diffplug.spotless") version "6.4.1"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
 }
 
 buildscript {
@@ -31,7 +32,6 @@ allprojects {
     repositories {
         mavenCentral()
         google()
-        jcenter()
     }
 
     // Workaround to prevent Gradle from stealing focus from other apps during tests run/etc.
@@ -59,4 +59,3 @@ subprojects {
         }
     }
 }
-

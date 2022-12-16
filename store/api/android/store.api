@@ -17,7 +17,10 @@ public final class org/mobilenativefoundation/store/store5/BuildConfig {
 	public fun <init> ()V
 }
 
-public abstract interface annotation class org/mobilenativefoundation/store/store5/Convenience : java/lang/annotation/Annotation {
+public abstract interface annotation class org/mobilenativefoundation/store/store5/ConvenienceStoreApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class org/mobilenativefoundation/store/store5/ExperimentalStoreApi : java/lang/annotation/Annotation {
 }
 
 public abstract interface class org/mobilenativefoundation/store/store5/ItemValidator {

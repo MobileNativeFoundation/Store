@@ -506,7 +506,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     ) : ReferenceEntry<K, V> {
 
         private val _valueReference = atomic<ValueReference<K, V>?>(unset())
-        override var valueReference: ValueReference<K, V>? by _valueReference
+        override var valueReference: ValueReference<K, V>? = _valueReference.value
     }
 
     private class StrongAccessEntry<K : Any, V : Any>(
@@ -518,7 +518,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         // The code below is exactly the same for each access entry type.
 
         private val _accessTime = atomic(Long.MAX_VALUE)
-        override var accessTime: Long by _accessTime
+        override var accessTime = _accessTime.value
 
         // Guarded By Segment.this
         override var nextInAccessQueue: ReferenceEntry<K, V> = nullEntry()
@@ -535,7 +535,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         StrongEntry<K, V>(key, hash, next) {
         // The code below is exactly the same for each write entry type.
         private val _writeTime = atomic(Long.MAX_VALUE)
-        override var writeTime: Long by _writeTime
+        override var writeTime = _writeTime.value
 
         // Guarded By Segment.this
         override var nextInWriteQueue: ReferenceEntry<K, V> = nullEntry()
@@ -552,7 +552,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         StrongEntry<K, V>(key, hash, next) {
         // The code below is exactly the same for each access entry type.
         private val _accessTime = atomic(Long.MAX_VALUE)
-        override var accessTime: Long by _accessTime
+        override var accessTime: Long = _accessTime.value
 
         // Guarded By Segment.this
         override var nextInAccessQueue: ReferenceEntry<K, V> = nullEntry()
@@ -562,7 +562,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
 
         // The code below is exactly the same for each write entry type.
         private val _writeTime = atomic(Long.MAX_VALUE)
-        override var writeTime: Long by _writeTime
+        override var writeTime: Long = _writeTime.value
 
         // Guarded By Segment.this
         override var nextInWriteQueue: ReferenceEntry<K, V> = nullEntry()
@@ -1788,14 +1788,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          * Singleton placeholder that indicates a value is being loaded.
          */
         @Suppress("UNCHECKED_CAST")
-        private fun <K : Any, V : Any> unset(): ValueReference<K, V> {
-            return UNSET as ValueReference<K, V>
-        }
+        private fun <K : Any, V : Any> unset() = UNSET as ValueReference<K, V>
 
         @Suppress("UNCHECKED_CAST")
-        private fun <K : Any, V : Any> nullEntry(): ReferenceEntry<K, V> {
-            return NullEntry as ReferenceEntry<K, V>
-        }
+        private fun <K : Any, V : Any> nullEntry() = NullEntry as ReferenceEntry<K, V>
 
         private val DISCARDING_QUEUE: MutableQueue<Any> = object : MutableQueue<Any> {
             override fun add(value: Any) {}

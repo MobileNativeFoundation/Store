@@ -21,4 +21,6 @@ android {
     }
 }
 
-dependencies {}
+dependencies {
+    implementation(Deps.Kotlinx.stdLib)
+}

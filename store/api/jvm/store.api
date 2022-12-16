@@ -10,7 +10,10 @@ public final class org/mobilenativefoundation/store/store5/Bookkeeper$Companion 
 	public final fun by (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Bookkeeper;
 }
 
-public abstract interface annotation class org/mobilenativefoundation/store/store5/Convenience : java/lang/annotation/Annotation {
+public abstract interface annotation class org/mobilenativefoundation/store/store5/ConvenienceStoreApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class org/mobilenativefoundation/store/store5/ExperimentalStoreApi : java/lang/annotation/Annotation {
 }
 
 public abstract interface class org/mobilenativefoundation/store/store5/ItemValidator {
