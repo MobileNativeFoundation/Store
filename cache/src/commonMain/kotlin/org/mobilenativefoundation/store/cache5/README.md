@@ -1,8 +1,7 @@
 # Cache
 
-> ℹ️ [Store](https://github.com/MobileNativeFoundation/Store) depends on a subset
-> of [Guava](https://github.com/google/guava). We have extracted these parts into a shaded Cache
-> artifact that is Kotlin Multiplatform compatible.
+ℹ️ [Store](https://github.com/MobileNativeFoundation/Store) depends on a subset of [Guava](https://github.com/google/guava).
+This is a shaded artifact that is Kotlin Multiplatform compatible.
 
 ## Usage
 
@@ -12,7 +11,7 @@ implementation("org.mobilenativefoundation.store:cache:${STORE_VERSION}")
 
 ## Implementation
 
-### First, model the key
+### Model the key
 
 ```kotlin
 data class Key(
@@ -20,7 +19,7 @@ data class Key(
 )
 ```
 
-### Second, model the value
+### Model the value
 
 ```kotlin
 data class Post(
@@ -28,18 +27,18 @@ data class Post(
 )
 ```
 
-### Third, build the cache
+### Build the cache
 
 ```kotlin
  val cache = CacheBuilder<Key, Post>()
     .maximumSize(100)
-    .expireAfterWrite(1.hour)
+    .expireAfterWrite(1.day)
     .build()
 ```
 
 ## See Also
 
-Refer to Guava's Cache documentation for all configuration options:
+Check out Guava's Cache documentation for all features and configuration options:
 https://github.com/google/guava/wiki/CachesExplained
 
 ## License
