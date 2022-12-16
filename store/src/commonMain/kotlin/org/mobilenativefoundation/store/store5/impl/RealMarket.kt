@@ -10,7 +10,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Convenience
+import org.mobilenativefoundation.store.store5.ConvenienceStoreApi
 import org.mobilenativefoundation.store.store5.ItemValidator
 import org.mobilenativefoundation.store.store5.Market
 import org.mobilenativefoundation.store.store5.MarketResponse
@@ -491,21 +491,21 @@ class RealMarket<Key : Any, NetworkRepresentation : Any, CommonRepresentation : 
         mainLock.unlock()
     }
 
-    @Convenience
+    @ConvenienceStoreApi
     @AnyThread
     private suspend fun readNotInProgress(key: Key) = readInProgress(key).not()
 
-    @Convenience
+    @ConvenienceStoreApi
     @AnyThread
     private suspend fun notBroadcasting(key: Key) = broadcasting(key).not()
 
-    @Convenience
+    @ConvenienceStoreApi
     @AnyThread
     private suspend fun <CommonRepresentation : Any> startBroadcast(key: Key): SomeBroadcast<CommonRepresentation> {
         return getOrSetBroadcast(key)
     }
 
-    @Convenience
+    @ConvenienceStoreApi
     @AnyThread
     private suspend fun <CommonRepresentation : Any> startIfNotBroadcasting(key: Key) {
         if (notBroadcasting(key)) {
@@ -513,7 +513,7 @@ class RealMarket<Key : Any, NetworkRepresentation : Any, CommonRepresentation : 
         }
     }
 
-    @Convenience
+    @ConvenienceStoreApi
     @AnyThread
     private suspend fun writeRequestsQueueIsNotEmpty(key: Key): Boolean {
         return writeRequestsQueueIsEmpty(key).not()

@@ -13,6 +13,7 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
+    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -25,21 +26,14 @@ kotlin {
         nodejs()
     }
     cocoapods {
-        summary = "Store5"
+        summary = "Cache5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
         version = Version.store
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                with(Deps.Kotlinx) {
-                    implementation(coroutinesCore)
-                    implementation(dateTime)
-                }
-            }
-        }
+        val commonMain by getting
 
         val commonTest by getting {
             dependencies {
