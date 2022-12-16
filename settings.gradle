@@ -1,6 +1,6 @@
 include ':store'
 include ':cache'
-include 'multicast'
+include ':multicast'
 
 include ':samples:notes:android:app'
 
