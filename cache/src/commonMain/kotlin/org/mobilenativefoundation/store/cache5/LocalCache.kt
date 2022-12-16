@@ -284,10 +284,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
              */
             private val factories = arrayOf(Strong, StrongAccess, StrongWrite, StrongAccessWrite)
             fun getFactory(usesAccessQueue: Boolean, usesWriteQueue: Boolean): EntryFactory {
-                val flags = (
-                        (if (usesAccessQueue) ACCESS_MASK else 0)
-                                or if (usesWriteQueue) WRITE_MASK else 0
-                        )
+                val flags = ((if (usesAccessQueue) ACCESS_MASK else 0) or if (usesWriteQueue) WRITE_MASK else 0)
                 return factories[flags]
             }
         }
