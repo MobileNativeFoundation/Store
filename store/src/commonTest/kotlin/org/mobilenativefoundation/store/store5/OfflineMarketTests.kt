@@ -1,5 +1,12 @@
 package org.mobilenativefoundation.store.store5
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.data.fake.FakeDatabase
 import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
 import org.mobilenativefoundation.store.store5.data.fake.FakeNotes
@@ -8,16 +15,10 @@ import org.mobilenativefoundation.store.store5.data.model.Note
 import org.mobilenativefoundation.store.store5.data.readRequest
 import org.mobilenativefoundation.store.store5.data.writeRequest
 import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,9 +44,7 @@ class OfflineMarketTests {
 
             val newNote = FakeNotes.One.note.copy(title = "New Title")
             val writerOne = writeRequest(FakeNotes.One.key, newNote)
-
-            val writeResponseOne = market.write(writerOne)
-            assertEquals(false, writeResponseOne)
+            assertFails { market.write(writerOne) }
             testScope.advanceUntilIdle()
 
             val lastResponseOne = flowOne.take(4).last()

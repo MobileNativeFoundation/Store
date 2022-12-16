@@ -1,17 +1,17 @@
 package org.mobilenativefoundation.store.store5
 
-import org.mobilenativefoundation.store.store5.data.fake.FakeApi
-import org.mobilenativefoundation.store.store5.data.fake.FakeDatabase
-import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
-import org.mobilenativefoundation.store.store5.data.fake.FakeNotes
-import org.mobilenativefoundation.store.store5.data.market
-import org.mobilenativefoundation.store.store5.data.model.Note
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.store5.data.fake.FakeApi
+import org.mobilenativefoundation.store.store5.data.fake.FakeDatabase
+import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
+import org.mobilenativefoundation.store.store5.data.fake.FakeNotes
+import org.mobilenativefoundation.store.store5.data.market
+import org.mobilenativefoundation.store.store5.data.model.Note
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -22,7 +22,7 @@ import kotlin.test.assertIs
 class StoreFailureTests {
     private val testScope = TestScope()
     private lateinit var api: FakeApi
-    private lateinit var market: Market<String, Note, Note>
+    private lateinit var market: Market<String, Note, Note, Note>
     private lateinit var database: FakeDatabase<Note>
 
     @BeforeTest
@@ -34,7 +34,7 @@ class StoreFailureTests {
 
     @Test
     fun readFailureIsHandled() = testScope.runTest {
-        val reader = ReadRequest.of<String, Note, Note>(
+        val reader = ReadRequest.of<String, Note>(
             key = FakeNotes.One.key,
             onCompletions = listOf(),
             refresh = true

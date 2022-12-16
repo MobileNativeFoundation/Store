@@ -42,7 +42,7 @@ typealias SomeFlow<T> = Flow<MarketResponse<T>>
  * @property broadcasts Thread-safe mapping of Key to [AnyBroadcast], an alias of a Mutable Shared Flow of [MarketResponse]. Callers of [read] receive [SomeBroadcast], which is the typed equivalent of [AnyBroadcast].
  */
 class RealMarket<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> internal constructor(
-    private val stores: List<Store<Key, NetworkRepresentation, CommonRepresentation>>,
+    private val stores: List<Store<Key, *, CommonRepresentation>>,
     private val bookkeeper: Bookkeeper<Key>,
     private val fetcher: NetworkFetcher<Key, CommonRepresentation, NetworkRepresentation, NetworkWriteResponse>,
     private val updater: NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse>,
@@ -61,7 +61,7 @@ class RealMarket<Key : Any, NetworkRepresentation : Any, CommonRepresentation : 
      * Validates [Store] items if [ReadRequest] contains [ItemValidator].
      */
     @AnyThread
-    override suspend fun read(reader: ReadRequest<Key, NetworkRepresentation, CommonRepresentation>): SomeFlow<CommonRepresentation> {
+    override suspend fun read(reader: ReadRequest<Key, CommonRepresentation>): SomeFlow<CommonRepresentation> {
         mainLock.withLock {
             marketSecurity.getOrPut(reader.key) { StoreSafety() }
         }

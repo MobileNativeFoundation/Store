@@ -1,5 +1,11 @@
 package org.mobilenativefoundation.store.store5
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.data.fake.FakeDatabase
 import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
 import org.mobilenativefoundation.store.store5.data.fake.FakeNotes
@@ -7,12 +13,6 @@ import org.mobilenativefoundation.store.store5.data.market
 import org.mobilenativefoundation.store.store5.data.model.Note
 import org.mobilenativefoundation.store.store5.data.readRequestWithValidator
 import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +21,7 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class ItemValidatorTests {
     private val testScope = TestScope()
-    private lateinit var market: Market<String, Note, Note>
+    private lateinit var market: Market<String, Note, Note, Note>
     private lateinit var database: FakeDatabase<Note>
     private lateinit var memoryLruStore: MemoryLruStore<Note>
 

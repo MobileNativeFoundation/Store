@@ -35,11 +35,11 @@ class RealApi @Inject constructor() : Api {
         TODO("Not yet implemented")
     }
 
-    override fun postNote(title: String, content: String): Result<Note, Throwable> {
+    override fun postNote(title: String, content: String): Note {
         TODO("Not yet implemented")
     }
 
-    override fun putNote(noteId: String, title: String, content: String): Result<Note, Throwable> {
+    override fun putNote(noteId: String, title: String, content: String): Note {
         TODO("Not yet implemented")
     }
 

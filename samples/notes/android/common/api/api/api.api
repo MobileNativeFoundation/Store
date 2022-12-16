@@ -7,8 +7,8 @@ public abstract interface class org/mobilenativefoundation/store/notes/android/c
 	public abstract fun getNote (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
 	public abstract fun getNotes (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
 	public abstract fun getUser (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
-	public abstract fun postNote (Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
-	public abstract fun putNote (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
+	public abstract fun postNote (Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/common/api/Note;
+	public abstract fun putNote (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/common/api/Note;
 }
 
 public final class org/mobilenativefoundation/store/notes/android/common/api/BuildConfig {

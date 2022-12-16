@@ -3,7 +3,7 @@ package org.mobilenativefoundation.store.store5.data.fake
 import org.mobilenativefoundation.store.store5.data.Api
 import org.mobilenativefoundation.store.store5.data.model.Note
 
-internal class FakeApi : Api<String, Note> {
+internal class FakeApi : Api<String, Note, Note, Note> {
     override val data = mutableMapOf<String, Note>()
 
     init {
@@ -18,12 +18,13 @@ internal class FakeApi : Api<String, Note> {
         return data[key]
     }
 
-    override fun post(key: String, value: Note, fail: Boolean): Note? {
+    override fun post(key: String, value: Note, fail: Boolean): Note {
         if (fail) {
             throw Exception()
         }
 
-        return apply { data[key] = value }.data[key]
+        data[key] = value
+        return value
     }
 
     fun reset() {

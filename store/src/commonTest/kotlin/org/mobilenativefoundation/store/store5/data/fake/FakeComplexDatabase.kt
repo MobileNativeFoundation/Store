@@ -6,12 +6,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.data.model.MarketData
+import org.mobilenativefoundation.store.store5.data.model.NoteCommonRepresentation
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
+import org.mobilenativefoundation.store.store5.data.model.NoteStoreDatabaseRepresentation
 
-internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteMarketOutput> {
-    private val data: MutableMap<NoteMarketKey, NoteMarketOutput> = mutableMapOf()
+internal class FakeComplexDatabase : Store<NoteMarketKey, NoteStoreDatabaseRepresentation, NoteCommonRepresentation> {
+    private val data: MutableMap<NoteMarketKey, NoteStoreDatabaseRepresentation> = mutableMapOf()
     private val writeRequests: MutableMap<String, Long?> = mutableMapOf()
 
     private fun NoteMarketInput.convert(): NoteMarketOutput = when (this.data) {
@@ -22,26 +24,27 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
 
     private fun NoteMarketKey.Write.convert(): NoteMarketKey.Read = NoteMarketKey.Read.GetById(note.id)
 
-    override fun read(key: NoteMarketKey): Flow<NoteMarketOutput?> = flow {
-        if (key is NoteMarketKey.Read) {
-            emit(data[key])
+    override fun read(key: NoteMarketKey): Flow<NoteCommonRepresentation?> = flow {
+        val storeRepresentation = data[key]
+        if (key is NoteMarketKey.Read && storeRepresentation != null) {
+            emit(converter.toCommonRepresentation(storeRepresentation))
         } else {
             emit(null)
         }
     }
 
-    override suspend fun write(key: NoteMarketKey, input: NoteMarketInput): Boolean {
+    override suspend fun write(key: NoteMarketKey, input: NoteCommonRepresentation): Boolean {
         return when (key) {
             is NoteMarketKey.Read.GetById -> when (input.data) {
                 is MarketData.Collection -> {
                     input.data.items.forEach {
-                        data[key] = NoteMarketOutput.Read(MarketData.Single(it))
+                        data[key] = NoteStoreDatabaseRepresentation(MarketData.Single(it))
                     }
                     true
                 }
 
                 is MarketData.Single -> {
-                    data[key] = NoteMarketOutput.Read(input.data)
+                    data[key] = converter.toStoreRepresentation(input)
                     true
                 }
 
@@ -53,13 +56,13 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
             is NoteMarketKey.Read.Paginate -> when (input.data) {
                 is MarketData.Collection -> {
                     input.data.items.forEach {
-                        data[key] = NoteMarketOutput.Read(MarketData.Single(it))
+                        data[key] = NoteStoreDatabaseRepresentation(MarketData.Single(it))
                     }
                     true
                 }
 
                 is MarketData.Single -> {
-                    data[key] = NoteMarketOutput.Read(input.data)
+                    data[key] = converter.toStoreRepresentation(input)
                     true
                 }
 
@@ -71,13 +74,13 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
             is NoteMarketKey.Write -> when (input.data) {
                 is MarketData.Collection -> {
                     input.data.items.forEach {
-                        data[key.convert()] = NoteMarketOutput.Read(MarketData.Single(it))
+                        data[key.convert()] = NoteStoreDatabaseRepresentation(MarketData.Single(it))
                     }
                     true
                 }
 
                 is MarketData.Single -> {
-                    data[key.convert()] = NoteMarketOutput.Read(input.data)
+                    data[key.convert()] = converter.toStoreRepresentation(input)
                     true
                 }
 
@@ -100,6 +103,14 @@ internal class FakeComplexDatabase : Store<NoteMarketKey, NoteMarketInput, NoteM
     override suspend fun clear(): Boolean {
         data.clear()
         return true
+    }
+
+    override val converter = object : Store.Converter<NoteStoreDatabaseRepresentation, NoteCommonRepresentation> {
+        override fun toCommonRepresentation(storeRepresentation: NoteStoreDatabaseRepresentation): NoteCommonRepresentation =
+            NoteCommonRepresentation(storeRepresentation.data)
+
+        override fun toStoreRepresentation(commonRepresentation: NoteCommonRepresentation): NoteStoreDatabaseRepresentation =
+            NoteStoreDatabaseRepresentation(commonRepresentation.data)
     }
 
     fun setLastWriteTime(key: String, updated: Long?): Boolean {

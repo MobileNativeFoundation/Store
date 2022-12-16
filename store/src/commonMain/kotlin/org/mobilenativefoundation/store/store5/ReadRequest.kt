@@ -7,19 +7,19 @@ import org.mobilenativefoundation.store.store5.impl.RealMarketReader
  * @see [Market].
  * @see [NetworkFetcher]
  */
-interface ReadRequest<Key : Any, Input : Any, Output : Any> {
+interface ReadRequest<Key : Any, CommonRepresentation : Any> {
     val key: Key
-    val onCompletions: List<OnMarketCompletion<Output>>
-    val validator: ItemValidator<Output>?
+    val onCompletions: List<OnMarketCompletion<CommonRepresentation>>
+    val validator: ItemValidator<CommonRepresentation>?
     val refresh: Boolean
 
     companion object {
-        fun <Key : Any, Input : Any, Output : Any> of(
+        fun <Key : Any, CommonRepresentation : Any> of(
             key: Key,
-            onCompletions: List<OnMarketCompletion<Output>>,
-            validator: ItemValidator<Output>? = null,
+            onCompletions: List<OnMarketCompletion<CommonRepresentation>>,
+            validator: ItemValidator<CommonRepresentation>? = null,
             refresh: Boolean,
-        ): ReadRequest<Key, Input, Output> =
+        ): ReadRequest<Key, CommonRepresentation> =
             RealMarketReader(key, onCompletions, validator, refresh)
     }
 }

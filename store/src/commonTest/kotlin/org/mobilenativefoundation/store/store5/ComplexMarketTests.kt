@@ -16,9 +16,10 @@ import org.mobilenativefoundation.store.store5.data.fake.FakeComplexMarket
 import org.mobilenativefoundation.store.store5.data.fake.FakeComplexNotes
 import org.mobilenativefoundation.store.store5.data.model.MarketData
 import org.mobilenativefoundation.store.store5.data.model.Note
-import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
+import org.mobilenativefoundation.store.store5.data.model.NoteCommonRepresentation
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
-import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
+import org.mobilenativefoundation.store.store5.data.model.NoteNetworkRepresentation
+import org.mobilenativefoundation.store.store5.data.model.NoteNetworkWriteResponse
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -29,9 +30,9 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class ComplexMarketTests {
     private val testScope = TestScope()
-    private lateinit var market: Market<NoteMarketKey, NoteMarketInput, NoteMarketOutput>
+    private lateinit var market: Market<NoteMarketKey, NoteNetworkRepresentation, NoteCommonRepresentation, NoteNetworkWriteResponse>
     private lateinit var database: FakeComplexDatabase
-    private lateinit var memoryLruStore: Store<NoteMarketKey, NoteMarketInput, NoteMarketOutput>
+    private lateinit var memoryLruStore: Store<NoteMarketKey, NoteCommonRepresentation, NoteCommonRepresentation>
 
     @BeforeTest
     fun before() {
@@ -56,8 +57,8 @@ class ComplexMarketTests {
         testScope.advanceUntilIdle()
 
         val last = responses.last()
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(last)
-        assertEquals(FakeComplexNotes.GetById.One.note, last.value)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(last)
+        assertEquals(FakeComplexNotes.GetById.One.common, last.value)
         assertEquals(Origin.Network, last.origin)
     }
 
@@ -73,8 +74,8 @@ class ComplexMarketTests {
             val responses = flow.take(4).toList()
 
             val last = responses.last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(last)
-            assertEquals(FakeComplexNotes.GetById.One.note, last.value)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(last)
+            assertEquals(FakeComplexNotes.GetById.One.common, last.value)
             assertEquals(Origin.Store, last.origin)
         }
 
@@ -91,21 +92,21 @@ class ComplexMarketTests {
 
             val responsesOne = flowOne.take(3).toList()
             val lastResponseOne = responsesOne.last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
-            assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
+            assertEquals(FakeComplexNotes.GetById.One.common, lastResponseOne.value)
             assertEquals(Origin.Network, lastResponseOne.origin)
 
             val responsesTwo = flowOne.take(3).toList()
             val lastResponseTwo = responsesTwo.last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseTwo)
-            assertEquals(FakeComplexNotes.GetById.One.note, lastResponseTwo.value)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseTwo)
+            assertEquals(FakeComplexNotes.GetById.One.common, lastResponseTwo.value)
             assertEquals(Origin.Network, lastResponseTwo.origin)
         }
 
     @Test
     fun givenEmptyMarketWhenWriteThenEmitFailure() = testScope.runTest {
-        val newNote = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-        val writer = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNote)))
+        val newNote = (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+        val writer = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNote)))
 
         assertFails { market.write(writer) }
     }
@@ -117,26 +118,27 @@ class ComplexMarketTests {
             val flow = market.read(reader)
             advanceUntilIdle()
 
-            val newNote = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-            val writer = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNote)))
+            val newNote =
+                (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+            val writer = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNote)))
 
             val writeResponse = market.write(writer)
             advanceUntilIdle()
-            assertEquals(true, writeResponse)
+            assertEquals(true, writeResponse.ok)
 
             val responsesAfterWrite = flow.take(4).toList()
             val lastResponseAfterWrite = responsesAfterWrite.last()
 
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseAfterWrite)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseAfterWrite)
             val lastResponseAfterWriteValue = lastResponseAfterWrite.value
-            assertIs<NoteMarketOutput.Read>(lastResponseAfterWriteValue)
+            assertIs<NoteCommonRepresentation>(lastResponseAfterWriteValue)
             val lastResponseAfterWriteValueData = lastResponseAfterWriteValue.data
             assertIs<MarketData.Single<Note>>(lastResponseAfterWriteValueData)
             assertEquals(newNote, lastResponseAfterWriteValueData.item)
             assertEquals(Origin.LocalWrite, lastResponseAfterWrite.origin)
 
             val apiValue = FakeComplexMarket.Success.api.get(FakeComplexNotes.GetById.One.key)
-            assertIs<NoteMarketOutput.Read>(apiValue)
+            assertIs<NoteNetworkRepresentation>(apiValue)
             val apiValueData = apiValue.data
             assertIs<MarketData.Single<Note>>(apiValueData)
             assertEquals(newNote, apiValueData.item)
@@ -149,36 +151,38 @@ class ComplexMarketTests {
             val flowOne = market.read(readerOne)
             advanceUntilIdle()
 
-            val newNoteOne = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNoteOne)))
+            val newNoteOne =
+                (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNoteOne)))
 
             val writeResponseOne = market.write(writerOne)
             advanceUntilIdle()
-            assertEquals(true, writeResponseOne)
+            assertEquals(true, writeResponseOne.ok)
 
             val readerTwo = complexReadRequest(FakeComplexNotes.GetById.Two.key)
             val flowTwo = market.read(readerTwo)
             advanceUntilIdle()
 
-            val newNoteTwo = ((FakeComplexNotes.GetById.Two.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-            val writerTwo = complexWriteRequest(FakeComplexNotes.GetById.Two.key, NoteMarketInput(MarketData.Single(newNoteTwo)))
+            val newNoteTwo =
+                (FakeComplexNotes.GetById.Two.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+            val writerTwo = complexWriteRequest(FakeComplexNotes.GetById.Two.key, NoteCommonRepresentation(MarketData.Single(newNoteTwo)))
 
             val writeResponseTwo = market.write(writerTwo)
             advanceUntilIdle()
-            assertEquals(true, writeResponseTwo)
+            assertEquals(true, writeResponseTwo.ok)
 
             val responsesAfterWriteOne = flowOne.take(4).toList()
             val lastResponseAfterWriteOne = responsesAfterWriteOne.last()
 
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseAfterWriteOne)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseAfterWriteOne)
             val lastResponseAfterWriteOneValue = lastResponseAfterWriteOne.value
-            assertIs<NoteMarketOutput.Read>(lastResponseAfterWriteOneValue)
+            assertIs<NoteCommonRepresentation>(lastResponseAfterWriteOneValue)
             val lastResponseAfterWriteOneValueData = lastResponseAfterWriteOneValue.data
             assertIs<MarketData.Single<Note>>(lastResponseAfterWriteOneValueData)
             assertEquals(newNoteOne, lastResponseAfterWriteOneValueData.item)
             assertEquals(Origin.LocalWrite, lastResponseAfterWriteOne.origin)
             val apiValueOne = FakeComplexMarket.Success.api.get(FakeComplexNotes.GetById.One.key)
-            assertIs<NoteMarketOutput.Read>(apiValueOne)
+            assertIs<NoteNetworkRepresentation>(apiValueOne)
             val apiValueDataOne = apiValueOne.data
             assertIs<MarketData.Single<Note>>(apiValueDataOne)
             assertEquals(newNoteOne, apiValueDataOne.item)
@@ -186,15 +190,15 @@ class ComplexMarketTests {
             val responsesAfterWriteTwo = flowTwo.take(4).toList()
             val lastResponseAfterWriteTwo = responsesAfterWriteTwo.last()
 
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseAfterWriteTwo)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseAfterWriteTwo)
             val lastResponseAfterWriteTwoValue = lastResponseAfterWriteTwo.value
-            assertIs<NoteMarketOutput.Read>(lastResponseAfterWriteTwoValue)
+            assertIs<NoteCommonRepresentation>(lastResponseAfterWriteTwoValue)
             val lastResponseAfterWriteTwoValueData = lastResponseAfterWriteTwoValue.data
             assertIs<MarketData.Single<Note>>(lastResponseAfterWriteTwoValueData)
             assertEquals(newNoteTwo, lastResponseAfterWriteTwoValueData.item)
             assertEquals(Origin.LocalWrite, lastResponseAfterWriteTwo.origin)
             val apiValueTwo = FakeComplexMarket.Success.api.get(FakeComplexNotes.GetById.Two.key)
-            assertIs<NoteMarketOutput.Read>(apiValueTwo)
+            assertIs<NoteNetworkRepresentation>(apiValueTwo)
             val apiValueTwoData = apiValueTwo.data
             assertIs<MarketData.Single<Note>>(apiValueTwoData)
             assertEquals(newNoteTwo, apiValueTwoData.item)
@@ -209,7 +213,7 @@ class ComplexMarketTests {
             val successCount = "SUCCESS_COUNT"
             val failureCount = "FAILURE_COUNT"
 
-            fun onMarketCompletion(id: String) = OnMarketCompletion<NoteMarketOutput>(
+            fun onMarketCompletion(id: String) = OnMarketCompletion<NoteCommonRepresentation>(
                 onSuccess = {
                     val counts = marketOnCompletions[id] ?: mutableMapOf()
                     val successesBefore = counts[successCount] ?: 0
@@ -226,15 +230,16 @@ class ComplexMarketTests {
                 }
             )
 
-            fun onNetworkCompletion() = OnNetworkCompletion<NoteMarketOutput>(
+            fun onNetworkWriteCompletion() = OnNetworkCompletion<NoteNetworkWriteResponse>(
                 onSuccess = { result ->
                     val output = result.value
-                    require(output is NoteMarketOutput.Read && output.data is MarketData.Single<Note>)
-                    val counts = networkOnCompletions[output.data.item.id] ?: mutableMapOf()
+                    val counts = networkOnCompletions[output.id] ?: mutableMapOf()
                     val successesBefore = counts[successCount] ?: 0
                     val successesAfter = successesBefore + 1
                     counts[successCount] = successesAfter
-                    networkOnCompletions[output.data.item.id] = counts
+                    if (output.id != null) {
+                        networkOnCompletions[output.id] = counts
+                    }
                 },
                 onFailure = { result ->
                     val counts = networkOnCompletions[result.error.toString()] ?: mutableMapOf()
@@ -245,35 +250,36 @@ class ComplexMarketTests {
                 }
             )
 
-            val market = complexMarket(onNetworkCompletion = onNetworkCompletion())
+            val market = complexMarket(onNetworkWriteCompletion = onNetworkWriteCompletion())
 
             val readerOne = complexReadRequest(FakeComplexNotes.GetById.One.key)
             market.read(readerOne)
 
-            val newNoteOneA = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title - A")
-            val newNoteOneB = ((FakeComplexNotes.GetById.One.note).data as MarketData.Single<Note>).item.copy(title = "New Title - B")
+            val newNoteOneA =
+                (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title - A")
+            val newNoteOneB = (FakeComplexNotes.GetById.One.common).data.item.copy(title = "New Title - B")
 
             val writerOneA = complexWriteRequest(
                 FakeComplexNotes.GetById.One.key,
-                NoteMarketInput(MarketData.Single(newNoteOneA)),
+                NoteCommonRepresentation(MarketData.Single(newNoteOneA)),
                 onCompletions = listOf(onMarketCompletion(FakeComplexNotes.GetById.One.key.toString()))
             )
 
             val writerOneB = complexWriteRequest(
                 FakeComplexNotes.GetById.One.key,
-                NoteMarketInput(MarketData.Single(newNoteOneB)),
+                NoteCommonRepresentation(MarketData.Single(newNoteOneB)),
                 onCompletions = listOf(onMarketCompletion(FakeComplexNotes.GetById.One.key.toString()))
             )
 
             val writeResponseOneA = market.write(writerOneA)
             val writeResponseOneB = market.write(writerOneB)
 
-            assertEquals(true, writeResponseOneA)
-            assertEquals(true, writeResponseOneB)
+            assertEquals(true, writeResponseOneA.ok)
+            assertEquals(true, writeResponseOneB.ok)
             assertEquals(2, marketOnCompletions[FakeComplexNotes.GetById.One.key.toString()]!![successCount])
             assertEquals(1, marketOnCompletions.size)
             assertEquals(null, marketOnCompletions[FakeComplexNotes.GetById.One.key.toString()]!![failureCount])
-            assertEquals(2, networkOnCompletions[FakeComplexNotes.GetById.One.note.data.item.id]!![successCount])
+            assertEquals(2, networkOnCompletions[FakeComplexNotes.GetById.One.common.data.item.id]!![successCount])
             assertEquals(1, networkOnCompletions.size)
         }
 
@@ -290,11 +296,11 @@ class ComplexMarketTests {
         val lastResponseOne = flowOne.take(3).toList().last()
         val lastResponseTwo = flowTwo.take(3).toList().last()
 
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
-        assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
+        assertEquals(FakeComplexNotes.GetById.One.common, lastResponseOne.value)
 
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseTwo)
-        assertEquals(FakeComplexNotes.GetById.Two.note, lastResponseTwo.value)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseTwo)
+        assertEquals(FakeComplexNotes.GetById.Two.common, lastResponseTwo.value)
 
         market.delete(FakeComplexNotes.GetById.One.key)
         market.delete(FakeComplexNotes.GetById.Two.key)
@@ -321,11 +327,11 @@ class ComplexMarketTests {
         val lastResponseOne = flowOne.take(3).toList().last()
         val lastResponseTwo = flowTwo.take(3).toList().last()
 
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
-        assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
+        assertEquals(FakeComplexNotes.GetById.One.common, lastResponseOne.value)
 
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseTwo)
-        assertEquals(FakeComplexNotes.GetById.Two.note, lastResponseTwo.value)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseTwo)
+        assertEquals(FakeComplexNotes.GetById.Two.common, lastResponseTwo.value)
 
         market.delete()
 
@@ -343,10 +349,10 @@ class ComplexMarketTests {
         testScope.runTest {
             val completed = mutableMapOf<String, Boolean>()
 
-            val onCompletion = OnMarketCompletion<NoteMarketOutput>(
+            val onCompletion = OnMarketCompletion<NoteCommonRepresentation>(
                 onSuccess = { response ->
                     val output = response.value
-                    require(output is NoteMarketOutput.Read && output.data is MarketData.Single<Note>)
+                    require(output.data is MarketData.Single<Note>)
                     completed[output.data.item.id] = true
                 },
                 onFailure = {}
@@ -371,17 +377,17 @@ class ComplexMarketTests {
             testScope.advanceUntilIdle()
 
             val lastResponseOne = flowOne.take(3).last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
-            assertEquals(FakeComplexNotes.GetById.One.note, lastResponseOne.value)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
+            assertEquals(FakeComplexNotes.GetById.One.common, lastResponseOne.value)
             assertEquals(Origin.Network, lastResponseOne.origin)
 
             val lastResponseTwo = flowTwo.take(3).last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseTwo)
-            assertEquals(FakeComplexNotes.GetById.Two.note, lastResponseTwo.value)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseTwo)
+            assertEquals(FakeComplexNotes.GetById.Two.common, lastResponseTwo.value)
             assertEquals(Origin.Network, lastResponseTwo.origin)
 
-            assertEquals(true, completed[((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.id])
-            assertEquals(true, completed[((FakeComplexNotes.GetById.Two.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.id])
+            assertEquals(true, completed[(FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.id])
+            assertEquals(true, completed[(FakeComplexNotes.GetById.Two.common.data as MarketData.Single<Note>).item.id])
         }
 
     @Test
@@ -389,8 +395,9 @@ class ComplexMarketTests {
         testScope.runTest {
             val readerOne = complexReadRequest(FakeComplexNotes.GetById.One.key)
 
-            val newNote = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNote)))
+            val newNote =
+                (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNote)))
 
             market.read(readerOne)
             market.write(writerOne)
@@ -407,8 +414,9 @@ class ComplexMarketTests {
         testScope.runTest {
             val readerOne = complexReadRequest(FakeComplexNotes.GetById.One.key, refresh = true)
 
-            val newNoteOne = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNoteOne)))
+            val newNoteOne =
+                (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+            val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNoteOne)))
 
             market.read(readerOne)
             market.write(writerOne)
@@ -417,9 +425,9 @@ class ComplexMarketTests {
             val responsesOne = market.read(readerOne)
             testScope.advanceUntilIdle()
             val lastResponseOne = responsesOne.take(7).last()
-            assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
+            assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
             val lastResponseOneValue = lastResponseOne.value
-            assertIs<NoteMarketOutput.Read>(lastResponseOneValue)
+            assertIs<NoteCommonRepresentation>(lastResponseOneValue)
             val lastResponseOneValueData = lastResponseOneValue.data
             assertIs<MarketData.Single<Note>>(lastResponseOneValueData)
             assertEquals(newNoteOne, lastResponseOneValueData.item)
@@ -430,8 +438,8 @@ class ComplexMarketTests {
         val market = complexMarket()
 
         val readerOne = complexReadRequest(FakeComplexNotes.GetById.One.key, refresh = true)
-        val newNoteOne = ((FakeComplexNotes.GetById.One.note as NoteMarketOutput.Read).data as MarketData.Single<Note>).item.copy(title = "New Title")
-        val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteMarketInput(MarketData.Single(newNoteOne)))
+        val newNoteOne = (FakeComplexNotes.GetById.One.common.data as MarketData.Single<Note>).item.copy(title = "New Title")
+        val writerOne = complexWriteRequest(FakeComplexNotes.GetById.One.key, NoteCommonRepresentation(MarketData.Single(newNoteOne)))
 
         market.read(readerOne)
         market.write(writerOne)
@@ -442,9 +450,9 @@ class ComplexMarketTests {
 
         val lastResponsesOne = flowOne.take(7).toList()
         val lastResponseOne = flowOne.take(7).last()
-        assertIs<MarketResponse.Success<NoteMarketOutput>>(lastResponseOne)
+        assertIs<MarketResponse.Success<NoteCommonRepresentation>>(lastResponseOne)
         val lastResponseOneValue = lastResponseOne.value
-        assertIs<NoteMarketOutput.Read>(lastResponseOneValue)
+        assertIs<NoteCommonRepresentation>(lastResponseOneValue)
         val lastResponseOneValueData = lastResponseOneValue.data
         assertIs<MarketData.Single<Note>>(lastResponseOneValueData)
         assertEquals(newNoteOne, lastResponseOneValueData.item)
@@ -452,7 +460,7 @@ class ComplexMarketTests {
 
         assertContains(
             lastResponsesOne,
-            MarketResponse.Success(NoteMarketOutput.Read(MarketData.Single(newNoteOne)), Origin.LocalWrite)
+            MarketResponse.Success(NoteCommonRepresentation(MarketData.Single(newNoteOne)), Origin.LocalWrite)
         )
 
         assertContains(

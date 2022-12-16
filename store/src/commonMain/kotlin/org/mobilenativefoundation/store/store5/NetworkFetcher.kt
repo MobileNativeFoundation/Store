@@ -15,7 +15,6 @@ interface NetworkFetcher<Key : Any, CommonRepresentation : Any, NetworkRepresent
      */
     suspend fun get(key: Key): NetworkRepresentation?
 
-
     /**
      * Converts [NetworkRepresentation] to [CommonRepresentation].
      */
