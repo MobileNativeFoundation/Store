@@ -5,9 +5,10 @@ import org.mobilenativefoundation.store.store5.OnNetworkCompletion
 import org.mobilenativefoundation.store.store5.data.fake.FakeComplexMarket
 import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
 import org.mobilenativefoundation.store.store5.data.model.Note
-import org.mobilenativefoundation.store.store5.data.model.NoteMarketInput
+import org.mobilenativefoundation.store.store5.data.model.NoteCommonRepresentation
 import org.mobilenativefoundation.store.store5.data.model.NoteMarketKey
-import org.mobilenativefoundation.store.store5.data.model.NoteMarketOutput
+import org.mobilenativefoundation.store.store5.data.model.NoteNetworkRepresentation
+import org.mobilenativefoundation.store.store5.data.model.NoteNetworkWriteResponse
 
 internal fun market(
     failRead: Boolean = false,
@@ -16,7 +17,7 @@ internal fun market(
         onSuccess = {},
         onFailure = {}
     )
-): Market<String, Note, Note> = when {
+): Market<String, Note, Note, Note> = when {
     failWrite && failRead -> Market.of(
         stores = listOf(FakeMarket.Failure.memoryLruCacheStore, FakeMarket.Failure.databaseStore),
         bookkeeper = FakeMarket.Failure.bookkeeper,
@@ -49,11 +50,11 @@ internal fun market(
 internal fun complexMarket(
     failRead: Boolean = false,
     failWrite: Boolean = false,
-    onNetworkCompletion: OnNetworkCompletion<NoteMarketOutput> = OnNetworkCompletion(
+    onNetworkWriteCompletion: OnNetworkCompletion<NoteNetworkWriteResponse> = OnNetworkCompletion(
         onSuccess = {},
         onFailure = {}
     )
-): Market<NoteMarketKey, NoteMarketInput, NoteMarketOutput> = when {
+): Market<NoteMarketKey, NoteNetworkRepresentation, NoteCommonRepresentation, NoteNetworkWriteResponse> = when {
     failWrite && failRead -> Market.of(
         stores = listOf(FakeComplexMarket.Failure.memoryLruCacheStore, FakeComplexMarket.Failure.databaseStore),
         bookkeeper = FakeComplexMarket.Failure.bookkeeper,
@@ -62,23 +63,23 @@ internal fun complexMarket(
     )
 
     failWrite -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.database),
         bookkeeper = FakeComplexMarket.Failure.bookkeeper,
         updater = FakeComplexMarket.Failure.updater(),
         fetcher = FakeComplexMarket.Success.fetcher
     )
 
     failRead -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.database),
         bookkeeper = FakeComplexMarket.Failure.bookkeeper,
         updater = FakeComplexMarket.Success.updater(),
         fetcher = FakeComplexMarket.Failure.fetcher
     )
 
     else -> Market.of(
-        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.databaseStore),
+        stores = listOf(FakeComplexMarket.Success.memoryLruStore, FakeComplexMarket.Success.database),
         bookkeeper = FakeComplexMarket.Success.bookkeeper,
-        updater = FakeComplexMarket.Success.updater(onNetworkCompletion),
+        updater = FakeComplexMarket.Success.updater(onNetworkWriteCompletion),
         fetcher = FakeComplexMarket.Success.fetcher
     )
 }

@@ -69,10 +69,10 @@ internal object FakeMarket {
     )
 
     private fun fetcher(api: FakeApi, fail: Boolean = false) =
-        NetworkFetcher.by<String, Note, Note>(
+        NetworkFetcher.by(
             get = { key -> api.get(key, fail) },
-            post = { key, input -> api.post(key, input, fail) },
-            converter = { it }
+            converter = { it },
+            updater = updater(api, fail)
         )
 
     private fun updater(
@@ -84,8 +84,11 @@ internal object FakeMarket {
         )
     ) =
         NetworkUpdater.by<String, Note, Note>(
-            post = { key, input -> api.post(key, input, fail) },
+            post = { key, input ->
+                api.post(key, input, fail)
+            },
             onCompletion = onCompletion,
-            converter = { it }
+            converter = { it },
+            responseValidator = { !fail }
         )
 }

@@ -2,15 +2,15 @@
 
 package org.mobilenativefoundation.store.store5.impl
 
-import org.mobilenativefoundation.store.store5.Store
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.mobilenativefoundation.store.store5.Store
 
 /**
  * Thread-safe LRU cache implementation.
  */
-class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Input, Input> {
+class MemoryLruStore<CommonRepresentation : Any>(private val maxSize: Int) : Store<String, CommonRepresentation, CommonRepresentation> {
     internal var cache = LinkedHashMap<String, Node<*>>()
     internal var head = headPointer
     internal var tail = tailPointer
@@ -22,10 +22,11 @@ class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Inpu
         tail.prev = head
     }
 
+    override val converter: Store.Converter<CommonRepresentation, CommonRepresentation>? = null
     override fun read(key: String) = flow {
         lock.withLock {
             if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Input>
+                val node = cache[key]!! as Node<CommonRepresentation>
                 removeFromList(node)
                 insertIntoHead(node)
                 emit(node.value)
@@ -35,10 +36,10 @@ class MemoryLruStore<Input : Any>(private val maxSize: Int) : Store<String, Inpu
         }
     }
 
-    override suspend fun write(key: String, input: Input): Boolean {
+    override suspend fun write(key: String, input: CommonRepresentation): Boolean {
         lock.withLock {
             if (cache.containsKey(key)) {
-                val node = cache[key]!! as Node<Input>
+                val node = cache[key]!! as Node<CommonRepresentation>
                 removeFromList(node)
                 insertIntoHead(node)
             } else {

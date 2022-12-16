@@ -1,13 +1,6 @@
 package org.mobilenativefoundation.store.notes.app.wiring
 
 import android.content.Context
-import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Market
-import org.mobilenativefoundation.store.store5.NetworkFetcher
-import org.mobilenativefoundation.store.store5.NetworkUpdater
-import org.mobilenativefoundation.store.store5.OnNetworkCompletion
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
 import com.squareup.anvil.annotations.ContributesTo
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
@@ -31,6 +24,13 @@ import org.mobilenativefoundation.store.notes.app.extension.tryGetNote
 import org.mobilenativefoundation.store.notes.app.extension.tryWriteFailed
 import org.mobilenativefoundation.store.notes.app.extension.tryWriteNote
 import org.mobilenativefoundation.store.notes.app.market.Key
+import org.mobilenativefoundation.store.store5.Bookkeeper
+import org.mobilenativefoundation.store.store5.Market
+import org.mobilenativefoundation.store.store5.NetworkFetcher
+import org.mobilenativefoundation.store.store5.NetworkUpdater
+import org.mobilenativefoundation.store.store5.OnNetworkCompletion
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
 import javax.inject.Named
 
 @Module
@@ -86,52 +86,44 @@ object AppModule {
         @Named(MEMORY_LRU_CACHE_STORE) memoryLruCacheStore: Store<Key, Note, Note>,
         @Named(DATABASE_STORE) databaseStore: Store<Key, Note, Note>,
         bookkeeper: Bookkeeper<Key>
-    ): Market<Key, Note, Note> = Market.of(
-        stores = listOf(memoryLruCacheStore, databaseStore),
-        bookkeeper = bookkeeper,
-        updater = NetworkUpdater.by(
-            post = { key, input ->
-                when (val result = if (key.id != null) {
-                    api.putNote(key.id, input.title, input.content)
+    ): Market<Key, Note, Note, Note> {
 
+        val updater = NetworkUpdater.by<Key, Note, Note>(
+            post = { key, input ->
+                if (key.id != null) {
+                    api.putNote(key.id, input.title, input.content)
                 } else {
                     api.postNote(input.title, input.content)
-                }) {
-                    is Result.Failure -> null
-                    is Result.Success -> result.component1()
                 }
             },
             onCompletion = OnNetworkCompletion(
                 onSuccess = {},
                 onFailure = {}
             ),
-            converter = { it }
-        ),
-        fetcher = NetworkFetcher.by(
-            post = { key, input ->
-                when (val result = if (key.id != null) {
-                    api.putNote(key.id, input.title, input.content)
-
-                } else {
-                    api.postNote(input.title, input.content)
-                }) {
-                    is Result.Failure -> null
-                    is Result.Success -> result.component1()
-                }
-            },
-            get = { key ->
-                if (key.id == null) {
-                    null
-                } else {
-                    when (val result = api.getNote(key.id)) {
-                        is Result.Failure -> null
-                        is Result.Success -> result.component1()
-                    }
-                }
-            },
-            converter = { it }
+            converter = { it },
+            responseValidator = { true }
         )
-    )
+
+        return Market.of(
+            stores = listOf(memoryLruCacheStore, databaseStore),
+            bookkeeper = bookkeeper,
+            updater = updater,
+            fetcher = NetworkFetcher.by(
+                get = { key ->
+                    if (key.id == null) {
+                        null
+                    } else {
+                        when (val result = api.getNote(key.id)) {
+                            is Result.Failure -> null
+                            is Result.Success -> result.component1()
+                        }
+                    }
+                },
+                converter = { it },
+                updater = updater
+            )
+        )
+    }
 
     private val memoryLruStore: Store<String, Note, Note> = MemoryLruStore(10)
     private val serializer = Json { ignoreUnknownKeys = true }

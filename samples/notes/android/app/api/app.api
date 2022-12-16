@@ -184,8 +184,8 @@ public final class org/mobilenativefoundation/store/notes/app/api/RealApi : org/
 	public fun getNote (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
 	public fun getNotes (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
 	public fun getUser (Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
-	public fun postNote (Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
-	public fun putNote (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/lib/result/Result;
+	public fun postNote (Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/common/api/Note;
+	public fun putNote (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/mobilenativefoundation/store/notes/android/common/api/Note;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/api/RealApi_Factory : dagger/internal/Factory {

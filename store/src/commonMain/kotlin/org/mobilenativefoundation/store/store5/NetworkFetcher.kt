@@ -2,36 +2,31 @@ package org.mobilenativefoundation.store.store5
 
 import org.mobilenativefoundation.store.store5.definition.Converter
 import org.mobilenativefoundation.store.store5.definition.GetRequest
-import org.mobilenativefoundation.store.store5.definition.PostRequest
 import org.mobilenativefoundation.store.store5.impl.RealNetworkFetcher
 
 /**
  * Gets data from remote data source.
  * @see [ReadRequest]
  */
-interface NetworkFetcher<Key : Any, Input : Any, Output : Any> {
+interface NetworkFetcher<Key : Any, CommonRepresentation : Any, NetworkRepresentation : Any, NetworkWriteResponse : Any> :
+    NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse> {
     /**
      * Makes HTTP GET request.
      */
-    suspend fun get(key: Key): Output?
+    suspend fun get(key: Key): NetworkRepresentation?
 
     /**
-     * Makes HTTP POST request.
+     * Converts [NetworkRepresentation] to [CommonRepresentation].
      */
-    suspend fun post(key: Key, input: Input): Output?
-
-    /**
-     * Converts [Output] to [Input].
-     */
-    fun converter(output: Output): Input
+    fun converter(networkRepresentation: NetworkRepresentation): CommonRepresentation
 
     companion object {
-        fun <Key : Any, Input : Any, Output : Any> by(
-            get: GetRequest<Key, Output>,
-            post: PostRequest<Key, Input, Output>,
-            converter: Converter<Output, Input>
-        ): NetworkFetcher<Key, Input, Output> = RealNetworkFetcher(
-            get, post, converter
+        fun <Key : Any, CommonRepresentation : Any, NetworkRepresentation : Any, NetworkWriteResponse : Any> by(
+            get: GetRequest<Key, NetworkRepresentation>,
+            converter: Converter<NetworkRepresentation, CommonRepresentation>,
+            updater: NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse>
+        ): NetworkFetcher<Key, CommonRepresentation, NetworkRepresentation, NetworkWriteResponse> = RealNetworkFetcher(
+            get, updater, converter
         )
     }
 }

@@ -7,18 +7,18 @@ import org.mobilenativefoundation.store.store5.impl.RealWriteRequest
  * @see [Market].
  * @see [NetworkUpdater]
  */
-interface WriteRequest<Key : Any, Input : Any, Output : Any> {
+interface WriteRequest<Key : Any, CommonRepresentation : Any> {
     val key: Key
-    val input: Input
+    val input: CommonRepresentation
     val created: Long
-    val onCompletions: List<OnMarketCompletion<Output>>
+    val onCompletions: List<OnMarketCompletion<CommonRepresentation>>
 
     companion object {
-        fun <Key : Any, Input : Any, Output : Any> of(
+        fun <Key : Any, CommonRepresentation : Any> of(
             key: Key,
-            input: Input,
+            input: CommonRepresentation,
             created: Long,
-            onCompletions: List<OnMarketCompletion<Output>>,
-        ): WriteRequest<Key, Input, Output> = RealWriteRequest(key, input, created, onCompletions)
+            onCompletions: List<OnMarketCompletion<CommonRepresentation>>,
+        ): WriteRequest<Key, CommonRepresentation> = RealWriteRequest(key, input, created, onCompletions)
     }
 }

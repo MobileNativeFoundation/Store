@@ -1,5 +1,12 @@
 package org.mobilenativefoundation.store.store5
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.MarketResponse.Companion.Origin
 import org.mobilenativefoundation.store.store5.data.fake.FakeDatabase
 import org.mobilenativefoundation.store.store5.data.fake.FakeMarket
@@ -9,24 +16,18 @@ import org.mobilenativefoundation.store.store5.data.model.Note
 import org.mobilenativefoundation.store.store5.data.readRequest
 import org.mobilenativefoundation.store.store5.data.writeRequest
 import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MarketTests {
     private val testScope = TestScope()
-    private lateinit var market: Market<String, Note, Note>
+    private lateinit var market: Market<String, Note, Note, Note>
     private lateinit var database: FakeDatabase<Note>
     private lateinit var memoryLruStore: MemoryLruStore<Note>
 
@@ -118,7 +119,7 @@ class MarketTests {
             val writer = writeRequest(FakeNotes.One.key, newNote)
             val writeResponse = market.write(writer)
             advanceUntilIdle()
-            assertEquals(true, writeResponse)
+            assertNotNull(writeResponse)
 
             val responsesAfterWrite = flow.take(4).toList()
             val lastResponseAfterWrite = responsesAfterWrite.last()
@@ -140,7 +141,7 @@ class MarketTests {
             val writerOne = writeRequest(FakeNotes.One.key, newNoteOne)
             val writeResponseOne = market.write(writerOne)
             advanceUntilIdle()
-            assertEquals(true, writeResponseOne)
+            assertNotNull(writeResponseOne)
 
             val readerTwo = readRequest(FakeNotes.Two.key)
             val flowTwo = market.read(readerTwo)
@@ -150,7 +151,7 @@ class MarketTests {
             val writerTwo = writeRequest(FakeNotes.Two.key, newNoteTwo)
             val writeResponseTwo = market.write(writerTwo)
             advanceUntilIdle()
-            assertEquals(true, writeResponseTwo)
+            assertNotNull(writeResponseTwo)
 
             val responsesAfterWriteOne = flowOne.take(4).toList()
             val lastResponseAfterWriteOne = responsesAfterWriteOne.last()
@@ -234,8 +235,8 @@ class MarketTests {
             val writeResponseOneA = market.write(writerOneA)
             val writeResponseOneB = market.write(writerOneB)
 
-            assertEquals(true, writeResponseOneA)
-            assertEquals(true, writeResponseOneB)
+            assertNotNull(writeResponseOneA)
+            assertNotNull(writeResponseOneB)
             assertEquals(2, marketOnCompletions[FakeNotes.One.key]!![successCount])
             assertEquals(1, marketOnCompletions.size)
             assertEquals(null, marketOnCompletions[FakeNotes.One.key]!![failureCount])

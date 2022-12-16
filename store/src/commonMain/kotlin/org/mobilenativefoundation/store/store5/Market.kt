@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
-import org.mobilenativefoundation.store.store5.impl.RealMarket
 import kotlinx.coroutines.flow.Flow
+import org.mobilenativefoundation.store.store5.impl.RealMarket
 
 /**
  * Integrates stores and a bookkeeper.
@@ -9,18 +9,18 @@ import kotlinx.coroutines.flow.Flow
  * @see [Store]
  * @see [Bookkeeper]
  */
-interface Market<Key : Any, Input : Any, Output : Any> {
-    suspend fun read(reader: ReadRequest<Key, Input, Output>): Flow<MarketResponse<Output>>
-    suspend fun write(writer: WriteRequest<Key, Input, Output>): Boolean
+interface Market<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
+    suspend fun read(reader: ReadRequest<Key, CommonRepresentation>): Flow<MarketResponse<CommonRepresentation>>
+    suspend fun write(writer: WriteRequest<Key, CommonRepresentation>): NetworkWriteResponse
     suspend fun delete(key: Key): Boolean
     suspend fun delete(): Boolean
 
     companion object {
-        fun <Key : Any, Input : Any, Output : Any> of(
-            stores: List<Store<Key, Input, Output>>,
+        fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> of(
+            stores: List<Store<Key, *, CommonRepresentation>>,
             bookkeeper: Bookkeeper<Key>,
-            fetcher: NetworkFetcher<Key, Input, Output>,
-            updater: NetworkUpdater<Key, Input, Output>
-        ): Market<Key, Input, Output> = RealMarket(stores, bookkeeper, fetcher, updater)
+            fetcher: NetworkFetcher<Key, CommonRepresentation, NetworkRepresentation, NetworkWriteResponse>,
+            updater: NetworkUpdater<Key, CommonRepresentation, NetworkWriteResponse>
+        ): Market<Key, NetworkRepresentation, CommonRepresentation, NetworkWriteResponse> = RealMarket(stores, bookkeeper, fetcher, updater)
     }
 }

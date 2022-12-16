@@ -2,16 +2,16 @@
 
 package org.mobilenativefoundation.store.store5.data.fake
 
-import org.mobilenativefoundation.store.store5.Store
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.mobilenativefoundation.store.store5.Store
 
 internal class FakeDatabase<T : Any> : Store<String, T, T> {
     private val data: MutableMap<String, T> = mutableMapOf()
     private val writeRequests: MutableMap<String, Long?> = mutableMapOf()
 
     override fun read(key: String): Flow<T?> = flow {
-        emit(data[key] as? T)
+        emit(data[key])
     }
 
     override suspend fun write(key: String, input: T): Boolean {
@@ -28,6 +28,8 @@ internal class FakeDatabase<T : Any> : Store<String, T, T> {
         data.clear()
         return true
     }
+
+    override val converter: Store.Converter<T, T>? = null
 
     fun setLastWriteTime(key: String, updated: Long?): Boolean {
         this.writeRequests[key] = updated
