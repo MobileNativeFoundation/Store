@@ -1,6 +1,6 @@
 # Cache
 
-ℹ️ [Store](https://github.com/MobileNativeFoundation/Store) depends on a subset of [Guava](https://github.com/google/guava).
+Store depends on a subset of [Guava](https://github.com/google/guava).
 This is a shaded artifact that is Kotlin Multiplatform compatible.
 
 ## Usage
