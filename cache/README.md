@@ -38,7 +38,6 @@ data class Post(
 
 ## See Also
 
-Check out Guava's Cache documentation for all features and configuration options:
 https://github.com/google/guava/wiki/CachesExplained
 
 ## License
