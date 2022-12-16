@@ -10,9 +10,7 @@ typealias StoreClearer = suspend () -> Boolean
 
 /**
  * Interacts with a data source.
- * We recommend [Store] delegate to one [Persister]. However, [Store] can delegate to any source(s) of data.
  * A [Market] implementation requires at least one [Store]. But typical applications have at least two: one bound to a memory cache and another bound to a database.
- * @see [Persister].
  * @see [Market].
  */
 
@@ -23,7 +21,7 @@ interface Store<Key : Any, StoreRepresentation : Any, CommonRepresentation : Any
     fun read(key: Key): Flow<CommonRepresentation?>
 
     /**
-     * Writes data to [Store] using [Key] and [StoreRepresentation].
+     * Writes data to [Store] using [Key] and [CommonRepresentation].
      */
     suspend fun write(key: Key, input: CommonRepresentation): Boolean
 
