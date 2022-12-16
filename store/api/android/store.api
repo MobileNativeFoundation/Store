@@ -6,6 +6,54 @@ public final class org/mobilenativefoundation/store/store5/BuildConfig {
 }
 
 public abstract interface class org/mobilenativefoundation/store/store5/Fetcher {
+	public static final field Companion Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;
+	public abstract fun invoke (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class org/mobilenativefoundation/store/store5/Fetcher$Companion {
+	public final fun of (Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public final fun ofFlow (Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public final fun ofResult (Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public final fun ofResultFlow (Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+}
+
+public abstract class org/mobilenativefoundation/store/store5/FetcherResult {
+}
+
+public final class org/mobilenativefoundation/store/store5/FetcherResult$Data : org/mobilenativefoundation/store/store5/FetcherResult {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Data;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/FetcherResult$Data;Ljava/lang/Object;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Data;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class org/mobilenativefoundation/store/store5/FetcherResult$Error : org/mobilenativefoundation/store/store5/FetcherResult {
+}
+
+public final class org/mobilenativefoundation/store/store5/FetcherResult$Error$Exception : org/mobilenativefoundation/store/store5/FetcherResult$Error {
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun copy (Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Exception;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Exception;Ljava/lang/Throwable;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Exception;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/FetcherResult$Error$Message : org/mobilenativefoundation/store/store5/FetcherResult$Error {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Message;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Message;Ljava/lang/String;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/FetcherResult$Error$Message;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class org/mobilenativefoundation/store/store5/market/Bookkeeper {

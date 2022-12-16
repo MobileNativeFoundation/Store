@@ -8,7 +8,6 @@ import org.mobilenativefoundation.store.store5.Fetcher.Companion.of
 import org.mobilenativefoundation.store.store5.Fetcher.Companion.ofFlow
 import org.mobilenativefoundation.store.store5.Fetcher.Companion.ofResult
 
-
 /**
  * Fetcher is used by [Store] to fetch network records for a given key. The return type is [Flow] to
  * allow for multiple result per request.
