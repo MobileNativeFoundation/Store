@@ -24,13 +24,13 @@ import org.mobilenativefoundation.store.notes.app.extension.tryGetNote
 import org.mobilenativefoundation.store.notes.app.extension.tryWriteFailed
 import org.mobilenativefoundation.store.notes.app.extension.tryWriteNote
 import org.mobilenativefoundation.store.notes.app.market.Key
-import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Market
-import org.mobilenativefoundation.store.store5.NetworkFetcher
-import org.mobilenativefoundation.store.store5.NetworkUpdater
-import org.mobilenativefoundation.store.store5.OnNetworkCompletion
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.impl.MemoryLruStore
+import org.mobilenativefoundation.store.store5.market.Bookkeeper
+import org.mobilenativefoundation.store.store5.market.Market
+import org.mobilenativefoundation.store.store5.market.NetworkFetcher
+import org.mobilenativefoundation.store.store5.market.NetworkUpdater
+import org.mobilenativefoundation.store.store5.market.OnNetworkCompletion
+import org.mobilenativefoundation.store.store5.market.Store
+import org.mobilenativefoundation.store.store5.market.impl.MemoryLruStore
 import javax.inject.Named
 
 @Module

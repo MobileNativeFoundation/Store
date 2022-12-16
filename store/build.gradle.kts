@@ -37,6 +37,8 @@ kotlin {
                 with(Deps.Kotlinx) {
                     implementation(coroutinesCore)
                     implementation(dateTime)
+                    implementation(project(":multicast"))
+                    implementation(project(":cache"))
                 }
             }
         }

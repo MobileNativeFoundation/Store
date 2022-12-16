@@ -297,21 +297,21 @@ public abstract interface class org/mobilenativefoundation/store/notes/app/wirin
 public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule {
 	public static final field $stable I
 	public static final field INSTANCE Lorg/mobilenativefoundation/store/notes/app/wiring/AppModule;
-	public final fun provideBookkeeper (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/Bookkeeper;
+	public final fun provideBookkeeper (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/market/Bookkeeper;
 	public final fun provideContext (Lorg/mobilenativefoundation/store/notes/app/NotesApp;)Landroid/content/Context;
 	public final fun provideDatabase (Lcom/squareup/sqldelight/db/SqlDriver;)Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;
-	public final fun provideDatabaseStore (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/Store;
+	public final fun provideDatabaseStore (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/market/Store;
 	public final fun provideDriver (Landroid/content/Context;)Lcom/squareup/sqldelight/db/SqlDriver;
-	public final fun provideMarket (Lorg/mobilenativefoundation/store/notes/android/common/api/Api;Lorg/mobilenativefoundation/store/store5/Store;Lorg/mobilenativefoundation/store/store5/Store;Lorg/mobilenativefoundation/store/store5/Bookkeeper;)Lorg/mobilenativefoundation/store/store5/Market;
-	public final fun provideMemoryLruCacheStore ()Lorg/mobilenativefoundation/store/store5/Store;
+	public final fun provideMarket (Lorg/mobilenativefoundation/store/notes/android/common/api/Api;Lorg/mobilenativefoundation/store/store5/market/Store;Lorg/mobilenativefoundation/store/store5/market/Store;Lorg/mobilenativefoundation/store/store5/market/Bookkeeper;)Lorg/mobilenativefoundation/store/store5/market/Market;
+	public final fun provideMemoryLruCacheStore ()Lorg/mobilenativefoundation/store/store5/market/Store;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideBookkeeperFactory : dagger/internal/Factory {
 	public fun <init> (Ljavax/inject/Provider;)V
 	public static fun create (Ljavax/inject/Provider;)Lorg/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideBookkeeperFactory;
 	public synthetic fun get ()Ljava/lang/Object;
-	public fun get ()Lorg/mobilenativefoundation/store/store5/Bookkeeper;
-	public static fun provideBookkeeper (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/Bookkeeper;
+	public fun get ()Lorg/mobilenativefoundation/store/store5/market/Bookkeeper;
+	public static fun provideBookkeeper (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/market/Bookkeeper;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideContextFactory : dagger/internal/Factory {
@@ -334,8 +334,8 @@ public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_P
 	public fun <init> (Ljavax/inject/Provider;)V
 	public static fun create (Ljavax/inject/Provider;)Lorg/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideDatabaseStoreFactory;
 	public synthetic fun get ()Ljava/lang/Object;
-	public fun get ()Lorg/mobilenativefoundation/store/store5/Store;
-	public static fun provideDatabaseStore (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/Store;
+	public fun get ()Lorg/mobilenativefoundation/store/store5/market/Store;
+	public static fun provideDatabaseStore (Lorg/mobilenativefoundation/store/notes/android/app/NotesDatabase;)Lorg/mobilenativefoundation/store/store5/market/Store;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideDriverFactory : dagger/internal/Factory {
@@ -350,16 +350,16 @@ public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_P
 	public fun <init> (Ljavax/inject/Provider;Ljavax/inject/Provider;Ljavax/inject/Provider;Ljavax/inject/Provider;)V
 	public static fun create (Ljavax/inject/Provider;Ljavax/inject/Provider;Ljavax/inject/Provider;Ljavax/inject/Provider;)Lorg/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideMarketFactory;
 	public synthetic fun get ()Ljava/lang/Object;
-	public fun get ()Lorg/mobilenativefoundation/store/store5/Market;
-	public static fun provideMarket (Lorg/mobilenativefoundation/store/notes/android/common/api/Api;Lorg/mobilenativefoundation/store/store5/Store;Lorg/mobilenativefoundation/store/store5/Store;Lorg/mobilenativefoundation/store/store5/Bookkeeper;)Lorg/mobilenativefoundation/store/store5/Market;
+	public fun get ()Lorg/mobilenativefoundation/store/store5/market/Market;
+	public static fun provideMarket (Lorg/mobilenativefoundation/store/notes/android/common/api/Api;Lorg/mobilenativefoundation/store/store5/market/Store;Lorg/mobilenativefoundation/store/store5/market/Store;Lorg/mobilenativefoundation/store/store5/market/Bookkeeper;)Lorg/mobilenativefoundation/store/store5/market/Market;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideMemoryLruCacheStoreFactory : dagger/internal/Factory {
 	public fun <init> ()V
 	public static fun create ()Lorg/mobilenativefoundation/store/notes/app/wiring/AppModule_ProvideMemoryLruCacheStoreFactory;
 	public synthetic fun get ()Ljava/lang/Object;
-	public fun get ()Lorg/mobilenativefoundation/store/store5/Store;
-	public static fun provideMemoryLruCacheStore ()Lorg/mobilenativefoundation/store/store5/Store;
+	public fun get ()Lorg/mobilenativefoundation/store/store5/market/Store;
+	public static fun provideMemoryLruCacheStore ()Lorg/mobilenativefoundation/store/store5/market/Store;
 }
 
 public final class org/mobilenativefoundation/store/notes/app/wiring/DaggerAppComponent {
