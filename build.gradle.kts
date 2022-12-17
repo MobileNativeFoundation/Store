@@ -32,6 +32,9 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
     }
 
     // Workaround to prevent Gradle from stealing focus from other apps during tests run/etc.
