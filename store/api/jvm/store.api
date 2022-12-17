@@ -1,3 +1,6 @@
+public abstract interface annotation class org/mobilenativefoundation/store/store5/ExperimentalStoreApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class org/mobilenativefoundation/store/store5/Fetcher {
 	public static final field Companion Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;
 	public abstract fun invoke (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
@@ -47,6 +50,197 @@ public final class org/mobilenativefoundation/store/store5/FetcherResult$Error$M
 	public final fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/MemoryPolicy {
+	public static final field Companion Lorg/mobilenativefoundation/store/store5/MemoryPolicy$Companion;
+	public static final field DEFAULT_SIZE_POLICY J
+	public final fun getExpireAfterAccess-UwyO8pc ()J
+	public final fun getExpireAfterWrite-UwyO8pc ()J
+	public final fun getHasAccessPolicy ()Z
+	public final fun getHasMaxSize ()Z
+	public final fun getHasMaxWeight ()Z
+	public final fun getHasWritePolicy ()Z
+	public final fun getMaxSize ()J
+	public final fun getMaxWeight ()J
+	public final fun getWeigher ()Lorg/mobilenativefoundation/store/store5/Weigher;
+	public final fun isDefaultWritePolicy ()Z
+}
+
+public final class org/mobilenativefoundation/store/store5/MemoryPolicy$Companion {
+	public final fun builder ()Lorg/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun getDEFAULT_DURATION_POLICY-UwyO8pc ()J
+}
+
+public final class org/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder {
+	public fun <init> ()V
+	public final fun build ()Lorg/mobilenativefoundation/store/store5/MemoryPolicy;
+	public final fun setExpireAfterAccess-LRDsOJo (J)Lorg/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setExpireAfterWrite-LRDsOJo (J)Lorg/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setMaxSize (J)Lorg/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder;
+	public final fun setWeigherAndMaxWeight (Lorg/mobilenativefoundation/store/store5/Weigher;J)Lorg/mobilenativefoundation/store/store5/MemoryPolicy$MemoryPolicyBuilder;
+}
+
+public final class org/mobilenativefoundation/store/store5/ResponseOrigin : java/lang/Enum {
+	public static final field Cache Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public static final field Fetcher Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public static final field SourceOfTruth Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public static fun values ()[Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+}
+
+public abstract interface class org/mobilenativefoundation/store/store5/SourceOfTruth {
+	public static final field Companion Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;
+	public abstract fun delete (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun reader (Ljava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public abstract fun write (Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store/store5/SourceOfTruth$Companion {
+	public final fun of (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public static synthetic fun of$default (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public final fun ofFlow (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public static synthetic fun ofFlow$default (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+}
+
+public final class org/mobilenativefoundation/store/store5/SourceOfTruth$ReadException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/Object;
+	public fun hashCode ()I
+}
+
+public final class org/mobilenativefoundation/store/store5/SourceOfTruth$WriteException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Throwable;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/Object;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+}
+
+public abstract interface class org/mobilenativefoundation/store/store5/Store {
+	public abstract fun clear (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun stream (Lorg/mobilenativefoundation/store/store5/StoreRequest;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class org/mobilenativefoundation/store/store5/StoreBuilder {
+	public static final field Companion Lorg/mobilenativefoundation/store/store5/StoreBuilder$Companion;
+	public abstract fun build ()Lorg/mobilenativefoundation/store/store5/Store;
+	public abstract fun cachePolicy (Lorg/mobilenativefoundation/store/store5/MemoryPolicy;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+	public abstract fun disableCache ()Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+	public abstract fun scope (Lkotlinx/coroutines/CoroutineScope;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreBuilder$Companion {
+	public final fun from (Lorg/mobilenativefoundation/store/store5/Fetcher;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+	public final fun from (Lorg/mobilenativefoundation/store/store5/Fetcher;Lorg/mobilenativefoundation/store/store5/SourceOfTruth;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreKt {
+	public static final fun fresh (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun get (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreRequest {
+	public static final field Companion Lorg/mobilenativefoundation/store/store5/StoreRequest$Companion;
+	public synthetic fun <init> (Ljava/lang/Object;IZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component3 ()Z
+	public final fun copy (Ljava/lang/Object;IZ)Lorg/mobilenativefoundation/store/store5/StoreRequest;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreRequest;Ljava/lang/Object;IZILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ljava/lang/Object;
+	public final fun getRefresh ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreRequest$Companion {
+	public final fun cached (Ljava/lang/Object;Z)Lorg/mobilenativefoundation/store/store5/StoreRequest;
+	public final fun fresh (Ljava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreRequest;
+	public final fun skipMemory (Ljava/lang/Object;Z)Lorg/mobilenativefoundation/store/store5/StoreRequest;
+}
+
+public abstract class org/mobilenativefoundation/store/store5/StoreResponse {
+	public final fun dataOrNull ()Ljava/lang/Object;
+	public final fun errorMessageOrNull ()Ljava/lang/String;
+	public abstract fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun requireData ()Ljava/lang/Object;
+	public final fun throwIfError ()V
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponse$Data : org/mobilenativefoundation/store/store5/StoreResponse {
+	public fun <init> (Ljava/lang/Object;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun copy (Ljava/lang/Object;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Data;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreResponse$Data;Ljava/lang/Object;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Data;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class org/mobilenativefoundation/store/store5/StoreResponse$Error : org/mobilenativefoundation/store/store5/StoreResponse {
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponse$Error$Exception : org/mobilenativefoundation/store/store5/StoreResponse$Error {
+	public fun <init> (Ljava/lang/Throwable;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun copy (Ljava/lang/Throwable;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Exception;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Exception;Ljava/lang/Throwable;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Exception;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getError ()Ljava/lang/Throwable;
+	public fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponse$Error$Message : org/mobilenativefoundation/store/store5/StoreResponse$Error {
+	public fun <init> (Ljava/lang/String;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun copy (Ljava/lang/String;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Message;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Message;Ljava/lang/String;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Error$Message;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
+	public fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponse$Loading : org/mobilenativefoundation/store/store5/StoreResponse {
+	public fun <init> (Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)V
+	public final fun component1 ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun copy (Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Loading;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreResponse$Loading;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreResponse$Loading;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponse$NoNewData : org/mobilenativefoundation/store/store5/StoreResponse {
+	public fun <init> (Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)V
+	public final fun component1 ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public final fun copy (Lorg/mobilenativefoundation/store/store5/ResponseOrigin;)Lorg/mobilenativefoundation/store/store5/StoreResponse$NoNewData;
+	public static synthetic fun copy$default (Lorg/mobilenativefoundation/store/store5/StoreResponse$NoNewData;Lorg/mobilenativefoundation/store/store5/ResponseOrigin;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/StoreResponse$NoNewData;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getOrigin ()Lorg/mobilenativefoundation/store/store5/ResponseOrigin;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/store5/StoreResponseKt {
+	public static final fun doThrow (Lorg/mobilenativefoundation/store/store5/StoreResponse$Error;)Ljava/lang/Void;
+}
+
+public abstract interface class org/mobilenativefoundation/store/store5/Weigher {
+	public abstract fun weigh (Ljava/lang/Object;Ljava/lang/Object;)I
 }
 
 public abstract interface class org/mobilenativefoundation/store/store5/market/Bookkeeper {
