@@ -90,8 +90,7 @@ private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?):
-            RealStoreBuilder<Key, Input, Output> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): RealStoreBuilder<Key, Input, Output> {
         cachePolicy = memoryPolicy
         return this
     }
