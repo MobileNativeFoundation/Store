@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.flow
 
 internal inline fun <T, R> Flow<T>.mapIndexed(crossinline block: (Int, T) -> R) = flow {
-    this@mapIndexed.collectIndexed { index, value ->
+    collectIndexed { index, value ->
         emit(block(index, value))
     }
 }

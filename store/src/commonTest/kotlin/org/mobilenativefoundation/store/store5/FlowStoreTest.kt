@@ -26,6 +26,9 @@ import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.StoreResponse.Data
 import org.mobilenativefoundation.store.store5.StoreResponse.Loading
 import org.mobilenativefoundation.store.store5.util.FakeFetcher
+import org.mobilenativefoundation.store.store5.util.InMemoryPersister
+import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
+import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -91,64 +94,75 @@ class FlowStoreTest {
         )
     }
 
-//    @Test
-//    fun getAndFresh_withPersister() = testScope.runTest {
-//        val fetcher = FakeFetcher(
-//            3 to "three-1",
-//            3 to "three-2"
-//        )
-//        val persister = InMemoryPersister<Int, String>()
-//        val pipeline = StoreBuilder.from(
-//            fetcher = fetcher,
-//            sourceOfTruth = persister.asSourceOfTruth()
-//        ).buildWithTestScope()
-//
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
-//            .emitsExactly(
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Cache
-//                ),
-//                // note that we still get the data from persister as well as we don't listen to
-//                // the persister for the cached items unless there is an active stream, which
-//                // means cache can go out of sync w/ the persister
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.SourceOfTruth
-//                )
-//            )
-//        assertThat(pipeline.stream(StoreRequest.fresh(3)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = false)))
-//            .emitsExactly(
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.Cache
-//                ),
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.SourceOfTruth
-//                )
-//            )
-//    }
+    @Test
+    fun getAndFresh_withPersister() = testScope.runTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val persister = InMemoryPersister<Int, String>()
+        val pipeline = StoreBuilder.from(
+            fetcher = fetcher,
+            sourceOfTruth = persister.asSourceOfTruth()
+        ).buildWithTestScope()
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            listOf(
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            listOf(
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Cache
+                ),
+                // note that we still get the data from persister as well as we don't listen to
+                // the persister for the cached items unless there is an active stream, which
+                // means cache can go out of sync w/ the persister
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.SourceOfTruth
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.fresh(3)),
+            listOf(
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            listOf(
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Cache
+                ),
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.SourceOfTruth
+                )
+            )
+        )
+    }
 //
 //    @Test
 //    fun streamAndFresh_withPersister() = testScope.runTest {
