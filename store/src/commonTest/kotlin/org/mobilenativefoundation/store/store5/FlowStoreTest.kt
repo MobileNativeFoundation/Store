@@ -163,118 +163,131 @@ class FlowStoreTest {
             )
         )
     }
-//
-//    @Test
-//    fun streamAndFresh_withPersister() = testScope.runTest {
-//        val fetcher = FakeFetcher(
-//            3 to "three-1",
-//            3 to "three-2"
-//        )
-//        val persister = InMemoryPersister<Int, String>()
-//
-//        val pipeline = StoreBuilder.from(
-//            fetcher = fetcher,
-//            sourceOfTruth = persister.asSourceOfTruth()
-//        ).buildWithTestScope()
-//
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
-//            .emitsExactly(
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Cache
-//                ),
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.SourceOfTruth
-//                ),
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//    }
-//
-//    @Test
-//    fun streamAndFresh() = testScope.runTest {
-//        val fetcher = FakeFetcher(
-//            3 to "three-1",
-//            3 to "three-2"
-//        )
-//        val pipeline = StoreBuilder.from(fetcher = fetcher)
-//            .buildWithTestScope()
-//
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//
-//        assertThat(pipeline.stream(StoreRequest.cached(3, refresh = true)))
-//            .emitsExactly(
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Cache
-//                ),
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//    }
-//
-//    @Test
-//    fun skipCache() = testScope.runTest {
-//        val fetcher = FakeFetcher(
-//            3 to "three-1",
-//            3 to "three-2"
-//        )
-//        val pipeline = StoreBuilder.from(fetcher = fetcher)
-//            .buildWithTestScope()
-//
-//        assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-1",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//
-//        assertThat(pipeline.stream(StoreRequest.skipMemory(3, refresh = false)))
-//            .emitsExactly(
-//                Loading(
-//                    origin = ResponseOrigin.Fetcher
-//                ),
-//                Data(
-//                    value = "three-2",
-//                    origin = ResponseOrigin.Fetcher
-//                )
-//            )
-//    }
+
+    @Test
+    fun streamAndFresh_withPersister() = testScope.runTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val persister = InMemoryPersister<Int, String>()
+
+        val pipeline = StoreBuilder.from(
+            fetcher = fetcher,
+            sourceOfTruth = persister.asSourceOfTruth()
+        ).buildWithTestScope()
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = true)),
+            listOf(
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = true)),
+            listOf(
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Cache
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.SourceOfTruth
+                ),
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+    }
+
+    @Test
+    fun streamAndFresh() = testScope.runTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = StoreBuilder.from(fetcher = fetcher)
+            .buildWithTestScope()
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = true)),
+            listOf
+            (
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.cached(3, refresh = true)),
+            listOf(
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Cache
+                ),
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+    }
+
+    @Test
+    fun skipCache() = testScope.runTest {
+        val fetcher = FakeFetcher(
+            3 to "three-1",
+            3 to "three-2"
+        )
+        val pipeline = StoreBuilder.from(fetcher = fetcher)
+            .buildWithTestScope()
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.skipMemory(3, refresh = false)),
+            listOf(
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-1",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+
+        assertEmitsExactly(
+            pipeline.stream(StoreRequest.skipMemory(3, refresh = false)),
+            listOf(
+                Loading(
+                    origin = ResponseOrigin.Fetcher
+                ),
+                Data(
+                    value = "three-2",
+                    origin = ResponseOrigin.Fetcher
+                )
+            )
+        )
+    }
 //
 //    @Test
 //    fun flowingFetcher() = testScope.runTest {
