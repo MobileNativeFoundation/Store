@@ -48,3 +48,5 @@ captures/
 *.jks
 
 store/kover
+*.podspec
+yarn.lock
