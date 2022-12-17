@@ -2,7 +2,7 @@ name: Check
 on: push
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -12,7 +12,7 @@ jobs:
         run: ./gradlew check
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@master
       - uses: codecov/codecov-action@v3
