@@ -3,6 +3,7 @@ package org.mobilenativefoundation.store.store5
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
@@ -43,37 +44,44 @@ class ClearAllStoreTests {
             .build()
 
         // should receive data from network first time
+        val responseOneA = store.getData(key1)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.Fetcher,
                 value = value1
             ),
-            store.getData(key1)
+            responseOneA
         )
-
+        val responseTwoA = store.getData(key2)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.Fetcher,
                 value = value2
             ),
-            store.getData(key2)
+            responseTwoA
         )
 
         // should receive data from persister
+        val responseOneB = store.getData(key1)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.SourceOfTruth,
                 value = value1
             ),
-            store.getData(key1)
+            responseOneB
         )
 
+        val responseTwoB = store.getData(key2)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.SourceOfTruth,
                 value = value2
             ),
-            store.getData(key2)
+            responseTwoB
         )
 
         // clear all entries in store
@@ -82,20 +90,24 @@ class ClearAllStoreTests {
         assertNull(persister.peekEntry(key2))
 
         // should fetch data from network again
+        val responseOneC = store.getData(key1)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.Fetcher,
                 value = value1
             ),
-            store.getData(key1)
+            responseOneC
         )
 
+        val responseTwoC = store.getData(key2)
+        advanceUntilIdle()
         assertEquals(
             StoreResponse.Data(
                 origin = ResponseOrigin.Fetcher,
                 value = value2
             ),
-            store.getData(key2)
+            responseTwoC
         )
     }
 

@@ -36,20 +36,20 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 with(Deps.Kotlinx) {
+                    implementation(stdLib)
                     implementation(coroutinesCore)
+                    implementation(serializationCore)
                     implementation(dateTime)
-                    implementation(project(":multicast"))
-                    implementation(project(":cache"))
                 }
+                implementation(project(":multicast"))
+                implementation(project(":cache"))
             }
         }
 
         val commonTest by getting {
+            dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("test"))
-                implementation(Deps.Kotlinx.stdLib)
-                implementation(Deps.Kotlinx.coroutinesCore)
-                implementation(Deps.Kotlinx.serializationCore)
                 with(Deps.Test) {
                     implementation(junit)
                     implementation(core)
@@ -68,11 +68,11 @@ kotlin {
 
 android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 31
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 31
+        targetSdk = 33
     }
 
     lint {

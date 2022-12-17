@@ -38,21 +38,6 @@ kotlin {
                 implementation(Deps.Kotlinx.coroutinesCore)
             }
         }
-
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(Deps.Kotlinx.stdLib)
-                implementation(Deps.Kotlinx.coroutinesCore)
-                implementation(Deps.Kotlinx.serializationCore)
-                with(Deps.Test) {
-                    implementation(junit)
-                    implementation(core)
-                    implementation(coroutinesTest)
-                }
-            }
-        }
-
         val jvmMain by getting
         val androidMain by getting
         val nativeMain by creating {
@@ -63,11 +48,11 @@ kotlin {
 
 android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 31
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 31
+        targetSdk = 33
     }
 
     lint {
