@@ -13,6 +13,7 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
+    id("kotlinx-atomicfu")
 }
 
 kotlin {
