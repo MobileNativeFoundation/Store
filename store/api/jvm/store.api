@@ -138,6 +138,10 @@ public final class org/mobilenativefoundation/store/store5/StoreBuilder$Companio
 	public final fun from (Lorg/mobilenativefoundation/store/store5/Fetcher;Lorg/mobilenativefoundation/store/store5/SourceOfTruth;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
 }
 
+public final class org/mobilenativefoundation/store/store5/StoreBuilder$DefaultImpls {
+	public static fun test (Lorg/mobilenativefoundation/store/store5/StoreBuilder;)V
+}
+
 public final class org/mobilenativefoundation/store/store5/StoreKt {
 	public static final fun fresh (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun get (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
