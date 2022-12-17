@@ -45,7 +45,7 @@ import kotlin.test.assertEquals
 
 @FlowPreview
 @ExperimentalCoroutinesApi
-class FlowStoreTest {
+class FlowStoreTests {
     private val testScope = TestScope()
 
     @Test

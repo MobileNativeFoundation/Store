@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class HotFlowStoreTest {
+class HotFlowStoreTests {
     private val testScope = TestScope()
 
     @Test
@@ -65,7 +65,7 @@ class HotFlowStoreTest {
     }
 }
 
-class FakeFlowFetcher<Key : Any, Output : Any>(
+private class FakeFlowFetcher<Key : Any, Output : Any>(
     vararg val responses: Pair<Key, Output>
 ) : Fetcher<Key, Output> {
     private var index = 0
