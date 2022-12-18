@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [5.0.0-alpha03] (2022-12-18)
+
+This release adds support for Store on iOS, JVM, and JS. Concepts and usage are unchanged from
+Store4. In a future release we will reintroduce support for local and remote writes with conflict
+resolution based on Google's offline first guidance.
+
+* Target Android, iOS, JVM, JS
+* Remove concept of Market
+* Remove support for local and remote writes (temporary)
+
 ## [5.0.0-alpha02] (2022-12-04)
 
 * Target iOS and JS
