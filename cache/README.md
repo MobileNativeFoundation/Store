@@ -1,38 +1,48 @@
-Cache
-===================
+# Cache
 
-Store depends on a subset of Guava, we have extracted these parts into a shaded Cache artifact.  
-Feel free to use Cache anytime you need an in memory cache implementation optimized for Android.  
+Store depends on a subset of [Guava](https://github.com/google/guava).
+This is a shaded artifact that is Kotlin Multiplatform compatible.
 
+## Usage
 
-To use, first build a cache instance.
-
-```java
- memCache = CacheBuilder.newBuilder()
-                .maximumSize(getCacheSize())
-                .expireAfterAccess(getCacheTTL(), TimeUnit.SECONDS)
-                .build();
+```kotlin
+implementation("org.mobilenativefoundation.store:cache:${STORE_VERSION}")
 ```
 
-You can then use your cache as regular cache or one that knows how to load itself (with blocking) when empty
-```java 
-memCache.get(key, new Callable<T>() {
-                @Override
-                public Observable<T> call() throws Exception {
-                    return getCachedValue(key);
-                }
-            });
- ```
- 
- Please refer to Guava's Cache documentation for additional features/configurations 
- https://github.com/google/guava/wiki/CachesExplained
+## Implementation
 
-```groovy
-	implementation "org.mobilenativefoundation.store:store4:${store_version}"
-```
-Please refer to the [Store Readme](https://github.com/dropbox/Store/blob/main/README.md#latest-version) for the latest version.
+### Model the key
 
+```kotlin
+data class Key(
+    val id: String
+)
 ```
+
+### Model the value
+
+```kotlin
+data class Post(
+    val title: String
+)
+```
+
+### Build the cache
+
+```kotlin
+ val cache = CacheBuilder<Key, Post>()
+    .maximumSize(100)
+    .expireAfterWrite(1.day)
+    .build()
+```
+
+## See Also
+
+https://github.com/google/guava/wiki/CachesExplained
+
+## License
+
+```text
 Copyright (c) 2017 The New York Times Company
 
 Copyright (c) 2010 The Guava Authors
