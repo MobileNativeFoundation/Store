@@ -53,3 +53,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         jvmTarget = "11"
     }
 }
+
+tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = JavaVersion.VERSION_11.name
+    targetCompatibility = JavaVersion.VERSION_11.name
+}
