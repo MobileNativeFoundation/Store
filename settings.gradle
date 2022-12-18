@@ -1,17 +1,3 @@
 include ':store'
 include ':cache'
 include ':multicast'
-
-include ':samples:notes:android:app'
-
-include ':samples:notes:android:common:scoping'
-include ':samples:notes:android:common:api'
-
-include ':samples:notes:android:lib:fig'
-include ':samples:notes:android:lib:navigation'
-include ':samples:notes:android:lib:model'
-include ':samples:notes:android:lib:result'
-
-include ':samples:notes:android:feature:account'
-include ':samples:notes:android:feature:home'
-include ':samples:notes:android:feature:explore'
