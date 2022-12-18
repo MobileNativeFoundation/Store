@@ -46,3 +46,7 @@ captures/
 
 # Keystore files
 *.jks
+
+store/kover
+*.podspec
+yarn.lock
