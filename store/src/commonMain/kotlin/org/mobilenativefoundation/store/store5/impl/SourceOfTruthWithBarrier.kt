@@ -93,7 +93,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                             StoreResponse.Data(
                                                 origin = ResponseOrigin.SourceOfTruth,
                                                 value = output
-                                            ) as StoreResponse<Output?> // necessary cast for catch block
+                                            )
                                         }
                                     }.catch { throwable ->
                                         emit(

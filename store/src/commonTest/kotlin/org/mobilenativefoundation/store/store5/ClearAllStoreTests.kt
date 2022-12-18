@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import org.mobilenativefoundation.store.store5.util.getData
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -24,15 +25,21 @@ class ClearAllStoreTests {
     private val value1 = 1
     private val value2 = 2
 
-    private val fetcher = Fetcher.of { key: String ->
-        when (key) {
-            key1 -> value1
-            key2 -> value2
-            else -> throw IllegalStateException("Unknown key")
+    private lateinit var fetcher: Fetcher<String, Int>
+
+    private lateinit var persister: InMemoryPersister<String, Int>
+
+    @BeforeTest
+    fun before() {
+        persister = InMemoryPersister()
+        fetcher = Fetcher.of { key: String ->
+            when (key) {
+                key1 -> value1
+                key2 -> value2
+                else -> throw IllegalStateException("Unknown key")
+            }
         }
     }
-
-    private val persister = InMemoryPersister<String, Int>()
 
     @Test
     fun callingClearAllOnStoreWithPersisterAndNoInMemoryCacheDeletesAllEntriesFromThePersister() = testScope.runTest {
