@@ -16,8 +16,7 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import org.mobilenativefoundation.store.store5.impl.RealStore
+import org.mobilenativefoundation.store.store5.impl.RealStoreBuilder
 import kotlin.time.ExperimentalTime
 
 /**
@@ -66,47 +65,12 @@ interface StoreBuilder<Key : Any, Output : Any> {
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        @OptIn(ExperimentalTime::class)
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
             sourceOfTruth: SourceOfTruth<Key, Input, Output>
         ): StoreBuilder<Key, Output> = RealStoreBuilder(
             fetcher = fetcher,
             sourceOfTruth = sourceOfTruth
-        )
-    }
-}
-
-@OptIn(ExperimentalTime::class)
-private class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
-    private val fetcher: Fetcher<Key, Input>,
-    private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
-) : StoreBuilder<Key, Output> {
-    private var scope: CoroutineScope? = null
-    private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
-
-    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output> {
-        this.scope = scope
-        return this
-    }
-
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): RealStoreBuilder<Key, Input, Output> {
-        cachePolicy = memoryPolicy
-        return this
-    }
-
-    override fun disableCache(): RealStoreBuilder<Key, Input, Output> {
-        cachePolicy = null
-        return this
-    }
-
-    override fun build(): Store<Key, Output> {
-        @Suppress("UNCHECKED_CAST")
-        return RealStore(
-            scope = scope ?: GlobalScope,
-            sourceOfTruth = sourceOfTruth,
-            fetcher = fetcher,
-            memoryPolicy = cachePolicy
         )
     }
 }
