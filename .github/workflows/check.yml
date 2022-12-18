@@ -2,21 +2,17 @@ name: Check
 on: push
 jobs:
   check:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up our JDK environment
-        uses: actions/setup-java@v3
-        with:
-          distribution: zulu
-          java-version: 11
-      - name: Set up and execute Gradle 'check' task
+        uses: actions/checkout@v2
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-        with:
-          arguments: check
+      - name: Run check with Gradle Wrapper
+        run: ./gradlew check
+
   coverage:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - uses: codecov/codecov-action@v3
