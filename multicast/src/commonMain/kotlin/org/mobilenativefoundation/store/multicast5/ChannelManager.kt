@@ -23,6 +23,108 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import org.mobilenativefoundation.store.multicast5.ChannelManager.Message
 
+internal interface ChannelManager<T> {
+
+    suspend fun addDownstream(
+        channel: SendChannel<Message.Dispatch.Value<T>>,
+        piggybackOnly: Boolean = false
+    )
+
+    suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>)
+
+    suspend fun close()
+
+    /**
+     * Holder for each downstream collector
+     */
+    data class ChannelEntry<T>(
+        /**
+         * The channel used by the collector
+         */
+        private val channel: SendChannel<Message.Dispatch.Value<T>>,
+        /**
+         * Tracking whether this channel is a piggyback only channel that can be closed without ever
+         * receiving a value or error.
+         */
+        val piggybackOnly: Boolean = false
+    ) {
+        private var _awaitsDispatch: Boolean = !piggybackOnly
+
+        val awaitsDispatch
+            get() = _awaitsDispatch
+
+        suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
+            _awaitsDispatch = false
+            channel.send(value)
+        }
+
+        fun dispatchError(error: Throwable) {
+            _awaitsDispatch = false
+            channel.close(error)
+        }
+
+        fun close() {
+            channel.close()
+        }
+
+        fun hasChannel(channel: SendChannel<Message.Dispatch.Value<T>>) = this.channel === channel
+
+        fun hasChannel(entry: ChannelEntry<T>) = this.channel === entry.channel
+    }
+
+    /**
+     * Messages accepted by the [ChannelManager].
+     */
+    sealed class Message<out T> {
+        /**
+         * Add a new channel, that means a new downstream subscriber
+         */
+        class AddChannel<T>(
+            val channel: SendChannel<Dispatch.Value<T>>,
+            val piggybackOnly: Boolean = false
+        ) : Message<T>()
+
+        /**
+         * Remove a downstream subscriber, that means it completed
+         */
+        class RemoveChannel<T>(val channel: SendChannel<Dispatch.Value<T>>) : Message<T>()
+
+        sealed class Dispatch<out T> : Message<T>() {
+            /**
+             * Upstream dispatched a new value, send it to all downstream items
+             */
+            class Value<out T>(
+                /**
+                 * The value dispatched by the upstream
+                 */
+                val value: T,
+                /**
+                 * Ack that is completed by all receiver. Upstream producer will await this before asking
+                 * for a new value from upstream
+                 */
+                val delivered: CompletableDeferred<Unit>
+            ) : Dispatch<T>()
+
+            /**
+             * Upstream dispatched an error, send it to all downstream items
+             */
+            class Error(
+                /**
+                 * The error sent by the upstream
+                 */
+                val error: Throwable
+            ) : Dispatch<Nothing>()
+
+            class UpstreamFinished<T>(
+                /**
+                 * SharedFlowProducer finished emitting
+                 */
+                val producer: SharedFlowProducer<T>
+            ) : Dispatch<T>()
+        }
+    }
+}
+
 /**
  * Tracks active downstream channels and dispatches incoming upstream values to each of them in
  * parallel. The upstream is suspended after producing a value until at least one of the downstreams
@@ -32,7 +134,7 @@ import org.mobilenativefoundation.store.multicast5.ChannelManager.Message
  * is no active upstream and there's at least one downstream that has not received a value.
  *
  */
-internal class ChannelManager<T>(
+internal class StoreChannelManager<T>(
     /**
      * The scope in which ChannelManager actor runs
      */
@@ -61,27 +163,27 @@ internal class ChannelManager<T>(
     private val onEach: suspend (T) -> Unit,
 
     private val upstream: Flow<T>
-) {
+) : ChannelManager<T> {
     init {
         require(!keepUpstreamAlive || bufferSize > 0) {
             "Must set bufferSize > 0 if keepUpstreamAlive is enabled"
         }
     }
 
-    suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>, piggybackOnly: Boolean = false) =
+    override suspend fun addDownstream(channel: SendChannel<Message.Dispatch.Value<T>>, piggybackOnly: Boolean) =
         actor.send(Message.AddChannel(channel, piggybackOnly))
 
-    suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
+    override suspend fun removeDownstream(channel: SendChannel<Message.Dispatch.Value<T>>) =
         actor.send(Message.RemoveChannel(channel))
 
-    suspend fun close() = actor.close()
+    override suspend fun close() = actor.close()
 
     private val actor = Actor()
 
     /**
      * Actor that does all the work. Any state and functionality should go here.
      */
-    private inner class Actor : StoreRealActor<Message<T>>(scope) {
+    private inner class Actor : StoreRealActor<ChannelManager.Message<T>>(scope) {
 
         private val buffer = Buffer<T>(bufferSize)
 
@@ -107,9 +209,9 @@ internal class ChannelManager<T>(
         /**
          * List of downstream collectors.
          */
-        private val channels = mutableListOf<ChannelEntry<T>>()
+        private val channels = mutableListOf<ChannelManager.ChannelEntry<T>>()
 
-        override suspend fun handle(msg: Message<T>) {
+        override suspend fun handle(msg: ChannelManager.Message<T>) {
             when (msg) {
                 is Message.AddChannel -> doAdd(msg)
                 is Message.RemoveChannel -> doRemove(msg.channel)
@@ -133,8 +235,8 @@ internal class ChannelManager<T>(
             if (this.producer !== producer) {
                 return
             }
-            val piggyBacked = mutableListOf<ChannelEntry<T>>()
-            val leftovers = mutableListOf<ChannelEntry<T>>()
+            val piggyBacked = mutableListOf<ChannelManager.ChannelEntry<T>>()
+            val leftovers = mutableListOf<ChannelManager.ChannelEntry<T>>()
             channels.forEach {
                 when {
                     !it.awaitsDispatch -> {
@@ -228,7 +330,7 @@ internal class ChannelManager<T>(
                 "cannot add a piggyback only downstream when piggybackDownstream is disabled"
             }
             addEntry(
-                entry = ChannelEntry(
+                entry = ChannelManager.ChannelEntry(
                     channel = msg.channel,
                     piggybackOnly = msg.piggybackOnly
                 )
@@ -249,7 +351,7 @@ internal class ChannelManager<T>(
         /**
          * Internally add the new downstream collector to our list, send it anything buffered.
          */
-        private suspend fun addEntry(entry: ChannelEntry<T>) {
+        private suspend fun addEntry(entry: ChannelManager.ChannelEntry<T>) {
             val new = channels.none {
                 it.hasChannel(entry)
             }
@@ -267,116 +369,26 @@ internal class ChannelManager<T>(
             }
         }
     }
-
-    /**
-     * Holder for each downstream collector
-     */
-    internal data class ChannelEntry<T>(
-        /**
-         * The channel used by the collector
-         */
-        private val channel: SendChannel<Message.Dispatch.Value<T>>,
-        /**
-         * Tracking whether this channel is a piggyback only channel that can be closed without ever
-         * receiving a value or error.
-         */
-        val piggybackOnly: Boolean = false
-    ) {
-        private var _awaitsDispatch: Boolean = !piggybackOnly
-
-        val awaitsDispatch
-            get() = _awaitsDispatch
-
-        suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
-            _awaitsDispatch = false
-            channel.send(value)
-        }
-
-        fun dispatchError(error: Throwable) {
-            _awaitsDispatch = false
-            channel.close(error)
-        }
-
-        fun close() {
-            channel.close()
-        }
-
-        fun hasChannel(channel: SendChannel<Message.Dispatch.Value<T>>) = this.channel === channel
-
-        fun hasChannel(entry: ChannelEntry<T>) = this.channel === entry.channel
-    }
-
-    /**
-     * Messages accepted by the [ChannelManager].
-     */
-    sealed class Message<out T> {
-        /**
-         * Add a new channel, that means a new downstream subscriber
-         */
-        class AddChannel<T>(
-            val channel: SendChannel<Dispatch.Value<T>>,
-            val piggybackOnly: Boolean = false
-        ) : Message<T>()
-
-        /**
-         * Remove a downstream subscriber, that means it completed
-         */
-        class RemoveChannel<T>(val channel: SendChannel<Dispatch.Value<T>>) : Message<T>()
-
-        sealed class Dispatch<out T> : Message<T>() {
-            /**
-             * Upstream dispatched a new value, send it to all downstream items
-             */
-            class Value<out T>(
-                /**
-                 * The value dispatched by the upstream
-                 */
-                val value: T,
-                /**
-                 * Ack that is completed by all receiver. Upstream producer will await this before asking
-                 * for a new value from upstream
-                 */
-                val delivered: CompletableDeferred<Unit>
-            ) : Dispatch<T>()
-
-            /**
-             * Upstream dispatched an error, send it to all downstream items
-             */
-            class Error(
-                /**
-                 * The error sent by the upstream
-                 */
-                val error: Throwable
-            ) : Dispatch<Nothing>()
-
-            class UpstreamFinished<T>(
-                /**
-                 * SharedFlowProducer finished emitting
-                 */
-                val producer: SharedFlowProducer<T>
-            ) : Dispatch<T>()
-        }
-    }
 }
 
 /**
  * Buffer implementation for any late arrivals.
  */
 private interface Buffer<T> {
-    fun add(item: ChannelManager.Message.Dispatch.Value<T>)
+    fun add(item: Message.Dispatch.Value<T>)
     fun isEmpty() = items.isEmpty()
-    val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
+    val items: Collection<Message.Dispatch.Value<T>>
 }
 
 /**
  * Default implementation of buffer which does not buffer anything.
  */
 private class NoBuffer<T> : Buffer<T> {
-    override val items: Collection<ChannelManager.Message.Dispatch.Value<T>>
+    override val items: Collection<Message.Dispatch.Value<T>>
         get() = emptyList()
 
     // ignore
-    override fun add(item: ChannelManager.Message.Dispatch.Value<T>) = Unit
+    override fun add(item: Message.Dispatch.Value<T>) = Unit
 }
 
 /**
@@ -394,8 +406,8 @@ private fun <T> Buffer(limit: Int): Buffer<T> = if (limit > 0) {
  */
 private class BufferImpl<T>(private val limit: Int) :
     Buffer<T> {
-    override val items = ArrayDeque<ChannelManager.Message.Dispatch.Value<T>>(limit.coerceAtMost(10))
-    override fun add(item: ChannelManager.Message.Dispatch.Value<T>) {
+    override val items = ArrayDeque<Message.Dispatch.Value<T>>(limit.coerceAtMost(10))
+    override fun add(item: Message.Dispatch.Value<T>) {
         while (items.size >= limit) {
             items.removeFirst()
         }
@@ -403,5 +415,5 @@ private class BufferImpl<T>(private val limit: Int) :
     }
 }
 
-internal fun <T> ChannelManager.Message.Dispatch.Value<T>.markDelivered() =
+internal fun <T> Message.Dispatch.Value<T>.markDelivered() =
     delivered.complete(Unit)
