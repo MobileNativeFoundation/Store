@@ -136,6 +136,5 @@ koverMerged {
 
 atomicfu {
     transformJvm = false
-    jvmVariant = "FU"
     transformJs = false
 }
