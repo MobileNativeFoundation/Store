@@ -33,6 +33,13 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.apply {
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                optIn("kotlin.RequiresOptIn")
+            }
+        }
+
         val commonMain by getting {
             dependencies {
                 with(Deps.Kotlinx) {
@@ -92,7 +99,7 @@ tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(11)
     }
 }
 

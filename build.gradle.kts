@@ -48,14 +48,15 @@ subprojects {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = "11"
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+tasks {
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
     }
-}
 
-tasks.withType<JavaCompile>().configureEach {
-    sourceCompatibility = JavaVersion.VERSION_11.name
-    targetCompatibility = JavaVersion.VERSION_11.name
+    withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_11.name
+        targetCompatibility = JavaVersion.VERSION_11.name
+    }
 }

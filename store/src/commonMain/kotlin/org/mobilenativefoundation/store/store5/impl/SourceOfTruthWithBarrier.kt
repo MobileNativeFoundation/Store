@@ -64,14 +64,14 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                 lock.await()
                 emitAll(
                     barrier
-                        .flatMapLatest {
-                            val messageArrivedAfterMe = readerVersion < it.version
-                            val writeError = if (messageArrivedAfterMe && it is BarrierMsg.Open) {
-                                it.writeError
+                        .flatMapLatest { barrierMessage ->
+                            val messageArrivedAfterMe = readerVersion < barrierMessage.version
+                            val writeError = if (messageArrivedAfterMe && barrierMessage is BarrierMsg.Open) {
+                                barrierMessage.writeError
                             } else {
                                 null
                             }
-                            val readFlow: Flow<StoreResponse<Output?>> = when (it) {
+                            val readFlow: Flow<StoreResponse<Output?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
                                     delegate.reader(key).mapIndexed { index, output ->
                                         if (index == 0 && messageArrivedAfterMe) {
@@ -93,10 +93,10 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                             StoreResponse.Data(
                                                 origin = ResponseOrigin.SourceOfTruth,
                                                 value = output
-                                            )
+                                            ) as StoreResponse<Output?>
                                         }
                                     }.catch { throwable ->
-                                        emit(
+                                        this.emit(
                                             StoreResponse.Error.Exception(
                                                 error = SourceOfTruth.ReadException(
                                                     key = key,

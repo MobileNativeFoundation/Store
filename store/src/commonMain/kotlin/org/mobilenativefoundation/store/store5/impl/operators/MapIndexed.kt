@@ -16,11 +16,11 @@
 package org.mobilenativefoundation.store.store5.impl.operators
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.flow.flow
 
-internal inline fun <T, R> Flow<T>.mapIndexed(crossinline block: (Int, T) -> R) = channelFlow {
+internal inline fun <T, R> Flow<T>.mapIndexed(crossinline block: (Int, T) -> R) = flow {
     collectIndexed { index, value ->
-        send(block(index, value))
+        emit(block(index, value))
     }
 }

@@ -33,6 +33,13 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings.apply {
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                optIn("kotlin.RequiresOptIn")
+            }
+        }
+
         val commonMain by getting {
             dependencies {
                 implementation(Deps.Kotlinx.coroutinesCore)
