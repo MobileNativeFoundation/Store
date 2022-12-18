@@ -133,3 +133,9 @@ koverMerged {
         onCheck.set(true)
     }
 }
+
+atomicfu {
+    transformJvm = false
+    jvmVariant = "FU"
+    transformJs = false
+}
