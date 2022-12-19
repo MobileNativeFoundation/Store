@@ -1,9 +1,9 @@
 package org.mobilenativefoundation.store.store5
 
 interface StoreConverter<NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> {
-    fun toCommonRepresentation(networkRepresentation: NetworkRepresentation): CommonRepresentation?
-    fun toSourceOfTruthRepresentation(commonRepresentation: CommonRepresentation): SourceOfTruthRepresentation?
-    fun toCommonRepresentation(sourceOfTruthRepresentation: SourceOfTruthRepresentation): CommonRepresentation?
+    fun fromNetworkRepresentationToCommonRepresentation(networkRepresentation: NetworkRepresentation): CommonRepresentation?
+    fun fromCommonRepresentationToSourceOfTruthRepresentation(commonRepresentation: CommonRepresentation): SourceOfTruthRepresentation?
+    fun fromSourceOfTruthRepresentationToCommonRepresentation(sourceOfTruthRepresentation: SourceOfTruthRepresentation): CommonRepresentation?
 
     class Builder<NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> {
 
@@ -36,12 +36,12 @@ private class RealStoreConverter<NetworkRepresentation : Any, CommonRepresentati
     private val fromNetworkToCommon: Converter<NetworkRepresentation, CommonRepresentation>?,
     private val fromSourceOfTruthToCommon: Converter<SourceOfTruthRepresentation, CommonRepresentation>?
 ) : StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
-    override fun toCommonRepresentation(networkRepresentation: NetworkRepresentation): CommonRepresentation? =
+    override fun fromNetworkRepresentationToCommonRepresentation(networkRepresentation: NetworkRepresentation): CommonRepresentation? =
         fromNetworkToCommon?.invoke(networkRepresentation)
 
-    override fun toSourceOfTruthRepresentation(commonRepresentation: CommonRepresentation): SourceOfTruthRepresentation? =
+    override fun fromCommonRepresentationToSourceOfTruthRepresentation(commonRepresentation: CommonRepresentation): SourceOfTruthRepresentation? =
         fromCommonToSourceOfTruth?.invoke(commonRepresentation)
 
-    override fun toCommonRepresentation(sourceOfTruthRepresentation: SourceOfTruthRepresentation): CommonRepresentation? =
+    override fun fromSourceOfTruthRepresentationToCommonRepresentation(sourceOfTruthRepresentation: SourceOfTruthRepresentation): CommonRepresentation? =
         fromSourceOfTruthToCommon?.invoke(sourceOfTruthRepresentation)
 }

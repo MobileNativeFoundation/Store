@@ -38,8 +38,9 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
  * Used in the [RealStore] implementation to avoid
  * dispatching values to downstream while a write is in progress.
  */
+@Suppress("UNCHECKED_CAST")
 internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
-    private val delegate: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>,
+    private val delegate: SourceOfTruth<Key, SourceOfTruthRepresentation>,
     private val converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
 ) {
     /**
@@ -75,7 +76,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                             }
                             val readFlow: Flow<StoreReadResponse<CommonRepresentation?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
-                                    delegate.reader(key).mapIndexed { index, output ->
+                                    delegate.reader(key).mapIndexed { index, sourceOfTruthRepresentation ->
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
@@ -87,14 +88,20 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                                                 // use the SourceOfTruth as the origin
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
+
                                             StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
-                                                value = output
+                                                value = if (sourceOfTruthRepresentation != null) converter?.fromSourceOfTruthRepresentationToCommonRepresentation(
+                                                    sourceOfTruthRepresentation
+                                                ) else null
                                             )
                                         } else {
                                             StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                value = output
+                                                value = sourceOfTruthRepresentation as? CommonRepresentation
+                                                    ?: if (sourceOfTruthRepresentation != null) converter?.fromSourceOfTruthRepresentationToCommonRepresentation(
+                                                        sourceOfTruthRepresentation
+                                                    ) else null
                                             ) as StoreReadResponse<CommonRepresentation?>
                                         }
                                     }.catch { throwable ->
@@ -135,12 +142,16 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     suspend fun write(key: Key, value: CommonRepresentation) {
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
-                delegate.write(key, value)
+                val input = value as? SourceOfTruthRepresentation ?: converter?.fromCommonRepresentationToSourceOfTruthRepresentation(value)
+                if (input != null) {
+                    delegate.write(key, input)
+                }
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {

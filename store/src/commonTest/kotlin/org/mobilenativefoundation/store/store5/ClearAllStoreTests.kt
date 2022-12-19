@@ -60,6 +60,7 @@ class ClearAllStoreTests {
             ),
             responseOneA
         )
+        println("HITTING 1")
         val responseTwoA = store.getData(key2)
         advanceUntilIdle()
         assertEquals(
@@ -69,7 +70,7 @@ class ClearAllStoreTests {
             ),
             responseTwoA
         )
-
+        println("HITTING 2")
         // should receive data from persister
         val responseOneB = store.getData(key1)
         advanceUntilIdle()
@@ -80,7 +81,7 @@ class ClearAllStoreTests {
             ),
             responseOneB
         )
-
+        println("HITTING 3")
         val responseTwoB = store.getData(key2)
         advanceUntilIdle()
         assertEquals(
@@ -90,7 +91,7 @@ class ClearAllStoreTests {
             ),
             responseTwoB
         )
-
+        println("HITTING 4")
         // clear all entries in store
         store.clear()
         assertNull(persister.peekEntry(key1))

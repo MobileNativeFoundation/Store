@@ -91,8 +91,8 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
                 piggybackingDownstream = true,
                 onEach = { response ->
                     response.dataOrNull()?.let { networkRepresentation ->
-
-                        val input = converter?.toCommonRepresentation(networkRepresentation) ?: networkRepresentation as? CommonRepresentation
+                        val input =
+                            networkRepresentation as? CommonRepresentation ?: converter?.fromNetworkRepresentationToCommonRepresentation(networkRepresentation)
                         if (input != null) {
                             sourceOfTruth?.write(key, input)
                         }

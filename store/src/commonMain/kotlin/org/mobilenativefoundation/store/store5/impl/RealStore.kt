@@ -42,7 +42,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.merge
 internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, NetworkRepresentation>,
-    sourceOfTruth: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>? = null,
+    sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null,
     converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
     private val memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?
 ) : Store<Key, CommonRepresentation, NetworkWriteResponse> {

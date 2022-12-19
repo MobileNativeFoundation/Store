@@ -66,7 +66,7 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          */
         fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
             fetcher: Fetcher<Key, NetworkRepresentation>,
-            sourceOfTruth: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>
+            sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>
         ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> = RealStoreBuilder(
             fetcher = fetcher,
             sourceOfTruth = sourceOfTruth

@@ -12,7 +12,7 @@ import org.mobilenativefoundation.store.store5.StoreDefaults
 
 internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     private val fetcher: Fetcher<Key, NetworkRepresentation>,
-    private val sourceOfTruth: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>? = null
+    private val sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null
 ) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, CommonRepresentation>? = StoreDefaults.memoryPolicy
