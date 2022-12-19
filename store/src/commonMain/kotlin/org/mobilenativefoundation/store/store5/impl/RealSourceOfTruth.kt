@@ -48,10 +48,13 @@ internal class PersistentNonFlowingSourceOfTruth<Key : Any, SourceOfTruthReprese
 
     override fun reader(key: Key): Flow<SourceOfTruthRepresentation?> =
         flow {
-            emit(realReader(key))
+            val sourceOfTruthRepresentation = realReader(key)
+            emit(sourceOfTruthRepresentation)
         }
 
-    override suspend fun write(key: Key, value: SourceOfTruthRepresentation) = realWriter(key, value)
+    override suspend fun write(key: Key, value: SourceOfTruthRepresentation) {
+        return realWriter(key, value)
+    }
 
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)

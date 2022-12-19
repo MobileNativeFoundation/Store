@@ -65,10 +65,12 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
                 bufferSize = 0,
                 source = flow { emitAll(realFetcher(key)) }.map {
                     when (it) {
-                        is FetcherResult.Data -> StoreReadResponse.Data(
-                            it.value,
-                            origin = StoreReadResponseOrigin.Fetcher
-                        ) as StoreReadResponse<NetworkRepresentation>
+                        is FetcherResult.Data -> {
+                            StoreReadResponse.Data(
+                                it.value,
+                                origin = StoreReadResponseOrigin.Fetcher
+                            ) as StoreReadResponse<NetworkRepresentation>
+                        }
 
                         is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
                             it.message,

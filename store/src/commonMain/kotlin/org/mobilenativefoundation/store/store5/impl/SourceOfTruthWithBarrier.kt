@@ -89,11 +89,14 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
 
+                                            val value = sourceOfTruthRepresentation as? CommonRepresentation ?: if (sourceOfTruthRepresentation != null) {
+                                                converter?.fromSourceOfTruthRepresentationToCommonRepresentation(sourceOfTruthRepresentation)
+                                            } else {
+                                                null
+                                            }
                                             StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
-                                                value = if (sourceOfTruthRepresentation != null) converter?.fromSourceOfTruthRepresentationToCommonRepresentation(
-                                                    sourceOfTruthRepresentation
-                                                ) else null
+                                                value = value
                                             )
                                         } else {
                                             StoreReadResponse.Data(
