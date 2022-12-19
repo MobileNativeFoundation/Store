@@ -43,7 +43,7 @@ class ClearAllStoreTests {
 
     @Test
     fun callingClearAllOnStoreWithPersisterAndNoInMemoryCacheDeletesAllEntriesFromThePersister() = testScope.runTest {
-        val store = StoreBuilder.from(
+        val store = StoreBuilder.from<String, Int, Int, Int, Boolean>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).scope(testScope)
@@ -54,8 +54,8 @@ class ClearAllStoreTests {
         val responseOneA = store.getData(key1)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value1
             ),
             responseOneA
@@ -63,8 +63,8 @@ class ClearAllStoreTests {
         val responseTwoA = store.getData(key2)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value2
             ),
             responseTwoA
@@ -74,8 +74,8 @@ class ClearAllStoreTests {
         val responseOneB = store.getData(key1)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.SourceOfTruth,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.SourceOfTruth,
                 value = value1
             ),
             responseOneB
@@ -84,15 +84,15 @@ class ClearAllStoreTests {
         val responseTwoB = store.getData(key2)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.SourceOfTruth,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.SourceOfTruth,
                 value = value2
             ),
             responseTwoB
         )
 
         // clear all entries in store
-        store.clearAll()
+        store.clear()
         assertNull(persister.peekEntry(key1))
         assertNull(persister.peekEntry(key2))
 
@@ -100,8 +100,8 @@ class ClearAllStoreTests {
         val responseOneC = store.getData(key1)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value1
             ),
             responseOneC
@@ -110,8 +110,8 @@ class ClearAllStoreTests {
         val responseTwoC = store.getData(key2)
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value2
             ),
             responseTwoC
@@ -120,21 +120,21 @@ class ClearAllStoreTests {
 
     @Test
     fun callingClearAllOnStoreWithInMemoryCacheAndNoPersisterDeletesAllEntriesFromTheInMemoryCache() = testScope.runTest {
-        val store = StoreBuilder.from(
+        val store = StoreBuilder.from<String, Int, Int, Int, Boolean>(
             fetcher = fetcher
         ).scope(testScope).build()
 
         // should receive data from network first time
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value1
             ),
             store.getData(key1)
         )
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value2
             ),
             store.getData(key2)
@@ -142,34 +142,34 @@ class ClearAllStoreTests {
 
         // should receive data from cache
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Cache,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Cache,
                 value = value1
             ),
             store.getData(key1)
         )
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Cache,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Cache,
                 value = value2
             ),
             store.getData(key2)
         )
 
         // clear all entries in store
-        store.clearAll()
+        store.clear()
 
         // should fetch data from network again
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value1
             ),
             store.getData(key1)
         )
         assertEquals(
-            StoreResponse.Data(
-                origin = ResponseOrigin.Fetcher,
+            StoreReadResponse.Data(
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value2
             ),
             store.getData(key2)

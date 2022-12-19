@@ -19,14 +19,14 @@ class FetcherResponseTests {
 
     @Test
     fun givenAFetcherThatThrowsAnExceptionInInvokeWhenStreamingThenTheExceptionsShouldNotBeCaught() = testScope.runTest {
-        val store = StoreBuilder.from<Int, Int>(
+        val store = StoreBuilder.from<Int, Int, Int, Int, Int>(
             Fetcher.ofResult {
                 throw RuntimeException("don't catch me")
             }
         ).buildWithTestScope()
 
         assertFailsWith<RuntimeException>(message = "don't catch me") {
-            val result = store.stream(StoreRequest.fresh(1)).toList()
+            val result = store.stream(StoreReadRequest.fresh(1)).toList()
             assertEquals(0, result.size)
         }
     }
@@ -35,9 +35,9 @@ class FetcherResponseTests {
     fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() {
         val exception = RuntimeException("first error")
         testScope.runTest {
-            val store = StoreBuilder.from(
+            val store = StoreBuilder.from<Int, String, String, String, Boolean>(
                 fetcher = Fetcher.ofResultFlow { key: Int ->
-                    flowOf<FetcherResult<String>>(
+                    flowOf(
                         FetcherResult.Error.Exception(exception),
                         FetcherResult.Data("$key")
                     )
@@ -46,12 +46,12 @@ class FetcherResponseTests {
 
             assertEmitsExactly(
                 store.stream(
-                    StoreRequest.fresh(1)
+                    StoreReadRequest.fresh(1)
                 ),
                 listOf(
-                    StoreResponse.Loading(ResponseOrigin.Fetcher),
-                    StoreResponse.Error.Exception(exception, ResponseOrigin.Fetcher),
-                    StoreResponse.Data("1", ResponseOrigin.Fetcher)
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
+                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher),
+                    StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher)
                 )
             )
         }
@@ -61,26 +61,26 @@ class FetcherResponseTests {
     fun givenTransformerWhenRawValueThenUnwrappedValueReturnedAndValueIsCached() = testScope.runTest {
         val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
         val pipeline = StoreBuilder
-            .from(fetcher).buildWithTestScope()
+            .from<Int, Int, Int, Int, Boolean>(fetcher).buildWithTestScope()
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = 9,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = 9,
-                    origin = ResponseOrigin.Cache
+                    origin = StoreReadResponseOrigin.Cache
                 )
             )
         )
@@ -98,30 +98,30 @@ class FetcherResponseTests {
                 }
             }
         }
-        val pipeline = StoreBuilder.from(fetcher)
+        val pipeline = StoreBuilder.from<Int, Int, Int, Int, Boolean>(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Message(
+                StoreReadResponse.Error.Message(
                     message = "zero",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = 1,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
@@ -141,30 +141,30 @@ class FetcherResponseTests {
             }
         }
         val pipeline = StoreBuilder
-            .from(fetcher)
+            .from<Int, Int, Int, Int, Boolean>(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreReadResponse.Error.Exception(
                     error = e,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = 1,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
@@ -182,35 +182,35 @@ class FetcherResponseTests {
             count - 1
         }
         val pipeline = StoreBuilder
-            .from(fetcher = fetcher)
+            .from<Int, Int, Int, Int, Int>(fetcher = fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Error.Exception(
+                StoreReadResponse.Error.Exception(
                     error = e,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = 1,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
     }
 
-    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
+    private fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>.buildWithTestScope() =
         scope(testScope).build()
 }

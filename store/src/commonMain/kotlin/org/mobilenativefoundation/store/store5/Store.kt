@@ -33,13 +33,18 @@ import kotlinx.coroutines.flow.Flow
  *  }
  *
  */
-interface Store<Key : Any, Output : Any> {
-
+interface Store<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
     /**
      * Return a flow for the given key
-     * @param request - see [StoreRequest] for configurations
+     * @param request - see [StoreReadRequest] for configurations
      */
-    fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>>
+    fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>>
+
+    @ExperimentalStoreApi
+    fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation>>): Flow<StoreWriteResponse<NetworkWriteResponse>>
+
+    @ExperimentalStoreApi
+    fun write(request: StoreWriteRequest<Key, CommonRepresentation>): StoreWriteResponse<NetworkWriteResponse>
 
     /**
      * Purge a particular entry from memory and disk cache.
@@ -50,9 +55,9 @@ interface Store<Key : Any, Output : Any> {
 
     /**
      * Purge all entries from memory and disk cache.
-     * Persistent storage will only be cleared if a deleteAll function was passed to
+     * Persistent storage will only be cleared if a clear function was passed to
      * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
      */
     @ExperimentalStoreApi
-    suspend fun clearAll()
+    suspend fun clear()
 }

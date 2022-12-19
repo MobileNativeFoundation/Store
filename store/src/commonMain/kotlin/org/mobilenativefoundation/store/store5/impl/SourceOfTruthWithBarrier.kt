@@ -26,19 +26,21 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
-import org.mobilenativefoundation.store.store5.ResponseOrigin
 import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.StoreResponse
+import org.mobilenativefoundation.store.store5.StoreConverter
+import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
 
 /**
  * Wraps a [SourceOfTruth] and blocks reads while a write is in progress.
  *
- * Used in the [com.dropbox.android.external.store4.impl.RealStore] implementation to avoid
+ * Used in the [RealStore] implementation to avoid
  * dispatching values to downstream while a write is in progress.
  */
-internal class SourceOfTruthWithBarrier<Key, Input, Output>(
-    private val delegate: SourceOfTruth<Key, Input, Output>
+internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
+    private val delegate: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>,
+    private val converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
 ) {
     /**
      * Each key has a barrier so that we can block reads while writing.
@@ -56,7 +58,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
      */
     private val versionCounter = atomic(0L)
 
-    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreResponse<Output?>> {
+    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreReadResponse<CommonRepresentation?>> {
         return flow {
             val barrier = barriers.acquire(key)
             val readerVersion: Long = versionCounter.incrementAndGet()
@@ -71,38 +73,38 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                             } else {
                                 null
                             }
-                            val readFlow: Flow<StoreResponse<Output?>> = when (barrierMessage) {
+                            val readFlow: Flow<StoreReadResponse<CommonRepresentation?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
                                     delegate.reader(key).mapIndexed { index, output ->
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
-                                                ResponseOrigin.Fetcher
+                                                StoreReadResponseOrigin.Fetcher
                                             } else {
                                                 // when a write fails, we still get a new reader because
                                                 // we've disabled the previous reader before starting the
                                                 // write operation. But since write has failed, we should
                                                 // use the SourceOfTruth as the origin
-                                                ResponseOrigin.SourceOfTruth
+                                                StoreReadResponseOrigin.SourceOfTruth
                                             }
-                                            StoreResponse.Data(
+                                            StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
                                                 value = output
                                             )
                                         } else {
-                                            StoreResponse.Data(
-                                                origin = ResponseOrigin.SourceOfTruth,
+                                            StoreReadResponse.Data(
+                                                origin = StoreReadResponseOrigin.SourceOfTruth,
                                                 value = output
-                                            ) as StoreResponse<Output?>
+                                            ) as StoreReadResponse<CommonRepresentation?>
                                         }
                                     }.catch { throwable ->
                                         this.emit(
-                                            StoreResponse.Error.Exception(
+                                            StoreReadResponse.Error.Exception(
                                                 error = SourceOfTruth.ReadException(
                                                     key = key,
                                                     cause = throwable.cause ?: throwable
                                                 ),
-                                                origin = ResponseOrigin.SourceOfTruth
+                                                origin = StoreReadResponseOrigin.SourceOfTruth
                                             )
                                         )
                                     }
@@ -116,8 +118,8 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
                                     // if we have a pending error, make sure to dispatch it first.
                                     if (writeError != null) {
                                         emit(
-                                            StoreResponse.Error.Exception(
-                                                origin = ResponseOrigin.SourceOfTruth,
+                                            StoreReadResponse.Error.Exception(
+                                                origin = StoreReadResponseOrigin.SourceOfTruth,
                                                 error = writeError
                                             )
                                         )
@@ -133,7 +135,7 @@ internal class SourceOfTruthWithBarrier<Key, Input, Output>(
         }
     }
 
-    suspend fun write(key: Key, value: Input) {
+    suspend fun write(key: Key, value: CommonRepresentation) {
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))

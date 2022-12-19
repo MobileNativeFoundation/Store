@@ -28,36 +28,38 @@ import org.mobilenativefoundation.store.store5.CacheType
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.ResponseOrigin
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.StoreRequest
-import org.mobilenativefoundation.store.store5.StoreResponse
+import org.mobilenativefoundation.store.store5.StoreConverter
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
+import org.mobilenativefoundation.store.store5.StoreWriteRequest
+import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-internal class RealStore<Key : Any, Input : Any, Output : Any>(
+internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     scope: CoroutineScope,
-    fetcher: Fetcher<Key, Input>,
-    sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null,
-    private val memoryPolicy: MemoryPolicy<Key, Output>?
-) : Store<Key, Output> {
+    fetcher: Fetcher<Key, NetworkRepresentation>,
+    sourceOfTruth: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>? = null,
+    converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
+    private val memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?
+) : Store<Key, CommonRepresentation, NetworkWriteResponse> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
      * the builder.
      * Whatever is given, we always put a [SourceOfTruthWithBarrier] in front of it so that while
      * we write the value from fetcher into the disk, we can block reads to avoid sending new data
-     * as if it came from the server (the [StoreResponse.origin] field).
+     * as if it came from the server (the [StoreReadResponse.origin] field).
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>? =
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? =
         sourceOfTruth?.let {
-            SourceOfTruthWithBarrier(it)
+            SourceOfTruthWithBarrier(it, converter)
         }
 
     private val memCache = memoryPolicy?.let {
-        CacheBuilder<Key, Output>().apply {
+        CacheBuilder<Key, CommonRepresentation>().apply {
             if (memoryPolicy.hasAccessPolicy) {
                 expireAfterAccess(memoryPolicy.expireAfterAccess)
             }
@@ -81,10 +83,11 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     private val fetcherController = FetcherController(
         scope = scope,
         realFetcher = fetcher,
-        sourceOfTruth = this.sourceOfTruth
+        sourceOfTruth = this.sourceOfTruth,
+        converter = converter
     )
 
-    override fun stream(request: StoreRequest<Key>): Flow<StoreResponse<Output>> =
+    override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>> =
         flow {
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
@@ -94,7 +97,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
 
             cachedToEmit?.let {
                 // if we read a value from cache, dispatch it first
-                emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
             }
             val stream = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
@@ -105,14 +108,14 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                     request = request,
                     networkLock = null,
                     piggybackOnly = piggybackOnly
-                ) as Flow<StoreResponse<Output>> // when no source of truth Input == Output
+                ) as Flow<StoreReadResponse<CommonRepresentation>> // when no source of truth Input == Output
             } else {
                 diskNetworkCombined(request, sourceOfTruth)
             }
             emitAll(
                 stream.transform {
                     emit(it)
-                    if (it is StoreResponse.NoNewData && cachedToEmit == null) {
+                    if (it is StoreReadResponse.NoNewData && cachedToEmit == null) {
                         // In the special case where fetcher returned no new data we actually want to
                         // serve cache data (even if the request specified skipping cache and/or SoT)
                         //
@@ -130,14 +133,14 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         // Source of truth
                         // (future Source of truth updates)
                         memCache?.getIfPresent(request.key)?.let {
-                            emit(StoreResponse.Data(value = it, origin = ResponseOrigin.Cache))
+                            emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
                         }
                     }
                 }
             )
         }.onEach {
             // whenever a value is dispatched, save it to the memory cache
-            if (it.origin != ResponseOrigin.Cache) {
+            if (it.origin != StoreReadResponseOrigin.Cache) {
                 it.dataOrNull()?.let { data ->
                     memCache?.put(request.key, data)
                 }
@@ -150,7 +153,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     }
 
     @ExperimentalStoreApi
-    override suspend fun clearAll() {
+    override suspend fun clear() {
         memCache?.invalidateAll()
         sourceOfTruth?.deleteAll()
     }
@@ -176,13 +179,13 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
      *
      * 2) Request does not want to skip disk cache:
      * In this case, we first start the disk flow. If disk flow returns `null` or
-     * [StoreRequest.refresh] is set to `true`, we enable the fetcher flow.
+     * [StoreReadRequest.refresh] is set to `true`, we enable the fetcher flow.
      * This ensures we first get the value from disk and then load from server if necessary.
      */
     private fun diskNetworkCombined(
-        request: StoreRequest<Key>,
-        sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>
-    ): Flow<StoreResponse<Output>> {
+        request: StoreReadRequest<Key>,
+        sourceOfTruth: SourceOfTruthWithBarrier<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+    ): Flow<StoreReadResponse<CommonRepresentation>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
         val networkFlow = createNetworkFlow(request, networkLock)
@@ -204,7 +207,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value is StoreResponse.Data || it.value is StoreResponse.NoNewData) {
+                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData) {
                         // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
                         // cached disk data.
@@ -213,19 +216,19 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                         diskLock.complete(Unit)
                     }
 
-                    if (it.value !is StoreResponse.Data) {
-                        emit(it.value.swapType<Output>())
+                    if (it.value !is StoreReadResponse.Data) {
+                        emit(it.value.swapType())
                     }
                 }
 
                 is Either.Right -> {
                     // right, that is data from disk
                     when (val diskData = it.value) {
-                        is StoreResponse.Data -> {
+                        is StoreReadResponse.Data -> {
                             val diskValue = diskData.value
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
-                                emit(diskData as StoreResponse<Output>)
+                                emit(diskData as StoreReadResponse<CommonRepresentation>)
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.
@@ -234,7 +237,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             }
                         }
 
-                        is StoreResponse.Error -> {
+                        is StoreReadResponse.Error -> {
                             // disk sent an error, send it down as well
                             emit(diskData)
 
@@ -242,7 +245,7 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             // values since there is nothing to read from disk. If disk sent a write
                             // error, we should NOT allow fetcher to start emitting values as we
                             // should always wait for the read attempt.
-                            if (diskData is StoreResponse.Error.Exception &&
+                            if (diskData is StoreReadResponse.Error.Exception &&
                                 diskData.error is SourceOfTruth.ReadException
                             ) {
                                 networkLock.complete(Unit)
@@ -250,8 +253,8 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
                             // for other errors, don't do anything, wait for the read attempt
                         }
 
-                        is StoreResponse.Loading,
-                        is StoreResponse.NoNewData -> {
+                        is StoreReadResponse.Loading,
+                        is StoreReadResponse.NoNewData -> {
                         }
                     }
                 }
@@ -260,18 +263,28 @@ internal class RealStore<Key : Any, Input : Any, Output : Any>(
     }
 
     private fun createNetworkFlow(
-        request: StoreRequest<Key>,
+        request: StoreReadRequest<Key>,
         networkLock: CompletableDeferred<Unit>?,
         piggybackOnly: Boolean = false
-    ): Flow<StoreResponse<Input>> {
+    ): Flow<StoreReadResponse<NetworkRepresentation>> {
         return fetcherController
             .getFetcher(request.key, piggybackOnly)
             .onStart {
                 // wait until disk gives us the go
                 networkLock?.await()
                 if (!piggybackOnly) {
-                    emit(StoreResponse.Loading(origin = ResponseOrigin.Fetcher))
+                    emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher))
                 }
             }
+    }
+
+    @ExperimentalStoreApi
+    override fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation>>): Flow<StoreWriteResponse<NetworkWriteResponse>> {
+        TODO("Not yet implemented")
+    }
+
+    @ExperimentalStoreApi
+    override fun write(request: StoreWriteRequest<Key, CommonRepresentation>): StoreWriteResponse<NetworkWriteResponse> {
+        TODO("Not yet implemented")
     }
 }

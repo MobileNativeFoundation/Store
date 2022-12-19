@@ -24,40 +24,40 @@ class StreamWithoutSourceOfTruthTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from(fetcher)
+        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher)
             .scope(testScope)
             .build()
         val twoItemsNoRefresh = async {
             pipeline.stream(
-                StoreRequest.cached(3, refresh = false)
+                StoreReadRequest.cached(3, refresh = false)
             ).take(3).toList()
         }
         delay(1_000) // make sure the async block starts first
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
 
         assertEquals(
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             ),
             twoItemsNoRefresh.await()
@@ -70,41 +70,41 @@ class StreamWithoutSourceOfTruthTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from(fetcher)
+        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher)
             .scope(testScope)
             .disableCache()
             .build()
         val twoItemsNoRefresh = async {
             pipeline.stream(
-                StoreRequest.cached(3, refresh = false)
+                StoreReadRequest.cached(3, refresh = false)
             ).take(3).toList()
         }
         delay(1_000) // make sure the async block starts first
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
 
         assertEquals(
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             ),
             twoItemsNoRefresh.await()

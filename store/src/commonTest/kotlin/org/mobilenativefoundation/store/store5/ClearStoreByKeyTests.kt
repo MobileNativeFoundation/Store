@@ -4,7 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.StoreResponse.Data
+import org.mobilenativefoundation.store.store5.StoreReadResponse.Data
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import org.mobilenativefoundation.store.store5.util.getData
@@ -24,7 +24,7 @@ class ClearStoreByKeyTests {
     fun callingClearWithKeyOnStoreWithPersisterWithNoInMemoryCacheDeletesTheEntryAssociatedWithTheKeyFromThePersister() = testScope.runTest {
         val key = "key"
         val value = 1
-        val store = StoreBuilder.from(
+        val store = StoreBuilder.from<String, Int, Int, Int, Boolean>(
             fetcher = Fetcher.of { value },
             sourceOfTruth = persister.asSourceOfTruth()
         ).scope(testScope)
@@ -34,7 +34,7 @@ class ClearStoreByKeyTests {
         // should receive data from network first time
         assertEquals(
             Data(
-                origin = ResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value
             ),
             store.getData(key)
@@ -43,7 +43,7 @@ class ClearStoreByKeyTests {
         // should receive data from persister
         assertEquals(
             Data(
-                origin = ResponseOrigin.SourceOfTruth,
+                origin = StoreReadResponseOrigin.SourceOfTruth,
                 value = value
             ),
             store.getData(key)
@@ -55,7 +55,7 @@ class ClearStoreByKeyTests {
         // should fetch data from network again
         assertEquals(
             Data(
-                origin = ResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value
             ),
             store.getData(key)
@@ -66,14 +66,14 @@ class ClearStoreByKeyTests {
     fun callingClearWithKeyOStoreWithInMemoryCacheNoPersisterDeletesTheEntryAssociatedWithTheKeyFromTheInMemoryCache() = testScope.runTest {
         val key = "key"
         val value = 1
-        val store = StoreBuilder.from<String, Int>(
+        val store = StoreBuilder.from<String, Int, Int, Int, Boolean>(
             fetcher = Fetcher.of { value }
         ).scope(testScope).build()
 
         // should receive data from network first time
         assertEquals(
             Data(
-                origin = ResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value
             ),
             store.getData(key)
@@ -82,7 +82,7 @@ class ClearStoreByKeyTests {
         // should receive data from cache
         assertEquals(
             Data(
-                origin = ResponseOrigin.Cache,
+                origin = StoreReadResponseOrigin.Cache,
                 value = value
             ),
             store.getData(key)
@@ -94,7 +94,7 @@ class ClearStoreByKeyTests {
         // should fetch data from network again
         assertEquals(
             Data(
-                origin = ResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value
             ),
             store.getData(key)
@@ -107,7 +107,7 @@ class ClearStoreByKeyTests {
         val key2 = "key2"
         val value1 = 1
         val value2 = 2
-        val store = StoreBuilder.from(
+        val store = StoreBuilder.from<String, Int, Int, Int, Boolean>(
             fetcher = Fetcher.of { key ->
                 when (key) {
                     key1 -> value1
@@ -135,7 +135,7 @@ class ClearStoreByKeyTests {
         // getting data for key1 should hit the network again
         assertEquals(
             Data(
-                origin = ResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher,
                 value = value1
             ),
             store.getData(key1)
@@ -144,7 +144,7 @@ class ClearStoreByKeyTests {
         // getting data for key2 should not hit the network
         assertEquals(
             Data(
-                origin = ResponseOrigin.Cache,
+                origin = StoreReadResponseOrigin.Cache,
                 value = value2
             ),
             store.getData(key2)

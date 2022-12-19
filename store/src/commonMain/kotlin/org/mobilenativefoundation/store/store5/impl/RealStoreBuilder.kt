@@ -7,39 +7,42 @@ import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
+import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreDefaults
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
-internal class RealStoreBuilder<Key : Any, Input : Any, Output : Any>(
-    private val fetcher: Fetcher<Key, Input>,
-    private val sourceOfTruth: SourceOfTruth<Key, Input, Output>? = null
-) : StoreBuilder<Key, Output> {
+internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
+    private val fetcher: Fetcher<Key, NetworkRepresentation>,
+    private val sourceOfTruth: SourceOfTruth<Key, CommonRepresentation, SourceOfTruthRepresentation>? = null
+) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
     private var scope: CoroutineScope? = null
-    private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
+    private var cachePolicy: MemoryPolicy<Key, CommonRepresentation>? = StoreDefaults.memoryPolicy
+    private var converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
 
-    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, Input, Output> {
+    override fun scope(scope: CoroutineScope): RealStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): RealStoreBuilder<Key, Input, Output> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): RealStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): RealStoreBuilder<Key, Input, Output> {
+    override fun disableCache(): RealStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
         cachePolicy = null
         return this
     }
 
-    override fun build(): Store<Key, Output> {
-        @Suppress("UNCHECKED_CAST")
-        return RealStore(
-            scope = scope ?: GlobalScope,
-            sourceOfTruth = sourceOfTruth,
-            fetcher = fetcher,
-            memoryPolicy = cachePolicy
-        )
+    override fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
+        this.converter = converter
+        return this
     }
+
+    override fun build(): Store<Key, CommonRepresentation, NetworkWriteResponse> = RealStore(
+        scope = scope ?: GlobalScope,
+        sourceOfTruth = sourceOfTruth,
+        fetcher = fetcher,
+        memoryPolicy = cachePolicy,
+        converter = converter
+    )
 }
