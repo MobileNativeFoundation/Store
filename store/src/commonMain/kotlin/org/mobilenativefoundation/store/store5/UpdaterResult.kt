@@ -6,6 +6,4 @@ sealed class UpdaterResult<out NetworkWriteResponse : Any> {
         data class Exception(val error: Throwable) : Error()
         data class Message(val message: String) : Error()
     }
-
-    fun isOk() = this is Success
 }

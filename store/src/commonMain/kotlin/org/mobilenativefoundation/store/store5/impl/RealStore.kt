@@ -57,8 +57,8 @@ typealias WriteRequestQueue<Key, CommonRepresentation, NetworkWriteResponse> = A
 internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, NetworkRepresentation>,
-    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
-    private val bookkeeper: Bookkeeper<Key>,
+    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
+    private val bookkeeper: Bookkeeper<Key>? = null,
     sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null,
     converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
     private val memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?
@@ -304,18 +304,22 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
     @ExperimentalStoreApi
     override fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>): Flow<StoreWriteResponse<NetworkWriteResponse>> =
         flow {
-            stream.collect { writeRequest ->
-                val storeWriteResponse = try {
-                    sourceOfTruth?.write(writeRequest.key, writeRequest.input)
-                    when (val updaterResult = tryUpdateServer(writeRequest)) {
-                        is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                        is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                        is UpdaterResult.Success -> StoreWriteResponse.Success(updaterResult.value)
+            if (updater == null) {
+                emit(StoreWriteResponse.Error.Message("No updater provided"))
+            } else {
+                stream.collect { writeRequest ->
+                    val storeWriteResponse = try {
+                        sourceOfTruth?.write(writeRequest.key, writeRequest.input)
+                        when (val updaterResult = tryUpdateServer(writeRequest)) {
+                            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
+                            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                            is UpdaterResult.Success -> StoreWriteResponse.Success(updaterResult.value)
+                        }
+                    } catch (throwable: Throwable) {
+                        StoreWriteResponse.Error.Exception(throwable)
                     }
-                } catch (throwable: Throwable) {
-                    StoreWriteResponse.Error.Exception(throwable)
+                    emit(storeWriteResponse)
                 }
-                emit(storeWriteResponse)
             }
         }
 
@@ -325,15 +329,15 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
 
     private suspend fun tryUpdateServer(request: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>): UpdaterResult<NetworkWriteResponse> {
         val updaterResult = postLatest(request.key)
-        if (updaterResult.isOk()) {
+        if (updaterResult is UpdaterResult.Success<NetworkWriteResponse>) {
             updateWriteRequestQueue(
                 key = request.key,
                 created = request.created,
                 updaterResult = updaterResult
             )
-            bookkeeper.clear(request.key)
+            bookkeeper?.clear(request.key)
         } else {
-            bookkeeper.setLastFailedSync(request.key)
+            bookkeeper?.setLastFailedSync(request.key)
         }
 
         return updaterResult
@@ -341,32 +345,26 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
 
     private suspend fun postLatest(key: Key): UpdaterResult<NetworkWriteResponse> {
         val writer = getLatestWriteRequest(key)
-        return updater.post(key, writer.input)
+        return requireNotNull(updater).post(key, writer.input)
     }
 
     @AnyThread
-    private suspend fun updateWriteRequestQueue(key: Key, created: Long, updaterResult: UpdaterResult<NetworkWriteResponse>) {
+    private suspend fun updateWriteRequestQueue(key: Key, created: Long, updaterResult: UpdaterResult.Success<NetworkWriteResponse>) {
         val nextWriteRequestQueue = withWriteRequestQueueLock(key) {
-            when (updaterResult) {
-                is UpdaterResult.Error -> this
+            val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>()
 
-                is UpdaterResult.Success -> {
-                    val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>()
-
-                    for (writeRequest in this) {
-                        if (writeRequest.created <= created) {
-                            updater.onCompletion.onSuccess(updaterResult)
-                            val storeWriteResponse = StoreWriteResponse.Success(updaterResult.value)
-                            writeRequest.onCompletions.forEach { onStoreWriteCompletion ->
-                                onStoreWriteCompletion.onSuccess(storeWriteResponse)
-                            }
-                        } else {
-                            outstandingWriteRequests.add(writeRequest)
-                        }
+            for (writeRequest in this) {
+                if (writeRequest.created <= created) {
+                    requireNotNull(updater).onCompletion.onSuccess(updaterResult)
+                    val storeWriteResponse = StoreWriteResponse.Success(updaterResult.value)
+                    writeRequest.onCompletions.forEach { onStoreWriteCompletion ->
+                        onStoreWriteCompletion.onSuccess(storeWriteResponse)
                     }
-                    outstandingWriteRequests
+                } else {
+                    outstandingWriteRequests.add(writeRequest)
                 }
             }
+            outstandingWriteRequests
         }
 
         withThreadSafety(key) {

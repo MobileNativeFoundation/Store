@@ -14,8 +14,8 @@ import org.mobilenativefoundation.store.store5.Updater
 
 internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     private val fetcher: Fetcher<Key, NetworkRepresentation>,
-    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
-    private val bookkeeper: Bookkeeper<Key>,
+    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
+    private val bookkeeper: Bookkeeper<Key>? = null,
     private val sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null
 ) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
     private var scope: CoroutineScope? = null
