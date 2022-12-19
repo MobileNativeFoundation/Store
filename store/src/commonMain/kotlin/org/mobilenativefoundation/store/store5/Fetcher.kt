@@ -25,9 +25,7 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
      */
     operator fun invoke(key: Key): Flow<FetcherResult<NetworkRepresentation>>
 
-    interface Converter {
-
-    }
+    interface Converter
 
     companion object {
         /**

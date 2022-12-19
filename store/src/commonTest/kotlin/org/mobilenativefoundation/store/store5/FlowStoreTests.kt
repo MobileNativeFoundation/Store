@@ -236,7 +236,7 @@ class FlowStoreTests {
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf
-                (
+            (
                 Loading(
                     origin = StoreReadResponseOrigin.Fetcher
                 ),

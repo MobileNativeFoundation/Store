@@ -30,7 +30,6 @@ interface Updater<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : 
     }
 }
 
-
 internal class RealNetworkUpdater<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any>(
     private val realPost: PostRequest<Key, CommonRepresentation, NetworkWriteResponse>,
     override val converter: Converter<CommonRepresentation, NetworkWriteResponse>,

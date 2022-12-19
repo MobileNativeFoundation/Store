@@ -28,7 +28,6 @@ interface StoreConverter<NetworkRepresentation : Any, CommonRepresentation : Any
             fromNetworkToCommon = converter
             return this
         }
-
     }
 }
 

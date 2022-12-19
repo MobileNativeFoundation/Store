@@ -3,7 +3,6 @@ package org.mobilenativefoundation.store.store5
 import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.impl.RealStoreWriteRequest
 
-
 interface StoreWriteRequest<Key : Any, CommonRepresentation : Any> {
     val key: Key
     val input: CommonRepresentation
