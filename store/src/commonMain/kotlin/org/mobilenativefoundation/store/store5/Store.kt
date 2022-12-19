@@ -41,10 +41,10 @@ interface Store<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : An
     fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>>
 
     @ExperimentalStoreApi
-    fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation>>): Flow<StoreWriteResponse<NetworkWriteResponse>>
+    fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>): Flow<StoreWriteResponse<NetworkWriteResponse>>
 
     @ExperimentalStoreApi
-    fun write(request: StoreWriteRequest<Key, CommonRepresentation>): StoreWriteResponse<NetworkWriteResponse>
+    suspend fun write(request: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>): StoreWriteResponse<NetworkWriteResponse>
 
     /**
      * Purge a particular entry from memory and disk cache.

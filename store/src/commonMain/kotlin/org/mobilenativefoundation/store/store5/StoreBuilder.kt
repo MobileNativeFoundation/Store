@@ -55,8 +55,11 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          * @param fetcher a [Fetcher] flow of network records.
          */
         fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
-            fetcher: Fetcher<Key, NetworkRepresentation>
-        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> = RealStoreBuilder(fetcher)
+            fetcher: Fetcher<Key, NetworkRepresentation>,
+            updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
+            bookkeeper: Bookkeeper<Key>,
+        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> =
+            RealStoreBuilder(fetcher, updater, bookkeeper)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -66,9 +69,13 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          */
         fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
             fetcher: Fetcher<Key, NetworkRepresentation>,
+            updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
+            bookkeeper: Bookkeeper<Key>,
             sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>
         ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> = RealStoreBuilder(
             fetcher = fetcher,
+            updater = updater,
+            bookkeeper = bookkeeper,
             sourceOfTruth = sourceOfTruth
         )
     }

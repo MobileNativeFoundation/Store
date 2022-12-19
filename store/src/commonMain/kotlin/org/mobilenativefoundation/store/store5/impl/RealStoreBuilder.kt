@@ -2,6 +2,7 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
+import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.SourceOfTruth
@@ -9,9 +10,12 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreDefaults
+import org.mobilenativefoundation.store.store5.Updater
 
 internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
     private val fetcher: Fetcher<Key, NetworkRepresentation>,
+    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
+    private val bookkeeper: Bookkeeper<Key>,
     private val sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null
 ) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> {
     private var scope: CoroutineScope? = null
@@ -42,7 +46,9 @@ internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRe
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
+        updater = updater,
         memoryPolicy = cachePolicy,
-        converter = converter
+        converter = converter,
+        bookkeeper = bookkeeper
     )
 }

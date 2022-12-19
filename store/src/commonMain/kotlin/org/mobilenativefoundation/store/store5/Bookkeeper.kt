@@ -1,8 +1,11 @@
 package org.mobilenativefoundation.store.store5
 
+import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.impl.RealBookkeeper
 
 typealias Timestamp = Long
+
+private fun now() = Clock.System.now().toEpochMilliseconds()
 
 /**
  * Tracks when local changes fail to sync with network.
@@ -10,7 +13,7 @@ typealias Timestamp = Long
  */
 interface Bookkeeper<Key : Any> {
     suspend fun getLastFailedSync(key: Key): Long?
-    suspend fun setLastFailedSync(key: Key, timestamp: Long): Boolean
+    suspend fun setLastFailedSync(key: Key, timestamp: Long = now()): Boolean
     suspend fun clear(key: Key): Boolean
     suspend fun clearAll(): Boolean
 
