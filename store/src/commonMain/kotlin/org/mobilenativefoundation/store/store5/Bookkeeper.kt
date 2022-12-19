@@ -1,11 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
-import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.impl.RealBookkeeper
-
-typealias Timestamp = Long
-
-private fun now() = Clock.System.now().toEpochMilliseconds()
+import org.mobilenativefoundation.store.store5.impl.extensions.now
 
 /**
  * Tracks when local changes fail to sync with network.

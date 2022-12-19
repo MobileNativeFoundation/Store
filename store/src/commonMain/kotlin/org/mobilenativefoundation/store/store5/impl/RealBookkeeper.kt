@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.store5.impl
 
 import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Timestamp
+import org.mobilenativefoundation.store.store5.impl.definition.Timestamp
 
 internal class RealBookkeeper<Key : Any>(
     private val realGetLastFailedSync: suspend (key: Key) -> Timestamp?,

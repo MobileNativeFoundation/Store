@@ -152,6 +152,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
                 val input = value as? SourceOfTruthRepresentation ?: converter?.fromCommonRepresentationToSourceOfTruthRepresentation(value)
+                println("INPUT AS SOURCE OF TRUTH === $input")
                 if (input != null) {
                     delegate.write(key, input)
                 }
