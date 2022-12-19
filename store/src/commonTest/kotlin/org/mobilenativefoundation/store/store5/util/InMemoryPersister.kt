@@ -21,7 +21,6 @@ open class InMemoryPersister<Key : Any, Output : Any> {
 
     @Suppress("RedundantSuspendModifier") // for function reference
     open suspend fun write(key: Key, output: Output) {
-        println("WRITING === $key --- $output")
         val value = preWriteCallback?.invoke(key, output) ?: output
         data[key] = value
     }

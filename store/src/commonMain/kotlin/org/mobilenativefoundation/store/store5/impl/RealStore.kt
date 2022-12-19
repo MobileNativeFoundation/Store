@@ -325,21 +325,24 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
             if (updater == null) {
                 emit(StoreWriteResponse.Error.Message(NO_UPDATER))
             } else {
-                stream.collect { writeRequest ->
-                    safeInitStore(writeRequest.key)
-
-                    val storeWriteResponse = try {
-                        sourceOfTruth?.write(writeRequest.key, writeRequest.input)
-                        when (val updaterResult = tryUpdateServer(writeRequest)) {
-                            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                            is UpdaterResult.Success -> StoreWriteResponse.Success(updaterResult.value)
-                        }
-                    } catch (throwable: Throwable) {
-                        StoreWriteResponse.Error.Exception(throwable)
+                stream
+                    .onEach { writeRequest ->
+                        safeInitStore(writeRequest.key)
+                        addWriteRequestToQueue(writeRequest)
                     }
-                    emit(storeWriteResponse)
-                }
+                    .collect { writeRequest ->
+                        val storeWriteResponse = try {
+                            sourceOfTruth?.write(writeRequest.key, writeRequest.input)
+                            when (val updaterResult = tryUpdateServer(writeRequest)) {
+                                is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
+                                is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                                is UpdaterResult.Success -> StoreWriteResponse.Success(updaterResult.value)
+                            }
+                        } catch (throwable: Throwable) {
+                            StoreWriteResponse.Error.Exception(throwable)
+                        }
+                        emit(storeWriteResponse)
+                    }
             }
         }
 
@@ -375,9 +378,9 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
 
             for (writeRequest in this) {
                 if (writeRequest.created <= created) {
-                    requireNotNull(updater).onCompletion.onSuccess(updaterResult)
+                    requireNotNull(updater).onCompletion?.onSuccess?.invoke(updaterResult)
                     val storeWriteResponse = StoreWriteResponse.Success(updaterResult.value)
-                    writeRequest.onCompletions.forEach { onStoreWriteCompletion ->
+                    writeRequest.onCompletions?.forEach { onStoreWriteCompletion ->
                         onStoreWriteCompletion.onSuccess(storeWriteResponse)
                     }
                 } else {
@@ -437,6 +440,11 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
     private suspend fun writeRequestsQueueIsEmpty(key: Key): Boolean = withThreadSafety(key) {
         keyToWriteRequestQueue[key].isNullOrEmpty()
     }
+
+    private suspend fun addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>) =
+        withWriteRequestQueueLock(writeRequest.key) {
+            add(writeRequest)
+        }
 
     @AnyThread
     private suspend fun tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<NetworkWriteResponse> = withThreadSafety(key) {

@@ -6,5 +6,5 @@ data class RealStoreWriteRequest<Key : Any, CommonRepresentation : Any, NetworkW
     override val key: Key,
     override val input: CommonRepresentation,
     override val created: Long,
-    override val onCompletions: List<OnStoreWriteCompletion<NetworkWriteResponse>>
+    override val onCompletions: List<OnStoreWriteCompletion<NetworkWriteResponse>>?
 ) : StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>

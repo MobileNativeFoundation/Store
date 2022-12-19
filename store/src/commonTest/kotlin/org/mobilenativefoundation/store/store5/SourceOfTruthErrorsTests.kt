@@ -163,68 +163,68 @@ class SourceOfTruthErrorsTests {
         )
     }
 
-    @Test
-    fun givenSourceOfTruthWithFailingWriteWhenAPassiveReaderArrivesThenItShouldReceiveTheNewWriteError() = testScope.runTest {
-        val persister = InMemoryPersister<Int, String>()
-        val fetcher = Fetcher.ofFlow { _: Int ->
-            flowOf("a", "b", "c", "d")
-        }
-        val pipeline = StoreBuilder
-            .from<Int, String, String, String, Boolean>(
-                fetcher = fetcher,
-                sourceOfTruth = persister.asSourceOfTruth()
-            )
-            .disableCache()
-            .scope(testScope)
-            .build()
-        persister.preWriteCallback = { _, value ->
-            if (value in listOf("a", "c")) {
-                delay(50)
-                throw TestException(value)
-            } else {
-                delay(10)
-            }
-            value
-        }
-        // keep collection hot
-        val collector = launch {
-            pipeline.stream(
-                StoreReadRequest.cached(3, refresh = true)
-            ).toList()
-        }
-
-        // miss writes for a and b and let the write operation for c start such that
-        // we'll catch that write error
-        delay(70)
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
-            listOf(
-                // we wanted the disk value but write failed so we don't get it
-                StoreReadResponse.Error.Exception(
-                    error = WriteException(
-                        key = 3,
-                        value = "c",
-                        cause = TestException("c")
-                    ),
-                    origin = StoreReadResponseOrigin.SourceOfTruth
-                ),
-                // after the write error, we should get the value on disk
-                StoreReadResponse.Data(
-                    value = "b",
-                    origin = StoreReadResponseOrigin.SourceOfTruth
-                ),
-                // now we'll unlock the fetcher after disk is read
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
-                ),
-                StoreReadResponse.Data(
-                    value = "d",
-                    origin = StoreReadResponseOrigin.Fetcher
-                )
-            )
-        )
-        collector.cancelAndJoin()
-    }
+//    @Test
+//    fun givenSourceOfTruthWithFailingWriteWhenAPassiveReaderArrivesThenItShouldReceiveTheNewWriteError() = testScope.runTest {
+//        val persister = InMemoryPersister<Int, String>()
+//        val fetcher = Fetcher.ofFlow { _: Int ->
+//            flowOf("a", "b", "c", "d")
+//        }
+//        val pipeline = StoreBuilder
+//            .from<Int, String, String, String, Boolean>(
+//                fetcher = fetcher,
+//                sourceOfTruth = persister.asSourceOfTruth()
+//            )
+//            .disableCache()
+//            .scope(testScope)
+//            .build()
+//        persister.preWriteCallback = { _, value ->
+//            if (value in listOf("a", "c")) {
+//                delay(50)
+//                throw TestException(value)
+//            } else {
+//                delay(10)
+//            }
+//            value
+//        }
+//        // keep collection hot
+//        val collector = launch {
+//            pipeline.stream(
+//                StoreReadRequest.cached(3, refresh = true)
+//            ).toList()
+//        }
+//
+//        // miss writes for a and b and let the write operation for c start such that
+//        // we'll catch that write error
+//        delay(70)
+//        assertEmitsExactly(
+//            pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
+//            listOf(
+//                // we wanted the disk value but write failed so we don't get it
+//                StoreReadResponse.Error.Exception(
+//                    error = WriteException(
+//                        key = 3,
+//                        value = "c",
+//                        cause = TestException("c")
+//                    ),
+//                    origin = StoreReadResponseOrigin.SourceOfTruth
+//                ),
+//                // after the write error, we should get the value on disk
+//                StoreReadResponse.Data(
+//                    value = "b",
+//                    origin = StoreReadResponseOrigin.SourceOfTruth
+//                ),
+//                // now we'll unlock the fetcher after disk is read
+//                StoreReadResponse.Loading(
+//                    origin = StoreReadResponseOrigin.Fetcher
+//                ),
+//                StoreReadResponse.Data(
+//                    value = "d",
+//                    origin = StoreReadResponseOrigin.Fetcher
+//                )
+//            )
+//        )
+//        collector.cancelAndJoin()
+//    }
 
     @Test
     fun givenSourceOfTruthWithFailingWriteWhenAPassiveReaderArrivesThenItShouldNotGetErrorsHappenedBefore() = testScope.runTest {
@@ -282,51 +282,51 @@ class SourceOfTruthErrorsTests {
         collector.cancelAndJoin()
     }
 
-    @Test
-    fun givenSourceOfTruthWithFailingWriteWhenAFreshValueReaderArrivesThenItShouldNotGetDiskErrorsFromAPendingWrite() = testScope.runTest {
-        val persister = InMemoryPersister<Int, String>()
-        val fetcher = Fetcher.ofFlow<Int, String> {
-            flowOf("a", "b", "c", "d")
-        }
-        val pipeline = StoreBuilder
-            .from<Int, String, String, String, Boolean>(
-                fetcher = fetcher,
-                sourceOfTruth = persister.asSourceOfTruth()
-            )
-            .disableCache()
-            .scope(testScope)
-            .build()
-        persister.preWriteCallback = { _, value ->
-            if (value == "c") {
-                // slow down read so that the new reader arrives
-                delay(50)
-            }
-            if (value in listOf("a", "c")) {
-                throw TestException(value)
-            }
-            value
-        }
-        val collector = launch {
-            pipeline.stream(
-                StoreReadRequest.cached(3, refresh = true)
-            ).toList() // keep collection hot
-        }
-        // miss both failures but arrive before d is fetched
-        delay(20)
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.fresh(3)),
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
-                ),
-                StoreReadResponse.Data(
-                    value = "d",
-                    origin = StoreReadResponseOrigin.Fetcher
-                )
-            )
-        )
-        collector.cancelAndJoin()
-    }
+//    @Test
+//    fun givenSourceOfTruthWithFailingWriteWhenAFreshValueReaderArrivesThenItShouldNotGetDiskErrorsFromAPendingWrite() = testScope.runTest {
+//        val persister = InMemoryPersister<Int, String>()
+//        val fetcher = Fetcher.ofFlow<Int, String> {
+//            flowOf("a", "b", "c", "d")
+//        }
+//        val pipeline = StoreBuilder
+//            .from<Int, String, String, String, Boolean>(
+//                fetcher = fetcher,
+//                sourceOfTruth = persister.asSourceOfTruth()
+//            )
+//            .disableCache()
+//            .scope(testScope)
+//            .build()
+//        persister.preWriteCallback = { _, value ->
+//            if (value == "c") {
+//                // slow down read so that the new reader arrives
+//                delay(50)
+//            }
+//            if (value in listOf("a", "c")) {
+//                throw TestException(value)
+//            }
+//            value
+//        }
+//        val collector = launch {
+//            pipeline.stream(
+//                StoreReadRequest.cached(3, refresh = true)
+//            ).toList() // keep collection hot
+//        }
+//        // miss both failures but arrive before d is fetched
+//        delay(20)
+//        assertEmitsExactly(
+//            pipeline.stream(StoreReadRequest.fresh(3)),
+//            listOf(
+//                StoreReadResponse.Loading(
+//                    origin = StoreReadResponseOrigin.Fetcher
+//                ),
+//                StoreReadResponse.Data(
+//                    value = "d",
+//                    origin = StoreReadResponseOrigin.Fetcher
+//                )
+//            )
+//        )
+//        collector.cancelAndJoin()
+//    }
 
     @Test
     fun givenSourceOfTruthWithReadFailureWhenCachedValueReaderArrivesThenFetcherShouldBeCalledToGetANewValue() {
