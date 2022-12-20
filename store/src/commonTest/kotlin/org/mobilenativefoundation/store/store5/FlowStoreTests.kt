@@ -56,7 +56,7 @@ class FlowStoreTests {
             3 to "three-2"
         )
         val pipeline = StoreBuilder
-            .from<Int, String, String, String, Boolean>(fetcher)
+            .from<Int, String>(fetcher)
             .buildWithTestScope()
 
         assertEquals(
@@ -113,7 +113,7 @@ class FlowStoreTests {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -184,7 +184,7 @@ class FlowStoreTests {
         )
         val persister = InMemoryPersister<Int, String>()
 
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -230,7 +230,7 @@ class FlowStoreTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher = fetcher)
+        val pipeline = StoreBuilder.from<Int, String>(fetcher = fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -271,7 +271,7 @@ class FlowStoreTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher = fetcher)
+        val pipeline = StoreBuilder.from<Int, String>(fetcher = fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -309,7 +309,7 @@ class FlowStoreTests {
         )
         val persister = InMemoryPersister<Int, String>()
 
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         )
@@ -357,7 +357,7 @@ class FlowStoreTests {
     @Test
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             Fetcher.ofFlow {
                 flow {
                     delay(20)
@@ -395,7 +395,7 @@ class FlowStoreTests {
     @Test
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = Fetcher.ofFlow {
                 flow {
                     delay(10)
@@ -445,7 +445,7 @@ class FlowStoreTests {
     fun errorTest() = testScope.runTest {
         val exception = IllegalArgumentException("wow")
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             Fetcher.of {
                 throw exception
             },
@@ -496,7 +496,7 @@ class FlowStoreTests {
     fun givenSourceOfTruthWhenStreamFreshDataReturnsNoDataFromFetcherThenFetchReturnsNoDataAndCachedValuesAreReceived() =
         testScope.runTest {
             val persister = InMemoryPersister<Int, String>().asFlowable()
-            val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+            val pipeline = StoreBuilder.from<Int, String>(
                 fetcher = Fetcher.ofFlow { flow {} },
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -530,7 +530,7 @@ class FlowStoreTests {
     @Test
     fun givenSourceOfTruthWhenStreamCachedDataWithRefreshReturnsNoNewDataThenCachedValuesAreReceivedAndFetchReturnsNoData() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = Fetcher.ofFlow { flow {} },
             sourceOfTruth = persister.asSourceOfTruth()
         )
@@ -564,7 +564,7 @@ class FlowStoreTests {
     @Test
     fun givenNoSourceOfTruthWhenStreamFreshDataReturnsNoDataFromFetcherThenFetchReturnsNoDataAndCachedValuesAreReceived() = testScope.runTest {
         var createCount = 0
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = Fetcher.ofFlow {
                 if (createCount++ == 0) {
                     flowOf("remote-1")
@@ -598,7 +598,7 @@ class FlowStoreTests {
     @Test
     fun givenNoSoTWhenStreamCachedDataWithRefreshReturnsNoNewDataThenCachedValuesAreReceivedAndFetchReturnsNoData() = testScope.runTest {
         var createCount = 0
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = Fetcher.ofFlow {
                 if (createCount++ == 0) {
                     flowOf("remote-1")
@@ -635,7 +635,7 @@ class FlowStoreTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val store = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher = fetcher)
+        val store = StoreBuilder.from<Int, String>(fetcher = fetcher)
             .buildWithTestScope()
 
         val firstFetch = store.fresh(3)
@@ -687,7 +687,7 @@ class FlowStoreTests {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-        val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+        val pipeline = StoreBuilder.from<Int, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -758,7 +758,7 @@ class FlowStoreTests {
                 3 to "three-2",
                 3 to "three-3"
             )
-            val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(
+            val pipeline = StoreBuilder.from<Int, String>(
                 fetcher = fetcher
             ).buildWithTestScope()
 
@@ -816,7 +816,7 @@ class FlowStoreTests {
                 3 to "three-1",
                 3 to "three-2"
             )
-            val pipeline = StoreBuilder.from<Int, String, String, String, Boolean>(fetcher = fetcher)
+            val pipeline = StoreBuilder.from<Int, String>(fetcher = fetcher)
                 .buildWithTestScope()
 
             val fetcher1Collected = mutableListOf<StoreReadResponse<String>>()
@@ -855,16 +855,16 @@ class FlowStoreTests {
             fetcher1Job.cancelAndJoin()
         }
 
-    suspend fun Store<Int, Int, Boolean>.get(request: StoreReadRequest<Int>) =
+    suspend fun Store<Int, Int>.get(request: StoreReadRequest<Int>) =
         this.stream(request).filter { it.dataOrNull() != null }.first()
 
-    suspend fun Store<Int, Int, Boolean>.get(key: Int) = get(
+    suspend fun Store<Int, Int>.get(key: Int) = get(
         StoreReadRequest.cached(
             key = key,
             refresh = false
         )
     )
 
-    private fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>.buildWithTestScope() =
+    private fun <Key : Any, CommonRepresentation : Any> StoreBuilder<Key, CommonRepresentation>.buildWithTestScope() =
         scope(testScope).build()
 }

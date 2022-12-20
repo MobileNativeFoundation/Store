@@ -17,12 +17,13 @@ package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
 import org.mobilenativefoundation.store.store5.impl.RealStoreBuilder
+import org.mobilenativefoundation.store.store5.impl.storeBuilderFrom
 
 /**
  * Main entry point for creating a [Store].
  */
-interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> {
-    fun build(): Store<Key, CommonRepresentation, NetworkWriteResponse>
+interface StoreBuilder<Key : Any, CommonRepresentation : Any> {
+    fun build(): Store<Key, CommonRepresentation>
 
     /**
      * A store multicasts same [CommonRepresentation] value to many consumers (Similar to RxJava.share()), by default
@@ -31,21 +32,19 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
      *
      *   @param scope - scope to use for sharing
      */
-    fun scope(scope: CoroutineScope): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+    fun scope(scope: CoroutineScope): StoreBuilder<Key, CommonRepresentation>
 
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
      *  or size based eviction
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): StoreBuilder<Key, CommonRepresentation>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
-    fun disableCache(): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
-
-    fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+    fun disableCache(): StoreBuilder<Key, CommonRepresentation>
 
     companion object {
 
@@ -54,12 +53,9 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
-            fetcher: Fetcher<Key, NetworkRepresentation>,
-            updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
-            bookkeeper: Bookkeeper<Key>? = null,
-        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> =
-            RealStoreBuilder(fetcher, updater, bookkeeper)
+        fun <Key : Any, CommonRepresentation : Any> from(
+            fetcher: Fetcher<Key, *>,
+        ): StoreBuilder<Key, CommonRepresentation> = storeBuilderFrom(fetcher = fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -67,12 +63,48 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
+        fun <Key : Any, CommonRepresentation : Any> from(
+            fetcher: Fetcher<Key, *>,
+            sourceOfTruth: SourceOfTruth<Key, *>
+        ): StoreBuilder<Key, CommonRepresentation> = storeBuilderFrom(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+    }
+}
+
+interface MutableStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> :
+    StoreBuilder<Key, CommonRepresentation> {
+    override fun build(): MutableStore<Key, CommonRepresentation, NetworkWriteResponse>
+
+    /**
+     * @see [StoreBuilder.scope]
+     */
+    override fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+
+    /**
+     * @see [StoreBuilder.cachePolicy]
+     */
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+
+    /**
+     * @see [StoreBuilder.disableCache]
+     */
+    override fun disableCache(): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+
+    fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>
+
+    companion object {
+        fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
+            fetcher: Fetcher<Key, NetworkRepresentation>,
+            updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
+            bookkeeper: Bookkeeper<Key>? = null,
+        ): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> =
+            RealStoreBuilder(fetcher, updater, bookkeeper)
+
         fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any> from(
             fetcher: Fetcher<Key, NetworkRepresentation>,
             updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
             bookkeeper: Bookkeeper<Key>? = null,
             sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>
-        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> = RealStoreBuilder(
+        ): MutableStoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse> = RealStoreBuilder(
             fetcher = fetcher,
             updater = updater,
             bookkeeper = bookkeeper,

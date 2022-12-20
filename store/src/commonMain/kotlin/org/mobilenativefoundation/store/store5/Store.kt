@@ -33,18 +33,12 @@ import kotlinx.coroutines.flow.Flow
  *  }
  *
  */
-interface Store<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
+interface Store<Key : Any, CommonRepresentation : Any> {
     /**
      * Return a flow for the given key
      * @param request - see [StoreReadRequest] for configurations
      */
     fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>>
-
-    @ExperimentalStoreApi
-    fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>): Flow<StoreWriteResponse<NetworkWriteResponse>>
-
-    @ExperimentalStoreApi
-    suspend fun write(request: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>): StoreWriteResponse<NetworkWriteResponse>
 
     /**
      * Purge a particular entry from memory and disk cache.

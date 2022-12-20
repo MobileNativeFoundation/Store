@@ -36,8 +36,8 @@ import org.mobilenativefoundation.store.store5.CacheType
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
+import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -61,7 +61,7 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
     sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null,
     converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
     private val memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?
-) : Store<Key, CommonRepresentation, NetworkWriteResponse> {
+) : MutableStore<Key, CommonRepresentation, NetworkWriteResponse> {
 
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, CommonRepresentation, NetworkWriteResponse>>()

@@ -30,28 +30,29 @@ class UpdaterTests {
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
-        val store = StoreBuilder.from<String, NoteNetworkRepresentation, NoteCommonRepresentation, NoteSourceOfTruthRepresentation, NoteNetworkWriteResponse>(
-            fetcher = Fetcher.ofFlow { key ->
-                val networkRepresentation = NoteNetworkRepresentation(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
-                flow { emit(networkRepresentation) }
-            },
-            updater = Updater.by(
-                post = { key, commonRepresentation ->
-                    val networkWriteResponse = api.post(key, commonRepresentation)
-                    if (networkWriteResponse.ok) {
-                        UpdaterResult.Success(networkWriteResponse)
-                    } else {
-                        UpdaterResult.Error.Message("Failed to sync")
-                    }
+        val store =
+            MutableStoreBuilder.from<String, NoteNetworkRepresentation, NoteCommonRepresentation, NoteSourceOfTruthRepresentation, NoteNetworkWriteResponse>(
+                fetcher = Fetcher.ofFlow { key ->
+                    val networkRepresentation = NoteNetworkRepresentation(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
+                    flow { emit(networkRepresentation) }
                 },
-            ),
-            bookkeeper = Bookkeeper.by(
-                getLastFailedSync = bookkeeping::getLastFailedSync,
-                setLastFailedSync = bookkeeping::setLastFailedSync,
-                clear = bookkeeping::clear,
-                clearAll = bookkeeping::clear
-            )
-        ).build()
+                updater = Updater.by(
+                    post = { key, commonRepresentation ->
+                        val networkWriteResponse = api.post(key, commonRepresentation)
+                        if (networkWriteResponse.ok) {
+                            UpdaterResult.Success(networkWriteResponse)
+                        } else {
+                            UpdaterResult.Error.Message("Failed to sync")
+                        }
+                    },
+                ),
+                bookkeeper = Bookkeeper.by(
+                    getLastFailedSync = bookkeeping::getLastFailedSync,
+                    setLastFailedSync = bookkeeping::setLastFailedSync,
+                    clear = bookkeeping::clear,
+                    clearAll = bookkeeping::clear
+                )
+            ).build()
 
         val noteKey = "1-id"
         val noteTitle = "1-title"
