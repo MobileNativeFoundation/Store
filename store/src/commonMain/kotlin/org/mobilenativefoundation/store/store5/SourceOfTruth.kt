@@ -39,21 +39,21 @@ import kotlin.jvm.JvmName
  * a common flowing API.
  *
  * A source of truth is usually backed by local storage. It's purpose is to eliminate the need
- * for waiting on network update before local modifications are available (via [Store.stream]).
+ * for waiting on network update before local modifications are available (via [Store.Stream.read]).
  *
  * For maximal flexibility, [writer]'s record type ([Input]] and [reader]'s record type
  * ([Output]) are not identical. This allows us to read one type of objects from network and
  * transform them to another type when placing them in local storage.
  *
  */
-interface SourceOfTruth<Key, Input, Output> {
+interface SourceOfTruth<Key : Any, SourceOfTruthRepresentation : Any> {
 
     /**
      * Used by [Store] to read records from the source of truth.
      *
      * @param key The key to read for.
      */
-    fun reader(key: Key): Flow<Output?>
+    fun reader(key: Key): Flow<SourceOfTruthRepresentation?>
 
     /**
      * Used by [Store] to write records **coming in from the fetcher (network)** to the source of
@@ -61,12 +61,12 @@ interface SourceOfTruth<Key, Input, Output> {
      *
      * **Note:** [Store] currently does not support updating the source of truth with local user
      * updates (i.e writing record of type [Output]). However, any changes in the local database
-     * will still be visible via [Store.stream] APIs as long as you are using a local storage that
+     * will still be visible via [Store.Stream.read] APIs as long as you are using a local storage that
      * supports observability (e.g. Room, SQLDelight, Realm).
      *
      * @param key The key to update for.
      */
-    suspend fun write(key: Key, value: Input)
+    suspend fun write(key: Key, value: SourceOfTruthRepresentation)
 
     /**
      * Used by [Store] to delete records in the source of truth for the given key.
@@ -90,12 +90,12 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, Input : Any, Output : Any> of(
-            nonFlowReader: suspend (Key) -> Output?,
-            writer: suspend (Key, Input) -> Unit,
+        fun <Key : Any, SourceOfTruthRepresentation : Any> of(
+            nonFlowReader: suspend (Key) -> SourceOfTruthRepresentation?,
+            writer: suspend (Key, SourceOfTruthRepresentation) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Input, Output> = PersistentNonFlowingSourceOfTruth(
+        ): SourceOfTruth<Key, SourceOfTruthRepresentation> = PersistentNonFlowingSourceOfTruth(
             realReader = nonFlowReader,
             realWriter = writer,
             realDelete = delete,
@@ -112,12 +112,12 @@ interface SourceOfTruth<Key, Input, Output> {
          * @param deleteAll function for deleting all records in the source of truth
          */
         @JvmName("ofFlow")
-        fun <Key : Any, Input : Any, Output : Any> of(
-            reader: (Key) -> Flow<Output?>,
-            writer: suspend (Key, Input) -> Unit,
+        fun <Key : Any, SourceOfTruthRepresentation : Any> of(
+            reader: (Key) -> Flow<SourceOfTruthRepresentation?>,
+            writer: suspend (Key, SourceOfTruthRepresentation) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Input, Output> = PersistentSourceOfTruth(
+        ): SourceOfTruth<Key, SourceOfTruthRepresentation> = PersistentSourceOfTruth(
             realReader = reader,
             realWriter = writer,
             realDelete = delete,
@@ -128,7 +128,7 @@ interface SourceOfTruth<Key, Input, Output> {
     /**
      * The exception provided when a write operation fails in SourceOfTruth.
      *
-     * see [StoreResponse.Error.Exception]
+     * see [StoreReadResponse.Error.Exception]
      */
     class WriteException(
         /**
@@ -169,7 +169,7 @@ interface SourceOfTruth<Key, Input, Output> {
     /**
      * Exception created when a [reader] throws an exception.
      *
-     * see [StoreResponse.Error.Exception]
+     * see [StoreReadResponse.Error.Exception]
      */
     class ReadException(
         /**

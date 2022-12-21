@@ -23,7 +23,7 @@ package org.mobilenativefoundation.store.store5
  *  starting the stream from the local [com.dropbox.android.external.store4.impl.SourceOfTruth] and memory cache
  *
  */
-data class StoreRequest<Key> private constructor(
+data class StoreReadRequest<Key> private constructor(
 
     val key: Key,
 
@@ -51,7 +51,7 @@ data class StoreRequest<Key> private constructor(
          * data **even** if you explicitly requested fresh data.
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
-        fun <Key> fresh(key: Key) = StoreRequest(
+        fun <Key> fresh(key: Key) = StoreReadRequest(
             key = key,
             skippedCaches = allCaches,
             refresh = true
@@ -61,7 +61,7 @@ data class StoreRequest<Key> private constructor(
          * Create a Store Request which will return data from memory/disk caches
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
-        fun <Key> cached(key: Key, refresh: Boolean) = StoreRequest(
+        fun <Key> cached(key: Key, refresh: Boolean) = StoreReadRequest(
             key = key,
             skippedCaches = 0,
             refresh = refresh
@@ -71,7 +71,7 @@ data class StoreRequest<Key> private constructor(
          * Create a Store Request which will return data from disk cache
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
-        fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreRequest(
+        fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreReadRequest(
             key = key,
             skippedCaches = CacheType.MEMORY.flag,
             refresh = refresh
