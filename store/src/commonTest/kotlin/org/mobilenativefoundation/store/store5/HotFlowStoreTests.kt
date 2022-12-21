@@ -22,43 +22,43 @@ class HotFlowStoreTests {
             3 to "three-2"
         )
         val pipeline = StoreBuilder
-            .from(fetcher)
+            .from<Int, String, String>(fetcher)
             .scope(testScope)
             .build()
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.cached(3, refresh = false)),
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
         assertEmitsExactly(
             pipeline.stream(
-                StoreRequest.cached(3, refresh = false)
+                StoreReadRequest.cached(3, refresh = false)
             ),
             listOf(
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-1",
-                    origin = ResponseOrigin.Cache
+                    origin = StoreReadResponseOrigin.Cache
                 )
             )
         )
 
         assertEmitsExactly(
-            pipeline.stream(StoreRequest.fresh(3)),
+            pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreResponse.Loading(
-                    origin = ResponseOrigin.Fetcher
+                StoreReadResponse.Loading(
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     value = "three-2",
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 )
             )
         )
