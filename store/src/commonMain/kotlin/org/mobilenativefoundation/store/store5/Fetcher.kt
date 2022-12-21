@@ -25,8 +25,6 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
      */
     operator fun invoke(key: Key): Flow<FetcherResult<NetworkRepresentation>>
 
-    interface Converter
-
     companion object {
         /**
          * "Creates" a [Fetcher] from a [flowFactory].
