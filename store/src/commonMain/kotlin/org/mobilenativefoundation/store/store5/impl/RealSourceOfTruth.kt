@@ -19,16 +19,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 
-internal class PersistentSourceOfTruth<Key, Input, Output>(
-    private val realReader: (Key) -> Flow<Output?>,
-    private val realWriter: suspend (Key, Input) -> Unit,
+internal class PersistentSourceOfTruth<Key : Any, SourceOfTruthRepresentation : Any>(
+    private val realReader: (Key) -> Flow<SourceOfTruthRepresentation?>,
+    private val realWriter: suspend (Key, SourceOfTruthRepresentation) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)? = null
-) : SourceOfTruth<Key, Input, Output> {
+) : SourceOfTruth<Key, SourceOfTruthRepresentation> {
 
-    override fun reader(key: Key): Flow<Output?> = realReader(key)
+    override fun reader(key: Key): Flow<SourceOfTruthRepresentation?> = realReader.invoke(key)
 
-    override suspend fun write(key: Key, value: Input) = realWriter(key, value)
+    override suspend fun write(key: Key, value: SourceOfTruthRepresentation) = realWriter(key, value)
 
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)
@@ -39,19 +39,22 @@ internal class PersistentSourceOfTruth<Key, Input, Output>(
     }
 }
 
-internal class PersistentNonFlowingSourceOfTruth<Key, Input, Output>(
-    private val realReader: suspend (Key) -> Output?,
-    private val realWriter: suspend (Key, Input) -> Unit,
+internal class PersistentNonFlowingSourceOfTruth<Key : Any, SourceOfTruthRepresentation : Any>(
+    private val realReader: suspend (Key) -> SourceOfTruthRepresentation?,
+    private val realWriter: suspend (Key, SourceOfTruthRepresentation) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)?
-) : SourceOfTruth<Key, Input, Output> {
+) : SourceOfTruth<Key, SourceOfTruthRepresentation> {
 
-    override fun reader(key: Key): Flow<Output?> =
+    override fun reader(key: Key): Flow<SourceOfTruthRepresentation?> =
         flow {
-            emit(realReader(key))
+            val sourceOfTruthRepresentation = realReader(key)
+            emit(sourceOfTruthRepresentation)
         }
 
-    override suspend fun write(key: Key, value: Input) = realWriter(key, value)
+    override suspend fun write(key: Key, value: SourceOfTruthRepresentation) {
+        return realWriter(key, value)
+    }
 
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)

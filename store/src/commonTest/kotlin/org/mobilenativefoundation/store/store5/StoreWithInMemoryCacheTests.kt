@@ -4,13 +4,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.store5.impl.extensions.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.ExperimentalTime
-import kotlin.time.minutes
+import kotlin.time.Duration.Companion.hours
 
 @FlowPreview
-@ExperimentalTime
 @ExperimentalCoroutinesApi
 class StoreWithInMemoryCacheTests {
     private val testScope = TestScope()
@@ -18,11 +17,11 @@ class StoreWithInMemoryCacheTests {
     @Test
     fun storeRequestsCanCompleteWhenInMemoryCacheWithAccessExpiryIsAtTheMaximumSize() = testScope.runTest {
         val store = StoreBuilder
-            .from(Fetcher.of { _: Int -> "result" })
+            .from<Int, String, String>(Fetcher.of { _: Int -> "result" })
             .cachePolicy(
                 MemoryPolicy
                     .builder<Any, Any>()
-                    .setExpireAfterAccess(10.minutes)
+                    .setExpireAfterAccess(1.hours)
                     .setMaxSize(1)
                     .build()
             )

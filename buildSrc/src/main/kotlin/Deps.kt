@@ -61,4 +61,8 @@ object Deps {
         const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Version.kotlinxCoroutines}"
         const val junit = "junit:junit:${Version.junit}"
     }
+
+    object Touchlab {
+        const val kermit = "co.touchlab:kermit:${Version.kermit}"
+    }
 }

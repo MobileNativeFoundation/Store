@@ -2,7 +2,7 @@ package org.mobilenativefoundation.store.cache5
 
 import kotlin.time.Duration
 
-class CacheBuilder<Key : Any, Value : Any> {
+class CacheBuilder<Key : Any, CommonRepresentation : Any> {
     internal var concurrencyLevel = 4
         private set
     internal val initialCapacity = 16
@@ -14,41 +14,41 @@ class CacheBuilder<Key : Any, Value : Any> {
         private set
     internal var expireAfterWrite: Duration = Duration.INFINITE
         private set
-    internal var weigher: Weigher<Key, Value>? = null
+    internal var weigher: Weigher<Key, CommonRepresentation>? = null
         private set
     internal var ticker: Ticker? = null
         private set
 
-    fun concurrencyLevel(producer: () -> Int): CacheBuilder<Key, Value> = apply {
+    fun concurrencyLevel(producer: () -> Int): CacheBuilder<Key, CommonRepresentation> = apply {
         concurrencyLevel = producer.invoke()
     }
 
-    fun maximumSize(maximumSize: Long): CacheBuilder<Key, Value> = apply {
+    fun maximumSize(maximumSize: Long): CacheBuilder<Key, CommonRepresentation> = apply {
         if (maximumSize < 0) {
             throw IllegalArgumentException("Maximum size must be non-negative.")
         }
         this.maximumSize = maximumSize
     }
 
-    fun expireAfterAccess(duration: Duration): CacheBuilder<Key, Value> = apply {
+    fun expireAfterAccess(duration: Duration): CacheBuilder<Key, CommonRepresentation> = apply {
         if (duration.isNegative()) {
             throw IllegalArgumentException("Duration must be non-negative.")
         }
         expireAfterAccess = duration
     }
 
-    fun expireAfterWrite(duration: Duration): CacheBuilder<Key, Value> = apply {
+    fun expireAfterWrite(duration: Duration): CacheBuilder<Key, CommonRepresentation> = apply {
         if (duration.isNegative()) {
             throw IllegalArgumentException("Duration must be non-negative.")
         }
         expireAfterWrite = duration
     }
 
-    fun ticker(ticker: Ticker): CacheBuilder<Key, Value> = apply {
+    fun ticker(ticker: Ticker): CacheBuilder<Key, CommonRepresentation> = apply {
         this.ticker = ticker
     }
 
-    fun weigher(maximumWeight: Long, weigher: Weigher<Key, Value>): CacheBuilder<Key, Value> = apply {
+    fun weigher(maximumWeight: Long, weigher: Weigher<Key, CommonRepresentation>): CacheBuilder<Key, CommonRepresentation> = apply {
         if (maximumWeight < 0) {
             throw IllegalArgumentException("Maximum weight must be non-negative.")
         }
@@ -57,7 +57,7 @@ class CacheBuilder<Key : Any, Value : Any> {
         this.weigher = weigher
     }
 
-    fun build(): Cache<Key, Value> {
+    fun build(): Cache<Key, CommonRepresentation> {
         if (maximumSize != -1L && weigher != null) {
             throw IllegalStateException("Maximum size cannot be combined with weigher.")
         }
