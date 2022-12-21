@@ -1,5 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
+import org.mobilenativefoundation.store.store5.internal.definition.Converter
+
 interface StoreConverter<NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> {
     fun fromNetworkRepresentationToCommonRepresentation(networkRepresentation: NetworkRepresentation): CommonRepresentation?
     fun fromCommonRepresentationToSourceOfTruthRepresentation(commonRepresentation: CommonRepresentation): SourceOfTruthRepresentation?
