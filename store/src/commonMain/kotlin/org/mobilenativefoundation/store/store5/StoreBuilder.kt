@@ -52,7 +52,7 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
     fun disableCache(): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
 
     fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>):
-            StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+        StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
 
     companion object {
 
