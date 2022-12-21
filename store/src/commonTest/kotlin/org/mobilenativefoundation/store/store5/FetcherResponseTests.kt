@@ -19,8 +19,8 @@ class FetcherResponseTests {
 
     @Test
     fun givenAFetcherThatThrowsAnExceptionInInvokeWhenStreamingThenTheExceptionsShouldNotBeCaught() = testScope.runTest {
-        val store = StoreBuilder.from<Int, Int>(
-            Fetcher.ofResult<Int, Int> {
+        val store = StoreBuilder.from<Int, Int, Int>(
+            Fetcher.ofResult {
                 throw RuntimeException("don't catch me")
             }
         ).buildWithTestScope()
@@ -35,7 +35,7 @@ class FetcherResponseTests {
     fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() {
         val exception = RuntimeException("first error")
         testScope.runTest {
-            val store = StoreBuilder.from<Int, String>(
+            val store = StoreBuilder.from<Int, String, String>(
                 fetcher = Fetcher.ofResultFlow { key: Int ->
                     flowOf(
                         FetcherResult.Error.Exception(exception),
@@ -61,7 +61,7 @@ class FetcherResponseTests {
     fun givenTransformerWhenRawValueThenUnwrappedValueReturnedAndValueIsCached() = testScope.runTest {
         val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
         val pipeline = StoreBuilder
-            .from<Int, Int>(fetcher).buildWithTestScope()
+            .from<Int, Int, Int>(fetcher).buildWithTestScope()
 
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
@@ -98,7 +98,7 @@ class FetcherResponseTests {
                 }
             }
         }
-        val pipeline = StoreBuilder.from<Int, Int>(fetcher)
+        val pipeline = StoreBuilder.from<Int, Int, Int>(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -141,7 +141,7 @@ class FetcherResponseTests {
             }
         }
         val pipeline = StoreBuilder
-            .from<Int, Int>(fetcher)
+            .from<Int, Int, Int>(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -182,7 +182,7 @@ class FetcherResponseTests {
             count - 1
         }
         val pipeline = StoreBuilder
-            .from<Int, Int>(fetcher = fetcher)
+            .from<Int, Int, Int>(fetcher = fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -211,6 +211,6 @@ class FetcherResponseTests {
         )
     }
 
-    private fun <Key : Any, CommonRepresentation : Any> StoreBuilder<Key, CommonRepresentation>.buildWithTestScope() =
+    private fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>.buildWithTestScope() =
         scope(testScope).build()
 }

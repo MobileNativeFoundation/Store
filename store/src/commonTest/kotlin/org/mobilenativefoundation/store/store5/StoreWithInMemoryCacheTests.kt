@@ -17,7 +17,7 @@ class StoreWithInMemoryCacheTests {
     @Test
     fun storeRequestsCanCompleteWhenInMemoryCacheWithAccessExpiryIsAtTheMaximumSize() = testScope.runTest {
         val store = StoreBuilder
-            .from<Int, String>(Fetcher.of { _: Int -> "result" })
+            .from<Int, String, String>(Fetcher.of { _: Int -> "result" })
             .cachePolicy(
                 MemoryPolicy
                     .builder<Any, Any>()

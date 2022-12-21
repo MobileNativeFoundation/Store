@@ -22,7 +22,7 @@ class HotFlowStoreTests {
             3 to "three-2"
         )
         val pipeline = StoreBuilder
-            .from<Int, String>(fetcher)
+            .from<Int, String, String>(fetcher)
             .scope(testScope)
             .build()
 

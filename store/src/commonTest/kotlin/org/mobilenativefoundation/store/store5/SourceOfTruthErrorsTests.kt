@@ -31,7 +31,7 @@ class SourceOfTruthErrorsTests {
             3 to "b"
         )
         val pipeline = StoreBuilder
-            .from<Int, String>(
+            .from<Int, String, String, String>(
                 fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -65,7 +65,7 @@ class SourceOfTruthErrorsTests {
             3 to "b"
         )
         val pipeline = StoreBuilder
-            .from<Int, String>(
+            .from<Int, String, String, String>(
                 fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -110,7 +110,7 @@ class SourceOfTruthErrorsTests {
             flowOf("a", "b", "c", "d")
         }
         val pipeline = StoreBuilder
-            .from<Int, String>(
+            .from<Int, String, String, String>(
                 fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -240,7 +240,7 @@ class SourceOfTruthErrorsTests {
             }
         }
         val pipeline = StoreBuilder
-            .from<Int, String>(
+            .from<Int, String, String, String>(
                 fetcher = fetcher,
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -334,7 +334,7 @@ class SourceOfTruthErrorsTests {
             val persister = InMemoryPersister<Int, String>()
             val fetcher = Fetcher.of { _: Int -> "a" }
             val pipeline = StoreBuilder
-                .from<Int, String>(
+                .from<Int, String, String, String>(
                     fetcher = fetcher,
                     sourceOfTruth = persister.asSourceOfTruth()
                 )

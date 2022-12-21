@@ -4,6 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 import org.mobilenativefoundation.store.store5.util.fake.NoteApi
 import org.mobilenativefoundation.store.store5.util.fake.NoteBookkeeping
 import org.mobilenativefoundation.store.store5.util.model.Note
@@ -30,29 +31,34 @@ class UpdaterTests {
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
-        val store =
-            MutableStoreBuilder.from<String, NoteNetworkRepresentation, NoteCommonRepresentation, NoteSourceOfTruthRepresentation, NoteNetworkWriteResponse>(
-                fetcher = Fetcher.ofFlow { key ->
-                    val networkRepresentation = NoteNetworkRepresentation(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
-                    flow { emit(networkRepresentation) }
-                },
-                updater = Updater.by(
-                    post = { key, commonRepresentation ->
-                        val networkWriteResponse = api.post(key, commonRepresentation)
-                        if (networkWriteResponse.ok) {
-                            UpdaterResult.Success(networkWriteResponse)
-                        } else {
-                            UpdaterResult.Error.Message("Failed to sync")
-                        }
-                    },
-                ),
-                bookkeeper = Bookkeeper.by(
-                    getLastFailedSync = bookkeeping::getLastFailedSync,
-                    setLastFailedSync = bookkeeping::setLastFailedSync,
-                    clear = bookkeeping::clear,
-                    clearAll = bookkeeping::clear
-                )
-            ).build()
+        val updater = Updater.by<String, NoteCommonRepresentation, NoteNetworkWriteResponse>(
+            post = { key, commonRepresentation ->
+                val networkWriteResponse = api.post(key, commonRepresentation)
+                if (networkWriteResponse.ok) {
+                    UpdaterResult.Success.Typed(networkWriteResponse)
+                } else {
+                    UpdaterResult.Error.Message("Failed to sync")
+                }
+            }
+        )
+        val bookkeeper = Bookkeeper.by(
+            getLastFailedSync = bookkeeping::getLastFailedSync,
+            setLastFailedSync = bookkeeping::setLastFailedSync,
+            clear = bookkeeping::clear,
+            clearAll = bookkeeping::clear
+        )
+
+        val store = StoreBuilder.from<String, NoteNetworkRepresentation, NoteCommonRepresentation>(
+            fetcher = Fetcher.ofFlow { key ->
+                val networkRepresentation = NoteNetworkRepresentation(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
+                flow { emit(networkRepresentation) }
+            }
+        )
+            .build()
+            .asMutableStore<String, NoteNetworkRepresentation, NoteCommonRepresentation, NoteSourceOfTruthRepresentation, NoteNetworkWriteResponse>(
+                updater = updater,
+                bookkeeper = bookkeeper
+            )
 
         val noteKey = "1-id"
         val noteTitle = "1-title"
@@ -65,7 +71,7 @@ class UpdaterTests {
 
         val storeWriteResponse = store.write(writeRequest)
 
-        assertEquals(StoreWriteResponse.Success(NoteNetworkWriteResponse(noteKey, true)), storeWriteResponse)
+        assertEquals(StoreWriteResponse.Success.Typed(NoteNetworkWriteResponse(noteKey, true)), storeWriteResponse)
         assertEquals(NoteNetworkRepresentation(noteData), api.db[noteKey])
     }
 }

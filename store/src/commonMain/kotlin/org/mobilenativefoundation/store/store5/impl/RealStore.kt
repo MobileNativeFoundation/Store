@@ -15,58 +15,38 @@
  */
 package org.mobilenativefoundation.store.store5.impl
 
-import co.touchlab.kermit.CommonWriter
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.cache5.CacheBuilder
-import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.CacheType
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.SourceOfTruth
+import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
-import org.mobilenativefoundation.store.store5.StoreWriteRequest
-import org.mobilenativefoundation.store.store5.StoreWriteResponse
-import org.mobilenativefoundation.store.store5.Updater
-import org.mobilenativefoundation.store.store5.UpdaterResult
-import org.mobilenativefoundation.store.store5.impl.concurrent.AnyThread
-import org.mobilenativefoundation.store.store5.impl.concurrent.ThreadSafety
-import org.mobilenativefoundation.store.store5.impl.definition.WriteRequestQueue
-import org.mobilenativefoundation.store.store5.impl.extensions.now
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
+import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
-internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any, NetworkWriteResponse : Any>(
+internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, NetworkRepresentation>,
-    private val updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>? = null,
-    private val bookkeeper: Bookkeeper<Key>? = null,
     sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null,
     converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
     private val memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?
-) : MutableStore<Key, CommonRepresentation, NetworkWriteResponse> {
-
-    private val storeLock = Mutex()
-    private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, CommonRepresentation, NetworkWriteResponse>>()
-    private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
-
+) : Store<Key, CommonRepresentation> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
      * the builder.
@@ -110,26 +90,6 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
 
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>> =
         flow {
-            safeInitStore(request.key)
-
-            when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts(request.key)) {
-                is EagerConflictResolutionResult.Error.Exception -> {
-                    logger.e(eagerConflictResolutionResult.error.toString())
-                }
-
-                is EagerConflictResolutionResult.Error.Message -> {
-                    logger.w(eagerConflictResolutionResult.message)
-                }
-
-                is EagerConflictResolutionResult.Success.ConflictsResolved -> {
-                    logger.d(eagerConflictResolutionResult.value.value.toString())
-                }
-
-                EagerConflictResolutionResult.Success.NoConflicts -> {
-                    logger.d(eagerConflictResolutionResult.toString())
-                }
-            }
-
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
@@ -319,195 +279,15 @@ internal class RealStore<Key : Any, NetworkRepresentation : Any, CommonRepresent
             }
     }
 
-    @ExperimentalStoreApi
-    override fun stream(stream: Flow<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>): Flow<StoreWriteResponse<NetworkWriteResponse>> =
-        flow {
-            if (updater == null) {
-                emit(StoreWriteResponse.Error.Message(NO_UPDATER))
-            } else {
-                stream
-                    .onEach { writeRequest ->
-                        safeInitStore(writeRequest.key)
-                        addWriteRequestToQueue(writeRequest)
-                    }
-                    .collect { writeRequest ->
-                        val storeWriteResponse = try {
-                            sourceOfTruth?.write(writeRequest.key, writeRequest.input)
-                            when (val updaterResult = tryUpdateServer(writeRequest)) {
-                                is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                                is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                                is UpdaterResult.Success -> StoreWriteResponse.Success(updaterResult.value)
-                            }
-                        } catch (throwable: Throwable) {
-                            StoreWriteResponse.Error.Exception(throwable)
-                        }
-                        emit(storeWriteResponse)
-                    }
-            }
-        }
-
-    @ExperimentalStoreApi
-    override suspend fun write(request: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>): StoreWriteResponse<NetworkWriteResponse> =
-        stream(flowOf(request)).first()
-
-    private suspend fun tryUpdateServer(request: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>): UpdaterResult<NetworkWriteResponse> {
-        val updaterResult = postLatest(request.key)
-        if (updaterResult is UpdaterResult.Success<NetworkWriteResponse>) {
-            updateWriteRequestQueue(
-                key = request.key,
-                created = request.created,
-                updaterResult = updaterResult
-            )
-            bookkeeper?.clear(request.key)
-        } else {
-            bookkeeper?.setLastFailedSync(request.key)
-        }
-
-        return updaterResult
+    internal suspend fun write(key: Key, input: CommonRepresentation): StoreDelegateWriteResult = try {
+        memCache?.put(key, input)
+        sourceOfTruth?.write(key, input)
+        StoreDelegateWriteResult.Success
+    } catch (error: Throwable) {
+        StoreDelegateWriteResult.Error.Exception(error)
     }
 
-    private suspend fun postLatest(key: Key): UpdaterResult<NetworkWriteResponse> {
-        val writer = getLatestWriteRequest(key)
-        return requireNotNull(updater).post(key, writer.input)
-    }
-
-    @AnyThread
-    private suspend fun updateWriteRequestQueue(key: Key, created: Long, updaterResult: UpdaterResult.Success<NetworkWriteResponse>) {
-        val nextWriteRequestQueue = withWriteRequestQueueLock(key) {
-            val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>>()
-
-            for (writeRequest in this) {
-                if (writeRequest.created <= created) {
-                    requireNotNull(updater).onCompletion?.onSuccess?.invoke(updaterResult)
-                    val storeWriteResponse = StoreWriteResponse.Success(updaterResult.value)
-                    writeRequest.onCompletions?.forEach { onStoreWriteCompletion ->
-                        onStoreWriteCompletion.onSuccess(storeWriteResponse)
-                    }
-                } else {
-                    outstandingWriteRequests.add(writeRequest)
-                }
-            }
-            outstandingWriteRequests
-        }
-
-        withThreadSafety(key) {
-            keyToWriteRequestQueue[key] = nextWriteRequestQueue
-        }
-    }
-
-    @AnyThread
-    private suspend fun <Output : Any> withWriteRequestQueueLock(
-        key: Key,
-        block: suspend WriteRequestQueue<Key, CommonRepresentation, NetworkWriteResponse>.() -> Output
-    ): Output =
-        withThreadSafety(key) {
-            writeRequests.lightswitch.lock(writeRequests.mutex)
-            val writeRequestQueue = requireNotNull(keyToWriteRequestQueue[key])
-            val output = writeRequestQueue.block()
-            writeRequests.lightswitch.unlock(writeRequests.mutex)
-            output
-        }
-
-    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse> = withThreadSafety(key) {
-        writeRequests.mutex.lock()
-        val output = requireNotNull(keyToWriteRequestQueue[key]?.last())
-        writeRequests.mutex.unlock()
-        output
-    }
-
-    @AnyThread
-    private suspend fun <Output : Any?> withThreadSafety(key: Key, block: suspend ThreadSafety.() -> Output): Output {
-        storeLock.lock()
-        val threadSafety = requireNotNull(keyToThreadSafety[key])
-        val output = threadSafety.block()
-        storeLock.unlock()
-        return output
-    }
-
-    private suspend fun conflictsMightExist(key: Key): Boolean {
-        val lastFailedSync = requireNotNull(bookkeeper).getLastFailedSync(key)
-        return lastFailedSync != null || writeRequestsQueueIsEmpty(key).not()
-    }
-
-    private suspend fun latestOrNull(key: Key): CommonRepresentation? = fromMemCache(key) ?: fromSourceOfTruth(key)
-
-    private suspend fun latest(key: Key): CommonRepresentation = requireNotNull(latestOrNull(key))
-
+    internal suspend fun latestOrNull(key: Key): CommonRepresentation? = fromMemCache(key) ?: fromSourceOfTruth(key)
     private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
-
-    @AnyThread
-    private suspend fun writeRequestsQueueIsEmpty(key: Key): Boolean = withThreadSafety(key) {
-        keyToWriteRequestQueue[key].isNullOrEmpty()
-    }
-
-    private suspend fun addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse>) =
-        withWriteRequestQueueLock(writeRequest.key) {
-            add(writeRequest)
-        }
-
-    @AnyThread
-    private suspend fun tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<NetworkWriteResponse> = withThreadSafety(key) {
-        val latest = latestOrNull(key)
-        when {
-            bookkeeper == null || updater == null -> EagerConflictResolutionResult.Error.Message(NO_BOOKKEEPER_OR_UPDATER)
-            latest == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts
-            else -> {
-                try {
-                    val updaterResult = updater.post(key, latest(key)).also { updaterResult ->
-                        if (updaterResult is UpdaterResult.Success) {
-                            updateWriteRequestQueue(key = key, created = now(), updaterResult = updaterResult)
-                        }
-                    }
-
-                    when (updaterResult) {
-                        is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)
-                        is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(updaterResult.message)
-                        is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)
-                    }
-                } catch (throwable: Throwable) {
-                    EagerConflictResolutionResult.Error.Exception(throwable)
-                }
-            }
-        }
-    }
-
-    private suspend fun safeInitWriteRequestQueue(key: Key) = withThreadSafety(key) {
-        if (keyToWriteRequestQueue[key] == null) {
-            keyToWriteRequestQueue[key] = ArrayDeque()
-        }
-    }
-
-    private suspend fun safeInitThreadSafety(key: Key) = storeLock.withLock {
-        if (keyToThreadSafety[key] == null) {
-            keyToThreadSafety[key] = ThreadSafety()
-        }
-    }
-
-    private suspend fun safeInitStore(key: Key) {
-        safeInitThreadSafety(key)
-        safeInitWriteRequestQueue(key)
-    }
-
-    companion object {
-        private const val NO_BOOKKEEPER_OR_UPDATER = "Bookkeeper and updater are required for eager conflict resolution"
-        private const val NO_UPDATER = "Updater is required for writing to Store"
-        private val logger = Logger.apply {
-            setLogWriters(listOf(CommonWriter()))
-            setTag("Store")
-        }
-    }
-}
-
-sealed class EagerConflictResolutionResult<out NetworkWriteResponse : Any> {
-
-    sealed class Success<NetworkWriteResponse : Any> : EagerConflictResolutionResult<NetworkWriteResponse>() {
-        object NoConflicts : Success<Nothing>()
-        data class ConflictsResolved<NetworkWriteResponse : Any>(val value: UpdaterResult.Success<NetworkWriteResponse>) : Success<NetworkWriteResponse>()
-    }
-
-    sealed class Error : EagerConflictResolutionResult<Nothing>() {
-        data class Message(val message: String) : Error()
-        data class Exception(val error: Throwable) : Error()
-    }
 }

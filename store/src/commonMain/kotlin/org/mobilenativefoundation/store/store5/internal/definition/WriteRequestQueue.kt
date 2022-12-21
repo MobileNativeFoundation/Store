@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.impl.definition
+package org.mobilenativefoundation.store.store5.internal.definition
 
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
 

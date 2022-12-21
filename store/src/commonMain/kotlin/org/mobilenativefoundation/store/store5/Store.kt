@@ -1,7 +1,5 @@
 package org.mobilenativefoundation.store.store5
 
-import kotlinx.coroutines.flow.Flow
-
 /**
  * A Store is responsible for managing a particular data request.
  *
@@ -33,25 +31,7 @@ import kotlinx.coroutines.flow.Flow
  *  }
  *
  */
-interface Store<Key : Any, CommonRepresentation : Any> {
-    /**
-     * Return a flow for the given key
-     * @param request - see [StoreReadRequest] for configurations
-     */
-    fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<CommonRepresentation>>
-
-    /**
-     * Purge a particular entry from memory and disk cache.
-     * Persistent storage will only be cleared if a delete function was passed to
-     * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
-     */
-    suspend fun clear(key: Key)
-
-    /**
-     * Purge all entries from memory and disk cache.
-     * Persistent storage will only be cleared if a clear function was passed to
-     * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
-     */
-    @ExperimentalStoreApi
-    suspend fun clear()
-}
+interface Store<Key : Any, CommonRepresentation : Any> :
+    Read.Stream<Key, CommonRepresentation>,
+    Clear.Key<Key>,
+    Clear.All
