@@ -12,9 +12,9 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
 /**
  * Only used in FlowStoreTest. We should get rid of it eventually.
  */
-class SimplePersisterAsFlowable<Key, Input, Output>(
-    private val reader: suspend (Key) -> Output?,
-    private val writer: suspend (Key, Input) -> Unit,
+class SimplePersisterAsFlowable<Key : Any, SourceOfTruthRepresentation : Any>(
+    private val reader: suspend (Key) -> SourceOfTruthRepresentation?,
+    private val writer: suspend (Key, SourceOfTruthRepresentation) -> Unit,
     private val delete: (suspend (Key) -> Unit)? = null
 ) {
 
@@ -23,13 +23,13 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
 
     private val versionTracker = KeyTracker<Key>()
 
-    fun flowReader(key: Key): Flow<Output?> = flow {
+    fun flowReader(key: Key): Flow<SourceOfTruthRepresentation?> = flow {
         versionTracker.keyFlow(key).collect {
             emit(reader(key))
         }
     }
 
-    suspend fun flowWriter(key: Key, input: Input) {
+    suspend fun flowWriter(key: Key, input: SourceOfTruthRepresentation) {
         writer(key, input)
         versionTracker.invalidate(key)
     }
@@ -42,7 +42,7 @@ class SimplePersisterAsFlowable<Key, Input, Output>(
     }
 }
 
-fun <Key : Any, Input : Any, Output : Any> SimplePersisterAsFlowable<Key, Input, Output>.asSourceOfTruth() =
+fun <Key : Any, SourceOfTruthRepresentation : Any> SimplePersisterAsFlowable<Key, SourceOfTruthRepresentation>.asSourceOfTruth() =
     SourceOfTruth.of(
         reader = ::flowReader,
         writer = ::flowWriter,

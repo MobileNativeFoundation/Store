@@ -42,7 +42,7 @@ import kotlin.test.assertNull
 class SourceOfTruthWithBarrierTests {
     private val testScope = TestScope()
     private val persister = InMemoryPersister<Int, String>()
-    private val delegate: SourceOfTruth<Int, String, String> =
+    private val delegate: SourceOfTruth<Int, String> =
         PersistentSourceOfTruth(
             realReader = { key ->
                 flow {
@@ -53,13 +53,13 @@ class SourceOfTruthWithBarrierTests {
             realDelete = persister::deleteByKey,
             realDeleteAll = persister::deleteAll
         )
-    private val source = SourceOfTruthWithBarrier(
+    private val source = SourceOfTruthWithBarrier<Int, String, String, String>(
         delegate = delegate
     )
 
     @Test
     fun simple() = testScope.runTest {
-        val collection = mutableListOf<StoreResponse<String?>>()
+        val collection = mutableListOf<StoreReadResponse<String?>>()
 
         launch {
             source.reader(1, CompletableDeferred(Unit)).take(2).collect {
@@ -70,13 +70,13 @@ class SourceOfTruthWithBarrierTests {
         source.write(1, "a")
         advanceUntilIdle()
         assertEquals(
-            listOf<StoreResponse<String?>>(
-                StoreResponse.Data(
-                    origin = ResponseOrigin.SourceOfTruth,
+            listOf<StoreReadResponse<String?>>(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     value = null
                 ),
-                StoreResponse.Data(
-                    origin = ResponseOrigin.Fetcher,
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher,
                     value = "a"
                 )
             ),
@@ -103,7 +103,7 @@ class SourceOfTruthWithBarrierTests {
 
     @Test
     fun preAndPostWrites() = testScope.runTest {
-        val collection = mutableListOf<StoreResponse<String?>>()
+        val collection = mutableListOf<StoreReadResponse<String?>>()
         source.write(1, "a")
 
         launch {
@@ -119,13 +119,13 @@ class SourceOfTruthWithBarrierTests {
         advanceUntilIdle()
 
         assertEquals(
-            listOf<StoreResponse<String?>>(
-                StoreResponse.Data(
-                    origin = ResponseOrigin.SourceOfTruth,
+            listOf<StoreReadResponse<String?>>(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     value = "a"
                 ),
-                StoreResponse.Data(
-                    origin = ResponseOrigin.Fetcher,
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher,
                     value = "b"
                 )
             ),
@@ -144,8 +144,8 @@ class SourceOfTruthWithBarrierTests {
         assertEmitsExactly(
             source.reader(1, CompletableDeferred(Unit)),
             listOf(
-                StoreResponse.Error.Exception(
-                    origin = ResponseOrigin.SourceOfTruth,
+                StoreReadResponse.Error.Exception(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
                         cause = exception
@@ -167,7 +167,7 @@ class SourceOfTruthWithBarrierTests {
             value
         }
         val reader = source.reader(1, CompletableDeferred(Unit))
-        val collected = mutableListOf<StoreResponse<String?>>()
+        val collected = mutableListOf<StoreReadResponse<String?>>()
         val collection = async {
             reader.collect {
                 collected.add(it)
@@ -175,8 +175,8 @@ class SourceOfTruthWithBarrierTests {
         }
         advanceUntilIdle()
         assertEquals(
-            StoreResponse.Error.Exception(
-                origin = ResponseOrigin.SourceOfTruth,
+            StoreReadResponse.Error.Exception(
+                origin = StoreReadResponseOrigin.SourceOfTruth,
                 error = ReadException(
                     key = 1,
                     cause = exception
@@ -190,17 +190,17 @@ class SourceOfTruthWithBarrierTests {
         source.write(1, "a")
         advanceUntilIdle()
         assertEquals(
-            listOf<StoreResponse<String?>>(
-                StoreResponse.Error.Exception(
-                    origin = ResponseOrigin.SourceOfTruth,
+            listOf<StoreReadResponse<String?>>(
+                StoreReadResponse.Error.Exception(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
                         cause = exception
                     )
                 ),
-                StoreResponse.Data(
+                StoreReadResponse.Data(
                     // this is fetcher since we are using the write API
-                    origin = ResponseOrigin.Fetcher,
+                    origin = StoreReadResponseOrigin.Fetcher,
                     value = "a"
                 )
             ),
@@ -221,7 +221,7 @@ class SourceOfTruthWithBarrierTests {
                 value
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
-            val collected = mutableListOf<StoreResponse<String?>>()
+            val collected = mutableListOf<StoreReadResponse<String?>>()
             val collection = async {
                 reader.collect {
                     collected.add(it)
@@ -233,20 +233,20 @@ class SourceOfTruthWithBarrierTests {
             // make sure collection does not cancel for a write error
             assertEquals(true, collection.isActive)
             val eventsUntilFailure = listOf(
-                StoreResponse.Data<String?>(
-                    origin = ResponseOrigin.SourceOfTruth,
+                StoreReadResponse.Data<String?>(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     value = null
                 ),
-                StoreResponse.Error.Exception(
-                    origin = ResponseOrigin.SourceOfTruth,
+                StoreReadResponse.Error.Exception(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = WriteException(
                         key = 1,
                         value = failValue,
                         cause = exception
                     )
                 ),
-                StoreResponse.Data<String?>(
-                    origin = ResponseOrigin.SourceOfTruth,
+                StoreReadResponse.Data<String?>(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
                     value = null
                 )
             )
@@ -257,8 +257,8 @@ class SourceOfTruthWithBarrierTests {
             source.write(1, "succeed")
             advanceUntilIdle()
             assertEquals(
-                eventsUntilFailure + StoreResponse.Data<String?>(
-                    origin = ResponseOrigin.Fetcher,
+                eventsUntilFailure + StoreReadResponse.Data<String?>(
+                    origin = StoreReadResponseOrigin.Fetcher,
                     value = "succeed"
                 ),
                 collected

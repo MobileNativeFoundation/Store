@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+* Introduce MutableStore
+* Implement RealMutableStore with Store delegate
+* Extract Store and MutableStore methods to use cases
 
 ## [5.0.0-alpha03] (2022-12-18)
 

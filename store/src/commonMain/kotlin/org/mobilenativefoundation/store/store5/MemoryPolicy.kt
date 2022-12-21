@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
+import org.mobilenativefoundation.store.cache5.Cache
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 fun interface Weigher<in K : Any, in V : Any> {
     /**
@@ -18,17 +18,10 @@ internal object OneWeigher : Weigher<Any, Any> {
 }
 
 /**
- * MemoryPolicy holds all required info to create MemoryCache
- *
- *
- * This class is used, in order to define the appropriate parameters for the Memory [com.dropbox.android.external.cache3.Cache]
- * to be built.
- *
- *
- * MemoryPolicy is used by a [Store]
- * and defines the in-memory cache behavior.
+ * Defines behavior of in-memory [Cache].
+ * Used by [Store].
+ * @see [Store]
  */
-@ExperimentalTime
 class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
     val expireAfterWrite: Duration,
     val expireAfterAccess: Duration,

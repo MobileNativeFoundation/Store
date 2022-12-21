@@ -14,7 +14,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.StoreResponse.Data
+import org.mobilenativefoundation.store.store5.StoreReadResponse.Data
 import org.mobilenativefoundation.store.store5.impl.FetcherController
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,7 +26,7 @@ class FetcherControllerTests {
 
     @Test
     fun simple() = testScope.runTest {
-        val fetcherController = FetcherController<Int, Int, Int>(
+        val fetcherController = FetcherController<Int, Int, Int, Int>(
             scope = testScope,
             realFetcher = Fetcher.ofResultFlow { key: Int ->
                 flow {
@@ -43,7 +43,7 @@ class FetcherControllerTests {
         assertEquals(
             Data(
                 value = 9,
-                origin = ResponseOrigin.Fetcher
+                origin = StoreReadResponseOrigin.Fetcher
             ),
             received
         )
@@ -53,7 +53,7 @@ class FetcherControllerTests {
     @Test
     fun concurrent() = testScope.runTest {
         var createdCnt = 0
-        val fetcherController = FetcherController<Int, Int, Int>(
+        val fetcherController = FetcherController<Int, Int, Int, Int>(
             scope = testScope,
             realFetcher = Fetcher.ofResultFlow { key: Int ->
                 createdCnt++
@@ -80,7 +80,7 @@ class FetcherControllerTests {
             assertEquals(
                 Data(
                     value = 9,
-                    origin = ResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher
                 ),
                 it.await()
             )
@@ -94,7 +94,7 @@ class FetcherControllerTests {
         var createdCnt = 0
         val job = SupervisorJob()
         val scope = TestScope(StandardTestDispatcher() + job)
-        val fetcherController = FetcherController<Int, Int, Int>(
+        val fetcherController = FetcherController<Int, Int, Int, Int>(
             scope = scope,
             realFetcher = Fetcher.ofResultFlow { key: Int ->
                 createdCnt++
