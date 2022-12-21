@@ -22,47 +22,48 @@ package org.mobilenativefoundation.store.store5
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreResponse<out T> {
+sealed class StoreReadResponse<out CommonRepresentation> {
     /**
      * Represents the source of the Response.
      */
-    abstract val origin: ResponseOrigin
+    abstract val origin: StoreReadResponseOrigin
 
     /**
      * Loading event dispatched by [Store] to signal the [Fetcher] is in progress.
      */
-    data class Loading(override val origin: ResponseOrigin) : StoreResponse<Nothing>()
+    data class Loading(override val origin: StoreReadResponseOrigin) : StoreReadResponse<Nothing>()
 
     /**
      * Data dispatched by [Store]
      */
-    data class Data<T>(val value: T, override val origin: ResponseOrigin) : StoreResponse<T>()
+    data class Data<CommonRepresentation>(val value: CommonRepresentation, override val origin: StoreReadResponseOrigin) :
+        StoreReadResponse<CommonRepresentation>()
 
     /**
      * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
      * returned [kotlinx.coroutines.Flow], when collected, was empty).
      */
-    data class NoNewData(override val origin: ResponseOrigin) : StoreResponse<Nothing>()
+    data class NoNewData(override val origin: StoreReadResponseOrigin) : StoreReadResponse<Nothing>()
 
     /**
      * Error dispatched by a pipeline
      */
-    sealed class Error : StoreResponse<Nothing>() {
+    sealed class Error : StoreReadResponse<Nothing>() {
         data class Exception(
             val error: Throwable,
-            override val origin: ResponseOrigin
+            override val origin: StoreReadResponseOrigin
         ) : Error()
 
         data class Message(
             val message: String,
-            override val origin: ResponseOrigin
+            override val origin: StoreReadResponseOrigin
         ) : Error()
     }
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
      */
-    fun requireData(): T {
+    fun requireData(): CommonRepresentation {
         return when (this) {
             is Data -> value
             is Error -> this.doThrow()
@@ -71,7 +72,7 @@ sealed class StoreResponse<out T> {
     }
 
     /**
-     * If this [StoreResponse] is of type [StoreResponse.Error], throws the exception
+     * If this [StoreReadResponse] is of type [StoreReadResponse.Error], throws the exception
      * Otherwise, does nothing.
      */
     fun throwIfError() {
@@ -81,7 +82,7 @@ sealed class StoreResponse<out T> {
     }
 
     /**
-     * If this [StoreResponse] is of type [StoreResponse.Error], returns the available error
+     * If this [StoreReadResponse] is of type [StoreReadResponse.Error], returns the available error
      * from it. Otherwise, returns `null`.
      */
     fun errorMessageOrNull(): String? {
@@ -95,13 +96,13 @@ sealed class StoreResponse<out T> {
     /**
      * If there is data available, returns it; otherwise returns null.
      */
-    fun dataOrNull(): T? = when (this) {
+    fun dataOrNull(): CommonRepresentation? = when (this) {
         is Data -> value
         else -> null
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <R> swapType(): StoreResponse<R> = when (this) {
+    internal fun <T> swapType(): StoreReadResponse<T> = when (this) {
         is Error -> this
         is Loading -> this
         is NoNewData -> this
@@ -110,26 +111,26 @@ sealed class StoreResponse<out T> {
 }
 
 /**
- * Represents the origin for a [StoreResponse].
+ * Represents the origin for a [StoreReadResponse].
  */
-enum class ResponseOrigin {
+enum class StoreReadResponseOrigin {
     /**
-     * [StoreResponse] is sent from the cache
+     * [StoreReadResponse] is sent from the cache
      */
     Cache,
 
     /**
-     * [StoreResponse] is sent from the persister
+     * [StoreReadResponse] is sent from the persister
      */
     SourceOfTruth,
 
     /**
-     * [StoreResponse] is sent from a fetcher,
+     * [StoreReadResponse] is sent from a fetcher,
      */
     Fetcher
 }
 
-fun StoreResponse.Error.doThrow(): Nothing = when (this) {
-    is StoreResponse.Error.Exception -> throw error
-    is StoreResponse.Error.Message -> throw RuntimeException(message)
+fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
+    is StoreReadResponse.Error.Exception -> throw error
+    is StoreReadResponse.Error.Message -> throw RuntimeException(message)
 }

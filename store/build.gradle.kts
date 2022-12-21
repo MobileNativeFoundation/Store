@@ -48,6 +48,7 @@ kotlin {
                     implementation(serializationCore)
                     implementation(dateTime)
                 }
+                implementation(Deps.Touchlab.kermit)
                 implementation(project(":multicast"))
                 implementation(project(":cache"))
             }
