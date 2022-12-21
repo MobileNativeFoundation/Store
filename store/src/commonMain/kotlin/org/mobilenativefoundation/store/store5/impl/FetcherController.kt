@@ -27,9 +27,10 @@ import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store.multicast5.Multicaster
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
-import org.mobilenativefoundation.store.store5.ResponseOrigin
 import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.StoreResponse
+import org.mobilenativefoundation.store.store5.StoreConverter
+import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 
 /**
  * This class maintains one and only 1 fetcher for a given [Key].
@@ -39,7 +40,7 @@ import org.mobilenativefoundation.store.store5.StoreResponse
  * fetcher requests receives values dispatched by later requests even if they don't share the
  * request.
  */
-internal class FetcherController<Key : Any, Input : Any, Output : Any>(
+internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher
      */
@@ -47,14 +48,16 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
     /**
      * The function that provides the actualy fetcher flow when needed
      */
-    private val realFetcher: Fetcher<Key, Input>,
+    private val realFetcher: Fetcher<Key, NetworkRepresentation>,
     /**
      * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
      * no [SourceOfTruth] is available.
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Input, Output>?,
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>?,
+
+    private val converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
 ) {
-    @Suppress("USELESS_CAST") // needed for multicaster source
+    @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
         create = { key: Key ->
             Multicaster(
@@ -62,23 +65,25 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                 bufferSize = 0,
                 source = flow { emitAll(realFetcher(key)) }.map {
                     when (it) {
-                        is FetcherResult.Data -> StoreResponse.Data(
-                            it.value,
-                            origin = ResponseOrigin.Fetcher
-                        ) as StoreResponse<Input>
+                        is FetcherResult.Data -> {
+                            StoreReadResponse.Data(
+                                it.value,
+                                origin = StoreReadResponseOrigin.Fetcher
+                            ) as StoreReadResponse<NetworkRepresentation>
+                        }
 
-                        is FetcherResult.Error.Message -> StoreResponse.Error.Message(
+                        is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
                             it.message,
-                            origin = ResponseOrigin.Fetcher
+                            origin = StoreReadResponseOrigin.Fetcher
                         )
 
-                        is FetcherResult.Error.Exception -> StoreResponse.Error.Exception(
+                        is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
                             it.error,
-                            origin = ResponseOrigin.Fetcher
+                            origin = StoreReadResponseOrigin.Fetcher
                         )
                     }
                 }.onEmpty {
-                    emit(StoreResponse.NoNewData(ResponseOrigin.Fetcher))
+                    emit(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Fetcher))
                 },
                 /**
                  * When enabled, downstream collectors are never closed, instead, they are kept active to
@@ -87,18 +92,22 @@ internal class FetcherController<Key : Any, Input : Any, Output : Any>(
                  */
                 piggybackingDownstream = true,
                 onEach = { response ->
-                    response.dataOrNull()?.let { input ->
-                        sourceOfTruth?.write(key, input)
+                    response.dataOrNull()?.let { networkRepresentation ->
+                        val input =
+                            networkRepresentation as? CommonRepresentation ?: converter?.fromNetworkRepresentationToCommonRepresentation(networkRepresentation)
+                        if (input != null) {
+                            sourceOfTruth?.write(key, input)
+                        }
                     }
                 }
             )
         },
-        onRelease = { _: Key, multicaster: Multicaster<StoreResponse<Input>> ->
+        onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<NetworkRepresentation>> ->
             multicaster.close()
         }
     )
 
-    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreResponse<Input>> {
+    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreReadResponse<NetworkRepresentation>> {
         return flow {
             val fetcher = acquireFetcher(key)
             try {

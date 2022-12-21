@@ -1,9 +1,8 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.hours
 
-@ExperimentalTime
 internal object StoreDefaults {
 
     /**
@@ -11,7 +10,7 @@ internal object StoreDefaults {
      *
      * @return memory cache TTL
      */
-    val cacheTTL: Duration = Duration.hours(24)
+    val cacheTTL: Duration = 24.hours
 
     /**
      * Cache size (default is 100), can be overridden

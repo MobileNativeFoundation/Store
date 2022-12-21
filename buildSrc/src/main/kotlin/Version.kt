@@ -24,6 +24,7 @@ object Version {
     const val junit = "4.13.2"
     const val kotlinxCoroutines = "1.6.4"
     const val kotlinxSerialization = "1.4.0"
+    const val kermit = "1.2.2"
     const val testCore = "1.4.0"
     const val kmmBridge = "0.3.2"
     const val ktlint = "0.39.0"
