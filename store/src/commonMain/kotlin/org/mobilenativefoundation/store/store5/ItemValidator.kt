@@ -4,13 +4,13 @@ import org.mobilenativefoundation.store.store5.impl.RealItemValidator
 
 /**
  * Enables custom validation of [Store] items.
- * @see [ReadRequest]
+ * @see [StoreReadRequest]
  */
 interface ItemValidator<CommonRepresentation : Any> {
     /**
      * Determines whether a [Store] item is valid.
-     * If invalid, [Market] will get the latest network value using [NetworkFetcher].
-     * [Market] will not validate network responses.
+     * If invalid, [MutableStore] will get the latest network value using [Fetcher].
+     * [MutableStore] will not validate network responses.
      */
     suspend fun isValid(item: CommonRepresentation): Boolean
 
