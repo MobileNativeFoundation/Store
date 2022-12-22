@@ -36,6 +36,7 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
+import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
@@ -45,6 +46,7 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, SOT>? = null,
     converter: Converter<Network, Common, SOT>? = null,
+    private val validator: Validator<Common>?,
     private val memoryPolicy: MemoryPolicy<Key, Common>?
 ) : Store<Key, Common> {
     /**
@@ -114,27 +116,33 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
                 diskNetworkCombined(request, sourceOfTruth)
             }
             emitAll(
-                stream.transform {
-                    emit(it)
-                    if (it is StoreReadResponse.NoNewData && cachedToEmit == null) {
-                        // In the special case where fetcher returned no new data we actually want to
-                        // serve cache data (even if the request specified skipping cache and/or SoT)
-                        //
-                        // For stream(Request.cached(key, refresh=true)) we will return:
-                        // Cache
-                        // Source of truth
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // (future Source of truth updates)
-                        //
-                        // For stream(Request.fresh(key)) we will return:
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // Cache
-                        // Source of truth
-                        // (future Source of truth updates)
-                        memCache?.getIfPresent(request.key)?.let {
-                            emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                stream.transform { common ->
+                    if (validator != null && !validator.isValid(common.dataOrNull())) {
+                        createNetworkFlow(request = request, networkLock = null, piggybackOnly = false).transform { network ->
+                            emit(network)
+                        }
+                    } else {
+                        emit(common)
+                        if (common is StoreReadResponse.NoNewData && cachedToEmit == null) {
+                            // In the special case where fetcher returned no new data we actually want to
+                            // serve cache data (even if the request specified skipping cache and/or SoT)
+                            //
+                            // For stream(Request.cached(key, refresh=true)) we will return:
+                            // Cache
+                            // Source of truth
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // (future Source of truth updates)
+                            //
+                            // For stream(Request.fresh(key)) we will return:
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // Cache
+                            // Source of truth
+                            // (future Source of truth updates)
+                            memCache?.getIfPresent(request.key)?.let {
+                                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                            }
                         }
                     }
                 }

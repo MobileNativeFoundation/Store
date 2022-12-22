@@ -52,7 +52,9 @@ interface StoreBuilder<Key : Any, Network : Any, Common : Any, SOT : Any> {
     fun disableCache(): StoreBuilder<Key, Network, Common, SOT>
 
     fun converter(converter: Converter<Network, Common, SOT>):
-        StoreBuilder<Key, Network, Common, SOT>
+            StoreBuilder<Key, Network, Common, SOT>
+
+    fun validator(validator: Validator<Common>): StoreBuilder<Key, Network, Common, SOT>
 
     companion object {
 

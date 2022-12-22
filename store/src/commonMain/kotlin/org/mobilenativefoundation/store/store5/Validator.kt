@@ -12,11 +12,11 @@ interface Validator<Common : Any> {
      * If invalid, [MutableStore] will get the latest network value using [Fetcher].
      * [MutableStore] will not validate network responses.
      */
-    suspend fun isValid(item: Common): Boolean
+    suspend fun isValid(item: Common?): Boolean
 
     companion object {
         fun <Common : Any> by(
-            validator: suspend (item: Common) -> Boolean
+            validator: suspend (item: Common?) -> Boolean
         ): Validator<Common> = RealValidator(validator)
     }
 }
