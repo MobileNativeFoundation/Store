@@ -6,7 +6,6 @@ import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.SOTNote
 
-
 internal class NotesConverterProvider {
     fun provide(): Converter<NetworkNote, CommonNote, SOTNote> = Converter.Builder<NetworkNote, CommonNote, SOTNote>()
         .fromSOTToCommon { sot -> CommonNote(data = sot.data, ttl = sot.ttl) }
