@@ -4,7 +4,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
 import org.mobilenativefoundation.store.store5.util.fake.NotesConverterProvider
@@ -61,8 +60,7 @@ class UpdaterTests {
         )
             .converter(converter)
             .validator(validator)
-            .build()
-            .asMutableStore<String, NetworkNote, CommonNote, SOTNote, NotesWriteResponse>(
+            .build(
                 updater = updater,
                 bookkeeper = bookkeeper
             )
