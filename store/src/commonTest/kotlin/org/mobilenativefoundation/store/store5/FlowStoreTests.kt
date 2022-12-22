@@ -236,7 +236,7 @@ class FlowStoreTests {
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf
-            (
+                (
                 Loading(
                     origin = StoreReadResponseOrigin.Fetcher
                 ),
@@ -865,6 +865,6 @@ class FlowStoreTests {
         )
     )
 
-    private fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>.buildWithTestScope() =
+    private fun <Key : Any, Network : Any, Common : Any, SOT : Any> StoreBuilder<Key, Network, Common, SOT>.buildWithTestScope() =
         scope(testScope).build()
 }

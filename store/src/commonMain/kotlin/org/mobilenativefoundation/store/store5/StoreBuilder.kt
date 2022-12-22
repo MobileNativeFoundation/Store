@@ -25,8 +25,8 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 interface StoreBuilder<Key : Any, Network : Any, Common : Any, SOT : Any> {
     fun build(): Store<Key, Common>
 
-    fun <NetworkWriteResponse : Any> build(
-        updater: Updater<Key, Common, NetworkWriteResponse>,
+    fun <Response : Any> build(
+        updater: Updater<Key, Common, Response>,
         bookkeeper: Bookkeeper<Key>
     ): MutableStore<Key, Common>
 

@@ -5,13 +5,13 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
 /**
  * An in-memory non-flowing persister for testing.
  */
-open class InMemoryPersister<Key : Any, Output : Any> {
-    private val data = mutableMapOf<Key, Output>()
-    var preWriteCallback: (suspend (key: Key, value: Output) -> Output)? = null
-    var postReadCallback: (suspend (key: Key, value: Output?) -> Output?)? = null
+open class InMemoryPersister<Key : Any, Common : Any> {
+    private val data = mutableMapOf<Key, Common>()
+    var preWriteCallback: (suspend (key: Key, value: Common) -> Common)? = null
+    var postReadCallback: (suspend (key: Key, value: Common?) -> Common?)? = null
 
     @Suppress("RedundantSuspendModifier") // for function reference
-    suspend fun read(key: Key): Output? {
+    suspend fun read(key: Key): Common? {
         val value = data[key]
         postReadCallback?.let {
             return it(key, value)
@@ -20,7 +20,7 @@ open class InMemoryPersister<Key : Any, Output : Any> {
     }
 
     @Suppress("RedundantSuspendModifier") // for function reference
-    open suspend fun write(key: Key, output: Output) {
+    open suspend fun write(key: Key, output: Common) {
         val value = preWriteCallback?.invoke(key, output) ?: output
         data[key] = value
     }
@@ -35,12 +35,12 @@ open class InMemoryPersister<Key : Any, Output : Any> {
         data.clear()
     }
 
-    fun peekEntry(key: Key): Output? {
+    fun peekEntry(key: Key): Common? {
         return data[key]
     }
 }
 
-fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asSourceOfTruth() =
+fun <Key : Any, Common : Any> InMemoryPersister<Key, Common>.asSourceOfTruth() =
     SourceOfTruth.of(
         nonFlowReader = ::read,
         writer = ::write,

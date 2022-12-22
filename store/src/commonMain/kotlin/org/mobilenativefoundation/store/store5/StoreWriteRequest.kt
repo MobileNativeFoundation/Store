@@ -4,18 +4,18 @@ import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.impl.OnStoreWriteCompletion
 import org.mobilenativefoundation.store.store5.impl.RealStoreWriteRequest
 
-interface StoreWriteRequest<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
+interface StoreWriteRequest<Key : Any, Common : Any, Response : Any> {
     val key: Key
-    val input: CommonRepresentation
+    val input: Common
     val created: Long
     val onCompletions: List<OnStoreWriteCompletion>?
 
     companion object {
-        fun <Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> of(
+        fun <Key : Any, Common : Any, Response : Any> of(
             key: Key,
-            input: CommonRepresentation,
+            input: Common,
             onCompletions: List<OnStoreWriteCompletion>? = null,
             created: Long = Clock.System.now().toEpochMilliseconds(),
-        ): StoreWriteRequest<Key, CommonRepresentation, NetworkWriteResponse> = RealStoreWriteRequest(key, input, created, onCompletions)
+        ): StoreWriteRequest<Key, Common, Response> = RealStoreWriteRequest(key, input, created, onCompletions)
     }
 }
