@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
+import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
@@ -39,9 +39,9 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
  * dispatching values to downstream while a write is in progress.
  */
 @Suppress("UNCHECKED_CAST")
-internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
-    private val delegate: SourceOfTruth<Key, SourceOfTruthRepresentation>,
-    private val converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null,
+internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Common : Any, SOT : Any>(
+    private val delegate: SourceOfTruth<Key, SOT>,
+    private val converter: Converter<Network, Common, SOT>? = null,
 ) {
     /**
      * Each key has a barrier so that we can block reads while writing.
@@ -59,7 +59,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
      */
     private val versionCounter = atomic(0L)
 
-    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreReadResponse<CommonRepresentation?>> {
+    fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreReadResponse<Common?>> {
         return flow {
             val barrier = barriers.acquire(key)
             val readerVersion: Long = versionCounter.incrementAndGet()
@@ -74,9 +74,9 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                             } else {
                                 null
                             }
-                            val readFlow: Flow<StoreReadResponse<CommonRepresentation?>> = when (barrierMessage) {
+                            val readFlow: Flow<StoreReadResponse<Common?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
-                                    delegate.reader(key).mapIndexed { index, sourceOfTruthRepresentation ->
+                                    delegate.reader(key).mapIndexed { index, sourceOfTruth ->
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
@@ -89,8 +89,8 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
 
-                                            val value = sourceOfTruthRepresentation as? CommonRepresentation ?: if (sourceOfTruthRepresentation != null) {
-                                                converter?.fromSourceOfTruthRepresentationToCommonRepresentation(sourceOfTruthRepresentation)
+                                            val value = sourceOfTruth as? Common ?: if (sourceOfTruth != null) {
+                                                converter?.fromSOTToCommon(sourceOfTruth)
                                             } else {
                                                 null
                                             }
@@ -101,11 +101,11 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
                                         } else {
                                             StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                value = sourceOfTruthRepresentation as? CommonRepresentation
-                                                    ?: if (sourceOfTruthRepresentation != null) converter?.fromSourceOfTruthRepresentationToCommonRepresentation(
-                                                        sourceOfTruthRepresentation
+                                                value = sourceOfTruth as? Common
+                                                    ?: if (sourceOfTruth != null) converter?.fromSOTToCommon(
+                                                        sourceOfTruth
                                                     ) else null
-                                            ) as StoreReadResponse<CommonRepresentation?>
+                                            ) as StoreReadResponse<Common?>
                                         }
                                     }.catch { throwable ->
                                         this.emit(
@@ -146,12 +146,12 @@ internal class SourceOfTruthWithBarrier<Key : Any, NetworkRepresentation : Any, 
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun write(key: Key, value: CommonRepresentation) {
+    suspend fun write(key: Key, value: Common) {
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
-                val input = value as? SourceOfTruthRepresentation ?: converter?.fromCommonRepresentationToSourceOfTruthRepresentation(value)
+                val input = value as? SOT ?: converter?.fromCommonToSOT(value)
                 if (input != null) {
                     delegate.write(key, input)
                 }

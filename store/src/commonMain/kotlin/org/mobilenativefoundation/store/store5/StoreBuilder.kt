@@ -22,37 +22,37 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 /**
  * Main entry point for creating a [Store].
  */
-interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> {
-    fun build(): Store<Key, CommonRepresentation>
+interface StoreBuilder<Key : Any, Network : Any, Common : Any, SOT : Any> {
+    fun build(): Store<Key, Common>
 
     fun <NetworkWriteResponse : Any> build(
-        updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
+        updater: Updater<Key, Common, NetworkWriteResponse>,
         bookkeeper: Bookkeeper<Key>
-    ): MutableStore<Key, CommonRepresentation>
+    ): MutableStore<Key, Common>
 
     /**
-     * A store multicasts same [CommonRepresentation] value to many consumers (Similar to RxJava.share()), by default
+     * A store multicasts same [Common] value to many consumers (Similar to RxJava.share()), by default
      *  [Store] will open a global scope for management of shared responses, if instead you'd like to control
      *  the scope that sharing/multicasting happens in you can pass a @param [scope]
      *
      *   @param scope - scope to use for sharing
      */
-    fun scope(scope: CoroutineScope): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+    fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Common, SOT>
 
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
      *  or size based eviction
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Common>?): StoreBuilder<Key, Network, Common, SOT>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
-    fun disableCache(): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+    fun disableCache(): StoreBuilder<Key, Network, Common, SOT>
 
-    fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>):
-        StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>
+    fun converter(converter: Converter<Network, Common, SOT>):
+            StoreBuilder<Key, Network, Common, SOT>
 
     companion object {
 
@@ -61,9 +61,9 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any> from(
-            fetcher: Fetcher<Key, NetworkRepresentation>,
-        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, *> = storeBuilderFromFetcher(fetcher = fetcher)
+        fun <Key : Any, Network : Any, Common : Any> from(
+            fetcher: Fetcher<Key, Network>,
+        ): StoreBuilder<Key, Network, Common, *> = storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -71,10 +71,10 @@ interface StoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentat
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any> from(
-            fetcher: Fetcher<Key, NetworkRepresentation>,
-            sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>
-        ): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> =
+        fun <Key : Any, Network : Any, Common : Any, SOT : Any> from(
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, SOT>
+        ): StoreBuilder<Key, Network, Common, SOT> =
             storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }
