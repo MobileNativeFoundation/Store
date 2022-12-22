@@ -20,7 +20,7 @@ fun provide(
     db: NotesDatabase,
     bookkeeping: BookkeepingDatabase
 ): Bookkeeper<NotesKey> = Bookkeeper.by(
-    maxLastFailedSync = { key: NotesKey ->
+    getLastFailedSync = { key: NotesKey ->
         require(key is NotesKey.Read)
         when (key) {
             is NotesKey.Read.ByNoteId -> {
