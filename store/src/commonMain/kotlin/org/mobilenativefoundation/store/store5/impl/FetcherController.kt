@@ -25,10 +25,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store.multicast5.Multicaster
+import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
 import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 
@@ -40,7 +40,7 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
  * fetcher requests receives values dispatched by later requests even if they don't share the
  * request.
  */
-internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
+internal class FetcherController<Key : Any, Network : Any, Common : Any, SOT : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher
      */
@@ -48,14 +48,14 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
     /**
      * The function that provides the actualy fetcher flow when needed
      */
-    private val realFetcher: Fetcher<Key, NetworkRepresentation>,
+    private val realFetcher: Fetcher<Key, Network>,
     /**
      * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
      * no [SourceOfTruth] is available.
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>?,
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Common, SOT>?,
 
-    private val converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
+    private val converter: Converter<Network, Common, SOT>? = null
 ) {
     @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
@@ -69,7 +69,7 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
                             StoreReadResponse.Data(
                                 it.value,
                                 origin = StoreReadResponseOrigin.Fetcher
-                            ) as StoreReadResponse<NetworkRepresentation>
+                            ) as StoreReadResponse<Network>
                         }
 
                         is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
@@ -92,9 +92,9 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
                  */
                 piggybackingDownstream = true,
                 onEach = { response ->
-                    response.dataOrNull()?.let { networkRepresentation ->
+                    response.dataOrNull()?.let { network ->
                         val input =
-                            networkRepresentation as? CommonRepresentation ?: converter?.fromNetworkRepresentationToCommonRepresentation(networkRepresentation)
+                            network as? Common ?: converter?.fromNetworkToCommon(network)
                         if (input != null) {
                             sourceOfTruth?.write(key, input)
                         }
@@ -102,12 +102,12 @@ internal class FetcherController<Key : Any, NetworkRepresentation : Any, CommonR
                 }
             )
         },
-        onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<NetworkRepresentation>> ->
+        onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<Network>> ->
             multicaster.close()
         }
     )
 
-    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreReadResponse<NetworkRepresentation>> {
+    fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreReadResponse<Network>> {
         return flow {
             val fetcher = acquireFetcher(key)
             try {

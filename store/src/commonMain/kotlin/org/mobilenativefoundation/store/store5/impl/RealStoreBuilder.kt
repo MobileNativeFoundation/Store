@@ -3,13 +3,13 @@ package org.mobilenativefoundation.store.store5.impl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import org.mobilenativefoundation.store.store5.Bookkeeper
+import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
-import org.mobilenativefoundation.store.store5.StoreConverter
 import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
@@ -30,7 +30,7 @@ internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRe
 ) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, CommonRepresentation>? = StoreDefaults.memoryPolicy
-    private var converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
+    private var converter: Converter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
 
     override fun scope(scope: CoroutineScope): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
         this.scope = scope
@@ -47,7 +47,7 @@ internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRe
         return this
     }
 
-    override fun converter(converter: StoreConverter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+    override fun converter(converter: Converter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
         this.converter = converter
         return this
     }
