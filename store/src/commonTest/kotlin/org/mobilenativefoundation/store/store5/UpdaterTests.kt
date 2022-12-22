@@ -5,14 +5,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
-import org.mobilenativefoundation.store.store5.util.fake.NoteApi
-import org.mobilenativefoundation.store.store5.util.fake.NoteBookkeeping
+import org.mobilenativefoundation.store.store5.util.fake.NotesApi
+import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
+import org.mobilenativefoundation.store.store5.util.model.CommonNote
+import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.Note
-import org.mobilenativefoundation.store.store5.util.model.NoteCommonRepresentation
 import org.mobilenativefoundation.store.store5.util.model.NoteData
-import org.mobilenativefoundation.store.store5.util.model.NoteNetworkRepresentation
-import org.mobilenativefoundation.store.store5.util.model.NoteNetworkWriteResponse
-import org.mobilenativefoundation.store.store5.util.model.NoteSourceOfTruthRepresentation
+import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
+import org.mobilenativefoundation.store.store5.util.model.SOTNote
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,22 +20,22 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalStoreApi::class)
 class UpdaterTests {
     private val testScope = TestScope()
-    private lateinit var api: NoteApi
-    private lateinit var bookkeeping: NoteBookkeeping
+    private lateinit var api: NotesApi
+    private lateinit var bookkeeping: NotesBookkeeping
 
     @BeforeTest
     fun before() {
-        api = NoteApi()
-        bookkeeping = NoteBookkeeping()
+        api = NotesApi()
+        bookkeeping = NotesBookkeeping()
     }
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
-        val updater = Updater.by<String, NoteCommonRepresentation, NoteNetworkWriteResponse>(
-            post = { key, commonRepresentation ->
-                val networkWriteResponse = api.post(key, commonRepresentation)
-                if (networkWriteResponse.ok) {
-                    UpdaterResult.Success.Typed(networkWriteResponse)
+        val updater = Updater.by<String, CommonNote, NotesWriteResponse>(
+            post = { key, common ->
+                val response = api.post(key, common)
+                if (response.ok) {
+                    UpdaterResult.Success.Typed(response)
                 } else {
                     UpdaterResult.Error.Message("Failed to sync")
                 }
@@ -48,14 +48,14 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = StoreBuilder.from<String, NoteNetworkRepresentation, NoteCommonRepresentation>(
+        val store = StoreBuilder.from<String, NetworkNote, CommonNote>(
             fetcher = Fetcher.ofFlow { key ->
-                val networkRepresentation = NoteNetworkRepresentation(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
-                flow { emit(networkRepresentation) }
+                val network = NetworkNote(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
+                flow { emit(network) }
             }
         )
             .build()
-            .asMutableStore<String, NoteNetworkRepresentation, NoteCommonRepresentation, NoteSourceOfTruthRepresentation, NoteNetworkWriteResponse>(
+            .asMutableStore<String, NetworkNote, CommonNote, SOTNote, NotesWriteResponse>(
                 updater = updater,
                 bookkeeper = bookkeeper
             )
@@ -64,14 +64,14 @@ class UpdaterTests {
         val noteTitle = "1-title"
         val noteContent = "1-content"
         val noteData = NoteData.Single(Note(noteKey, noteTitle, noteContent))
-        val writeRequest = StoreWriteRequest.of<String, NoteCommonRepresentation, NoteNetworkWriteResponse>(
+        val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
             key = noteKey,
-            input = NoteCommonRepresentation(noteData)
+            input = CommonNote(noteData)
         )
 
         val storeWriteResponse = store.write(writeRequest)
 
-        assertEquals(StoreWriteResponse.Success.Typed(NoteNetworkWriteResponse(noteKey, true)), storeWriteResponse)
-        assertEquals(NoteNetworkRepresentation(noteData), api.db[noteKey])
+        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(noteKey, true)), storeWriteResponse)
+        assertEquals(NetworkNote(noteData), api.db[noteKey])
     }
 }

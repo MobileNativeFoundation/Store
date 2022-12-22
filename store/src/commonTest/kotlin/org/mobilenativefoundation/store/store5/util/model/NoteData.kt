@@ -5,20 +5,20 @@ internal sealed class NoteData {
     data class Collection(val items: List<Note>) : NoteData()
 }
 
-internal data class NoteNetworkWriteResponse(
+internal data class NotesWriteResponse(
     val key: String,
     val ok: Boolean
 )
 
-internal data class NoteNetworkRepresentation(
+internal data class NetworkNote(
     val data: NoteData? = null
 )
 
-internal data class NoteCommonRepresentation(
+internal data class CommonNote(
     val data: NoteData? = null
 )
 
-internal data class NoteSourceOfTruthRepresentation(
+internal data class SOTNote(
     val data: NoteData? = null
 )
 

@@ -14,45 +14,45 @@ import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
-fun <Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any> storeBuilderFromFetcher(
-    fetcher: Fetcher<Key, NetworkRepresentation>,
+fun <Key : Any, Network : Any, Common : Any> storeBuilderFromFetcher(
+    fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, *>? = null,
-): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, *> = RealStoreBuilder(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Network, Common, *> = RealStoreBuilder(fetcher, sourceOfTruth)
 
-fun <Key : Any, CommonRepresentation : Any, NetworkRepresentation : Any, SourceOfTruthRepresentation : Any> storeBuilderFromFetcherAndSourceOfTruth(
-    fetcher: Fetcher<Key, NetworkRepresentation>,
-    sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>,
-): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> = RealStoreBuilder(fetcher, sourceOfTruth)
+fun <Key : Any, Common : Any, Network : Any, SOT : Any> storeBuilderFromFetcherAndSourceOfTruth(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, SOT>,
+): StoreBuilder<Key, Network, Common, SOT> = RealStoreBuilder(fetcher, sourceOfTruth)
 
-internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRepresentation : Any, SourceOfTruthRepresentation : Any>(
-    private val fetcher: Fetcher<Key, NetworkRepresentation>,
-    private val sourceOfTruth: SourceOfTruth<Key, SourceOfTruthRepresentation>? = null
-) : StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+internal class RealStoreBuilder<Key : Any, Network : Any, Common : Any, SOT : Any>(
+    private val fetcher: Fetcher<Key, Network>,
+    private val sourceOfTruth: SourceOfTruth<Key, SOT>? = null
+) : StoreBuilder<Key, Network, Common, SOT> {
     private var scope: CoroutineScope? = null
-    private var cachePolicy: MemoryPolicy<Key, CommonRepresentation>? = StoreDefaults.memoryPolicy
-    private var converter: Converter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>? = null
+    private var cachePolicy: MemoryPolicy<Key, Common>? = StoreDefaults.memoryPolicy
+    private var converter: Converter<Network, Common, SOT>? = null
 
-    override fun scope(scope: CoroutineScope): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+    override fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Common, SOT> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, CommonRepresentation>?): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Common>?): StoreBuilder<Key, Network, Common, SOT> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+    override fun disableCache(): StoreBuilder<Key, Network, Common, SOT> {
         cachePolicy = null
         return this
     }
 
-    override fun converter(converter: Converter<NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation>): StoreBuilder<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation> {
+    override fun converter(converter: Converter<Network, Common, SOT>): StoreBuilder<Key, Network, Common, SOT> {
         this.converter = converter
         return this
     }
 
-    override fun build(): Store<Key, CommonRepresentation> = RealStore(
+    override fun build(): Store<Key, Common> = RealStore(
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
@@ -60,11 +60,11 @@ internal class RealStoreBuilder<Key : Any, NetworkRepresentation : Any, CommonRe
         converter = converter
     )
 
-    override fun <NetworkWriteResponse : Any> build(
-        updater: Updater<Key, CommonRepresentation, NetworkWriteResponse>,
+    override fun <UpdaterResult : Any> build(
+        updater: Updater<Key, Common, UpdaterResult>,
         bookkeeper: Bookkeeper<Key>
-    ): MutableStore<Key, CommonRepresentation> =
-        build().asMutableStore<Key, NetworkRepresentation, CommonRepresentation, SourceOfTruthRepresentation, NetworkWriteResponse>(
+    ): MutableStore<Key, Common> =
+        build().asMutableStore<Key, Network, Common, SOT, UpdaterResult>(
             updater = updater,
             bookkeeper = bookkeeper
         )
