@@ -1,9 +1,9 @@
 package org.mobilenativefoundation.store.store5
 
 interface Converter<Network : Any, Common : Any, SOT : Any> {
-    fun fromNetworkToCommon(network: Network): Common?
-    fun fromCommonToSOT(common: Common): SOT?
-    fun fromSOTToCommon(sourceOfTruth: SOT): Common?
+    fun fromNetworkToCommon(network: Network): Common
+    fun fromCommonToSOT(common: Common): SOT
+    fun fromSOTToCommon(sourceOfTruth: SOT): Common
 
     class Builder<Network : Any, Common : Any, SOT : Any> {
 
@@ -31,17 +31,18 @@ interface Converter<Network : Any, Common : Any, SOT : Any> {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 private class RealConverter<Network : Any, Common : Any, SOT : Any>(
     private val fromCommonToSOT: ((input: Common) -> SOT)?,
     private val fromNetworkToCommon: ((input: Network) -> Common)?,
     private val fromSOTToCommon: ((input: SOT) -> Common)?,
 ) : Converter<Network, Common, SOT> {
-    override fun fromNetworkToCommon(network: Network): Common? =
-        fromNetworkToCommon?.invoke(network)
+    override fun fromNetworkToCommon(network: Network): Common =
+        fromNetworkToCommon?.invoke(network) ?: network as Common
 
-    override fun fromCommonToSOT(common: Common): SOT? =
-        fromCommonToSOT?.invoke(common)
+    override fun fromCommonToSOT(common: Common): SOT =
+        fromCommonToSOT?.invoke(common) ?: common as SOT
 
-    override fun fromSOTToCommon(sourceOfTruth: SOT): Common? =
-        fromSOTToCommon?.invoke(sourceOfTruth)
+    override fun fromSOTToCommon(sourceOfTruth: SOT): Common =
+        fromSOTToCommon?.invoke(sourceOfTruth) ?: sourceOfTruth as Common
 }

@@ -7,6 +7,10 @@ import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
+import org.mobilenativefoundation.store.store5.util.fake.NotesConverterProvider
+import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
+import org.mobilenativefoundation.store.store5.util.fake.NotesUpdaterProvider
+import org.mobilenativefoundation.store.store5.util.fake.NotesValidator
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.Note
@@ -22,25 +26,20 @@ class UpdaterTests {
     private val testScope = TestScope()
     private lateinit var api: NotesApi
     private lateinit var bookkeeping: NotesBookkeeping
+    private lateinit var notes: NotesDatabase
 
     @BeforeTest
     fun before() {
         api = NotesApi()
         bookkeeping = NotesBookkeeping()
+        notes = NotesDatabase()
     }
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
-        val updater = Updater.by<String, CommonNote, NotesWriteResponse>(
-            post = { key, common ->
-                val response = api.post(key, common)
-                if (response.ok) {
-                    UpdaterResult.Success.Typed(response)
-                } else {
-                    UpdaterResult.Error.Message("Failed to sync")
-                }
-            }
-        )
+        val converter = NotesConverterProvider().provide()
+        val validator = NotesValidator()
+        val updater = NotesUpdaterProvider(api).provide()
         val bookkeeper = Bookkeeper.by(
             getLastFailedSync = bookkeeping::getLastFailedSync,
             setLastFailedSync = bookkeeping::setLastFailedSync,
@@ -48,12 +47,20 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = StoreBuilder.from<String, NetworkNote, CommonNote>(
+        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.ofFlow { key ->
                 val network = NetworkNote(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
                 flow { emit(network) }
-            }
+            },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> notes.get(key) },
+                writer = { key, sot -> notes.put(key, sot) },
+                delete = { key -> notes.clear(key) },
+                deleteAll = { notes.clear() }
+            )
         )
+            .converter(converter)
+            .validator(validator)
             .build()
             .asMutableStore<String, NetworkNote, CommonNote, SOTNote, NotesWriteResponse>(
                 updater = updater,
