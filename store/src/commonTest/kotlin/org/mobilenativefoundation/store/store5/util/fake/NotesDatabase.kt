@@ -1,28 +1,31 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
-class NotesBookkeeping {
-    private val log: MutableMap<String, Long?> = mutableMapOf()
-    fun setLastFailedSync(key: String, timestamp: Long, fail: Boolean = false): Boolean {
+import org.mobilenativefoundation.store.store5.util.model.SOTNote
+
+internal class NotesDatabase {
+    private val db: MutableMap<String, SOTNote?> = mutableMapOf()
+    fun put(key: String, input: SOTNote, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
         }
-        log[key] = timestamp
+
+        db[key] = input
         return true
     }
 
-    fun getLastFailedSync(key: String, fail: Boolean = false): Long? {
+    fun get(key: String, fail: Boolean = false): SOTNote? {
         if (fail) {
             throw Exception()
         }
 
-        return log[key]
+        return db[key]
     }
 
     fun clear(key: String, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
         }
-        log.remove(key)
+        db.remove(key)
         return true
     }
 
@@ -30,7 +33,7 @@ class NotesBookkeeping {
         if (fail) {
             throw Exception()
         }
-        log.clear()
+        db.clear()
         return true
     }
 }
