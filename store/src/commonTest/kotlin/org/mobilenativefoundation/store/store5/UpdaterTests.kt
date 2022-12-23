@@ -66,7 +66,7 @@ class UpdaterTests {
         val noteData = NoteData.Single(Note(noteKey, noteTitle, noteContent))
         val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
             key = noteKey,
-            input = CommonNote(noteData)
+            value = CommonNote(noteData)
         )
 
         val storeWriteResponse = store.write(writeRequest)

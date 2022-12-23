@@ -865,6 +865,6 @@ class FlowStoreTests {
         )
     )
 
-    private fun <Key : Any, Network : Any, Common : Any, SOT : Any> StoreBuilder<Key, Network, Common, SOT>.buildWithTestScope() =
+    private fun <Key : Any, Network : Any, Output : Any, Local : Any> StoreBuilder<Key, Network, Output, Local>.buildWithTestScope() =
         scope(testScope).build()
 }

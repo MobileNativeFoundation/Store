@@ -27,17 +27,17 @@ import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
 import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
 
-internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
-    private val delegate: RealStore<Key, Network, Common, SOT>,
-    private val updater: Updater<Key, Common, *>,
+internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
+    private val delegate: RealStore<Key, Network, Output, Local>,
+    private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>,
-) : MutableStore<Key, Common>, Clear.Key<Key> by delegate, Clear.All by delegate {
+) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
 
     private val storeLock = Mutex()
-    private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Common, *>>()
+    private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
     private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
 
-    override fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Common>> =
+    override fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
             safeInitStore(request.key)
 
@@ -63,7 +63,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
         }
 
     @ExperimentalStoreApi
-    override fun <Response : Any> stream(requestStream: Flow<StoreWriteRequest<Key, Common, Response>>): Flow<StoreWriteResponse> =
+    override fun <Response : Any> stream(requestStream: Flow<StoreWriteRequest<Key, Output, Response>>): Flow<StoreWriteResponse> =
         flow {
             requestStream
                 .onEach { writeRequest ->
@@ -72,7 +72,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
                 }
                 .collect { writeRequest ->
                     val storeWriteResponse = try {
-                        delegate.write(writeRequest.key, writeRequest.input)
+                        delegate.write(writeRequest.key, writeRequest.value)
                         when (val updaterResult = tryUpdateServer(writeRequest)) {
                             is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
                             is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
@@ -95,10 +95,10 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
         }
 
     @ExperimentalStoreApi
-    override suspend fun <Response : Any> write(request: StoreWriteRequest<Key, Common, Response>): StoreWriteResponse =
+    override suspend fun <Response : Any> write(request: StoreWriteRequest<Key, Output, Response>): StoreWriteResponse =
         stream(flowOf(request)).first()
 
-    private suspend fun <Response : Any> tryUpdateServer(request: StoreWriteRequest<Key, Common, Response>): UpdaterResult {
+    private suspend fun <Response : Any> tryUpdateServer(request: StoreWriteRequest<Key, Output, Response>): UpdaterResult {
         val updaterResult = postLatest<Response>(request.key)
 
         if (updaterResult is UpdaterResult.Success) {
@@ -117,7 +117,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
 
     private suspend fun <Response : Any> postLatest(key: Key): UpdaterResult {
         val writer = getLatestWriteRequest(key)
-        return when (val updaterResult = updater.post(key, writer.input)) {
+        return when (val updaterResult = updater.post(key, writer.value)) {
             is UpdaterResult.Error.Exception -> UpdaterResult.Error.Exception(updaterResult.error)
             is UpdaterResult.Error.Message -> UpdaterResult.Error.Message(updaterResult.message)
             is UpdaterResult.Success.Untyped -> UpdaterResult.Success.Untyped(updaterResult.value)
@@ -134,8 +134,8 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
 
     @AnyThread
     private suspend fun <Response : Any> updateWriteRequestQueue(key: Key, created: Long, updaterResult: UpdaterResult.Success) {
-        val nextWriteRequestQueue = withWriteRequestQueueLock<ArrayDeque<StoreWriteRequest<Key, Common, *>>, Response>(key) {
-            val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, Common, *>>()
+        val nextWriteRequestQueue = withWriteRequestQueueLock(key) {
+            val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, Output, *>>()
 
             for (writeRequest in this) {
                 if (writeRequest.created <= created) {
@@ -170,10 +170,10 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
     }
 
     @AnyThread
-    private suspend fun <Output : Any, Response : Any> withWriteRequestQueueLock(
+    private suspend fun <Result : Any> withWriteRequestQueueLock(
         key: Key,
-        block: suspend WriteRequestQueue<Key, Common, *>.() -> Output
-    ): Output =
+        block: suspend WriteRequestQueue<Key, Output, *>.() -> Result
+    ): Result =
         withThreadSafety(key) {
             writeRequests.lightswitch.lock(writeRequests.mutex)
             val writeRequestQueue = requireNotNull(keyToWriteRequestQueue[key])
@@ -182,7 +182,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
             output
         }
 
-    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, Common, *> = withThreadSafety(key) {
+    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, Output, *> = withThreadSafety(key) {
         writeRequests.mutex.lock()
         val output = requireNotNull(keyToWriteRequestQueue[key]?.last())
         writeRequests.mutex.unlock()
@@ -208,8 +208,8 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
         keyToWriteRequestQueue[key].isNullOrEmpty()
     }
 
-    private suspend fun <Response : Any> addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, Common, Response>) =
-        withWriteRequestQueueLock<Unit, Response>(writeRequest.key) {
+    private suspend fun <Response : Any> addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, Output, Response>) =
+        withWriteRequestQueueLock(writeRequest.key) {
             add(writeRequest)
         }
 

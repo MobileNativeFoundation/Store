@@ -11,7 +11,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
  * Helper factory that will return [StoreReadResponse.Data] for [key]
  * if it is cached otherwise will return fresh/network data (updating your caches)
  */
-suspend fun <Key : Any, Common : Any> Store<Key, Common>.getData(key: Key) =
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.getData(key: Key) =
     stream(
         StoreReadRequest.cached(key, refresh = false)
     ).filterNot {

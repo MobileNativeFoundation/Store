@@ -19,16 +19,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 
-internal class PersistentSourceOfTruth<Key : Any, SOT : Any>(
-    private val realReader: (Key) -> Flow<SOT?>,
-    private val realWriter: suspend (Key, SOT) -> Unit,
+internal class PersistentSourceOfTruth<Key : Any, Local : Any>(
+    private val realReader: (Key) -> Flow<Local?>,
+    private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)? = null
-) : SourceOfTruth<Key, SOT> {
+) : SourceOfTruth<Key, Local> {
 
-    override fun reader(key: Key): Flow<SOT?> = realReader.invoke(key)
+    override fun reader(key: Key): Flow<Local?> = realReader.invoke(key)
 
-    override suspend fun write(key: Key, value: SOT) = realWriter(key, value)
+    override suspend fun write(key: Key, value: Local) = realWriter(key, value)
 
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)
@@ -39,20 +39,20 @@ internal class PersistentSourceOfTruth<Key : Any, SOT : Any>(
     }
 }
 
-internal class PersistentNonFlowingSourceOfTruth<Key : Any, SOT : Any>(
-    private val realReader: suspend (Key) -> SOT?,
-    private val realWriter: suspend (Key, SOT) -> Unit,
+internal class PersistentNonFlowingSourceOfTruth<Key : Any, Local : Any>(
+    private val realReader: suspend (Key) -> Local?,
+    private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)?
-) : SourceOfTruth<Key, SOT> {
+) : SourceOfTruth<Key, Local> {
 
-    override fun reader(key: Key): Flow<SOT?> =
+    override fun reader(key: Key): Flow<Local?> =
         flow {
             val sot = realReader(key)
             emit(sot)
         }
 
-    override suspend fun write(key: Key, value: SOT) {
+    override suspend fun write(key: Key, value: Local) {
         return realWriter(key, value)
     }
 

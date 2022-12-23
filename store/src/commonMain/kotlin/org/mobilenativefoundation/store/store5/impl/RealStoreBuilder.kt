@@ -14,45 +14,45 @@ import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
-fun <Key : Any, Network : Any, Common : Any> storeBuilderFromFetcher(
+fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, *>? = null,
-): StoreBuilder<Key, Network, Common, *> = RealStoreBuilder(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Network, Output, *> = RealStoreBuilder(fetcher, sourceOfTruth)
 
-fun <Key : Any, Common : Any, Network : Any, SOT : Any> storeBuilderFromFetcherAndSourceOfTruth(
+fun <Key : Any, Output : Any, Network : Any, Local : Any> storeBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,
-    sourceOfTruth: SourceOfTruth<Key, SOT>,
-): StoreBuilder<Key, Network, Common, SOT> = RealStoreBuilder(fetcher, sourceOfTruth)
+    sourceOfTruth: SourceOfTruth<Key, Local>,
+): StoreBuilder<Key, Network, Output, Local> = RealStoreBuilder(fetcher, sourceOfTruth)
 
-internal class RealStoreBuilder<Key : Any, Network : Any, Common : Any, SOT : Any>(
+internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
-    private val sourceOfTruth: SourceOfTruth<Key, SOT>? = null
-) : StoreBuilder<Key, Network, Common, SOT> {
+    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
+) : StoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
-    private var cachePolicy: MemoryPolicy<Key, Common>? = StoreDefaults.memoryPolicy
-    private var converter: Converter<Network, Common, SOT>? = null
+    private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
+    private var converter: Converter<Network, Output, Local>? = null
 
-    override fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Common, SOT> {
+    override fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Output, Local> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Common>?): StoreBuilder<Key, Network, Common, SOT> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Network, Output, Local> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): StoreBuilder<Key, Network, Common, SOT> {
+    override fun disableCache(): StoreBuilder<Key, Network, Output, Local> {
         cachePolicy = null
         return this
     }
 
-    override fun converter(converter: Converter<Network, Common, SOT>): StoreBuilder<Key, Network, Common, SOT> {
+    override fun converter(converter: Converter<Network, Output, Local>): StoreBuilder<Key, Network, Output, Local> {
         this.converter = converter
         return this
     }
 
-    override fun build(): Store<Key, Common> = RealStore(
+    override fun build(): Store<Key, Output> = RealStore(
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
@@ -61,10 +61,10 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Common : Any, SOT : An
     )
 
     override fun <UpdaterResult : Any> build(
-        updater: Updater<Key, Common, UpdaterResult>,
+        updater: Updater<Key, Output, UpdaterResult>,
         bookkeeper: Bookkeeper<Key>
-    ): MutableStore<Key, Common> =
-        build().asMutableStore<Key, Network, Common, SOT, UpdaterResult>(
+    ): MutableStore<Key, Output> =
+        build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
             updater = updater,
             bookkeeper = bookkeeper
         )

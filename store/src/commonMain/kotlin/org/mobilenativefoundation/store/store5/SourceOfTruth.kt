@@ -46,14 +46,14 @@ import kotlin.jvm.JvmName
  * transform them to another type when placing them in local storage.
  *
  */
-interface SourceOfTruth<Key : Any, SOT : Any> {
+interface SourceOfTruth<Key : Any, Local : Any> {
 
     /**
      * Used by [Store] to read records from the source of truth.
      *
      * @param key The key to read for.
      */
-    fun reader(key: Key): Flow<SOT?>
+    fun reader(key: Key): Flow<Local?>
 
     /**
      * Used by [Store] to write records **coming in from the fetcher (network)** to the source of
@@ -66,7 +66,7 @@ interface SourceOfTruth<Key : Any, SOT : Any> {
      *
      * @param key The key to update for.
      */
-    suspend fun write(key: Key, value: SOT)
+    suspend fun write(key: Key, value: Local)
 
     /**
      * Used by [Store] to delete records in the source of truth for the given key.
@@ -90,12 +90,12 @@ interface SourceOfTruth<Key : Any, SOT : Any> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, SOT : Any> of(
-            nonFlowReader: suspend (Key) -> SOT?,
-            writer: suspend (Key, SOT) -> Unit,
+        fun <Key : Any, Local : Any> of(
+            nonFlowReader: suspend (Key) -> Local?,
+            writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, SOT> = PersistentNonFlowingSourceOfTruth(
+        ): SourceOfTruth<Key, Local> = PersistentNonFlowingSourceOfTruth(
             realReader = nonFlowReader,
             realWriter = writer,
             realDelete = delete,
@@ -112,12 +112,12 @@ interface SourceOfTruth<Key : Any, SOT : Any> {
          * @param deleteAll function for deleting all records in the source of truth
          */
         @JvmName("ofFlow")
-        fun <Key : Any, SOT : Any> of(
-            reader: (Key) -> Flow<SOT?>,
-            writer: suspend (Key, SOT) -> Unit,
+        fun <Key : Any, Local : Any> of(
+            reader: (Key) -> Flow<Local?>,
+            writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, SOT> = PersistentSourceOfTruth(
+        ): SourceOfTruth<Key, Local> = PersistentSourceOfTruth(
             realReader = reader,
             realWriter = writer,
             realDelete = delete,

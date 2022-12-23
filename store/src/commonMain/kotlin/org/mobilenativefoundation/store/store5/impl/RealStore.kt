@@ -40,13 +40,13 @@ import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
-internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
+internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
-    sourceOfTruth: SourceOfTruth<Key, SOT>? = null,
-    converter: Converter<Network, Common, SOT>? = null,
-    private val memoryPolicy: MemoryPolicy<Key, Common>?
-) : Store<Key, Common> {
+    sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    converter: Converter<Network, Output, Local>? = null,
+    private val memoryPolicy: MemoryPolicy<Key, Output>?
+) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
      * the builder.
@@ -54,13 +54,13 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
      * we write the value from fetcher into the disk, we can block reads to avoid sending new data
      * as if it came from the server (the [StoreReadResponse.origin] field).
      */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Common, SOT>? =
+    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>? =
         sourceOfTruth?.let {
             SourceOfTruthWithBarrier(it, converter)
         }
 
     private val memCache = memoryPolicy?.let {
-        CacheBuilder<Key, Common>().apply {
+        CacheBuilder<Key, Output>().apply {
             if (memoryPolicy.hasAccessPolicy) {
                 expireAfterAccess(memoryPolicy.expireAfterAccess)
             }
@@ -88,7 +88,7 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
         converter = converter
     )
 
-    override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Common>> =
+    override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
@@ -109,7 +109,7 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
                     request = request,
                     networkLock = null,
                     piggybackOnly = piggybackOnly
-                ) as Flow<StoreReadResponse<Common>> // when no source of truth Input == Output
+                ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
             } else {
                 diskNetworkCombined(request, sourceOfTruth)
             }
@@ -185,8 +185,8 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
      */
     private fun diskNetworkCombined(
         request: StoreReadRequest<Key>,
-        sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Common, SOT>
-    ): Flow<StoreReadResponse<Common>> {
+        sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>
+    ): Flow<StoreReadResponse<Output>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
         val networkFlow = createNetworkFlow(request, networkLock)
@@ -229,7 +229,7 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
                             val diskValue = diskData.value
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
-                                emit(diskData as StoreReadResponse<Common>)
+                                emit(diskData as StoreReadResponse<Output>)
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.
@@ -279,15 +279,15 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
             }
     }
 
-    internal suspend fun write(key: Key, input: Common): StoreDelegateWriteResult = try {
-        memCache?.put(key, input)
-        sourceOfTruth?.write(key, input)
+    internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
+        memCache?.put(key, value)
+        sourceOfTruth?.write(key, value)
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
         StoreDelegateWriteResult.Error.Exception(error)
     }
 
-    internal suspend fun latestOrNull(key: Key): Common? = fromMemCache(key) ?: fromSourceOfTruth(key)
+    internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
     private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 }

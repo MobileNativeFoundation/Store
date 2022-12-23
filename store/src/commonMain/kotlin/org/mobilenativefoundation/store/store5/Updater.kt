@@ -1,16 +1,16 @@
 package org.mobilenativefoundation.store.store5
 
-typealias PostRequest<Key, Common> = suspend (key: Key, input: Common) -> UpdaterResult
+typealias PostRequest<Key, Output> = suspend (key: Key, input: Output) -> UpdaterResult
 
 /**
  * Posts data to remote data source.
  * @see [StoreWriteRequest]
  */
-interface Updater<Key : Any, Common : Any, Response : Any> {
+interface Updater<Key : Any, Output : Any, Response : Any> {
     /**
      * Makes HTTP POST request.
      */
-    suspend fun post(key: Key, input: Common): UpdaterResult
+    suspend fun post(key: Key, value: Output): UpdaterResult
 
     /**
      * Executes on network completion.
@@ -18,18 +18,18 @@ interface Updater<Key : Any, Common : Any, Response : Any> {
     val onCompletion: OnUpdaterCompletion<Response>?
 
     companion object {
-        fun <Key : Any, Common : Any, Response : Any> by(
-            post: PostRequest<Key, Common>,
+        fun <Key : Any, Output : Any, Response : Any> by(
+            post: PostRequest<Key, Output>,
             onCompletion: OnUpdaterCompletion<Response>? = null,
-        ): Updater<Key, Common, Response> = RealNetworkUpdater(
+        ): Updater<Key, Output, Response> = RealNetworkUpdater(
             post, onCompletion
         )
     }
 }
 
-internal class RealNetworkUpdater<Key : Any, Common : Any, Response : Any>(
-    private val realPost: PostRequest<Key, Common>,
+internal class RealNetworkUpdater<Key : Any, Output : Any, Response : Any>(
+    private val realPost: PostRequest<Key, Output>,
     override val onCompletion: OnUpdaterCompletion<Response>?,
-) : Updater<Key, Common, Response> {
-    override suspend fun post(key: Key, input: Common): UpdaterResult = realPost(key, input)
+) : Updater<Key, Output, Response> {
+    override suspend fun post(key: Key, value: Output): UpdaterResult = realPost(key, value)
 }

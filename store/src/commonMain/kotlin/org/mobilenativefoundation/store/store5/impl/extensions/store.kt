@@ -15,7 +15,7 @@ import org.mobilenativefoundation.store.store5.impl.RealStore
  * Helper factory that will return data for [key] if it is cached otherwise will return
  * fresh/network data (updating your caches)
  */
-suspend fun <Key : Any, Common : Any> Store<Key, Common>.get(key: Key) =
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) =
     stream(StoreReadRequest.cached(key, refresh = false))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
@@ -29,18 +29,18 @@ suspend fun <Key : Any, Common : Any> Store<Key, Common>.get(key: Key) =
  * data **even** if you explicitly requested fresh data.
  * See https://github.com/dropbox/Store/pull/194 for context
  */
-suspend fun <Key : Any, Common : Any> Store<Key, Common>.fresh(key: Key) =
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
     stream(StoreReadRequest.fresh(key))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
 
 @Suppress("UNCHECKED_CAST")
-fun <Key : Any, Network : Any, Common : Any, SOT : Any, Response : Any> Store<Key, Common>.asMutableStore(
-    updater: Updater<Key, Common, Response>,
+fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
+    updater: Updater<Key, Output, Response>,
     bookkeeper: Bookkeeper<Key>
-): MutableStore<Key, Common> {
-    val delegate = this as? RealStore<Key, Network, Common, SOT>
+): MutableStore<Key, Output> {
+    val delegate = this as? RealStore<Key, Network, Output, Local>
         ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
 
     return RealMutableStore(

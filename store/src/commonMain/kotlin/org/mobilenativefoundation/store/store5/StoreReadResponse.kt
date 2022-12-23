@@ -22,7 +22,7 @@ package org.mobilenativefoundation.store.store5
  * class to represent each response. This allows the flow to keep running even if an error happens
  * so that if there is an observable single source of truth, application can keep observing it.
  */
-sealed class StoreReadResponse<out Common> {
+sealed class StoreReadResponse<out Output> {
     /**
      * Represents the source of the Response.
      */
@@ -36,8 +36,8 @@ sealed class StoreReadResponse<out Common> {
     /**
      * Data dispatched by [Store]
      */
-    data class Data<Common>(val value: Common, override val origin: StoreReadResponseOrigin) :
-        StoreReadResponse<Common>()
+    data class Data<Output>(val value: Output, override val origin: StoreReadResponseOrigin) :
+        StoreReadResponse<Output>()
 
     /**
      * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
@@ -63,7 +63,7 @@ sealed class StoreReadResponse<out Common> {
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
      */
-    fun requireData(): Common {
+    fun requireData(): Output {
         return when (this) {
             is Data -> value
             is Error -> this.doThrow()
@@ -96,7 +96,7 @@ sealed class StoreReadResponse<out Common> {
     /**
      * If there is data available, returns it; otherwise returns null.
      */
-    fun dataOrNull(): Common? = when (this) {
+    fun dataOrNull(): Output? = when (this) {
         is Data -> value
         else -> null
     }

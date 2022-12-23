@@ -12,9 +12,9 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
 /**
  * Only used in FlowStoreTest. We should get rid of it eventually.
  */
-class SimplePersisterAsFlowable<Key : Any, Common : Any>(
-    private val reader: suspend (Key) -> Common?,
-    private val writer: suspend (Key, Common) -> Unit,
+class SimplePersisterAsFlowable<Key : Any, Output : Any>(
+    private val reader: suspend (Key) -> Output?,
+    private val writer: suspend (Key, Output) -> Unit,
     private val delete: (suspend (Key) -> Unit)? = null
 ) {
 
@@ -23,13 +23,13 @@ class SimplePersisterAsFlowable<Key : Any, Common : Any>(
 
     private val versionTracker = KeyTracker<Key>()
 
-    fun flowReader(key: Key): Flow<Common?> = flow {
+    fun flowReader(key: Key): Flow<Output?> = flow {
         versionTracker.keyFlow(key).collect {
             emit(reader(key))
         }
     }
 
-    suspend fun flowWriter(key: Key, input: Common) {
+    suspend fun flowWriter(key: Key, input: Output) {
         writer(key, input)
         versionTracker.invalidate(key)
     }
@@ -42,7 +42,7 @@ class SimplePersisterAsFlowable<Key : Any, Common : Any>(
     }
 }
 
-fun <Key : Any, Common : Any> SimplePersisterAsFlowable<Key, Common>.asSourceOfTruth() =
+fun <Key : Any, Output : Any> SimplePersisterAsFlowable<Key, Output>.asSourceOfTruth() =
     SourceOfTruth.of(
         reader = ::flowReader,
         writer = ::flowWriter,
@@ -125,7 +125,7 @@ internal class KeyTracker<Key> {
     }
 }
 
-fun <Key : Any, Common : Any> InMemoryPersister<Key, Common>.asFlowable() =
+fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
     SimplePersisterAsFlowable(
         reader = this::read,
         writer = this::write
