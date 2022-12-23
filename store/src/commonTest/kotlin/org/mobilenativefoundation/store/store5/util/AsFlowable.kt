@@ -29,8 +29,8 @@ class SimplePersisterAsFlowable<Key : Any, Output : Any>(
         }
     }
 
-    suspend fun flowWriter(key: Key, input: Output) {
-        writer(key, input)
+    suspend fun flowWriter(key: Key, value: Output) {
+        writer(key, value)
         versionTracker.invalidate(key)
     }
 

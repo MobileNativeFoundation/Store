@@ -1,6 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
-typealias PostRequest<Key, Output> = suspend (key: Key, input: Output) -> UpdaterResult
+typealias PostRequest<Key, Output> = suspend (key: Key, value: Output) -> UpdaterResult
 
 /**
  * Posts data to remote data source.
