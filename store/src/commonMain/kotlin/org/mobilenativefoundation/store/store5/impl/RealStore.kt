@@ -45,7 +45,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local>? = null,
-    converter: Converter<Network, Output, Local>? = null,
+    private val converter: Converter<Network, Output, Local>? = null,
     private val validator: Validator<Output>?,
     private val memoryPolicy: MemoryPolicy<Key, Output>?
 ) : Store<Key, Output> {
@@ -90,12 +90,18 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         converter = converter
     )
 
+    @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
-                memCache?.getIfPresent(request.key)
+                val output = memCache?.getIfPresent(request.key)
+                when {
+                    output == null -> null
+                    validator?.isValid(output) == false -> null
+                    else -> output
+                }
             }
 
             cachedToEmit?.let {
@@ -120,8 +126,16 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     val data = output.dataOrNull()
                     val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
                     if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
-                        createNetworkFlow(request = request, networkLock = null, piggybackOnly = false).transform { network ->
-                            emit(network)
+                        fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
+                            val network = storeReadResponse.dataOrNull()
+                            if (network != null) {
+                                val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
+                                if (newOutput != null) {
+                                    emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
+                                } else {
+                                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
+                                }
+                            }
                         }
                     } else {
                         emit(output)
