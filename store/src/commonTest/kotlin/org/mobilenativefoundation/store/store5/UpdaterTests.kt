@@ -42,7 +42,7 @@ class UpdaterTests {
     }
 
     @Test
-    fun givenNonEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
+    fun givenNonEmptyMarketWhenWriteThenStoredAndAPIUpdated() = testScope.runTest {
         val ttl = inHours(1)
 
         val converter = NotesConverterProvider().provide()
@@ -74,6 +74,8 @@ class UpdaterTests {
         val readRequest = StoreReadRequest.fresh(Notes.One.id)
 
         val stream = store.stream<NotesWriteResponse>(readRequest)
+
+        // Read is success
         assertEmitsExactly(
             stream,
             listOf(
@@ -87,12 +89,16 @@ class UpdaterTests {
             key = Notes.One.id,
             input = CommonNote(NoteData.Single(newNote))
         )
+
         val storeWriteResponse = store.write(writeRequest)
+
+        // Write is success
         assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
 
         val cachedReadRequest = StoreReadRequest.cached(Notes.One.id, refresh = false)
         val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
 
+        // Cache + SOT are updated
         val firstResponse = cachedStream.first()
         assertEquals(StoreReadResponse.Data(CommonNote(NoteData.Single(newNote), ttl = null), StoreReadResponseOrigin.Cache), firstResponse)
 
@@ -105,9 +111,74 @@ class UpdaterTests {
         assertEquals(StoreReadResponseOrigin.SourceOfTruth, secondResponse.origin)
         assertNotNull(secondResponse.value.ttl)
 
+        // API is updated
         assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
         assertEquals(NetworkNote(NoteData.Single(newNote), ttl = null), api.db[Notes.One.id])
     }
+
+//    @Test
+//    fun givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher() = testScope.runTest {
+//        val ttl = inHours(1)
+//
+//        val converter = NotesConverterProvider().provide()
+//        val validator = NotesValidator(expiration = inHours(12))
+//        val updater = NotesUpdaterProvider(api).provide()
+//        val bookkeeper = Bookkeeper.by(
+//            getLastFailedSync = bookkeeping::getLastFailedSync,
+//            setLastFailedSync = bookkeeping::setLastFailedSync,
+//            clear = bookkeeping::clear,
+//            clearAll = bookkeeping::clear
+//        )
+//
+//        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+//            fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
+//            sourceOfTruth = SourceOfTruth.of(
+//                nonFlowReader = { key -> notes.get(key) },
+//                writer = { key, sot -> notes.put(key, sot) },
+//                delete = { key -> notes.clear(key) },
+//                deleteAll = { notes.clear() }
+//            )
+//        )
+//            .converter(converter)
+//            .validator(validator)
+//            .build(
+//                updater = updater,
+//                bookkeeper = bookkeeper
+//            )
+//
+//        val readRequest = StoreReadRequest.fresh(Notes.One.id)
+//
+//        val stream = store.stream<NotesWriteResponse>(readRequest)
+//
+//        // Fetch is success and validator is not used
+//        assertEmitsExactly(
+//            stream,
+//            listOf(
+//                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
+//                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+//            )
+//        )
+//
+//        val cachedReadRequest = StoreReadRequest.cached(Notes.One.id, refresh = true)
+//        val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
+//
+//        cachedStream.collect {
+//            println(it)
+//        }
+//
+//        // Cache + SOT are updated
+//        val firstResponse = cachedStream.first()
+//        assertEquals(StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Cache), firstResponse)
+//
+//        val secondResponse = cachedStream.take(2).last()
+//        assertIs<StoreReadResponse.Data<CommonNote>>(secondResponse)
+//        val data = secondResponse.value.data
+//        assertIs<NoteData.Single>(data)
+//        assertNotNull(data)
+//        assertEquals(Notes.One, data.item)
+//        assertEquals(StoreReadResponseOrigin.SourceOfTruth, secondResponse.origin)
+//        assertNotNull(secondResponse.value.ttl)
+//    }
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {

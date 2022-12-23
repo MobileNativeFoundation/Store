@@ -119,7 +119,9 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
                 stream.transform { common ->
                     val data = common.dataOrNull()
 
-                    if (validator != null && data != null && !validator.isValid(data)) {
+                    val shouldSkipValidation = validator == null || data == null || common.origin == StoreReadResponseOrigin.Fetcher
+
+                    if (!shouldSkipValidation && validator?.isValid(data) == false) {
                         createNetworkFlow(request = request, networkLock = null, piggybackOnly = false).transform { network ->
                             emit(network)
                         }
