@@ -7,12 +7,15 @@
     <h4>Full documentation can be found on our <a href="https://mobilenativefoundation.github.io/Store/">website</a>!</h4>
 </div>
 
-## Concepts
+### Concepts
 
-- [Store](https://mobilenativefoundation.github.io/Store/store/store/) is responsible for managing a particular read request
-- [MutableStore](https://mobilenativefoundation.github.io/Store/mutable-store/building/overview/) is
-  a [Store](https://mobilenativefoundation.github.io/Store/store/store/) that also manages particular write requests and
-  coordinates synchronization and conflict resolution
+- [Store](https://mobilenativefoundation.github.io/Store/store/store/) is a typed repository that returns a flow
+  of [Data](https://github.com/MobileNativeFoundation/Store/blob/main/store/src/commonMain/kotlin/org/mobilenativefoundation/store/store5/StoreReadResponse.kt#L39)
+  /[Loading](https://github.com/MobileNativeFoundation/Store/blob/main/store/src/commonMain/kotlin/org/mobilenativefoundation/store/store5/StoreReadResponse.kt#L34)
+  /[Error](https://github.com/MobileNativeFoundation/Store/blob/main/store/src/commonMain/kotlin/org/mobilenativefoundation/store/store5/StoreReadResponse.kt#L51)
+  from local and network data sources
+- [MutableStore](https://mobilenativefoundation.github.io/Store/mutable-store/building/overview/) is a mutable repository implementation that allows create **(C)**, read **(R)**,
+  update **(U)**, and delete **(D)** operations for local and network resources
 - [SourceOfTruth](https://mobilenativefoundation.github.io/Store/mutable-store/building/implementations/source-of-truth/) persists items
 - [Fetcher](https://mobilenativefoundation.github.io/Store/mutable-store/building/implementations/fetcher/) defines how data will be fetched over network
 - [Updater](https://mobilenativefoundation.github.io/Store/mutable-store/building/implementations/updater/) defines how local changes will be pushed to network
@@ -21,18 +24,18 @@
 - [Validator](https://mobilenativefoundation.github.io/Store/mutable-store/building/implementations/validator/) returns whether an item is valid
 - [Converter](https://mobilenativefoundation.github.io/Store/mutable-store/building/implementations/converter/) converts items
   between [Network](https://mobilenativefoundation.github.io/Store/mutable-store/building/generics/network)
-  /[Common](https://mobilenativefoundation.github.io/Store/mutable-store/building/generics/common)
-  /[SOT](https://mobilenativefoundation.github.io/Store/mutable-store/building/generics/sot) representations
+  /[Local](https://mobilenativefoundation.github.io/Store/mutable-store/building/generics/sot)
+  /[Output](https://mobilenativefoundation.github.io/Store/mutable-store/building/generics/common) representations
 
-## How To Include In Your Project
+### Including Store In Your Project
 
-### Android
+#### Android
 
 ```kotlin
 implementation "org.mobilenativefoundation.store:store5:5.0.0-alpha03"
 ```
 
-### Multiplatform (Common, JVM, Native, JS)
+#### Multiplatform (Common, JVM, Native, JS)
 
 ```kotlin
 commonMain {
@@ -42,7 +45,80 @@ commonMain {
 }
 ```
 
-## License
+### Getting Started
+
+#### Building Your First Store
+
+```kotlin
+StoreBuilder
+  .from<Key, Network, Output, Local>(fetcher, sourceOfTruth)
+  .converter(converter)
+  .validator(validator)
+  .build(updater, bookkeeper)
+```
+
+#### Creating
+
+##### Request
+
+```kotlin
+store.write(
+  request = StoreWriteRequest.of<Key, Output, Response>(
+    key = key,
+    value = value
+  )
+)
+```
+
+##### Response
+
+```text
+1. StoreWriteResponse.Success.Typed<Response>(response)
+```
+
+#### Reading
+
+##### Request
+
+```kotlin
+store.stream<Response>(request = StoreReadRequest.fresh(key))
+```
+
+##### Response
+
+```text
+1. StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher)
+2. StoreReadResponse.Data(output), StoreReadResponseOrigin.Fetcher)
+```
+
+#### Updating
+
+##### Request
+
+```kotlin
+store.write(
+  request = StoreWriteRequest.of<Key, Output, Response>(
+    key = key,
+    value = newValue
+  )
+)
+```
+
+##### Response
+
+```text
+1. StoreWriteResponse.Success.Typed<Response>(response)
+```
+
+#### Deleting
+
+##### Request
+
+```kotlin
+store.clear(key)
+```
+
+### License
 
 ```text
 Copyright (c) 2022 Mobile Native Foundation.
