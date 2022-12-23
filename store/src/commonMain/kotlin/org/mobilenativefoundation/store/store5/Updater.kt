@@ -1,35 +1,35 @@
 package org.mobilenativefoundation.store.store5
 
-typealias PostRequest<Key, CommonRepresentation> = suspend (key: Key, input: CommonRepresentation) -> UpdaterResult
+typealias PostRequest<Key, Output> = suspend (key: Key, value: Output) -> UpdaterResult
 
 /**
  * Posts data to remote data source.
  * @see [StoreWriteRequest]
  */
-interface Updater<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> {
+interface Updater<Key : Any, Output : Any, Response : Any> {
     /**
      * Makes HTTP POST request.
      */
-    suspend fun post(key: Key, input: CommonRepresentation): UpdaterResult
+    suspend fun post(key: Key, value: Output): UpdaterResult
 
     /**
      * Executes on network completion.
      */
-    val onCompletion: OnUpdaterCompletion<NetworkWriteResponse>?
+    val onCompletion: OnUpdaterCompletion<Response>?
 
     companion object {
-        fun <Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any> by(
-            post: PostRequest<Key, CommonRepresentation>,
-            onCompletion: OnUpdaterCompletion<NetworkWriteResponse>? = null,
-        ): Updater<Key, CommonRepresentation, NetworkWriteResponse> = RealNetworkUpdater(
+        fun <Key : Any, Output : Any, Response : Any> by(
+            post: PostRequest<Key, Output>,
+            onCompletion: OnUpdaterCompletion<Response>? = null,
+        ): Updater<Key, Output, Response> = RealNetworkUpdater(
             post, onCompletion
         )
     }
 }
 
-internal class RealNetworkUpdater<Key : Any, CommonRepresentation : Any, NetworkWriteResponse : Any>(
-    private val realPost: PostRequest<Key, CommonRepresentation>,
-    override val onCompletion: OnUpdaterCompletion<NetworkWriteResponse>?,
-) : Updater<Key, CommonRepresentation, NetworkWriteResponse> {
-    override suspend fun post(key: Key, input: CommonRepresentation): UpdaterResult = realPost(key, input)
+internal class RealNetworkUpdater<Key : Any, Output : Any, Response : Any>(
+    private val realPost: PostRequest<Key, Output>,
+    override val onCompletion: OnUpdaterCompletion<Response>?,
+) : Updater<Key, Output, Response> {
+    override suspend fun post(key: Key, value: Output): UpdaterResult = realPost(key, value)
 }
