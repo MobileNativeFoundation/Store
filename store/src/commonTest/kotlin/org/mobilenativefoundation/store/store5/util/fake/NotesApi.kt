@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
-
 import org.mobilenativefoundation.store.store5.util.TestApi
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote

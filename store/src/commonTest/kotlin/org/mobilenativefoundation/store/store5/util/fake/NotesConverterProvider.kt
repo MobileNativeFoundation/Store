@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
-
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.impl.extensions.inHours
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
