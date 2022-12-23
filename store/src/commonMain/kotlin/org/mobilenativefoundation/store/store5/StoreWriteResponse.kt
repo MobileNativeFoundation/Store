@@ -2,7 +2,7 @@ package org.mobilenativefoundation.store.store5
 
 sealed class StoreWriteResponse {
     sealed class Success : StoreWriteResponse() {
-        data class Typed<NetworkWriteResponse : Any>(val value: NetworkWriteResponse) : Success()
+        data class Typed<Response : Any>(val value: Response) : Success()
         data class Untyped(val value: Any) : Success()
     }
 
