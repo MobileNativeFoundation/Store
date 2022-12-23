@@ -31,7 +31,7 @@ package org.mobilenativefoundation.store.store5
  *  }
  *
  */
-interface Store<Key : Any, CommonRepresentation : Any> :
-    Read.Stream<Key, CommonRepresentation>,
+interface Store<Key : Any, Output : Any> :
+    Read.Stream<Key, Output>,
     Clear.Key<Key>,
     Clear.All

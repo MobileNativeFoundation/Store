@@ -19,11 +19,11 @@ import org.mobilenativefoundation.store.store5.Fetcher.Companion.ofResult
  * See [ofFlow], [of] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error].
  */
-interface Fetcher<Key : Any, NetworkRepresentation : Any> {
+interface Fetcher<Key : Any, Network : Any> {
     /**
      * Returns a flow of the item represented by the given [key].
      */
-    operator fun invoke(key: Key): Flow<FetcherResult<NetworkRepresentation>>
+    operator fun invoke(key: Key): Flow<FetcherResult<Network>>
 
     companion object {
         /**
@@ -37,9 +37,9 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any> ofResultFlow(
-            flowFactory: (Key) -> Flow<FetcherResult<NetworkRepresentation>>
-        ): Fetcher<Key, NetworkRepresentation> = FactoryFetcher(factory = flowFactory)
+        fun <Key : Any, Network : Any> ofResultFlow(
+            flowFactory: (Key) -> Flow<FetcherResult<Network>>
+        ): Fetcher<Key, Network> = FactoryFetcher(factory = flowFactory)
 
         /**
          * "Creates" a [Fetcher] from a non-[Flow] source.
@@ -52,9 +52,9 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
          *
          * @param fetch a source of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any> ofResult(
-            fetch: suspend (Key) -> FetcherResult<NetworkRepresentation>
-        ): Fetcher<Key, NetworkRepresentation> = ofResultFlow(fetch.asFlow())
+        fun <Key : Any, Network : Any> ofResult(
+            fetch: suspend (Key) -> FetcherResult<Network>
+        ): Fetcher<Key, Network> = ofResultFlow(fetch.asFlow())
 
         /**
          * "Creates" a [Fetcher] from a [flowFactory] and translate the results to a [FetcherResult].
@@ -68,11 +68,11 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any> ofFlow(
-            flowFactory: (Key) -> Flow<NetworkRepresentation>
-        ): Fetcher<Key, NetworkRepresentation> = FactoryFetcher { key: Key ->
+        fun <Key : Any, Network : Any> ofFlow(
+            flowFactory: (Key) -> Flow<Network>
+        ): Fetcher<Key, Network> = FactoryFetcher { key: Key ->
             flowFactory(key)
-                .map<NetworkRepresentation, FetcherResult<NetworkRepresentation>> { FetcherResult.Data(it) }
+                .map<Network, FetcherResult<Network>> { FetcherResult.Data(it) }
                 .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
         }
 
@@ -87,19 +87,19 @@ interface Fetcher<Key : Any, NetworkRepresentation : Any> {
          *
          * @param fetch a source of network records.
          */
-        fun <Key : Any, NetworkRepresentation : Any> of(fetch: suspend (key: Key) -> NetworkRepresentation): Fetcher<Key, NetworkRepresentation> =
+        fun <Key : Any, Network : Any> of(fetch: suspend (key: Key) -> Network): Fetcher<Key, Network> =
             ofFlow(fetch.asFlow())
 
-        private fun <Key : Any, NetworkRepresentation : Any> (suspend (key: Key) -> NetworkRepresentation).asFlow() = { key: Key ->
+        private fun <Key : Any, Network : Any> (suspend (key: Key) -> Network).asFlow() = { key: Key ->
             flow {
                 emit(invoke(key))
             }
         }
 
-        private class FactoryFetcher<Key : Any, NetworkRepresentation : Any>(
-            private val factory: (Key) -> Flow<FetcherResult<NetworkRepresentation>>
-        ) : Fetcher<Key, NetworkRepresentation> {
-            override fun invoke(key: Key): Flow<FetcherResult<NetworkRepresentation>> = factory(key)
+        private class FactoryFetcher<Key : Any, Network : Any>(
+            private val factory: (Key) -> Flow<FetcherResult<Network>>
+        ) : Fetcher<Key, Network> {
+            override fun invoke(key: Key): Flow<FetcherResult<Network>> = factory(key)
         }
     }
 }
