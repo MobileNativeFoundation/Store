@@ -81,14 +81,13 @@ store.write(
 ##### Request
 
 ```kotlin
-store.stream<Response>(request = StoreReadRequest.fresh(key))
+store.stream<Response>(request = StoreReadRequest.cached(key, refresh = false))
 ```
 
 ##### Response
 
 ```text
-1. StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher)
-2. StoreReadResponse.Data(output), StoreReadResponseOrigin.Fetcher)
+1. StoreReadResponse.Data(value, origin = StoreReadResponseOrigin.Cache)
 ```
 
 #### Updating
