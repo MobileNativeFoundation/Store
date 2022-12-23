@@ -1,6 +1,6 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
-class NoteBookkeeping {
+class NotesBookkeeping {
     private val log: MutableMap<String, Long?> = mutableMapOf()
     fun setLastFailedSync(key: String, timestamp: Long, fail: Boolean = false): Boolean {
         if (fail) {
