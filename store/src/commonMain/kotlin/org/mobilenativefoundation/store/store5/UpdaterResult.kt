@@ -3,7 +3,7 @@ package org.mobilenativefoundation.store.store5
 sealed class UpdaterResult {
 
     sealed class Success : UpdaterResult() {
-        data class Typed<NetworkWriteResponse : Any>(val value: NetworkWriteResponse) : Success()
+        data class Typed<Response : Any>(val value: Response) : Success()
         data class Untyped(val value: Any) : Success()
     }
 
