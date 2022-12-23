@@ -26,6 +26,7 @@ import org.mobilenativefoundation.store.store5.internal.concurrent.AnyThread
 import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
 import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
+import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
 internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
     private val delegate: RealStore<Key, Network, Common, SOT>,
@@ -72,20 +73,25 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
                 }
                 .collect { writeRequest ->
                     val storeWriteResponse = try {
-                        delegate.write(writeRequest.key, writeRequest.input)
-                        when (val updaterResult = tryUpdateServer(writeRequest)) {
-                            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                            is UpdaterResult.Success.Typed<*> -> {
-                                val typedValue = updaterResult.value as? Response
-                                if (typedValue == null) {
-                                    StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                } else {
-                                    StoreWriteResponse.Success.Typed(updaterResult.value)
+                        when (val storeDelegateWriteResult = delegate.write(writeRequest.key, writeRequest.input)) {
+                            is StoreDelegateWriteResult.Error.Exception -> throw storeDelegateWriteResult.error
+                            is StoreDelegateWriteResult.Error.Message -> throw Exception(storeDelegateWriteResult.error)
+                            StoreDelegateWriteResult.Success -> {
+                                when (val updaterResult = tryUpdateServer(writeRequest)) {
+                                    is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
+                                    is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                                    is UpdaterResult.Success.Typed<*> -> {
+                                        val typedValue = updaterResult.value as? Response
+                                        if (typedValue == null) {
+                                            StoreWriteResponse.Success.Untyped(updaterResult.value)
+                                        } else {
+                                            StoreWriteResponse.Success.Typed(updaterResult.value)
+                                        }
+                                    }
+
+                                    is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                                 }
                             }
-
-                            is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                         }
                     } catch (throwable: Throwable) {
                         StoreWriteResponse.Error.Exception(throwable)
@@ -203,10 +209,8 @@ internal class RealMutableStore<Key : Any, Network : Any, Common : Any, SOT : An
         return lastFailedSync != null || writeRequestsQueueIsEmpty(key).not()
     }
 
-    @AnyThread
-    private suspend fun writeRequestsQueueIsEmpty(key: Key): Boolean = withThreadSafety(key) {
+    private fun writeRequestsQueueIsEmpty(key: Key): Boolean =
         keyToWriteRequestQueue[key].isNullOrEmpty()
-    }
 
     private suspend fun <Response : Any> addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, Common, Response>) =
         withWriteRequestQueueLock<Unit, Response>(writeRequest.key) {

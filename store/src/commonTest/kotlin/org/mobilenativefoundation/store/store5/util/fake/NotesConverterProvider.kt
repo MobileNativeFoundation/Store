@@ -10,6 +10,6 @@ internal class NotesConverterProvider {
     fun provide(): Converter<NetworkNote, CommonNote, SOTNote> = Converter.Builder<NetworkNote, CommonNote, SOTNote>()
         .fromSOTToCommon { sot -> CommonNote(data = sot.data, ttl = sot.ttl) }
         .fromCommonToSOT { common -> SOTNote(data = common.data, ttl = common.ttl ?: inHours(12)) }
-        .fromNetworkToCommon { network -> CommonNote(data = network.data) }
+        .fromNetworkToCommon { network -> CommonNote(data = network.data, ttl = network.ttl) }
         .build()
 }

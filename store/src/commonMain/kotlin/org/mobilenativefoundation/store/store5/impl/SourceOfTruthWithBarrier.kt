@@ -89,22 +89,25 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Common : Any, 
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
 
-                                            val value = sourceOfTruth as? Common ?: if (sourceOfTruth != null) {
-                                                converter?.fromSOTToCommon(sourceOfTruth)
-                                            } else {
-                                                null
+                                            val common = when {
+                                                sourceOfTruth != null -> converter?.fromSOTToCommon(sourceOfTruth) ?: sourceOfTruth as? Common
+                                                else -> null
                                             }
+
                                             StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
-                                                value = value
+                                                value = common
                                             )
                                         } else {
+
+                                            val common = when {
+                                                sourceOfTruth != null -> converter?.fromSOTToCommon(sourceOfTruth) ?: sourceOfTruth as? Common
+                                                else -> null
+                                            }
+
                                             StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                value = sourceOfTruth as? Common
-                                                    ?: if (sourceOfTruth != null) converter?.fromSOTToCommon(
-                                                        sourceOfTruth
-                                                    ) else null
+                                                value = common
                                             ) as StoreReadResponse<Common?>
                                         }
                                     }.catch { throwable ->
@@ -151,10 +154,9 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Common : Any, 
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
-                val input = value as? SOT ?: converter?.fromCommonToSOT(value)
-                if (input != null) {
-                    delegate.write(key, input)
-                }
+                val sot = converter?.fromCommonToSOT(value)
+                val input = sot ?: value
+                delegate.write(key, input as SOT)
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {

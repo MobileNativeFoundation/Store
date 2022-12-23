@@ -117,7 +117,9 @@ internal class RealStore<Key : Any, Network : Any, Common : Any, SOT : Any>(
             }
             emitAll(
                 stream.transform { common ->
-                    if (validator != null && !validator.isValid(common.dataOrNull())) {
+                    val data = common.dataOrNull()
+
+                    if (validator != null && data != null && !validator.isValid(data)) {
                         createNetworkFlow(request = request, networkLock = null, piggybackOnly = false).transform { network ->
                             emit(network)
                         }

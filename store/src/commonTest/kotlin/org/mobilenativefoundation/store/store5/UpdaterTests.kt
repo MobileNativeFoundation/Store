@@ -1,9 +1,15 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.store5.impl.extensions.inHours
+import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
+import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
 import org.mobilenativefoundation.store.store5.util.fake.NotesConverterProvider
@@ -12,13 +18,14 @@ import org.mobilenativefoundation.store.store5.util.fake.NotesUpdaterProvider
 import org.mobilenativefoundation.store.store5.util.fake.NotesValidator
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
-import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
 import org.mobilenativefoundation.store.store5.util.model.SOTNote
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalStoreApi::class)
 class UpdaterTests {
@@ -35,6 +42,74 @@ class UpdaterTests {
     }
 
     @Test
+    fun givenNonEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
+        val ttl = inHours(1)
+
+        val converter = NotesConverterProvider().provide()
+        val validator = NotesValidator()
+        val updater = NotesUpdaterProvider(api).provide()
+        val bookkeeper = Bookkeeper.by(
+            getLastFailedSync = bookkeeping::getLastFailedSync,
+            setLastFailedSync = bookkeeping::setLastFailedSync,
+            clear = bookkeeping::clear,
+            clearAll = bookkeeping::clear
+        )
+
+        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+            fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> notes.get(key) },
+                writer = { key, sot -> notes.put(key, sot) },
+                delete = { key -> notes.clear(key) },
+                deleteAll = { notes.clear() }
+            )
+        )
+            .converter(converter)
+            .validator(validator)
+            .build(
+                updater = updater,
+                bookkeeper = bookkeeper
+            )
+
+        val readRequest = StoreReadRequest.fresh(Notes.One.id)
+
+        val stream = store.stream<NotesWriteResponse>(readRequest)
+        assertEmitsExactly(
+            stream,
+            listOf(
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
+                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+            )
+        )
+
+        val newNote = Notes.One.copy(title = "New Title-1")
+        val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
+            key = Notes.One.id,
+            input = CommonNote(NoteData.Single(newNote))
+        )
+        val storeWriteResponse = store.write(writeRequest)
+        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
+
+        val cachedReadRequest = StoreReadRequest.cached(Notes.One.id, refresh = false)
+        val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
+
+        val firstResponse = cachedStream.first()
+        assertEquals(StoreReadResponse.Data(CommonNote(NoteData.Single(newNote), ttl = null), StoreReadResponseOrigin.Cache), firstResponse)
+
+        val secondResponse = cachedStream.take(2).last()
+        assertIs<StoreReadResponse.Data<CommonNote>>(secondResponse)
+        val data = secondResponse.value.data
+        assertIs<NoteData.Single>(data)
+        assertNotNull(data)
+        assertEquals(newNote, data.item)
+        assertEquals(StoreReadResponseOrigin.SourceOfTruth, secondResponse.origin)
+        assertNotNull(secondResponse.value.ttl)
+
+        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
+        assertEquals(NetworkNote(NoteData.Single(newNote), ttl = null), api.db[Notes.One.id])
+    }
+
+    @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
         val converter = NotesConverterProvider().provide()
         val validator = NotesValidator()
@@ -48,7 +123,7 @@ class UpdaterTests {
 
         val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.ofFlow { key ->
-                val network = NetworkNote(NoteData.Single(Note("$key-id", "$key-title", "$key-content")))
+                val network = api.get(key)
                 flow { emit(network) }
             },
             sourceOfTruth = SourceOfTruth.of(
@@ -65,18 +140,14 @@ class UpdaterTests {
                 bookkeeper = bookkeeper
             )
 
-        val noteKey = "1-id"
-        val noteTitle = "1-title"
-        val noteContent = "1-content"
-        val noteData = NoteData.Single(Note(noteKey, noteTitle, noteContent))
+        val newNote = Notes.One.copy(title = "New Title-1")
         val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
-            key = noteKey,
-            input = CommonNote(noteData)
+            key = Notes.One.id,
+            input = CommonNote(NoteData.Single(newNote))
         )
-
         val storeWriteResponse = store.write(writeRequest)
 
-        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(noteKey, true)), storeWriteResponse)
-        assertEquals(NetworkNote(noteData), api.db[noteKey])
+        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
+        assertEquals(NetworkNote(NoteData.Single(newNote)), api.db[Notes.One.id])
     }
 }

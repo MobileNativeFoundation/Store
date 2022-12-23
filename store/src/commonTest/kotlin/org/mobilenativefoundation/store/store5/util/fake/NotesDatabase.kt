@@ -8,6 +8,7 @@ internal class NotesDatabase {
         if (fail) {
             throw Exception()
         }
+
         db[key] = input
         return true
     }
