@@ -93,11 +93,9 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                 piggybackingDownstream = true,
                 onEach = { response ->
                     response.dataOrNull()?.let { network ->
-                        val input =
-                            network as? Output ?: converter?.fromNetworkToOutput(network)
-                        if (input != null) {
-                            sourceOfTruth?.write(key, input)
-                        }
+                        val output = converter?.fromNetworkToOutput(network)
+                        val input = output ?: network
+                        sourceOfTruth?.write(key, input as Output)
                     }
                 }
             )

@@ -11,15 +11,18 @@ internal data class NotesWriteResponse(
 )
 
 internal data class NetworkNote(
-    val data: NoteData? = null
+    val data: NoteData? = null,
+    val ttl: Long? = null,
 )
 
 internal data class CommonNote(
-    val data: NoteData? = null
+    val data: NoteData? = null,
+    val ttl: Long? = null,
 )
 
 internal data class SOTNote(
-    val data: NoteData? = null
+    val data: NoteData? = null,
+    val ttl: Long
 )
 
 internal data class Note(

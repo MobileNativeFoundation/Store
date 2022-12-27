@@ -12,6 +12,7 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Updater
+import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
@@ -31,6 +32,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var converter: Converter<Network, Output, Local>? = null
+    private var validator: Validator<Output>? = null
 
     override fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Output, Local> {
         this.scope = scope
@@ -47,6 +49,11 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
+    override fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local> {
+        this.validator = validator
+        return this
+    }
+
     override fun converter(converter: Converter<Network, Output, Local>): StoreBuilder<Key, Network, Output, Local> {
         this.converter = converter
         return this
@@ -57,7 +64,8 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
         memoryPolicy = cachePolicy,
-        converter = converter
+        converter = converter,
+        validator = validator
     )
 
     override fun <UpdaterResult : Any> build(

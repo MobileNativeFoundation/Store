@@ -2,29 +2,29 @@ package org.mobilenativefoundation.store.store5
 
 interface Converter<Network : Any, Output : Any, Local : Any> {
     fun fromNetworkToOutput(network: Network): Output?
-    fun fromOutputToLocal(common: Output): Local?
-    fun fromLocalToOutput(sourceOfTruth: Local): Output?
+    fun fromOutputToLocal(output: Output): Local?
+    fun fromLocalToOutput(local: Local): Output?
 
     class Builder<Network : Any, Output : Any, Local : Any> {
 
-        private var fromOutputToLocal: ((value: Output) -> Local)? = null
-        private var fromNetworkToOutput: ((value: Network) -> Output)? = null
-        private var fromLocalToOutput: ((value: Local) -> Output)? = null
+        private var fromOutputToLocal: ((output: Output) -> Local)? = null
+        private var fromNetworkToOutput: ((network: Network) -> Output)? = null
+        private var fromLocalToOutput: ((local: Local) -> Output)? = null
 
         fun build(): Converter<Network, Output, Local> =
             RealConverter(fromOutputToLocal, fromNetworkToOutput, fromLocalToOutput)
 
-        fun fromOutputToLocal(converter: (value: Output) -> Local): Builder<Network, Output, Local> {
+        fun fromOutputToLocal(converter: (output: Output) -> Local): Builder<Network, Output, Local> {
             fromOutputToLocal = converter
             return this
         }
 
-        fun fromLocalToOutput(converter: (value: Local) -> Output): Builder<Network, Output, Local> {
+        fun fromLocalToOutput(converter: (local: Local) -> Output): Builder<Network, Output, Local> {
             fromLocalToOutput = converter
             return this
         }
 
-        fun fromNetworkToOutput(converter: (value: Network) -> Output): Builder<Network, Output, Local> {
+        fun fromNetworkToOutput(converter: (network: Network) -> Output): Builder<Network, Output, Local> {
             fromNetworkToOutput = converter
             return this
         }
@@ -32,16 +32,16 @@ interface Converter<Network : Any, Output : Any, Local : Any> {
 }
 
 private class RealConverter<Network : Any, Output : Any, Local : Any>(
-    private val fromOutputToLocal: ((value: Output) -> Local)?,
-    private val fromNetworkToOutput: ((value: Network) -> Output)?,
-    private val fromLocalToOutput: ((value: Local) -> Output)?,
+    private val fromOutputToLocal: ((output: Output) -> Local)?,
+    private val fromNetworkToOutput: ((network: Network) -> Output)?,
+    private val fromLocalToOutput: ((local: Local) -> Output)?,
 ) : Converter<Network, Output, Local> {
     override fun fromNetworkToOutput(network: Network): Output? =
         fromNetworkToOutput?.invoke(network)
 
-    override fun fromOutputToLocal(common: Output): Local? =
-        fromOutputToLocal?.invoke(common)
+    override fun fromOutputToLocal(output: Output): Local? =
+        fromOutputToLocal?.invoke(output)
 
-    override fun fromLocalToOutput(sourceOfTruth: Local): Output? =
-        fromLocalToOutput?.invoke(sourceOfTruth)
+    override fun fromLocalToOutput(local: Local): Output? =
+        fromLocalToOutput?.invoke(local)
 }
