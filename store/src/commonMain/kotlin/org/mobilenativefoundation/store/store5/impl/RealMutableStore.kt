@@ -203,10 +203,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         return lastFailedSync != null || writeRequestsQueueIsEmpty(key).not()
     }
 
-    @AnyThread
-    private suspend fun writeRequestsQueueIsEmpty(key: Key): Boolean = withThreadSafety(key) {
-        keyToWriteRequestQueue[key].isNullOrEmpty()
-    }
+    private fun writeRequestsQueueIsEmpty(key: Key): Boolean = keyToWriteRequestQueue[key].isNullOrEmpty()
 
     private suspend fun <Response : Any> addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, Output, Response>) =
         withWriteRequestQueueLock(writeRequest.key) {
