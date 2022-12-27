@@ -76,7 +76,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                             }
                             val readFlow: Flow<StoreReadResponse<Output?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
-                                    delegate.reader(key).mapIndexed { index, sourceOfTruth ->
+                                    delegate.reader(key).mapIndexed { index, local ->
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
@@ -89,22 +89,24 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
 
-                                            val value = sourceOfTruth as? Output ?: if (sourceOfTruth != null) {
-                                                converter?.fromLocalToOutput(sourceOfTruth)
-                                            } else {
-                                                null
+                                            val output = when {
+                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
+                                                else -> null
                                             }
+
                                             StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
-                                                value = value
+                                                value = output
                                             )
                                         } else {
+                                            val output = when {
+                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
+                                                else -> null
+                                            }
+
                                             StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                value = sourceOfTruth as? Output
-                                                    ?: if (sourceOfTruth != null) converter?.fromLocalToOutput(
-                                                        sourceOfTruth
-                                                    ) else null
+                                                value = output
                                             ) as StoreReadResponse<Output?>
                                         }
                                     }.catch { throwable ->
@@ -151,10 +153,9 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
             val writeError = try {
-                val input = value as? Local ?: converter?.fromOutputToLocal(value)
-                if (input != null) {
-                    delegate.write(key, input)
-                }
+                val local = converter?.fromOutputToLocal(value)
+                val input = local ?: value
+                delegate.write(key, input as Local)
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {
