@@ -36,6 +36,7 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
+import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
@@ -44,7 +45,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local>? = null,
-    converter: Converter<Network, Output, Local>? = null,
+    private val converter: Converter<Network, Output, Local>? = null,
+    private val validator: Validator<Output>?,
     private val memoryPolicy: MemoryPolicy<Key, Output>?
 ) : Store<Key, Output> {
     /**
@@ -88,12 +90,18 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         converter = converter
     )
 
+    @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
-                memCache?.getIfPresent(request.key)
+                val output = memCache?.getIfPresent(request.key)
+                when {
+                    output == null -> null
+                    validator?.isValid(output) == false -> null
+                    else -> output
+                }
             }
 
             cachedToEmit?.let {
@@ -114,27 +122,43 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 diskNetworkCombined(request, sourceOfTruth)
             }
             emitAll(
-                stream.transform {
-                    emit(it)
-                    if (it is StoreReadResponse.NoNewData && cachedToEmit == null) {
-                        // In the special case where fetcher returned no new data we actually want to
-                        // serve cache data (even if the request specified skipping cache and/or SoT)
-                        //
-                        // For stream(Request.cached(key, refresh=true)) we will return:
-                        // Cache
-                        // Source of truth
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // (future Source of truth updates)
-                        //
-                        // For stream(Request.fresh(key)) we will return:
-                        // Fetcher - > Loading
-                        // Fetcher - > NoNewData
-                        // Cache
-                        // Source of truth
-                        // (future Source of truth updates)
-                        memCache?.getIfPresent(request.key)?.let {
-                            emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                stream.transform { output ->
+                    val data = output.dataOrNull()
+                    val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
+                    if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
+                        fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
+                            val network = storeReadResponse.dataOrNull()
+                            if (network != null) {
+                                val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
+                                if (newOutput != null) {
+                                    emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
+                                } else {
+                                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
+                                }
+                            }
+                        }
+                    } else {
+                        emit(output)
+                        if (output is StoreReadResponse.NoNewData && cachedToEmit == null) {
+                            // In the special case where fetcher returned no new data we actually want to
+                            // serve cache data (even if the request specified skipping cache and/or SoT)
+                            //
+                            // For stream(Request.cached(key, refresh=true)) we will return:
+                            // Cache
+                            // Source of truth
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // (future Source of truth updates)
+                            //
+                            // For stream(Request.fresh(key)) we will return:
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // Cache
+                            // Source of truth
+                            // (future Source of truth updates)
+                            memCache?.getIfPresent(request.key)?.let {
+                                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                            }
                         }
                     }
                 }
