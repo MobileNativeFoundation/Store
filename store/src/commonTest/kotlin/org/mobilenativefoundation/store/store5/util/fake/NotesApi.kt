@@ -3,7 +3,6 @@ package org.mobilenativefoundation.store.store5.util.fake
 import org.mobilenativefoundation.store.store5.util.TestApi
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
-import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
 
@@ -14,12 +13,17 @@ internal class NotesApi : TestApi<String, NetworkNote, CommonNote, NotesWriteRes
         seed()
     }
 
-    override fun get(key: String, fail: Boolean): NetworkNote? {
+    override fun get(key: String, fail: Boolean, ttl: Long?): NetworkNote {
         if (fail) {
             throw Exception()
         }
 
-        return db[key]
+        val networkNote = db[key]!!
+        return if (ttl != null) {
+            networkNote.copy(ttl = ttl)
+        } else {
+            networkNote
+        }
     }
 
     override fun post(key: String, value: CommonNote, fail: Boolean): NotesWriteResponse {
@@ -33,8 +37,15 @@ internal class NotesApi : TestApi<String, NetworkNote, CommonNote, NotesWriteRes
     }
 
     private fun seed() {
-        db["1-id"] = NetworkNote(NoteData.Single(Note("1-id", "1-title", "1-content")))
-        db["2-id"] = NetworkNote(NoteData.Single(Note("2-id", "2-title", "2-content")))
-        db["3-id"] = NetworkNote(NoteData.Single(Note("3-id", "3-title", "3-content")))
+        db[Notes.One.id] = NetworkNote(NoteData.Single(Notes.One))
+        db[Notes.Two.id] = NetworkNote(NoteData.Single(Notes.Two))
+        db[Notes.Three.id] = NetworkNote(NoteData.Single(Notes.Three))
+        db[Notes.Four.id] = NetworkNote(NoteData.Single(Notes.Four))
+        db[Notes.Five.id] = NetworkNote(NoteData.Single(Notes.Five))
+        db[Notes.Six.id] = NetworkNote(NoteData.Single(Notes.Six))
+        db[Notes.Seven.id] = NetworkNote(NoteData.Single(Notes.Seven))
+        db[Notes.Eight.id] = NetworkNote(NoteData.Single(Notes.Eight))
+        db[Notes.Nine.id] = NetworkNote(NoteData.Single(Notes.Nine))
+        db[Notes.Ten.id] = NetworkNote(NoteData.Single(Notes.Ten))
     }
 }

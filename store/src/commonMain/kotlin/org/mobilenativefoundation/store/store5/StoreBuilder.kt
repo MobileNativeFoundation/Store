@@ -54,6 +54,8 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
     fun converter(converter: Converter<Network, Output, Local>):
         StoreBuilder<Key, Network, Output, Local>
 
+    fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local>
+
     companion object {
 
         /**
