@@ -5,7 +5,7 @@ object Version {
     const val androidGradlePlugin = "7.2.2"
     const val androidTargetSdk = androidCompileSdk
     const val anvilGradlePlugin = "2.4.2"
-    const val atomicFuGradlePlugin = "0.18.5"
+    const val atomicFu = "0.18.5"
     const val baseKotlin = "1.7.21"
     const val binaryCompatibilityValidator = "0.12.1"
     const val composeAndroidX = "1.3.0-beta02"
