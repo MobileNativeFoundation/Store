@@ -33,6 +33,7 @@ object Deps {
     }
 
     object Kotlinx {
+        const val atomicFu = "org.jetbrains.kotlinx:atomicfu:${Version.atomicFu}"
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib:${Version.baseKotlin}"
         const val serializationCore = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Version.kotlinxSerialization}"
         const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Version.kotlinxSerialization}"

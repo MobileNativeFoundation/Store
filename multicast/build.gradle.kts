@@ -42,7 +42,10 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                implementation(Deps.Kotlinx.coroutinesCore)
+                with(Deps.Kotlinx) {
+                    api(atomicFu)
+                    implementation(coroutinesCore)
+                }
             }
         }
         val jvmMain by getting
