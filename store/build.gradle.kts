@@ -47,6 +47,7 @@ kotlin {
                     implementation(coroutinesCore)
                     implementation(serializationCore)
                     implementation(dateTime)
+                    api(atomicFu)
                 }
                 implementation(Deps.Touchlab.kermit)
                 implementation(project(":multicast"))

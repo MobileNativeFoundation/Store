@@ -40,7 +40,13 @@ kotlin {
             }
         }
 
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                with(Deps.Kotlinx) {
+                    api(atomicFu)
+                }
+            }
+        }
         val jvmMain by getting
         val androidMain by getting
         val nativeMain by creating {
