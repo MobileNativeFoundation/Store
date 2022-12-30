@@ -22,7 +22,7 @@ buildscript {
         classpath("org.jetbrains.kotlinx:kover:${Version.kover}")
         classpath("com.squareup.anvil:gradle-plugin:${Version.anvilGradlePlugin}")
         classpath("com.squareup.sqldelight:gradle-plugin:${Version.sqlDelightGradlePlugin}")
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Version.atomicFuGradlePlugin}")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Version.atomicFu}")
     }
 }
 
