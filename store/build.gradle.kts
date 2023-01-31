@@ -10,10 +10,7 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
-    kotlin("native.cocoapods")
-    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -21,15 +18,10 @@ kotlin {
     jvm()
     iosArm64()
     iosX64()
+    iosSimulatorArm64()
     js {
         browser()
         nodejs()
-    }
-    cocoapods {
-        summary = "Store5"
-        homepage = "https://github.com/MobileNativeFoundation/Store"
-        ios.deploymentTarget = "13"
-        version = Version.store
     }
 
     sourceSets {
@@ -47,8 +39,9 @@ kotlin {
                     implementation(coroutinesCore)
                     implementation(serializationCore)
                     implementation(dateTime)
-                    api(atomicFu)
+                    implementation(atomicFu)
                 }
+
                 implementation(Deps.Touchlab.kermit)
                 implementation(project(":multicast"))
                 implementation(project(":cache"))
@@ -110,14 +103,6 @@ mavenPublishing {
     signAllPublications()
 }
 
-addGithubPackagesRepository()
-kmmbridge {
-    githubReleaseArtifacts()
-    githubReleaseVersions()
-    versionPrefix.set("5.0.0-alpha")
-    spm()
-}
-
 koverMerged {
     enable()
 
@@ -134,9 +119,4 @@ koverMerged {
     verify {
         onCheck.set(true)
     }
-}
-
-atomicfu {
-    transformJvm = false
-    transformJs = false
 }
