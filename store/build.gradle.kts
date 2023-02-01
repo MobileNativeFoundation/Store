@@ -10,7 +10,9 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
+    id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
+    kotlin("native.cocoapods")
 }
 
 kotlin {
@@ -22,6 +24,13 @@ kotlin {
     js {
         browser()
         nodejs()
+    }
+
+    cocoapods {
+        summary = "Store5"
+        homepage = "https://github.com/MobileNativeFoundation/Store"
+        ios.deploymentTarget = "13"
+        version = Version.store
     }
 
     sourceSets {
@@ -101,6 +110,14 @@ tasks.withType<DokkaTask>().configureEach {
 mavenPublishing {
     publishToMavenCentral(S01)
     signAllPublications()
+}
+
+addGithubPackagesRepository()
+kmmbridge {
+    githubReleaseArtifacts()
+    githubReleaseVersions()
+    versionPrefix.set("5.0.0-alpha")
+    spm()
 }
 
 koverMerged {
