@@ -13,7 +13,6 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
-    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -43,7 +42,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 with(Deps.Kotlinx) {
-                    api(atomicFu)
+                    implementation(atomicFu)
                     implementation(coroutinesCore)
                 }
             }

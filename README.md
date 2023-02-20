@@ -29,14 +29,9 @@
 
 ### Including Store In Your Project
 
-> **Note**  
->  
-> **[AtomicFU](https://github.com/Kotlin/kotlinx-atomicfu) is required ([#503](https://github.com/MobileNativeFoundation/Store/issues/503))**
-
 #### Android
 ```kotlin
 implementation "org.mobilenativefoundation.store:store5:5.0.0-alpha03"
-api "org.jetbrains.kotlinx:atomicfu:0.18.5"
 ```
 
 #### Multiplatform (Common, JVM, Native, JS)
@@ -45,7 +40,6 @@ api "org.jetbrains.kotlinx:atomicfu:0.18.5"
 commonMain {
   dependencies {
     implementation("org.mobilenativefoundation.store:store5:5.0.0-alpha03")
-    api("org.jetbrains.kotlinx:atomicfu:0.18.5")
   }
 }
 ```

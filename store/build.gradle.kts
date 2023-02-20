@@ -13,7 +13,6 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
-    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -47,7 +46,7 @@ kotlin {
                     implementation(coroutinesCore)
                     implementation(serializationCore)
                     implementation(dateTime)
-                    api(atomicFu)
+                    implementation(atomicFu)
                 }
                 implementation(Deps.Touchlab.kermit)
                 implementation(project(":multicast"))
@@ -134,9 +133,4 @@ koverMerged {
     verify {
         onCheck.set(true)
     }
-}
-
-atomicfu {
-    transformJvm = false
-    transformJs = false
 }
