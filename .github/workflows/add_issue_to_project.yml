@@ -1,0 +1,16 @@
+name: Add Issue To Project
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add-issue-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/MobileNativeFoundation/projects/1
+          github-token: ${{ secrets.ADD_ISSUE_TO_PROJECT }}
