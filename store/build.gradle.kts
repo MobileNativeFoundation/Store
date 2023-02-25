@@ -67,7 +67,13 @@ kotlin {
             }
         }
 
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                with(Deps.Kotlinx) {
+                    implementation(atomicFu)
+                }
+            }
+        }
         val androidMain by getting
         val nativeMain by creating {
             dependsOn(commonMain)
