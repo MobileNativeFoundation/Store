@@ -28,7 +28,9 @@ import org.mobilenativefoundation.store.multicast5.Multicaster
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
+import org.mobilenativefoundation.store.store5.Processor
 import org.mobilenativefoundation.store.store5.SourceOfTruth
+import org.mobilenativefoundation.store.store5.StatefulStoreKey
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 
@@ -55,7 +57,8 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
      */
     private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
 
-    private val converter: Converter<Network, Output, Local>? = null
+    private val converter: Converter<Network, Output, Local>? = null,
+    private val processor: Processor<Output>? = null
 ) {
     @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
@@ -94,8 +97,15 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                 onEach = { response ->
                     response.dataOrNull()?.let { network ->
                         val output = converter?.fromNetworkToOutput(network)
-                        val input = output ?: network
-                        sourceOfTruth?.write(key, input as Output)
+                        val unprocessed = (output ?: network) as Output
+
+                        val processed = processor?.invoke(unprocessed)
+                        if (processed != null && key is StatefulStoreKey<*>) {
+                            sourceOfTruth?.write(key.asUnprocessed() as Key, unprocessed)
+                            sourceOfTruth?.write(key.asProcessed() as Key, processed)
+                        } else {
+                            sourceOfTruth?.write(key, unprocessed)
+                        }
                     }
                 }
             )

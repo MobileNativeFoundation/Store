@@ -7,7 +7,10 @@ import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.Processor
 import org.mobilenativefoundation.store.store5.SourceOfTruth
+import org.mobilenativefoundation.store.store5.StatefulStore
+import org.mobilenativefoundation.store.store5.StatefulStoreKey
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreDefaults
@@ -59,14 +62,18 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
-    override fun build(): Store<Key, Output> = RealStore(
+    override fun build(processor: Processor<Output>?): Store<Key, Output> = RealStore(
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
         memoryPolicy = cachePolicy,
         converter = converter,
-        validator = validator
+        validator = validator,
+        processor = processor
     )
+
+    override fun build(processor: Processor<Output>): StatefulStore<StatefulStoreKey<Key>, Output> =
+        build(processor)
 
     override fun <UpdaterResult : Any> build(
         updater: Updater<Key, Output, UpdaterResult>,

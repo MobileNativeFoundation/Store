@@ -31,7 +31,9 @@ import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
+import org.mobilenativefoundation.store.store5.Processor
 import org.mobilenativefoundation.store.store5.SourceOfTruth
+import org.mobilenativefoundation.store.store5.StatefulStoreKey
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -47,6 +49,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     sourceOfTruth: SourceOfTruth<Key, Local>? = null,
     private val converter: Converter<Network, Output, Local>? = null,
     private val validator: Validator<Output>?,
+    private val processor: Processor<Output>?,
     private val memoryPolicy: MemoryPolicy<Key, Output>?
 ) : Store<Key, Output> {
     /**
@@ -87,15 +90,28 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         scope = scope,
         realFetcher = fetcher,
         sourceOfTruth = this.sourceOfTruth,
-        converter = converter
+        converter = converter,
+        processor = processor
     )
 
     @Suppress("UNCHECKED_CAST")
-    override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
-        flow {
-            val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
-                null
-            } else {
+    private suspend fun cachedToEmitOrNull(request: StoreReadRequest<Key>): Output? {
+        return when {
+            request.shouldSkipCache(CacheType.MEMORY) -> null
+            processor != null && request.key is StatefulStoreKey<*> -> {
+                val processed = memCache?.getIfPresent(request.key.asProcessed().value as Key)
+                val unprocessed = memCache?.getIfPresent(request.key.asUnprocessed().value as Key)
+
+                val reprocessed = if ((processed == null || validator?.isValid(processed) != true) && unprocessed != null) {
+                    processor.invoke(unprocessed)
+                } else {
+                    null
+                }
+
+                processed ?: reprocessed
+            }
+
+            else -> {
                 val output = memCache?.getIfPresent(request.key)
                 when {
                     output == null -> null
@@ -103,6 +119,13 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     else -> output
                 }
             }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
+        flow {
+            val cachedToEmit = cachedToEmitOrNull(request)
 
             cachedToEmit?.let {
                 // if we read a value from cache, dispatch it first
@@ -129,7 +152,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
                             val network = storeReadResponse.dataOrNull()
                             if (network != null) {
-                                val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
+                                val newOutput = converter?.fromNetworkToOutput(network)
+                                    ?: network as? Output
                                 if (newOutput != null) {
                                     emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
                                 } else {
@@ -167,7 +191,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != StoreReadResponseOrigin.Cache) {
                 it.dataOrNull()?.let { data ->
-                    memCache?.put(request.key, data)
+                    writeToCache(request.key, data)
                 }
             }
         }
@@ -303,6 +327,19 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             }
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun writeToCache(key: Key, unprocessed: Output, processed: Output? = null): Boolean = try {
+        if (processor != null && key is StatefulStoreKey<*> && processed != null) {
+            memCache?.put(key.asUnprocessed() as Key, unprocessed)
+            memCache?.put(key.asProcessed() as Key, processed)
+        } else {
+            memCache?.put(key, unprocessed)
+        }
+        true
+    } catch (error: Throwable) {
+        false
+    }
+
     internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
         memCache?.put(key, value)
         sourceOfTruth?.write(key, value)
@@ -311,7 +348,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         StoreDelegateWriteResult.Error.Exception(error)
     }
 
-    internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
+    internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key)
+        ?: fromSourceOfTruth(key)
+
     private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 }
