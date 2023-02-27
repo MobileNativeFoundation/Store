@@ -27,7 +27,7 @@ internal class CampaignApi {
     }
 
     private fun seed() {
-        db["1"] = Campaign.Unprocessed("1", "Dropbox \${PLAN} for \${PRICE}")
+        db["1"] = Campaign.Unprocessed("1", "Offline Files: \${OFFLINE_FILES_STATUS}, \${OFFLINE_FILE_COUNT}. Learn more at: \${OFFLINE_FILES_LINK}")
         counter = 0
     }
 }
