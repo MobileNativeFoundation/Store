@@ -10,8 +10,6 @@ internal class CampaignDatabase {
             throw Exception()
         }
 
-        println("Db")
-
         db[key] = input
         return true
     }

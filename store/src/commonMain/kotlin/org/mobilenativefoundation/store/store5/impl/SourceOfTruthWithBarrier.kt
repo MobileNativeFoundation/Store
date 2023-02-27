@@ -90,7 +90,9 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                             }
 
                                             val output = when {
-                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
+                                                local != null -> converter?.fromLocalToOutput(local)
+                                                    ?: local as? Output
+
                                                 else -> null
                                             }
 
@@ -100,7 +102,9 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                             )
                                         } else {
                                             val output = when {
-                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
+                                                local != null -> converter?.fromLocalToOutput(local)
+                                                    ?: local as? Output
+
                                                 else -> null
                                             }
 
@@ -114,7 +118,8 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                             StoreReadResponse.Error.Exception(
                                                 error = SourceOfTruth.ReadException(
                                                     key = key,
-                                                    cause = throwable.cause ?: throwable
+                                                    cause = throwable.cause
+                                                        ?: throwable
                                                 ),
                                                 origin = StoreReadResponseOrigin.SourceOfTruth
                                             )
@@ -159,8 +164,6 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {
-                    println(throwable.message)
-                    println(throwable.cause)
                     throwable
                 } else {
                     null

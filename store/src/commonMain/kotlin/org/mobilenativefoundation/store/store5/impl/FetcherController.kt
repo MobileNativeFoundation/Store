@@ -101,13 +101,8 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
 
                         val processed = processor?.invoke(unprocessed)
                         if (processed != null && key is StatefulStoreKey) {
-
-                            println("hitting")
-
                             sourceOfTruth?.write(key, unprocessed)
-                            println("hitting2")
                             sourceOfTruth?.write(key, processed)
-                            println("hitting3")
                         } else {
                             sourceOfTruth?.write(key, unprocessed)
                         }

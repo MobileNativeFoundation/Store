@@ -5,12 +5,14 @@ import org.mobilenativefoundation.store.store5.util.model.CampaignKey
 
 internal class CampaignApi {
     internal val db = mutableMapOf<String, Campaign.Unprocessed>()
+    internal var counter = 0
 
     init {
         seed()
     }
 
     fun get(key: CampaignKey, fail: Boolean, ttl: Long?): Campaign.Unprocessed {
+        counter += 1
         if (fail) {
             throw Exception()
         }
@@ -26,5 +28,6 @@ internal class CampaignApi {
 
     private fun seed() {
         db["1"] = Campaign.Unprocessed("1", "Dropbox \${PLAN} for \${PRICE}")
+        counter = 0
     }
 }

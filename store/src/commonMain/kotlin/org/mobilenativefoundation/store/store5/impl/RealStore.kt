@@ -330,9 +330,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     @Suppress("UNCHECKED_CAST")
     private fun writeToCache(key: Key, unprocessed: Output, processed: Output? = null): Boolean = try {
         if (processor != null && key is StatefulStoreKey && processed != null) {
-            println("hitting4")
             memCache?.put(key.unprocessed() as Key, unprocessed)
-            println("hitting5")
             memCache?.put(key.processed() as Key, processed)
         } else {
             memCache?.put(key, unprocessed)
@@ -343,9 +341,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
-        println("hitting6")
         memCache?.put(key, value)
-        println("hitting7")
         sourceOfTruth?.write(key, value)
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
