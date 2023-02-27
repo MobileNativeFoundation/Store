@@ -7,7 +7,6 @@ internal class OfflineFileCountDataStore {
     fun put(key: String, input: Perishable<Int>, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
-
         }
 
         db[key] = input

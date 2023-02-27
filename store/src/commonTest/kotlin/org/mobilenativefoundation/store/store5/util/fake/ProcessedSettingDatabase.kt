@@ -7,7 +7,6 @@ internal class ProcessedSettingDatabase {
     fun put(key: String, input: Setting.Processed, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
-
         }
 
         db[key] = input

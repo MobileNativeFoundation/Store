@@ -51,71 +51,69 @@ class PipelineTests {
         val valuesTTL = inMinutes(5)
 
         val unprocessedSettingStore = StoreBuilder.from<String, Setting.Unprocessed, Setting.Unprocessed, Setting.Unprocessed>(
-                fetcher = Fetcher.of { key -> settingApi.get(key, false, templateTTL) },
-                sourceOfTruth = SourceOfTruth.of(
-                        nonFlowReader = { key -> unprocessedSettingDatabase.get(key) },
-                        writer = { key, setting -> unprocessedSettingDatabase.put(key, setting) }
-                )
+            fetcher = Fetcher.of { key -> settingApi.get(key, false, templateTTL) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> unprocessedSettingDatabase.get(key) },
+                writer = { key, setting -> unprocessedSettingDatabase.put(key, setting) }
+            )
         ).build()
 
         val offlineFileCountStore = StoreBuilder.from<String, Perishable<Int>, Perishable<Int>, Perishable<Int>>(
-                fetcher = Fetcher.of { key -> offlineFileCountApi.get(key, false, valuesTTL) },
-                sourceOfTruth = SourceOfTruth.of(
-                        nonFlowReader = { key -> offlineFileCountDataStore.get(key) },
-                        writer = { key, metadata -> offlineFileCountDataStore.put(key, metadata) }
-                )
+            fetcher = Fetcher.of { key -> offlineFileCountApi.get(key, false, valuesTTL) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> offlineFileCountDataStore.get(key) },
+                writer = { key, metadata -> offlineFileCountDataStore.put(key, metadata) }
+            )
         ).build()
 
         val offlineFilesStatusStore = StoreBuilder.from<String, Perishable<String>, Perishable<String>, Perishable<String>>(
-                fetcher = Fetcher.of { key -> offlineFilesStatusApi.get(key, false, valuesTTL) },
-                sourceOfTruth = SourceOfTruth.of(
-                        nonFlowReader = { key -> offlineFilesStatusDataStore.get(key) },
-                        writer = { key, metadata -> offlineFilesStatusDataStore.put(key, metadata) }
-                )
+            fetcher = Fetcher.of { key -> offlineFilesStatusApi.get(key, false, valuesTTL) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> offlineFilesStatusDataStore.get(key) },
+                writer = { key, metadata -> offlineFilesStatusDataStore.put(key, metadata) }
+            )
         ).build()
 
         val processedSettingStore = StoreBuilder.from<String, Setting.Processed, Setting.Processed, Setting.Processed>(
-                fetcher = Fetcher.of { key ->
-                    val request = StoreReadRequest.cached(key, false)
-                    val unprocessed = unprocessedSettingStore.stream(request).first { it.dataOrNull() != null }.requireData()
-                    Processor(
-                            unprocessed = unprocessed,
-                            userId = key,
-                            statusStore = offlineFilesStatusStore,
-                            countStore = offlineFileCountStore
-                    )
-
-                },
-                sourceOfTruth = SourceOfTruth.of(
-                        nonFlowReader = { key -> processedSettingDatabase.get(key) },
-                        writer = { key, setting ->
-                            processedSettingDatabase.put(key, setting)
-                        }
+            fetcher = Fetcher.of { key ->
+                val request = StoreReadRequest.cached(key, false)
+                val unprocessed = unprocessedSettingStore.stream(request).first { it.dataOrNull() != null }.requireData()
+                Processor(
+                    unprocessed = unprocessed,
+                    userId = key,
+                    statusStore = offlineFilesStatusStore,
+                    countStore = offlineFileCountStore
                 )
+            },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> processedSettingDatabase.get(key) },
+                writer = { key, setting ->
+                    processedSettingDatabase.put(key, setting)
+                }
+            )
         ).validator(SettingValidator())
-                .build()
-
+            .build()
 
         val request = StoreReadRequest.fresh(Settings.Tag.ID)
 
         val stream = processedSettingStore.stream(request)
 
         assertEmitsExactly(
-                stream, listOf(
+            stream,
+            listOf(
                 StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
                 StoreReadResponse.Data(Settings.Tag.OfflineFiles.Processed.copy(ttl = valuesTTL), origin = StoreReadResponseOrigin.Fetcher)
-        )
+            )
         )
     }
 }
 
-
 @Suppress("TestFunctionName")
 suspend fun Processor(
-        unprocessed: Setting.Unprocessed,
-        userId: String,
-        statusStore: Store<String, Perishable<String>>,
-        countStore: Store<String, Perishable<Int>>
+    unprocessed: Setting.Unprocessed,
+    userId: String,
+    statusStore: Store<String, Perishable<String>>,
+    countStore: Store<String, Perishable<Int>>
 ): Setting.Processed {
     val title = process(unprocessed.title, userId, statusStore, countStore)
     val subtitle = process(unprocessed.subtitle, userId, statusStore, countStore)
@@ -125,23 +123,22 @@ suspend fun Processor(
     val ttl = minOf(title.ttl, subtitle.ttl, label.ttl, status.ttl)
 
     return Setting.Processed(
-            id = unprocessed.id,
-            title = title.value,
-            subtitle = subtitle.value,
-            label = label.value,
-            status = status.value,
-            ttl = ttl
+        id = unprocessed.id,
+        title = title.value,
+        subtitle = subtitle.value,
+        label = label.value,
+        status = status.value,
+        ttl = ttl
     )
 }
 
 private const val SPACE = " "
 
-
 private suspend fun process(
-        unprocessed: String,
-        userId: String,
-        statusStore: Store<String, Perishable<String>>,
-        countStore: Store<String, Perishable<Int>>
+    unprocessed: String,
+    userId: String,
+    statusStore: Store<String, Perishable<String>>,
+    countStore: Store<String, Perishable<Int>>
 ): Perishable<String> {
     var ttl: Long = Long.MAX_VALUE
 
@@ -167,7 +164,6 @@ private suspend fun process(
 
     return Perishable(value, ttl)
 }
-
 
 internal class SettingValidator(private val expiration: Long = now()) : Validator<Setting.Processed> {
     override suspend fun isValid(item: Setting.Processed): Boolean = when (item.ttl) {

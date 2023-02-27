@@ -10,20 +10,20 @@ sealed class Setting {
     abstract val ttl: Long
 
     data class Unprocessed(
-            override val id: String,
-            override val title: String,
-            override val subtitle: String,
-            override val label: String,
-            override val status: String,
-            override val ttl: Long = Long.MAX_VALUE
+        override val id: String,
+        override val title: String,
+        override val subtitle: String,
+        override val label: String,
+        override val status: String,
+        override val ttl: Long = Long.MAX_VALUE
     ) : Setting()
 
     data class Processed(
-            override val id: String,
-            override val title: String,
-            override val subtitle: String,
-            override val label: String,
-            override val status: String,
-            override val ttl: Long = Long.MAX_VALUE
+        override val id: String,
+        override val title: String,
+        override val subtitle: String,
+        override val label: String,
+        override val status: String,
+        override val ttl: Long = Long.MAX_VALUE
     ) : Setting()
 }

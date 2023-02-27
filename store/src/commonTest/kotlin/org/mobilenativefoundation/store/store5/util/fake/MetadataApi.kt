@@ -2,7 +2,6 @@ package org.mobilenativefoundation.store.store5.util.fake
 
 import org.mobilenativefoundation.store.store5.util.model.Perishable
 
-
 internal class OfflineFileCountApi {
     internal val db = mutableMapOf<String, Perishable<Int>>()
     internal var counter = 0

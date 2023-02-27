@@ -31,7 +31,6 @@ internal class SettingApi {
     }
 }
 
-
 object Settings {
     object Tag {
         const val ID = "1"
@@ -42,21 +41,20 @@ object Settings {
             const val OFFLINE_FILE_COUNT = 72
 
             val Unprocessed = Setting.Unprocessed(
-                    id = ID,
-                    title = "Offline Files: \${OFFLINE_FILES_STATUS} \${OFFLINE_FILE_COUNT}",
-                    subtitle = "Offline Files: \${OFFLINE_FILES_STATUS} \${OFFLINE_FILE_COUNT}",
-                    label = "\${OFFLINE_FILE_COUNT}",
-                    status = "\${OFFLINE_FILES_STATUS}"
+                id = ID,
+                title = "Offline Files: \${OFFLINE_FILES_STATUS} \${OFFLINE_FILE_COUNT}",
+                subtitle = "Offline Files: \${OFFLINE_FILES_STATUS} \${OFFLINE_FILE_COUNT}",
+                label = "\${OFFLINE_FILE_COUNT}",
+                status = "\${OFFLINE_FILES_STATUS}"
             )
 
             val Processed = Setting.Processed(
-                    id = ID,
-                    title = "Offline Files: $OFFLINE_FILES_STATUS $OFFLINE_FILE_COUNT",
-                    subtitle = "Offline Files: $OFFLINE_FILES_STATUS $OFFLINE_FILE_COUNT",
-                    label = "$OFFLINE_FILE_COUNT",
-                    status = OFFLINE_FILES_STATUS
+                id = ID,
+                title = "Offline Files: $OFFLINE_FILES_STATUS $OFFLINE_FILE_COUNT",
+                subtitle = "Offline Files: $OFFLINE_FILES_STATUS $OFFLINE_FILE_COUNT",
+                label = "$OFFLINE_FILE_COUNT",
+                status = OFFLINE_FILES_STATUS
             )
         }
-
     }
 }

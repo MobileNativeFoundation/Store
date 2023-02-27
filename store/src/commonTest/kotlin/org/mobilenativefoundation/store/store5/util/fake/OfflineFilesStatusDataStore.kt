@@ -7,7 +7,6 @@ internal class OfflineFilesStatusDataStore {
     fun put(key: String, input: Perishable<String>, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
-
         }
 
         db[key] = input
