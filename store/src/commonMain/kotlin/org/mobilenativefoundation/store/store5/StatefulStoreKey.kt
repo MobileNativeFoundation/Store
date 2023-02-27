@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5
 
-
 interface StatefulStoreKey {
 
     fun unprocessed(): Unprocessed

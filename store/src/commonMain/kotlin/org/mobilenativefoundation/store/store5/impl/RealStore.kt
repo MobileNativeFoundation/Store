@@ -44,13 +44,13 @@ import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
 internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
-        scope: CoroutineScope,
-        fetcher: Fetcher<Key, Network>,
-        sourceOfTruth: SourceOfTruth<Key, Local>? = null,
-        private val converter: Converter<Network, Output, Local>? = null,
-        private val validator: Validator<Output>?,
-        private val processor: Processor<Output>?,
-        private val memoryPolicy: MemoryPolicy<Key, Output>?
+    scope: CoroutineScope,
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    private val converter: Converter<Network, Output, Local>? = null,
+    private val validator: Validator<Output>?,
+    private val processor: Processor<Output>?,
+    private val memoryPolicy: MemoryPolicy<Key, Output>?
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -60,9 +60,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
      * as if it came from the server (the [StoreReadResponse.origin] field).
      */
     private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>? =
-            sourceOfTruth?.let {
-                SourceOfTruthWithBarrier(it, converter)
-            }
+        sourceOfTruth?.let {
+            SourceOfTruthWithBarrier(it, converter)
+        }
 
     private val memCache = memoryPolicy?.let {
         CacheBuilder<Key, Output>().apply {
@@ -87,11 +87,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
      * requests are shared.
      */
     private val fetcherController = FetcherController(
-            scope = scope,
-            realFetcher = fetcher,
-            sourceOfTruth = this.sourceOfTruth,
-            converter = converter,
-            processor = processor
+        scope = scope,
+        realFetcher = fetcher,
+        sourceOfTruth = this.sourceOfTruth,
+        converter = converter,
+        processor = processor
     )
 
     @Suppress("UNCHECKED_CAST")
@@ -124,77 +124,77 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
-            flow {
-                val cachedToEmit = cachedToEmitOrNull(request)
+        flow {
+            val cachedToEmit = cachedToEmitOrNull(request)
 
-                cachedToEmit?.let {
-                    // if we read a value from cache, dispatch it first
-                    emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
-                }
-                val stream = if (sourceOfTruth == null) {
-                    // piggypack only if not specified fresh data AND we emitted a value from the cache
-                    val piggybackOnly = !request.refresh && cachedToEmit != null
-                    @Suppress("UNCHECKED_CAST")
+            cachedToEmit?.let {
+                // if we read a value from cache, dispatch it first
+                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+            }
+            val stream = if (sourceOfTruth == null) {
+                // piggypack only if not specified fresh data AND we emitted a value from the cache
+                val piggybackOnly = !request.refresh && cachedToEmit != null
+                @Suppress("UNCHECKED_CAST")
 
-                    createNetworkFlow(
-                            request = request,
-                            networkLock = null,
-                            piggybackOnly = piggybackOnly
-                    ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
-                } else {
-                    diskNetworkCombined(request, sourceOfTruth)
-                }
-                emitAll(
-                        stream.transform { output ->
-                            val data = output.dataOrNull()
-                            val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
-                            if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
-                                fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
-                                    val network = storeReadResponse.dataOrNull()
-                                    if (network != null) {
-                                        val newOutput = converter?.fromNetworkToOutput(network)
-                                                ?: network as? Output
-                                        if (newOutput != null) {
-                                            emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
-                                        } else {
-                                            emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
-                                        }
-                                    }
-                                }
-                            } else {
-                                emit(output)
-                                if (output is StoreReadResponse.NoNewData && cachedToEmit == null) {
-                                    // In the special case where fetcher returned no new data we actually want to
-                                    // serve cache data (even if the request specified skipping cache and/or SoT)
-                                    //
-                                    // For stream(Request.cached(key, refresh=true)) we will return:
-                                    // Cache
-                                    // Source of truth
-                                    // Fetcher - > Loading
-                                    // Fetcher - > NoNewData
-                                    // (future Source of truth updates)
-                                    //
-                                    // For stream(Request.fresh(key)) we will return:
-                                    // Fetcher - > Loading
-                                    // Fetcher - > NoNewData
-                                    // Cache
-                                    // Source of truth
-                                    // (future Source of truth updates)
-                                    memCache?.getIfPresent(request.key)?.let {
-                                        emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
-                                    }
+                createNetworkFlow(
+                    request = request,
+                    networkLock = null,
+                    piggybackOnly = piggybackOnly
+                ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
+            } else {
+                diskNetworkCombined(request, sourceOfTruth)
+            }
+            emitAll(
+                stream.transform { output ->
+                    val data = output.dataOrNull()
+                    val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
+                    if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
+                        fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
+                            val network = storeReadResponse.dataOrNull()
+                            if (network != null) {
+                                val newOutput = converter?.fromNetworkToOutput(network)
+                                    ?: network as? Output
+                                if (newOutput != null) {
+                                    emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
+                                } else {
+                                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
                                 }
                             }
                         }
-                )
-            }.onEach {
-                // whenever a value is dispatched, save it to the memory cache
-                if (it.origin != StoreReadResponseOrigin.Cache) {
-                    it.dataOrNull()?.let { data ->
-                        writeToCache(request.key, data)
+                    } else {
+                        emit(output)
+                        if (output is StoreReadResponse.NoNewData && cachedToEmit == null) {
+                            // In the special case where fetcher returned no new data we actually want to
+                            // serve cache data (even if the request specified skipping cache and/or SoT)
+                            //
+                            // For stream(Request.cached(key, refresh=true)) we will return:
+                            // Cache
+                            // Source of truth
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // (future Source of truth updates)
+                            //
+                            // For stream(Request.fresh(key)) we will return:
+                            // Fetcher - > Loading
+                            // Fetcher - > NoNewData
+                            // Cache
+                            // Source of truth
+                            // (future Source of truth updates)
+                            memCache?.getIfPresent(request.key)?.let {
+                                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                            }
+                        }
                     }
                 }
+            )
+        }.onEach {
+            // whenever a value is dispatched, save it to the memory cache
+            if (it.origin != StoreReadResponseOrigin.Cache) {
+                it.dataOrNull()?.let { data ->
+                    writeToCache(request.key, data)
+                }
             }
+        }
 
     override suspend fun clear(key: Key) {
         memCache?.invalidate(key)
@@ -232,8 +232,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
      * This ensures we first get the value from disk and then load from server if necessary.
      */
     private fun diskNetworkCombined(
-            request: StoreReadRequest<Key>,
-            sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>
+        request: StoreReadRequest<Key>,
+        sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>
     ): Flow<StoreReadResponse<Output>> {
         val diskLock = CompletableDeferred<Unit>()
         val networkLock = CompletableDeferred<Unit>()
@@ -295,7 +295,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             // error, we should NOT allow fetcher to start emitting values as we
                             // should always wait for the read attempt.
                             if (diskData is StoreReadResponse.Error.Exception &&
-                                    diskData.error is SourceOfTruth.ReadException
+                                diskData.error is SourceOfTruth.ReadException
                             ) {
                                 networkLock.complete(Unit)
                             }
@@ -312,19 +312,19 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     private fun createNetworkFlow(
-            request: StoreReadRequest<Key>,
-            networkLock: CompletableDeferred<Unit>?,
-            piggybackOnly: Boolean = false
+        request: StoreReadRequest<Key>,
+        networkLock: CompletableDeferred<Unit>?,
+        piggybackOnly: Boolean = false
     ): Flow<StoreReadResponse<Network>> {
         return fetcherController
-                .getFetcher(request.key, piggybackOnly)
-                .onStart {
-                    // wait until disk gives us the go
-                    networkLock?.await()
-                    if (!piggybackOnly) {
-                        emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher))
-                    }
+            .getFetcher(request.key, piggybackOnly)
+            .onStart {
+                // wait until disk gives us the go
+                networkLock?.await()
+                if (!piggybackOnly) {
+                    emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher))
                 }
+            }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -353,7 +353,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key)
-            ?: fromSourceOfTruth(key)
+        ?: fromSourceOfTruth(key)
 
     private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)

@@ -42,34 +42,32 @@ class StatefulStoreWithSourceOfTruthTests {
         val validator = CampaignValidator()
 
         val store = StatefulStoreBuilder.from<CampaignKey, Campaign, Campaign, Campaign>(
-                fetcher = Fetcher.of { key -> api.get(key, false, templateTTL) },
-                sourceOfTruth = SourceOfTruth.of(
-                        nonFlowReader = { key -> database.get(key) },
-                        writer = { key, campaign -> database.put(key, campaign) }
-                ),
+            fetcher = Fetcher.of { key -> api.get(key, false, templateTTL) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> database.get(key) },
+                writer = { key, campaign -> database.put(key, campaign) }
+            ),
         ).validator(validator).build(
-                processor = { campaign ->
-                    when (campaign) {
-                        is Campaign.Processed -> campaign
-                        is Campaign.Unprocessed -> campaignProcessor(campaign, valuesTTL)
-                    }
+            processor = { campaign ->
+                when (campaign) {
+                    is Campaign.Processed -> campaign
+                    is Campaign.Unprocessed -> campaignProcessor(campaign, valuesTTL)
                 }
+            }
         )
-
 
         val key = CampaignKey("1")
         val readRequest = StoreReadRequest.fresh(key)
         val stream = store.stream(readRequest)
 
         assertEmitsExactly(
-                stream,
-                listOf(
-                        StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data(Campaigns.One.Processed.copy(ttl = valuesTTL), origin = StoreReadResponseOrigin.Fetcher)
-                )
+            stream,
+            listOf(
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
+                StoreReadResponse.Data(Campaigns.One.Processed.copy(ttl = valuesTTL), origin = StoreReadResponseOrigin.Fetcher)
+            )
         )
     }
-
 }
 
 object Campaigns {
@@ -78,5 +76,4 @@ object Campaigns {
         val Unprocessed = Campaign.Unprocessed("1", "Dropbox \${PLAN} for \${PRICE}")
         val Processed = Campaign.Processed("1", "Dropbox Plus for $11.99")
     }
-
 }

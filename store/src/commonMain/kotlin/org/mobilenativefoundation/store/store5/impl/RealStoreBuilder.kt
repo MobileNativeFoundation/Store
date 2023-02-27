@@ -20,29 +20,28 @@ import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
 fun <Key : StatefulStoreKey, Network : Any, Output : Any> statefulStoreBuilderFromFetcher(
-        fetcher: Fetcher<Key, Network>,
-        sourceOfTruth: SourceOfTruth<Key, *>? = null,
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, *>? = null,
 ): StatefulStoreBuilder<Key, Network, Output, *> = RealStatefulStoreBuilder(fetcher, sourceOfTruth)
 
 fun <Key : StatefulStoreKey, Output : Any, Network : Any, Local : Any> statefulStoreBuilderFromFetcherAndSourceOfTruth(
-        fetcher: Fetcher<Key, Network>,
-        sourceOfTruth: SourceOfTruth<Key, Local>,
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
 ): StatefulStoreBuilder<Key, Network, Output, Local> = RealStatefulStoreBuilder(fetcher, sourceOfTruth)
 
-
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
-        fetcher: Fetcher<Key, Network>,
-        sourceOfTruth: SourceOfTruth<Key, *>? = null,
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, *>? = null,
 ): StoreBuilder<Key, Network, Output, *> = RealStoreBuilder(fetcher, sourceOfTruth)
 
 fun <Key : Any, Output : Any, Network : Any, Local : Any> storeBuilderFromFetcherAndSourceOfTruth(
-        fetcher: Fetcher<Key, Network>,
-        sourceOfTruth: SourceOfTruth<Key, Local>,
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
 ): StoreBuilder<Key, Network, Output, Local> = RealStoreBuilder(fetcher, sourceOfTruth)
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
-        private val fetcher: Fetcher<Key, Network>,
-        private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
+    private val fetcher: Fetcher<Key, Network>,
+    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
 ) : StoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -75,29 +74,28 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     }
 
     override fun build(processor: Processor<Output>?): Store<Key, Output> = RealStore(
-            scope = scope ?: GlobalScope,
-            sourceOfTruth = sourceOfTruth,
-            fetcher = fetcher,
-            memoryPolicy = cachePolicy,
-            converter = converter,
-            validator = validator,
-            processor = processor
+        scope = scope ?: GlobalScope,
+        sourceOfTruth = sourceOfTruth,
+        fetcher = fetcher,
+        memoryPolicy = cachePolicy,
+        converter = converter,
+        validator = validator,
+        processor = processor
     )
 
     override fun <UpdaterResult : Any> build(
-            updater: Updater<Key, Output, UpdaterResult>,
-            bookkeeper: Bookkeeper<Key>
+        updater: Updater<Key, Output, UpdaterResult>,
+        bookkeeper: Bookkeeper<Key>
     ): MutableStore<Key, Output> =
-            build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
-                    updater = updater,
-                    bookkeeper = bookkeeper
-            )
+        build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
+            updater = updater,
+            bookkeeper = bookkeeper
+        )
 }
 
-
 internal class RealStatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, Output : Any, Local : Any>(
-        private val fetcher: Fetcher<Key, Network>,
-        private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
+    private val fetcher: Fetcher<Key, Network>,
+    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
 ) : StatefulStoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -129,13 +127,15 @@ internal class RealStatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, O
         return this
     }
 
-    override fun build(processor: Processor<Output>): StatefulStore<Key, Output> = RealStatefulStore(RealStore(
+    override fun build(processor: Processor<Output>): StatefulStore<Key, Output> = RealStatefulStore(
+        RealStore(
             scope = scope ?: GlobalScope,
             sourceOfTruth = sourceOfTruth,
             fetcher = fetcher,
             memoryPolicy = cachePolicy,
             converter = converter,
             validator = validator,
-            processor = processor)
+            processor = processor
+        )
     )
 }

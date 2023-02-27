@@ -21,7 +21,6 @@ import org.mobilenativefoundation.store.store5.impl.statefulStoreBuilderFromFetc
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcher
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSourceOfTruth
 
-
 interface StatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, Output : Any, Local : Any> {
     fun build(processor: Processor<Output>): StatefulStore<Key, Output>
 
@@ -32,14 +31,14 @@ interface StatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, Output : A
     fun disableCache(): StatefulStoreBuilder<Key, Network, Output, Local>
 
     fun converter(converter: Converter<Network, Output, Local>):
-            StatefulStoreBuilder<Key, Network, Output, Local>
+        StatefulStoreBuilder<Key, Network, Output, Local>
 
     fun validator(validator: Validator<Output>): StatefulStoreBuilder<Key, Network, Output, Local>
 
     companion object {
 
         fun <Key : StatefulStoreKey, Network : Any, Output : Any> from(
-                fetcher: Fetcher<Key, Network>,
+            fetcher: Fetcher<Key, Network>,
         ): StatefulStoreBuilder<Key, Network, Output, *> = statefulStoreBuilderFromFetcher(fetcher = fetcher)
 
         /**
@@ -49,15 +48,12 @@ interface StatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, Output : A
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
         fun <Key : StatefulStoreKey, Network : Any, Output : Any, Local : Any> from(
-                fetcher: Fetcher<Key, Network>,
-                sourceOfTruth: SourceOfTruth<Key, Local>
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local>
         ): StatefulStoreBuilder<Key, Network, Output, Local> =
-                statefulStoreBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+            statefulStoreBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
-
-
 }
-
 
 /**
  * Main entry point for creating a [Store].
@@ -66,8 +62,8 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
     fun build(processor: Processor<Output>? = null): Store<Key, Output>
 
     fun <Response : Any> build(
-            updater: Updater<Key, Output, Response>,
-            bookkeeper: Bookkeeper<Key>
+        updater: Updater<Key, Output, Response>,
+        bookkeeper: Bookkeeper<Key>
     ): MutableStore<Key, Output>
 
     /**
@@ -92,7 +88,7 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
     fun disableCache(): StoreBuilder<Key, Network, Output, Local>
 
     fun converter(converter: Converter<Network, Output, Local>):
-            StoreBuilder<Key, Network, Output, Local>
+        StoreBuilder<Key, Network, Output, Local>
 
     fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local>
 
@@ -104,7 +100,7 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
          * @param fetcher a [Fetcher] flow of network records.
          */
         fun <Key : Any, Network : Any, Output : Any> from(
-                fetcher: Fetcher<Key, Network>,
+            fetcher: Fetcher<Key, Network>,
         ): StoreBuilder<Key, Network, Output, *> = storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
@@ -114,9 +110,9 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
         fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
-                fetcher: Fetcher<Key, Network>,
-                sourceOfTruth: SourceOfTruth<Key, Local>
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local>
         ): StoreBuilder<Key, Network, Output, Local> =
-                storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+            storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }

@@ -4,9 +4,8 @@ package org.mobilenativefoundation.store.store5.util.model
 
 import org.mobilenativefoundation.store.store5.StatefulStoreKey
 
-
 open class CampaignKey(
-        val key: String
+    val key: String
 ) : StatefulStoreKey {
     override fun unprocessed() = Unprocessed(key)
 
@@ -17,9 +16,8 @@ open class CampaignKey(
     }
 
     data class Unprocessed(
-            val _key: String
+        val _key: String
     ) : StatefulStoreKey.Unprocessed {
         override fun processed() = Processed(_key)
     }
-
 }

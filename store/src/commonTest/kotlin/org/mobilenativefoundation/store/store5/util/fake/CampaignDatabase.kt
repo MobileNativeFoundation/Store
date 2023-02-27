@@ -3,7 +3,6 @@ package org.mobilenativefoundation.store.store5.util.fake
 import org.mobilenativefoundation.store.store5.util.model.Campaign
 import org.mobilenativefoundation.store.store5.util.model.CampaignKey
 
-
 internal class CampaignDatabase {
     private val db: MutableMap<CampaignKey, Campaign?> = mutableMapOf()
     fun put(key: CampaignKey, input: Campaign, fail: Boolean = false): Boolean {

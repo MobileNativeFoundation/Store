@@ -15,12 +15,11 @@ suspend fun campaignProcessor(output: Campaign.Unprocessed, ttl: Long? = null): 
     }.joinToString(SPACE)
 
     return Campaign.Processed(
-            id = output.id,
-            text = processed,
-            ttl = ttl
+        id = output.id,
+        text = processed,
+        ttl = ttl
     )
 }
-
 
 private suspend fun fetchPrice(): String {
     delay(300)
