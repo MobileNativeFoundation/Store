@@ -16,8 +16,48 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
+import org.mobilenativefoundation.store.store5.impl.statefulStoreBuilderFromFetcher
+import org.mobilenativefoundation.store.store5.impl.statefulStoreBuilderFromFetcherAndSourceOfTruth
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcher
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSourceOfTruth
+
+
+interface StatefulStoreBuilder<Key : StatefulStoreKey, Network : Any, Output : Any, Local : Any> {
+    fun build(processor: Processor<Output>): StatefulStore<Key, Output>
+
+    fun scope(scope: CoroutineScope): StatefulStoreBuilder<Key, Network, Output, Local>
+
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StatefulStoreBuilder<Key, Network, Output, Local>
+
+    fun disableCache(): StatefulStoreBuilder<Key, Network, Output, Local>
+
+    fun converter(converter: Converter<Network, Output, Local>):
+            StatefulStoreBuilder<Key, Network, Output, Local>
+
+    fun validator(validator: Validator<Output>): StatefulStoreBuilder<Key, Network, Output, Local>
+
+    companion object {
+
+        fun <Key : StatefulStoreKey, Network : Any, Output : Any> from(
+                fetcher: Fetcher<Key, Network>,
+        ): StatefulStoreBuilder<Key, Network, Output, *> = statefulStoreBuilderFromFetcher(fetcher = fetcher)
+
+        /**
+         * Creates a new [StatefulStoreBuilder] from a [Fetcher] and a [SourceOfTruth].
+         *
+         * @param fetcher a function for fetching a flow of network records.
+         * @param sourceOfTruth a [SourceOfTruth] for the store.
+         */
+        fun <Key : StatefulStoreKey, Network : Any, Output : Any, Local : Any> from(
+                fetcher: Fetcher<Key, Network>,
+                sourceOfTruth: SourceOfTruth<Key, Local>
+        ): StatefulStoreBuilder<Key, Network, Output, Local> =
+                statefulStoreBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+    }
+
+
+}
+
 
 /**
  * Main entry point for creating a [Store].
@@ -26,11 +66,9 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
     fun build(processor: Processor<Output>? = null): Store<Key, Output>
 
     fun <Response : Any> build(
-        updater: Updater<Key, Output, Response>,
-        bookkeeper: Bookkeeper<Key>
+            updater: Updater<Key, Output, Response>,
+            bookkeeper: Bookkeeper<Key>
     ): MutableStore<Key, Output>
-
-    fun build(processor: Processor<Output>): StatefulStore<StatefulStoreKey<Key>, Output>
 
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -54,7 +92,7 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
     fun disableCache(): StoreBuilder<Key, Network, Output, Local>
 
     fun converter(converter: Converter<Network, Output, Local>):
-        StoreBuilder<Key, Network, Output, Local>
+            StoreBuilder<Key, Network, Output, Local>
 
     fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local>
 
@@ -66,7 +104,7 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
          * @param fetcher a [Fetcher] flow of network records.
          */
         fun <Key : Any, Network : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Network>,
+                fetcher: Fetcher<Key, Network>,
         ): StoreBuilder<Key, Network, Output, *> = storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
@@ -76,9 +114,9 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
         fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
-            fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Local>
+                fetcher: Fetcher<Key, Network>,
+                sourceOfTruth: SourceOfTruth<Key, Local>
         ): StoreBuilder<Key, Network, Output, Local> =
-            storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+                storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }

@@ -43,76 +43,82 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
  * request.
  */
 internal class FetcherController<Key : Any, Network : Any, Output : Any, Local : Any>(
-    /**
-     * The [CoroutineScope] to use when collecting from the fetcher
-     */
-    private val scope: CoroutineScope,
-    /**
-     * The function that provides the actualy fetcher flow when needed
-     */
-    private val realFetcher: Fetcher<Key, Network>,
-    /**
-     * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
-     * no [SourceOfTruth] is available.
-     */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
+        /**
+         * The [CoroutineScope] to use when collecting from the fetcher
+         */
+        private val scope: CoroutineScope,
+        /**
+         * The function that provides the actualy fetcher flow when needed
+         */
+        private val realFetcher: Fetcher<Key, Network>,
+        /**
+         * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
+         * no [SourceOfTruth] is available.
+         */
+        private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
 
-    private val converter: Converter<Network, Output, Local>? = null,
-    private val processor: Processor<Output>? = null
+        private val converter: Converter<Network, Output, Local>? = null,
+        private val processor: Processor<Output>? = null
 ) {
     @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
-        create = { key: Key ->
-            Multicaster(
-                scope = scope,
-                bufferSize = 0,
-                source = flow { emitAll(realFetcher(key)) }.map {
-                    when (it) {
-                        is FetcherResult.Data -> {
-                            StoreReadResponse.Data(
-                                it.value,
-                                origin = StoreReadResponseOrigin.Fetcher
-                            ) as StoreReadResponse<Network>
+            create = { key: Key ->
+                Multicaster(
+                        scope = scope,
+                        bufferSize = 0,
+                        source = flow { emitAll(realFetcher(key)) }.map {
+                            when (it) {
+                                is FetcherResult.Data -> {
+                                    StoreReadResponse.Data(
+                                            it.value,
+                                            origin = StoreReadResponseOrigin.Fetcher
+                                    ) as StoreReadResponse<Network>
+                                }
+
+                                is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
+                                        it.message,
+                                        origin = StoreReadResponseOrigin.Fetcher
+                                )
+
+                                is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
+                                        it.error,
+                                        origin = StoreReadResponseOrigin.Fetcher
+                                )
+                            }
+                        }.onEmpty {
+                            emit(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Fetcher))
+                        },
+                        /**
+                         * When enabled, downstream collectors are never closed, instead, they are kept active to
+                         * receive values dispatched by fetchers created after them. This makes [FetcherController]
+                         * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
+                         */
+                        piggybackingDownstream = true,
+                        onEach = { response ->
+                            response.dataOrNull()?.let { network ->
+                                val output = converter?.fromNetworkToOutput(network)
+                                val unprocessed = (output ?: network) as Output
+
+                                val processed = processor?.invoke(unprocessed)
+                                if (processed != null && key is StatefulStoreKey) {
+
+                                    println("hitting")
+
+
+                                    sourceOfTruth?.write(key, unprocessed)
+                                    println("hitting2")
+                                    sourceOfTruth?.write(key, processed)
+                                    println("hitting3")
+                                } else {
+                                    sourceOfTruth?.write(key, unprocessed)
+                                }
+                            }
                         }
-
-                        is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
-                            it.message,
-                            origin = StoreReadResponseOrigin.Fetcher
-                        )
-
-                        is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
-                            it.error,
-                            origin = StoreReadResponseOrigin.Fetcher
-                        )
-                    }
-                }.onEmpty {
-                    emit(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Fetcher))
-                },
-                /**
-                 * When enabled, downstream collectors are never closed, instead, they are kept active to
-                 * receive values dispatched by fetchers created after them. This makes [FetcherController]
-                 * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
-                 */
-                piggybackingDownstream = true,
-                onEach = { response ->
-                    response.dataOrNull()?.let { network ->
-                        val output = converter?.fromNetworkToOutput(network)
-                        val unprocessed = (output ?: network) as Output
-
-                        val processed = processor?.invoke(unprocessed)
-                        if (processed != null && key is StatefulStoreKey<*>) {
-                            sourceOfTruth?.write(key.asUnprocessed() as Key, unprocessed)
-                            sourceOfTruth?.write(key.asProcessed() as Key, processed)
-                        } else {
-                            sourceOfTruth?.write(key, unprocessed)
-                        }
-                    }
-                }
-            )
-        },
-        onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<Network>> ->
-            multicaster.close()
-        }
+                )
+            },
+            onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<Network>> ->
+                multicaster.close()
+            }
     )
 
     fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreReadResponse<Network>> {

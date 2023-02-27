@@ -159,6 +159,8 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {
+                    println(throwable.message)
+                    println(throwable.cause)
                     throwable
                 } else {
                     null
