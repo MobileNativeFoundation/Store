@@ -27,7 +27,7 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
 
     fun <Response : Any> build(
         updater: Updater<Key, Output, Response>,
-        bookkeeper: Bookkeeper<Key>
+        bookkeeper: Bookkeeper<Key>? = null
     ): MutableStore<Key, Output>
 
     /**
