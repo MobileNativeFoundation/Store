@@ -70,7 +70,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
 
     override fun <UpdaterResult : Any> build(
         updater: Updater<Key, Output, UpdaterResult>,
-        bookkeeper: Bookkeeper<Key>
+        bookkeeper: Bookkeeper<Key>?
     ): MutableStore<Key, Output> =
         build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
             updater = updater,

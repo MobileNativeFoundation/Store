@@ -38,7 +38,7 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
 @Suppress("UNCHECKED_CAST")
 fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
     updater: Updater<Key, Output, Response>,
-    bookkeeper: Bookkeeper<Key>
+    bookkeeper: Bookkeeper<Key>?
 ): MutableStore<Key, Output> {
     val delegate = this as? RealStore<Key, Network, Output, Local>
         ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
