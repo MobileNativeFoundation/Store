@@ -30,7 +30,7 @@ import org.mobilenativefoundation.store.store5.internal.result.EagerConflictReso
 internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val updater: Updater<Key, Output, *>,
-    private val bookkeeper: Bookkeeper<Key>,
+    private val bookkeeper: Bookkeeper<Key>?,
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
 
     private val storeLock = Mutex()
@@ -107,9 +107,9 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 created = request.created,
                 updaterResult = updaterResult
             )
-            bookkeeper.clear(request.key)
+            bookkeeper?.clear(request.key)
         } else {
-            bookkeeper.setLastFailedSync(request.key)
+            bookkeeper?.setLastFailedSync(request.key)
         }
 
         return updaterResult
@@ -199,7 +199,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     }
 
     private suspend fun conflictsMightExist(key: Key): Boolean {
-        val lastFailedSync = bookkeeper.getLastFailedSync(key)
+        val lastFailedSync = bookkeeper?.getLastFailedSync(key)
         return lastFailedSync != null || writeRequestsQueueIsEmpty(key).not()
     }
 
@@ -215,7 +215,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         withThreadSafety(key) {
             val latest = delegate.latestOrNull(key)
             when {
-                latest == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts
+                latest == null || bookkeeper == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts
                 else -> {
                     try {
                         val updaterResult = updater.post(key, latest).also { updaterResult ->
