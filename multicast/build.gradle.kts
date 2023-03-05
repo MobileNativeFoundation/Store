@@ -10,7 +10,6 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
     id("kotlinx-atomicfu")
@@ -90,14 +89,6 @@ tasks.withType<DokkaTask>().configureEach {
 mavenPublishing {
     publishToMavenCentral(S01)
     signAllPublications()
-}
-
-addGithubPackagesRepository()
-kmmbridge {
-    githubReleaseArtifacts()
-    githubReleaseVersions()
-    versionPrefix.set("5.0.0-alpha")
-    spm()
 }
 
 koverMerged {
