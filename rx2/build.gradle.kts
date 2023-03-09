@@ -27,9 +27,7 @@ dependencies {
         testImplementation(coroutinesTest)
         testImplementation(truth)
     }
-
 }
-
 
 android {
     compileSdk = 33
