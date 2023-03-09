@@ -13,7 +13,6 @@ plugins {
     id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
     `maven-publish`
     kotlin("native.cocoapods")
-    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -48,7 +47,7 @@ kotlin {
                     implementation(coroutinesCore)
                     implementation(serializationCore)
                     implementation(dateTime)
-                    api(atomicFu)
+                    implementation(atomicFu)
                 }
                 implementation(Deps.Touchlab.kermit)
                 implementation(project(":multicast"))
@@ -68,7 +67,13 @@ kotlin {
             }
         }
 
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                with(Deps.Kotlinx) {
+                    implementation(atomicFu)
+                }
+            }
+        }
         val androidMain by getting
         val nativeMain by creating {
             dependsOn(commonMain)
@@ -135,9 +140,4 @@ koverMerged {
     verify {
         onCheck.set(true)
     }
-}
-
-atomicfu {
-    transformJvm = false
-    transformJs = false
 }

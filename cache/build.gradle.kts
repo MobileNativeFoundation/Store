@@ -12,7 +12,6 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
     `maven-publish`
     kotlin("native.cocoapods")
-    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -43,7 +42,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 with(Deps.Kotlinx) {
-                    api(atomicFu)
+                    implementation(atomicFu)
                 }
             }
         }
