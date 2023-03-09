@@ -14,12 +14,15 @@ plugins {
 }
 
 dependencies {
+    implementation(Deps.Kotlinx.coroutinesRx2)
+    implementation(Deps.Kotlinx.coroutinesCore)
+    implementation(Deps.Kotlinx.coroutinesAndroid)
+    implementation(Deps.Rx.rx2)
     implementation(project(":store"))
 }
 
 
 android {
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
 
     defaultConfig {
