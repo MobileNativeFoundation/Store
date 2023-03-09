@@ -19,6 +19,15 @@ dependencies {
     implementation(Deps.Kotlinx.coroutinesAndroid)
     implementation(Deps.Rx.rx2)
     implementation(project(":store"))
+
+    testImplementation(kotlin("test"))
+    with(Deps.Test) {
+        testImplementation(junit)
+        testImplementation(core)
+        testImplementation(coroutinesTest)
+        testImplementation(truth)
+    }
+
 }
 
 

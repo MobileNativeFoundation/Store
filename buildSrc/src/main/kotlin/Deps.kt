@@ -66,6 +66,7 @@ object Deps {
         const val core = "androidx.test:core:${Version.testCore}"
         const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Version.kotlinxCoroutines}"
         const val junit = "junit:junit:${Version.junit}"
+        const val truth = "com.google.truth:truth:${Version.truth}"
     }
 
     object Touchlab {
