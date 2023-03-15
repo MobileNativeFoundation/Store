@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [5.0.0-alpha05] (2023-03-15)
+
+* Target iOS Simulator
+* Target Linux
+* Make Bookkeeper optional
+
 ## [5.0.0-alpha04] (2023-02-24)
 
 * Introduce MutableStore
@@ -241,9 +247,11 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-alpha04...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-alpha05...HEAD
 
-[5.0.0-alpha03]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha04
+[5.0.0-alpha05]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha05
+
+[5.0.0-alpha04]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha04
 
 [5.0.0-alpha03]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha03
 
