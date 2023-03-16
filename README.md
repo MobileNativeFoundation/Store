@@ -35,7 +35,7 @@
 
 #### Android
 ```kotlin
-implementation "org.mobilenativefoundation.store:store5:5.0.0-alpha04"
+implementation "org.mobilenativefoundation.store:store5:5.0.0-alpha05"
 implementation "org.jetbrains.kotlinx:atomicfu:0.18.5"
 ```
 
@@ -44,7 +44,7 @@ implementation "org.jetbrains.kotlinx:atomicfu:0.18.5"
 ```kotlin
 commonMain {
   dependencies {
-    implementation("org.mobilenativefoundation.store:store5:5.0.0-alpha04")
+    implementation("org.mobilenativefoundation.store:store5:5.0.0-alpha05")
     implementation("org.jetbrains.kotlinx:atomicfu:0.18.5")
   }
 }
