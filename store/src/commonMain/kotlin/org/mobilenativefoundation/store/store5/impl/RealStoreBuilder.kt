@@ -2,60 +2,53 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
-import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreDefaults
-import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.Validator
-import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
-fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
-    fetcher: Fetcher<Key, Network>,
+
+fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcher(
+    fetcher: Fetcher<Key, Input>,
     sourceOfTruth: SourceOfTruth<Key, *>? = null,
-): StoreBuilder<Key, Network, Output, *> = RealStoreBuilder(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
 
-fun <Key : Any, Output : Any, Network : Any, Local : Any> storeBuilderFromFetcherAndSourceOfTruth(
-    fetcher: Fetcher<Key, Network>,
-    sourceOfTruth: SourceOfTruth<Key, Local>,
-): StoreBuilder<Key, Network, Output, Local> = RealStoreBuilder(fetcher, sourceOfTruth)
+fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTruth(
+    fetcher: Fetcher<Key, Input>,
+    sourceOfTruth: SourceOfTruth<Key, *>,
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
+
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
-) : StoreBuilder<Key, Network, Output, Local> {
+) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
 
-    override fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Output, Local> {
+    override fun scope(scope: CoroutineScope): StoreBuilder<Key, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Network, Output, Local> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): StoreBuilder<Key, Network, Output, Local> {
+    override fun disableCache(): StoreBuilder<Key, Output> {
         cachePolicy = null
         return this
     }
 
-    override fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local> {
+    override fun validator(validator: Validator<Output>): StoreBuilder<Key, Output> {
         this.validator = validator
-        return this
-    }
-
-    override fun converter(converter: Converter<Network, Output, Local>): StoreBuilder<Key, Network, Output, Local> {
-        this.converter = converter
         return this
     }
 
@@ -67,13 +60,4 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         converter = converter,
         validator = validator
     )
-
-    override fun <UpdaterResult : Any> build(
-        updater: Updater<Key, Output, UpdaterResult>,
-        bookkeeper: Bookkeeper<Key>?
-    ): MutableStore<Key, Output> =
-        build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
-            updater = updater,
-            bookkeeper = bookkeeper
-        )
 }
