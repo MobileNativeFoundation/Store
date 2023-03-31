@@ -24,7 +24,7 @@ class ClearStoreByKeyTests {
     fun callingClearWithKeyOnStoreWithPersisterWithNoInMemoryCacheDeletesTheEntryAssociatedWithTheKeyFromThePersister() = testScope.runTest {
         val key = "key"
         val value = 1
-        val store = StoreBuilder.from<String, Int, Int, Int>(
+        val store = StoreBuilder.from<String, Int, Int>(
             fetcher = Fetcher.of { value },
             sourceOfTruth = persister.asSourceOfTruth()
         ).scope(testScope)
@@ -107,7 +107,7 @@ class ClearStoreByKeyTests {
         val key2 = "key2"
         val value1 = 1
         val value2 = 2
-        val store = StoreBuilder.from<String, Int, Int, Int>(
+        val store = StoreBuilder.from<String, Int, Int>(
             fetcher = Fetcher.of { key ->
                 when (key) {
                     key1 -> value1

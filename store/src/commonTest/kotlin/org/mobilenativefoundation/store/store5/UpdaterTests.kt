@@ -55,7 +55,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
             sourceOfTruth = SourceOfTruth.of(
                 nonFlowReader = { key -> notes.get(key) },
@@ -130,7 +130,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
             sourceOfTruth = SourceOfTruth.of(
                 nonFlowReader = { key -> notes.get(key) },
@@ -187,7 +187,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = StoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.ofFlow { key ->
                 val network = api.get(key)
                 flow { emit(network) }

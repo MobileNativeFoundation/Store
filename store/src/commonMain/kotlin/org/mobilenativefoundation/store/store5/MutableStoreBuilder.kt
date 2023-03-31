@@ -32,7 +32,7 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
     fun disableCache(): MutableStoreBuilder<Key, Network, Output, Local>
 
     fun converter(converter: Converter<Network, Output, Local>):
-            MutableStoreBuilder<Key, Network, Output, Local>
+        MutableStoreBuilder<Key, Network, Output, Local>
 
     fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Output, Local>
 

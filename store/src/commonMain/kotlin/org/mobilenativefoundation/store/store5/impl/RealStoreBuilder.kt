@@ -14,7 +14,6 @@ import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Validator
 
-
 fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Input>,
     sourceOfTruth: SourceOfTruth<Key, *>? = null,
@@ -24,7 +23,6 @@ fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTru
     fetcher: Fetcher<Key, Input>,
     sourceOfTruth: SourceOfTruth<Key, *>,
 ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
-
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,

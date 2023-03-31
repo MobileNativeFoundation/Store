@@ -15,11 +15,9 @@ import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
-
 fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
 ): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher)
-
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,

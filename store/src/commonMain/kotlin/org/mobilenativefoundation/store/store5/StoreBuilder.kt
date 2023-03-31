@@ -25,7 +25,6 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
-
     fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local>
 
     /**
@@ -73,5 +72,3 @@ interface StoreBuilder<Key : Any, Output : Any> {
         ): StoreBuilder<Key, Output> = storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }
-
-
