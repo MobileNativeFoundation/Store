@@ -65,36 +65,22 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     )
 
     override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
-        val storeBuilder = this
         fetcher as Fetcher<Key, Network>
         return if (sourceOfTruth == null) {
-            mutableStoreBuilderFromFetcher<Key, Network, Output, Local>(fetcher).apply {
-                if (storeBuilder.scope != null) {
-                    scope(storeBuilder.scope!!)
-                }
-
-                if (storeBuilder.cachePolicy != null) {
-                    cachePolicy(storeBuilder.cachePolicy)
-                }
-
-                if (storeBuilder.validator != null) {
-                    validator(storeBuilder.validator!!)
-                }
-            }
+            mutableStoreBuilderFromFetcher(fetcher)
         } else {
-            sourceOfTruth as SourceOfTruth<Key, Local>
-            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(fetcher, sourceOfTruth).apply {
-                if (storeBuilder.scope != null) {
-                    scope(storeBuilder.scope!!)
-                }
+            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(fetcher, sourceOfTruth as SourceOfTruth<Key, Local>)
+        }.apply {
+            if (this@RealStoreBuilder.scope != null) {
+                scope(this@RealStoreBuilder.scope!!)
+            }
 
-                if (storeBuilder.cachePolicy != null) {
-                    cachePolicy(storeBuilder.cachePolicy)
-                }
+            if (this@RealStoreBuilder.cachePolicy != null) {
+                cachePolicy(this@RealStoreBuilder.cachePolicy)
+            }
 
-                if (storeBuilder.validator != null) {
-                    validator(storeBuilder.validator!!)
-                }
+            if (this@RealStoreBuilder.validator != null) {
+                validator(this@RealStoreBuilder.validator!!)
             }
         }
     }
