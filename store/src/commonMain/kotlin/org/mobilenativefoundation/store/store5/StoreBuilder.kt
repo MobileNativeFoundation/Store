@@ -25,6 +25,9 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
+
+    fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local>
+
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
      *  [Store] will open a global scope for management of shared responses, if instead you'd like to control

@@ -43,10 +43,10 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, Network : Any, Output : Any> from(
+        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Output>
-        ): MutableStoreBuilder<Key, Network, Output, Output> =
+            sourceOfTruth: SourceOfTruth<Key, Local>
+        ): MutableStoreBuilder<Key, Network, Output, Local> =
             mutableStoreBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }

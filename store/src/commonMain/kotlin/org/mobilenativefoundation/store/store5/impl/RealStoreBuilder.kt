@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
@@ -5,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
+import org.mobilenativefoundation.store.store5.MutableStoreBuilder
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreBuilder
@@ -60,4 +63,39 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         converter = converter,
         validator = validator
     )
+
+    override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
+        val storeBuilder = this
+        fetcher as Fetcher<Key, Network>
+        return if (sourceOfTruth == null) {
+            mutableStoreBuilderFromFetcher<Key, Network, Output, Local>(fetcher).apply {
+                if (storeBuilder.scope != null) {
+                    scope(storeBuilder.scope!!)
+                }
+
+                if (storeBuilder.cachePolicy != null) {
+                    cachePolicy(storeBuilder.cachePolicy)
+                }
+
+                if (storeBuilder.validator != null) {
+                    validator(storeBuilder.validator!!)
+                }
+            }
+        } else {
+            sourceOfTruth as SourceOfTruth<Key, Local>
+            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(fetcher, sourceOfTruth).apply {
+                if (storeBuilder.scope != null) {
+                    scope(storeBuilder.scope!!)
+                }
+
+                if (storeBuilder.cachePolicy != null) {
+                    cachePolicy(storeBuilder.cachePolicy)
+                }
+
+                if (storeBuilder.validator != null) {
+                    validator(storeBuilder.validator!!)
+                }
+            }
+        }
+    }
 }
