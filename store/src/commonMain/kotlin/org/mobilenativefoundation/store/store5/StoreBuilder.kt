@@ -22,13 +22,10 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 /**
  * Main entry point for creating a [Store].
  */
-interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
+interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
-    fun <Response : Any> build(
-        updater: Updater<Key, Output, Response>,
-        bookkeeper: Bookkeeper<Key>? = null
-    ): MutableStore<Key, Output>
+    fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local>
 
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -37,35 +34,31 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
      *
      *   @param scope - scope to use for sharing
      */
-    fun scope(scope: CoroutineScope): StoreBuilder<Key, Network, Output, Local>
+    fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
 
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
      *  or size based eviction
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Network, Output, Local>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
-    fun disableCache(): StoreBuilder<Key, Network, Output, Local>
+    fun disableCache(): StoreBuilder<Key, Output>
 
-    fun converter(converter: Converter<Network, Output, Local>):
-        StoreBuilder<Key, Network, Output, Local>
-
-    fun validator(validator: Validator<Output>): StoreBuilder<Key, Network, Output, Local>
+    fun validator(validator: Validator<Output>): StoreBuilder<Key, Output>
 
     companion object {
-
         /**
          * Creates a new [StoreBuilder] from a [Fetcher].
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        fun <Key : Any, Network : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Network>,
-        ): StoreBuilder<Key, Network, Output, *> = storeBuilderFromFetcher(fetcher = fetcher)
+        fun <Key : Any, Input : Any, Output : Any> from(
+            fetcher: Fetcher<Key, Input>,
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -73,10 +66,9 @@ interface StoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
-            fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Local>
-        ): StoreBuilder<Key, Network, Output, Local> =
-            storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+        fun <Key : Any, Input : Any, Output : Any> from(
+            fetcher: Fetcher<Key, Input>,
+            sourceOfTruth: SourceOfTruth<Key, Input>
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
     }
 }

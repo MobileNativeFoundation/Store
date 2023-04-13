@@ -113,7 +113,7 @@ class FlowStoreTests {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -184,7 +184,7 @@ class FlowStoreTests {
         )
         val persister = InMemoryPersister<Int, String>()
 
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -309,7 +309,7 @@ class FlowStoreTests {
         )
         val persister = InMemoryPersister<Int, String>()
 
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         )
@@ -357,7 +357,7 @@ class FlowStoreTests {
     @Test
     fun diskChangeWhileNetworkIsFlowing_simple() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             Fetcher.ofFlow {
                 flow {
                     delay(20)
@@ -395,7 +395,7 @@ class FlowStoreTests {
     @Test
     fun diskChangeWhileNetworkIsFlowing_overwrite() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = Fetcher.ofFlow {
                 flow {
                     delay(10)
@@ -445,7 +445,7 @@ class FlowStoreTests {
     fun errorTest() = testScope.runTest {
         val exception = IllegalArgumentException("wow")
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             Fetcher.of {
                 throw exception
             },
@@ -496,7 +496,7 @@ class FlowStoreTests {
     fun givenSourceOfTruthWhenStreamFreshDataReturnsNoDataFromFetcherThenFetchReturnsNoDataAndCachedValuesAreReceived() =
         testScope.runTest {
             val persister = InMemoryPersister<Int, String>().asFlowable()
-            val pipeline = StoreBuilder.from<Int, String, String, String>(
+            val pipeline = StoreBuilder.from<Int, String, String>(
                 fetcher = Fetcher.ofFlow { flow {} },
                 sourceOfTruth = persister.asSourceOfTruth()
             )
@@ -530,7 +530,7 @@ class FlowStoreTests {
     @Test
     fun givenSourceOfTruthWhenStreamCachedDataWithRefreshReturnsNoNewDataThenCachedValuesAreReceivedAndFetchReturnsNoData() = testScope.runTest {
         val persister = InMemoryPersister<Int, String>().asFlowable()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = Fetcher.ofFlow { flow {} },
             sourceOfTruth = persister.asSourceOfTruth()
         )
@@ -687,7 +687,7 @@ class FlowStoreTests {
             3 to "three-2"
         )
         val persister = InMemoryPersister<Int, String>()
-        val pipeline = StoreBuilder.from<Int, String, String, String>(
+        val pipeline = StoreBuilder.from<Int, String, String>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).buildWithTestScope()
@@ -865,6 +865,6 @@ class FlowStoreTests {
         )
     )
 
-    private fun <Key : Any, Network : Any, Output : Any, Local : Any> StoreBuilder<Key, Network, Output, Local>.buildWithTestScope() =
+    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
         scope(testScope).build()
 }
