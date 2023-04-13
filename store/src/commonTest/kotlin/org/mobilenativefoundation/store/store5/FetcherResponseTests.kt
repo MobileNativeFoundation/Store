@@ -211,6 +211,6 @@ class FetcherResponseTests {
         )
     }
 
-    private fun <Key : Any, Network : Any, Output : Any, Local : Any> StoreBuilder<Key, Network, Output, Local>.buildWithTestScope() =
+    private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
         scope(testScope).build()
 }
