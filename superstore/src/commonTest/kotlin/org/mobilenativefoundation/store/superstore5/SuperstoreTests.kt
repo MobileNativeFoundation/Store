@@ -28,7 +28,7 @@ class SuperstoreTests {
     }
 
     @Test
-    fun givenEmptyStoreWhenSuccessFromMainApiThenSuperstoreResponseOfMainApiResult() = testScope.runTest {
+    fun givenEmptyStoreWhenSuccessFromPrimaryApiThenSuperstoreResponseOfPrimaryApiResult() = testScope.runTest {
         val ttl = null
         val fail = false
         val store = StoreBuilder.from<String, Page, Page>(
@@ -56,7 +56,7 @@ class SuperstoreTests {
     }
 
     @Test
-    fun givenEmptyStoreWhenFailureFromMainApiThenSuperstoreResponseOfSecondaryApiResult() = testScope.runTest {
+    fun givenEmptyStoreWhenFailureFromPrimaryApiThenSuperstoreResponseOfSecondaryApiResult() = testScope.runTest {
         val ttl = null
         val fail = true
         val store = StoreBuilder.from<String, Page, Page>(
@@ -85,36 +85,37 @@ class SuperstoreTests {
 
 
     @Test
-    fun givenEmptyStoreWhenFailureFromMainAndSecondaryApisThenSuperstoreResponseOfHardcodedData() = testScope.runTest {
-        val ttl = null
-        val fail = true
+    fun givenEmptyStoreWhenFailureFromPrimaryAndSecondaryApisThenSuperstoreResponseOfHardcodedData() =
+        testScope.runTest {
+            val ttl = null
+            val fail = true
 
-        val brokenSecondaryApi = object : Warehouse<String, Page> {
-            override suspend fun get(key: String): Page = throw Exception()
+            val brokenSecondaryApi = object : Warehouse<String, Page> {
+                override suspend fun get(key: String): Page = throw Exception()
 
-        }
+            }
 
-        val store = StoreBuilder.from<String, Page, Page>(
-            fetcher = Fetcher.of { key -> api.fetch(key, fail, ttl) },
-            sourceOfTruth = SourceOfTruth.of(
-                nonFlowReader = { key -> pagesDatabase.get(key) },
-                writer = { key, page -> pagesDatabase.put(key, page) },
-                delete = null,
-                deleteAll = null
+            val store = StoreBuilder.from<String, Page, Page>(
+                fetcher = Fetcher.of { key -> api.fetch(key, fail, ttl) },
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = { key -> pagesDatabase.get(key) },
+                    writer = { key, page -> pagesDatabase.put(key, page) },
+                    delete = null,
+                    deleteAll = null
+                )
+            ).build()
+            val superstore = Superstore.from(
+                store = store,
+                warehouses = listOf(brokenSecondaryApi, hardcodedPages)
             )
-        ).build()
-        val superstore = Superstore.from(
-            store = store,
-            warehouses = listOf(brokenSecondaryApi, hardcodedPages)
-        )
 
-        val responses = superstore.get("1").take(2).toList()
+            val responses = superstore.get("1").take(2).toList()
 
-        assertEquals(
-            listOf(
-                SuperstoreResponse.Loading,
-                SuperstoreResponse.Data(Page.Data("One", null), SuperstoreResponseOrigin.Warehouse)
-            ), responses
-        )
-    }
+            assertEquals(
+                listOf(
+                    SuperstoreResponse.Loading,
+                    SuperstoreResponse.Data(Page.Data("One", null), SuperstoreResponseOrigin.Warehouse)
+                ), responses
+            )
+        }
 }
