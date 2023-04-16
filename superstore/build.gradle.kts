@@ -45,13 +45,29 @@ kotlin {
             dependencies {
                 with(Deps.Kotlinx) {
                     api(atomicFu)
+                    implementation(stdLib)
                     implementation(serializationCore)
                     implementation(serializationJson)
                     implementation(coroutinesCore)
                 }
                 implementation(project(":store"))
+                implementation(project(":multicast"))
+                implementation(project(":cache"))
             }
         }
+
+        val commonTest by getting {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(kotlin("test"))
+                with(Deps.Test) {
+                    implementation(junit)
+                    implementation(core)
+                    implementation(coroutinesTest)
+                }
+            }
+        }
+
         val jvmMain by getting
         val androidMain by getting
         val nativeMain by creating {

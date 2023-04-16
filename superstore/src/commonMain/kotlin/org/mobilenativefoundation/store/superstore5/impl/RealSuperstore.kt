@@ -1,9 +1,9 @@
 package org.mobilenativefoundation.store.superstore5.impl
 
 
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -25,7 +25,7 @@ class RealSuperstore<Key : Any, Output : Any>(
     override fun get(key: Key, fresh: Boolean, refresh: Boolean): Flow<SuperstoreResponse<Output>> {
         val request =
             if (fresh) StoreReadRequest.fresh(key) else StoreReadRequest.cached(key, refresh)
-        return flow {
+        return channelFlow {
             store.stream(request).collect {
                 try {
                     when (it) {
@@ -34,7 +34,7 @@ class RealSuperstore<Key : Any, Output : Any>(
                             it.origin.toSuperstoreResponseOrigin()
                         )
 
-                        is StoreReadResponse.Loading -> emit(SuperstoreResponse.Loading)
+                        is StoreReadResponse.Loading -> send(SuperstoreResponse.Loading)
                         is StoreReadResponse.NoNewData -> {}
                         is StoreReadResponse.Error.Exception -> useWarehouse(key)
                         is StoreReadResponse.Error.Message -> useWarehouse(key)
@@ -48,19 +48,23 @@ class RealSuperstore<Key : Any, Output : Any>(
 
     private suspend fun List<Warehouse<Key, Output>>.search(key: Key): Output {
         for (warehouse in this) {
-            val result = warehouse.get(key)
-            if (result != null) {
-                return result
+            try {
+                val result = warehouse.get(key)
+                if (result != null) {
+                    return result
+                }
+            } catch (_: Throwable) {
+
             }
         }
         throw Throwable(message = "Searched all warehouses. None have a value for: $key.")
     }
 
-    private suspend fun FlowCollector<SuperstoreResponse<Output>>.useWarehouse(key: Key) {
+    private suspend fun ProducerScope<SuperstoreResponse<Output>>.useWarehouse(key: Key) {
 
         val data = warehouses.search(key)
 
-        emit(
+        send(
             SuperstoreResponse.Data(
                 data = data,
                 origin = SuperstoreResponseOrigin.Warehouse,
@@ -68,11 +72,11 @@ class RealSuperstore<Key : Any, Output : Any>(
         )
     }
 
-    private suspend fun FlowCollector<SuperstoreResponse<Output>>.useStore(
+    private suspend fun ProducerScope<SuperstoreResponse<Output>>.useStore(
         output: Output,
         origin: SuperstoreResponseOrigin
     ) {
-        emit(SuperstoreResponse.Data(output, origin))
+        send(SuperstoreResponse.Data(output, origin))
     }
 
     private fun StoreReadResponseOrigin.toSuperstoreResponseOrigin() = when (this) {
