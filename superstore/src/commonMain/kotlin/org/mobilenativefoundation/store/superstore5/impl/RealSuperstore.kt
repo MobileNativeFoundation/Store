@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.superstore5
+package org.mobilenativefoundation.store.superstore5.impl
 
 
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +8,10 @@ import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
+import org.mobilenativefoundation.store.superstore5.Superstore
+import org.mobilenativefoundation.store.superstore5.SuperstoreResponse
+import org.mobilenativefoundation.store.superstore5.SuperstoreResponseOrigin
+import org.mobilenativefoundation.store.superstore5.Warehouse
 
 /**
  * Coordinates [Store] and [Warehouse].
