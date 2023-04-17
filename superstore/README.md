@@ -1,6 +1,7 @@
 # Fallback Mechanisms
 
-`Superstore` and `Warehouse` handle data retrieval and fallback mechanisms when a primary data source fails
+`Superstore` and `Warehouse` handle data retrieval and fallback mechanisms when a primary data
+source fails
 or returns an error. Proposed in [#540](https://github.com/MobileNativeFoundation/Store/issues/540).
 
 ## Warehouse
@@ -11,7 +12,8 @@ fallback data.
 ## Superstore
 
 Coordinates a `Store` and `List<Warehouse>`. The `Superstore` will first attempt to fetch data from
-the `Store`. If the `Store` fails or returns an error, the `Superstore` will retrieve data from a `Warehouse`.
+the `Store`. If the `Store` fails or returns an error, the `Superstore` will retrieve data from
+a `Warehouse`.
 
 ## Sample
 
@@ -21,18 +23,20 @@ the `Store`. If the `Store` fails or returns an error, the `Superstore` will ret
 
 ```kotlin
 class SecondaryApi : Warehouse<PageType, Page> {
-    override suspend fun get(key: PageType): Page? = when (key) {
-        is PageType.Account -> fetchAccountPage()
-        is PageType.Upgrade -> fetchUpgradePage()
+    override val name = "SecondaryApi"
+    override suspend fun get(key: PageType): WarehouseResponse<Page> = when (key) {
+        is PageType.Account -> fetchAccountPage(key)
+        is PageType.Upgrade -> fetchUpgradePage(key)
     }
 }
 ```
 
 ```kotlin
 class HardcodedPages : Warehouse<PageType, Page> {
-    override suspend fun get(key: PageType): Page = when (key) {
-        is PageType.Account -> hardcodedAccountPage()
-        is PageType.Upgrade -> hardcodedUpgradePage()
+    override val name = "HardcodedPages"
+    override suspend fun get(key: PageType): WarehouseResponse.Data<Page> = when (key) {
+        is PageType.Account -> hardcodedAccountPage(key)
+        is PageType.Upgrade -> hardcodedUpgradePage(key)
     }
 }
 ```
@@ -52,19 +56,28 @@ val superstore = Superstore.from(
 
 ### Usage
 
+#### Create a Request
+
 ```kotlin
-superstore.get(PageType.Account).collect { response ->
+val request = StoreReadRequest.fresh(key)
+```
+
+#### Stream from Superstore
+
+```kotlin
+superstore.stream(request).collect { response ->
     when (response) {
         is SuperstoreResponse.Data -> handleData()
         SuperstoreResponse.Loading -> handleLoading()
+        SuperstoreResponse.NoNewData -> handleNoNewData()
     }
 }
 ```
 
 ```kotlin
-val state = superstore.get(PageType.Account).stateIn(scope)
+val state = superstore.stream(request).stateIn(scope)
 ```
 
 ```kotlin
-val accountPage = superstore.get(PageType.Account).firstData()
+val accountPage = superstore.stream(request).firstData()
 ```

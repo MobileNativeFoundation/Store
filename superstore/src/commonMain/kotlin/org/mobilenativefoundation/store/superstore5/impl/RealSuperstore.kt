@@ -12,6 +12,7 @@ import org.mobilenativefoundation.store.superstore5.Superstore
 import org.mobilenativefoundation.store.superstore5.SuperstoreResponse
 import org.mobilenativefoundation.store.superstore5.SuperstoreResponseOrigin
 import org.mobilenativefoundation.store.superstore5.Warehouse
+import org.mobilenativefoundation.store.superstore5.WarehouseResponse
 
 /**
  * Coordinates [Store] and [Warehouse].
@@ -22,9 +23,8 @@ class RealSuperstore<Key : Any, Output : Any>(
     private val store: Store<Key, Output>,
     private val warehouses: List<Warehouse<Key, Output>>,
 ) : Superstore<Key, Output> {
-    override fun get(key: Key, fresh: Boolean, refresh: Boolean): Flow<SuperstoreResponse<Output>> {
-        val request =
-            if (fresh) StoreReadRequest.fresh(key) else StoreReadRequest.cached(key, refresh)
+    override fun stream(request: StoreReadRequest<Key>): Flow<SuperstoreResponse<Output>> {
+
         return channelFlow {
             store.stream(request).collect {
                 try {
@@ -35,22 +35,22 @@ class RealSuperstore<Key : Any, Output : Any>(
                         )
 
                         is StoreReadResponse.Loading -> send(SuperstoreResponse.Loading)
-                        is StoreReadResponse.NoNewData -> {}
-                        is StoreReadResponse.Error.Exception -> useWarehouse(key)
-                        is StoreReadResponse.Error.Message -> useWarehouse(key)
+                        is StoreReadResponse.NoNewData -> send(SuperstoreResponse.NoNewData)
+                        is StoreReadResponse.Error.Exception -> useWarehouse(request.key)
+                        is StoreReadResponse.Error.Message -> useWarehouse(request.key)
                     }
                 } catch (error: Throwable) {
-                    useWarehouse(key)
+                    useWarehouse(request.key)
                 }
             }
         }
     }
 
-    private suspend fun List<Warehouse<Key, Output>>.search(key: Key): Output {
+    private suspend fun List<Warehouse<Key, Output>>.search(key: Key): WarehouseResponse<Output> {
         for (warehouse in this) {
             try {
                 val result = warehouse.get(key)
-                if (result != null) {
+                if (result is WarehouseResponse.Data) {
                     return result
                 }
             } catch (_: Throwable) {
@@ -62,12 +62,12 @@ class RealSuperstore<Key : Any, Output : Any>(
 
     private suspend fun ProducerScope<SuperstoreResponse<Output>>.useWarehouse(key: Key) {
 
-        val data = warehouses.search(key)
+        val warehouseData = warehouses.search(key) as WarehouseResponse.Data<Output>
 
         send(
             SuperstoreResponse.Data(
-                data = data,
-                origin = SuperstoreResponseOrigin.Warehouse,
+                data = warehouseData.data,
+                origin = SuperstoreResponseOrigin.Warehouse(warehouseData.origin),
             ),
         )
     }

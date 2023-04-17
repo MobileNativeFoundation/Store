@@ -11,6 +11,8 @@ sealed class SuperstoreResponse<out Output : Any> {
     ) : SuperstoreResponse<Output>()
 
     object Loading : SuperstoreResponse<Nothing>()
+
+    object NoNewData : SuperstoreResponse<Nothing>()
 }
 
 

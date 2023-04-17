@@ -2,16 +2,15 @@ package org.mobilenativefoundation.store.superstore5
 
 import kotlinx.coroutines.flow.Flow
 import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.superstore5.impl.RealSuperstore
 
 /**
  * Represents a [Store] with fallback mechanisms.
  */
 interface Superstore<Key : Any, Output : Any> {
-    fun get(
-        key: Key,
-        fresh: Boolean = false,
-        refresh: Boolean = false
+    fun stream(
+        request: StoreReadRequest<Key>
     ): Flow<SuperstoreResponse<Output>>
 
     companion object {

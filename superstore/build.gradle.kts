@@ -50,7 +50,7 @@ kotlin {
                     implementation(serializationJson)
                     implementation(coroutinesCore)
                 }
-                implementation(project(":store"))
+                api(project(":store"))
                 implementation(project(":multicast"))
                 implementation(project(":cache"))
             }
