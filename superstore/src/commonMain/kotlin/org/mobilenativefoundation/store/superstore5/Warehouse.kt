@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.superstore5
 
-
 /**
  * Represents a fallback data source.
  */

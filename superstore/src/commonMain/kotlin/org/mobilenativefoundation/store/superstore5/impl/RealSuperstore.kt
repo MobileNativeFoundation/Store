@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.superstore5.impl
 
-
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -54,7 +53,6 @@ class RealSuperstore<Key : Any, Output : Any>(
                     return result
                 }
             } catch (_: Throwable) {
-
             }
         }
         throw Throwable(message = "Searched all warehouses. None have a value for: $key.")

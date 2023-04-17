@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.superstore5
 
-
 sealed class SuperstoreResponseOrigin {
     object Cache : SuperstoreResponseOrigin()
     object SourceOfTruth : SuperstoreResponseOrigin()

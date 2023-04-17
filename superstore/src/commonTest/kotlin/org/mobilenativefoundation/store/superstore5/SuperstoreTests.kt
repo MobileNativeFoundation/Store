@@ -57,7 +57,8 @@ class SuperstoreTests {
                 listOf(
                     SuperstoreResponse.Loading,
                     SuperstoreResponse.Data(Page.Data("1", null), SuperstoreResponseOrigin.Fetcher)
-                ), responses
+                ),
+                responses
             )
         }
 
@@ -89,10 +90,10 @@ class SuperstoreTests {
                         Page.Data("1", null),
                         SuperstoreResponseOrigin.Warehouse("SecondaryPagesApi")
                     )
-                ), responses
+                ),
+                responses
             )
         }
-
 
     @Test
     fun givenEmptyStoreWhenFailureFromPrimaryAndSecondaryApisThenSuperstoreResponseOfHardcodedData() =
@@ -103,7 +104,6 @@ class SuperstoreTests {
             val brokenSecondaryApi = object : Warehouse<String, Page> {
                 override suspend fun get(key: String): WarehouseResponse<Page> = throw Exception()
                 override val name: String = "BrokenSecondaryApi"
-
             }
 
             val store = StoreBuilder.from<String, Page, Page>(
@@ -129,7 +129,8 @@ class SuperstoreTests {
                         Page.Data("One", null),
                         SuperstoreResponseOrigin.Warehouse("HardcodedPages")
                     )
-                ), responses
+                ),
+                responses
             )
         }
 }
