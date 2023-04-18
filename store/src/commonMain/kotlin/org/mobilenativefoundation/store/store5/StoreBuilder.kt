@@ -16,6 +16,7 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
+import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcher
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSourceOfTruth
 
@@ -42,6 +43,8 @@ interface StoreBuilder<Key : Any, Output : Any> {
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
     fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
+
+    fun cache(memoryCache: Cache<Key, Output>): StoreBuilder<Key, Output>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100

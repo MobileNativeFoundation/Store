@@ -1,6 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
+import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.impl.mutableStoreBuilderFromFetcherAndSourceOfTruth
 
 interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
@@ -25,6 +26,8 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
     fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local>
+
+    fun cache(memoryCache: Cache<Key, Output>): MutableStoreBuilder<Key, Network, Output, Local>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100

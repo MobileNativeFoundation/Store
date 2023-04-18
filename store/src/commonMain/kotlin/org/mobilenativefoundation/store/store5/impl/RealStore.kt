@@ -17,26 +17,10 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.*
+import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.cache5.CacheBuilder
-import org.mobilenativefoundation.store.store5.CacheType
-import org.mobilenativefoundation.store.store5.Converter
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
-import org.mobilenativefoundation.store.store5.Fetcher
-import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.StoreReadRequest
-import org.mobilenativefoundation.store.store5.StoreReadResponse
-import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
-import org.mobilenativefoundation.store.store5.Validator
+import org.mobilenativefoundation.store.store5.*
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
@@ -47,7 +31,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     sourceOfTruth: SourceOfTruth<Key, Local>? = null,
     private val converter: Converter<Network, Output, Local>? = null,
     private val validator: Validator<Output>?,
-    private val memoryPolicy: MemoryPolicy<Key, Output>?
+    private val memCache: Cache<Key, Output>?
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -60,24 +44,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         sourceOfTruth?.let {
             SourceOfTruthWithBarrier(it, converter)
         }
-
-    private val memCache = memoryPolicy?.let {
-        CacheBuilder<Key, Output>().apply {
-            if (memoryPolicy.hasAccessPolicy) {
-                expireAfterAccess(memoryPolicy.expireAfterAccess)
-            }
-            if (memoryPolicy.hasWritePolicy) {
-                expireAfterWrite(memoryPolicy.expireAfterWrite)
-            }
-            if (memoryPolicy.hasMaxSize) {
-                maximumSize(memoryPolicy.maxSize)
-            }
-
-            if (memoryPolicy.hasMaxWeight) {
-                weigher(memoryPolicy.maxWeight) { key, value -> memoryPolicy.weigher.weigh(key, value) }
-            }
-        }.build()
-    }
 
     /**
      * Fetcher controller maintains 1 and only 1 `Multicaster` for a given key to ensure network
@@ -124,7 +90,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             emitAll(
                 stream.transform { output ->
                     val data = output.dataOrNull()
-                    val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
+                    val shouldSkipValidation =
+                        validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
                     if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
                         fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
                             val network = storeReadResponse.dataOrNull()
@@ -312,6 +279,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
-    private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+    private suspend fun fromSourceOfTruth(key: Key) =
+        sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 }

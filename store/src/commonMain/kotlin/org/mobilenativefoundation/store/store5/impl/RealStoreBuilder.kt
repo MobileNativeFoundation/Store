@@ -4,15 +4,9 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
-import org.mobilenativefoundation.store.store5.Converter
-import org.mobilenativefoundation.store.store5.Fetcher
-import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.MutableStoreBuilder
-import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.StoreBuilder
-import org.mobilenativefoundation.store.store5.StoreDefaults
-import org.mobilenativefoundation.store.store5.Validator
+import org.mobilenativefoundation.store.cache5.Cache
+import org.mobilenativefoundation.store.cache5.CacheBuilder
+import org.mobilenativefoundation.store.store5.*
 
 fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Input>,
@@ -32,6 +26,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
+    private var cache: Cache<Key, Output>? = null
 
     override fun scope(scope: CoroutineScope): StoreBuilder<Key, Output> {
         this.scope = scope
@@ -48,6 +43,11 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
+    override fun cache(memoryCache: Cache<Key, Output>): StoreBuilder<Key, Output> {
+        this.cache = memoryCache
+        return this
+    }
+
     override fun validator(validator: Validator<Output>): StoreBuilder<Key, Output> {
         this.validator = validator
         return this
@@ -57,9 +57,27 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        memoryPolicy = cachePolicy,
         converter = converter,
-        validator = validator
+        validator = validator,
+        memCache = cache ?: cachePolicy?.let {
+            CacheBuilder<Key, Output>().apply {
+                if (cachePolicy!!.hasAccessPolicy) {
+                    expireAfterAccess(cachePolicy!!.expireAfterAccess)
+                }
+                if (cachePolicy!!.hasWritePolicy) {
+                    expireAfterWrite(cachePolicy!!.expireAfterWrite)
+                }
+                if (cachePolicy!!.hasMaxSize) {
+                    maximumSize(cachePolicy!!.maxSize)
+                }
+
+                if (cachePolicy!!.hasMaxWeight) {
+                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                }
+            }.build()
+        }
+
+
     )
 
     override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
@@ -67,7 +85,10 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return if (sourceOfTruth == null) {
             mutableStoreBuilderFromFetcher(fetcher)
         } else {
-            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(fetcher, sourceOfTruth as SourceOfTruth<Key, Local>)
+            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(
+                fetcher,
+                sourceOfTruth as SourceOfTruth<Key, Local>
+            )
         }.apply {
             if (this@RealStoreBuilder.scope != null) {
                 scope(this@RealStoreBuilder.scope!!)

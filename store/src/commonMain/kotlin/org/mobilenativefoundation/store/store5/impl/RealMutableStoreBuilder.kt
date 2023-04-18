@@ -2,17 +2,9 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
-import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.Converter
-import org.mobilenativefoundation.store.store5.Fetcher
-import org.mobilenativefoundation.store.store5.MemoryPolicy
-import org.mobilenativefoundation.store.store5.MutableStore
-import org.mobilenativefoundation.store.store5.MutableStoreBuilder
-import org.mobilenativefoundation.store.store5.SourceOfTruth
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.StoreDefaults
-import org.mobilenativefoundation.store.store5.Updater
-import org.mobilenativefoundation.store.store5.Validator
+import org.mobilenativefoundation.store.cache5.Cache
+import org.mobilenativefoundation.store.cache5.CacheBuilder
+import org.mobilenativefoundation.store.store5.*
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcher(
@@ -30,6 +22,7 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
 ) : MutableStoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
+    private var cache: Cache<Key, Output>? = null
     private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
 
@@ -40,6 +33,11 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
 
     override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local> {
         cachePolicy = memoryPolicy
+        return this
+    }
+
+    override fun cache(memoryCache: Cache<Key, Output>): MutableStoreBuilder<Key, Network, Output, Local> {
+        this.cache = memoryCache
         return this
     }
 
@@ -62,9 +60,25 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        memoryPolicy = cachePolicy,
         converter = converter,
-        validator = validator
+        validator = validator,
+        memCache = cache ?: cachePolicy?.let {
+            CacheBuilder<Key, Output>().apply {
+                if (cachePolicy!!.hasAccessPolicy) {
+                    expireAfterAccess(cachePolicy!!.expireAfterAccess)
+                }
+                if (cachePolicy!!.hasWritePolicy) {
+                    expireAfterWrite(cachePolicy!!.expireAfterWrite)
+                }
+                if (cachePolicy!!.hasMaxSize) {
+                    maximumSize(cachePolicy!!.maxSize)
+                }
+
+                if (cachePolicy!!.hasMaxWeight) {
+                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                }
+            }.build()
+        }
     )
 
     override fun <UpdaterResult : Any> build(
