@@ -26,15 +26,21 @@ fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTru
     sourceOfTruth: SourceOfTruth<Key, *>,
 ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
 
+fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
+    memoryCache: Cache<Key, Output>,
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
-    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
+    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    private val memoryCache: Cache<Key, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
-    private var cache: Cache<Key, Output>? = null
 
     override fun scope(scope: CoroutineScope): StoreBuilder<Key, Output> {
         this.scope = scope
@@ -51,11 +57,6 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
-    override fun cache(memoryCache: Cache<Key, Output>): StoreBuilder<Key, Output> {
-        this.cache = memoryCache
-        return this
-    }
-
     override fun validator(validator: Validator<Output>): StoreBuilder<Key, Output> {
         this.validator = validator
         return this
@@ -67,7 +68,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         fetcher = fetcher,
         converter = converter,
         validator = validator,
-        memCache = cache ?: cachePolicy?.let {
+        memCache = memoryCache ?: cachePolicy?.let {
             CacheBuilder<Key, Output>().apply {
                 if (cachePolicy!!.hasAccessPolicy) {
                     expireAfterAccess(cachePolicy!!.expireAfterAccess)
@@ -84,7 +85,6 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
                 }
             }.build()
         }
-
     )
 
     override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {

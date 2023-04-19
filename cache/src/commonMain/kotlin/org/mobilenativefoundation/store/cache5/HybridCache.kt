@@ -13,7 +13,6 @@ class HybridCache<Key : Any, Output : Identifiable<Key>>(
 
     private val itemKeyToListKey = mutableMapOf<Key, Key>()
 
-
     private val itemCache: Cache<Key, Output> = cacheBuilder.build()
 
     private val listCache: Cache<Key, List<Output>> = listCacheBuilder.build()
