@@ -42,6 +42,7 @@ class HybridCache<Key : Any, Output : Identifiable<Key>>(
         listCache.put(key, items)
         items.forEach { item ->
             itemCache.put(item.id, item)
+            itemKeyToListKey[item.id] = key
         }
     }
 }
