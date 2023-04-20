@@ -8,7 +8,7 @@ import org.mobilenativefoundation.store.store5.util.model.NoteData
 internal class NotesMemoryCache(private val delegate: MultiCache<String, Note>) : Cache<NotesKey, NoteData> {
     override fun getIfPresent(key: NotesKey): NoteData? = when (key) {
         is NotesKey.Collection -> {
-            val items = delegate.getList(key.id)
+            val items = delegate.getCollection<List<Note>>(key.id)
             if (items != null) {
                 NoteData.Collection(items)
             } else {
@@ -65,7 +65,7 @@ internal class NotesMemoryCache(private val delegate: MultiCache<String, Note>) 
     }
 
     override fun invalidate(key: NotesKey) = when (key) {
-        is NotesKey.Collection -> delegate.invalidateList(key.id)
+        is NotesKey.Collection -> delegate.invalidateCollection(key.id)
         is NotesKey.Single -> delegate.invalidateItem(key.id)
     }
 
@@ -78,7 +78,7 @@ internal class NotesMemoryCache(private val delegate: MultiCache<String, Note>) 
     override fun put(key: NotesKey, value: NoteData) = when (key) {
         is NotesKey.Collection -> {
             require(value is NoteData.Collection)
-            delegate.putList(key.id, value.items)
+            delegate.putCollection(key.id, value.items)
         }
 
         is NotesKey.Single -> {

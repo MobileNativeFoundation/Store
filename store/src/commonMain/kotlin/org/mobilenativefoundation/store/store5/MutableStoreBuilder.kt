@@ -1,7 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
-import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.impl.mutableStoreBuilderFromFetcherAndSourceOfTruth
 
 interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {

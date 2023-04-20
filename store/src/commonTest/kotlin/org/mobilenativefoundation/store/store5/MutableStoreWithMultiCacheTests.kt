@@ -36,7 +36,6 @@ class MutableStoreWithMultiCacheTests {
     fun givenEmptyStoreWhenListFromFetcherThenListIsDecomposed() = testScope.runTest {
         val memoryCache = NotesMemoryCache(MultiCache<String, Note>(CacheBuilder()))
 
-
         val store = StoreBuilder.from<NotesKey, NetworkNote, NoteData, SOTNote>(
             fetcher = Fetcher.of<NotesKey, NetworkNote> { key -> api.get(key) },
             sourceOfTruth = SourceOfTruth.of<NotesKey, SOTNote>(
@@ -47,11 +46,12 @@ class MutableStoreWithMultiCacheTests {
             ),
             memoryCache = memoryCache
         ).toMutableStoreBuilder<NetworkNote, SOTNote>()
-            .converter(Converter.Builder<NetworkNote, NoteData, SOTNote>()
-                .fromLocalToOutput { local -> local.data!! }
-                .fromNetworkToOutput { network -> network.data!! }
-                .fromOutputToLocal { output -> SOTNote(output, Long.MAX_VALUE) }
-                .build()
+            .converter(
+                Converter.Builder<NetworkNote, NoteData, SOTNote>()
+                    .fromLocalToOutput { local -> local.data!! }
+                    .fromNetworkToOutput { network -> network.data!! }
+                    .fromOutputToLocal { output -> SOTNote(output, Long.MAX_VALUE) }
+                    .build()
             ).build(
                 updater = Updater.by(
                     post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }

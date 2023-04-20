@@ -111,7 +111,8 @@ class UpdaterTests {
             StoreReadResponse.Data(
                 CommonNote(NoteData.Single(newNote), ttl = null),
                 StoreReadResponseOrigin.Cache
-            ), firstResponse
+            ),
+            firstResponse
         )
 
         val secondResponse = cachedStream.take(2).last()

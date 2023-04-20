@@ -1,5 +1,6 @@
-package org.mobilenativefoundation.store.cache5
+@file:Suppress("UNCHECKED_CAST")
 
+package org.mobilenativefoundation.store.cache5
 
 /**
  * Implementation of a cache with collection decomposition.
@@ -9,7 +10,7 @@ package org.mobilenativefoundation.store.cache5
 class MultiCache<Key : Any, Output : Identifiable<Key>>(
     cacheBuilder: CacheBuilder<Key, Output>
 ) {
-    private val listCacheBuilder = CacheBuilder<Key, List<Output>>().apply {
+    private val collectionCacheBuilder = CacheBuilder<Key, Collection<Output>>().apply {
         expireAfterAccess(cacheBuilder.expireAfterAccess)
         expireAfterWrite(cacheBuilder.expireAfterWrite)
 
@@ -19,11 +20,11 @@ class MultiCache<Key : Any, Output : Identifiable<Key>>(
         // TODO(): Support weigher
     }
 
-    private val itemKeyToListKey = mutableMapOf<Key, Key>()
+    private val itemKeyToCollectionKey = mutableMapOf<Key, Key>()
 
     private val itemCache: Cache<Key, Output> = cacheBuilder.build()
 
-    private val listCache: Cache<Key, List<Output>> = listCacheBuilder.build()
+    private val collectionCache: Cache<Key, Collection<Output>> = collectionCacheBuilder.build()
 
     fun getItem(key: Key): Output? {
         return itemCache.getIfPresent(key)
@@ -32,24 +33,24 @@ class MultiCache<Key : Any, Output : Identifiable<Key>>(
     fun putItem(key: Key, item: Output) {
         itemCache.put(key, item)
 
-        val listKey = itemKeyToListKey[key]
-        if (listKey != null) {
-            val updatedList = listCache.getIfPresent(listKey)?.map { if (it.id == key) item else it }
-            if (updatedList != null) {
-                listCache.put(listKey, updatedList)
+        val collectionKey = itemKeyToCollectionKey[key]
+        if (collectionKey != null) {
+            val updatedCollection = collectionCache.getIfPresent(collectionKey)?.map { if (it.id == key) item else it }
+            if (updatedCollection != null) {
+                collectionCache.put(collectionKey, updatedCollection)
             }
         }
     }
 
-    fun getList(key: Key): List<Output>? {
-        return listCache.getIfPresent(key)
+    fun <T : Collection<Output>> getCollection(key: Key): T? {
+        return collectionCache.getIfPresent(key) as? T
     }
 
-    fun putList(key: Key, items: List<Output>) {
-        listCache.put(key, items)
+    fun putCollection(key: Key, items: Collection<Output>) {
+        collectionCache.put(key, items)
         items.forEach { item ->
             itemCache.put(item.id, item)
-            itemKeyToListKey[item.id] = key
+            itemKeyToCollectionKey[item.id] = key
         }
     }
 
@@ -57,20 +58,20 @@ class MultiCache<Key : Any, Output : Identifiable<Key>>(
         itemCache.invalidate(key)
     }
 
-    fun invalidateList(key: Key) {
-        val list = listCache.getIfPresent(key)
-        list?.forEach { item ->
+    fun invalidateCollection(key: Key) {
+        val collection = collectionCache.getIfPresent(key)
+        collection?.forEach { item ->
             invalidateItem(item.id)
         }
-        listCache.invalidate(key)
+        collectionCache.invalidate(key)
     }
 
     fun invalidateAll() {
-        listCache.invalidateAll()
+        collectionCache.invalidateAll()
         itemCache.invalidateAll()
     }
 
     fun size(): Long {
-        return itemCache.size() + listCache.size()
+        return itemCache.size() + collectionCache.size()
     }
 }
