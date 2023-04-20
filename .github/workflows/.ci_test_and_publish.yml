@@ -60,7 +60,6 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Run tests
-        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           script: ./gradlew check --rerun-tasks --stacktrace
