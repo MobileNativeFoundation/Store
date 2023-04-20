@@ -6,14 +6,12 @@ name: Build project & run tests
 
 on:
   push:
-    branches: [ main, Kmp, store5 ]
-  pull_request:
     branches: [ main ]
 
 jobs:
   publish:
     runs-on: macos-latest
-    if: github.repository == 'MobileNativeFoundation/Store' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/store5')
+    if: github.repository == 'MobileNativeFoundation/Store' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
