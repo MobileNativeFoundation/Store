@@ -5,7 +5,7 @@ import org.mobilenativefoundation.store.cache5.HybridCache
 import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 
-internal class NotesHybridCache(private val delegate: HybridCache<String, Note>) : Cache<NotesKey, NoteData> {
+internal class NotesMemoryCache(private val delegate: HybridCache<String, Note>) : Cache<NotesKey, NoteData> {
     override fun getIfPresent(key: NotesKey): NoteData? = when (key) {
         is NotesKey.Collection -> {
             val items = delegate.getList(key.id)
@@ -51,20 +51,22 @@ internal class NotesHybridCache(private val delegate: HybridCache<String, Note>)
     }
 
     override fun invalidateAll() {
-        // TODO()
+        delegate.invalidateAll()
     }
 
     override fun size(): Long {
-        // TODO()
-        return Long.MAX_VALUE
+        return delegate.size()
     }
 
     override fun invalidateAll(keys: List<NotesKey>) {
-        // TODO()
+        keys.forEach { key ->
+            invalidate(key)
+        }
     }
 
-    override fun invalidate(key: NotesKey) {
-        // TODO()
+    override fun invalidate(key: NotesKey) = when (key) {
+        is NotesKey.Collection -> delegate.invalidateList(key.id)
+        is NotesKey.Single -> delegate.invalidateItem(key.id)
     }
 
     override fun putAll(map: Map<NotesKey, NoteData>) {

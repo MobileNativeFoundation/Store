@@ -47,6 +47,26 @@ class HybridCache<Key : Any, Output : Identifiable<Key>>(
             itemKeyToListKey[item.id] = key
         }
     }
+
+    fun invalidateItem(key: Key) {
+        itemCache.invalidate(key)
+    }
+
+    fun invalidateList(key: Key) {
+        val list = listCache.getIfPresent(key)
+        list?.forEach { item ->
+            invalidateItem(item.id)
+        }
+        listCache.invalidate(key)
+    }
+
+    fun invalidateAll() {
+        listCache.invalidateAll()
+        itemCache.invalidateAll()
+    }
+    fun size(): Long {
+        return itemCache.size() + listCache.size()
+    }
 }
 
 fun <Key : Any, Output : Identifiable<Key>> CacheBuilder<Key, Output>.asHybridCache() = HybridCache(this)

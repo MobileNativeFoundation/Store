@@ -10,7 +10,7 @@ import org.mobilenativefoundation.store.store5.util.fake.NoteCollections
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
-import org.mobilenativefoundation.store.store5.util.fake.NotesHybridCache
+import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.fake.NotesKey
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.Note
@@ -34,7 +34,7 @@ class MutableStoreWithHybridCacheTests {
 
     @Test
     fun givenEmptyStoreWhenListFromFetcherThenListIsDecomposed() = testScope.runTest {
-        val memoryCache = NotesHybridCache(HybridCache<String, Note>(CacheBuilder()))
+        val memoryCache = NotesMemoryCache(HybridCache<String, Note>(CacheBuilder()))
 
 
         val store = StoreBuilder.from<NotesKey, NetworkNote, NoteData, SOTNote>(
