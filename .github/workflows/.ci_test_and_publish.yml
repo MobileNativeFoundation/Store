@@ -60,7 +60,7 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Run tests
-        uses: ./gradlew check --rerun-tasks --stacktrace
+        run: ./gradlew check --rerun-tasks --stacktrace
         with:
           api-level: 29
         env:
