@@ -61,9 +61,5 @@ jobs:
           java-version: 11
       - name: Run tests
         run: ./gradlew check --rerun-tasks --stacktrace
-        with:
-          api-level: 29
-        env:
-          API_LEVEL: ${{ matrix.api-level }}
       - name: Upload code coverage
         run: bash <(curl -s https://codecov.io/bash)
