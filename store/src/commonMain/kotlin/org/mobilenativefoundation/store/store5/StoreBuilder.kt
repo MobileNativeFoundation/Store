@@ -44,6 +44,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
     fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
+
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
@@ -73,9 +74,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
         ): StoreBuilder<Key, Output> =
             storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
 
-        fun <Key : Any, Input : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input>,
+        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local>,
             memoryCache: Cache<Key, Output>,
         ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
             fetcher,

@@ -27,8 +27,6 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
      */
     fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local>
 
-    fun cache(memoryCache: Cache<Key, Output>): MutableStoreBuilder<Key, Network, Output, Local>
-
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */

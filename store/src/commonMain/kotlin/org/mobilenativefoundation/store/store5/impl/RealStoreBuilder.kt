@@ -89,12 +89,18 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
 
     override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
         fetcher as Fetcher<Key, Network>
-        return if (sourceOfTruth == null) {
+        return if (sourceOfTruth == null && memoryCache == null) {
             mutableStoreBuilderFromFetcher(fetcher)
-        } else {
+        } else if (memoryCache == null) {
             mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(
                 fetcher,
                 sourceOfTruth as SourceOfTruth<Key, Local>
+            )
+        } else {
+            mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
+                fetcher,
+                sourceOfTruth as SourceOfTruth<Key, Local>,
+                memoryCache
             )
         }.apply {
             if (this@RealStoreBuilder.scope != null) {

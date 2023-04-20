@@ -14,6 +14,7 @@ import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
 import org.mobilenativefoundation.store.store5.util.fake.NotesConverterProvider
 import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
+import org.mobilenativefoundation.store.store5.util.fake.NotesKey
 import org.mobilenativefoundation.store.store5.util.fake.NotesUpdaterProvider
 import org.mobilenativefoundation.store.store5.util.fake.NotesValidator
 import org.mobilenativefoundation.store.store5.util.model.CommonNote
@@ -55,7 +56,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<NotesKey, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
             sourceOfTruth = SourceOfTruth.of(
                 nonFlowReader = { key -> notes.get(key) },
@@ -71,7 +72,7 @@ class UpdaterTests {
                 bookkeeper = bookkeeper
             )
 
-        val readRequest = StoreReadRequest.fresh(Notes.One.id)
+        val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
 
         val stream = store.stream<NotesWriteResponse>(readRequest)
 
@@ -80,27 +81,38 @@ class UpdaterTests {
             stream,
             listOf(
                 StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Data(
+                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher
+                )
             )
         )
 
         val newNote = Notes.One.copy(title = "New Title-1")
-        val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
-            key = Notes.One.id,
+        val writeRequest = StoreWriteRequest.of<NotesKey, CommonNote, NotesWriteResponse>(
+            key = NotesKey.Single(Notes.One.id),
             value = CommonNote(NoteData.Single(newNote))
         )
 
         val storeWriteResponse = store.write(writeRequest)
 
         // Write is success
-        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
+        assertEquals(
+            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            storeWriteResponse
+        )
 
-        val cachedReadRequest = StoreReadRequest.cached(Notes.One.id, refresh = false)
+        val cachedReadRequest = StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
         val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
 
         // Cache + SOT are updated
         val firstResponse = cachedStream.first()
-        assertEquals(StoreReadResponse.Data(CommonNote(NoteData.Single(newNote), ttl = null), StoreReadResponseOrigin.Cache), firstResponse)
+        assertEquals(
+            StoreReadResponse.Data(
+                CommonNote(NoteData.Single(newNote), ttl = null),
+                StoreReadResponseOrigin.Cache
+            ), firstResponse
+        )
 
         val secondResponse = cachedStream.take(2).last()
         assertIs<StoreReadResponse.Data<CommonNote>>(secondResponse)
@@ -112,8 +124,11 @@ class UpdaterTests {
         assertNotNull(secondResponse.value.ttl)
 
         // API is updated
-        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
-        assertEquals(NetworkNote(NoteData.Single(newNote), ttl = null), api.db[Notes.One.id])
+        assertEquals(
+            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            storeWriteResponse
+        )
+        assertEquals(NetworkNote(NoteData.Single(newNote), ttl = null), api.db[NotesKey.Single(Notes.One.id)])
     }
 
     @Test
@@ -130,7 +145,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<NotesKey, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
             sourceOfTruth = SourceOfTruth.of(
                 nonFlowReader = { key -> notes.get(key) },
@@ -146,7 +161,7 @@ class UpdaterTests {
                 bookkeeper = bookkeeper
             )
 
-        val readRequest = StoreReadRequest.fresh(Notes.One.id)
+        val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
 
         val stream = store.stream<NotesWriteResponse>(readRequest)
 
@@ -155,11 +170,14 @@ class UpdaterTests {
             stream,
             listOf(
                 StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Data(
+                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher
+                )
             )
         )
 
-        val cachedReadRequest = StoreReadRequest.cached(Notes.One.id, refresh = false)
+        val cachedReadRequest = StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
         val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
 
         // Cache + SOT are updated
@@ -170,7 +188,10 @@ class UpdaterTests {
         assertEmitsExactly(
             cachedStream,
             listOf(
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Data(
+                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher
+                )
             )
         )
     }
@@ -187,7 +208,7 @@ class UpdaterTests {
             clearAll = bookkeeping::clear
         )
 
-        val store = MutableStoreBuilder.from<String, NetworkNote, CommonNote, SOTNote>(
+        val store = MutableStoreBuilder.from<NotesKey, NetworkNote, CommonNote, SOTNote>(
             fetcher = Fetcher.ofFlow { key ->
                 val network = api.get(key)
                 flow { emit(network) }
@@ -207,13 +228,16 @@ class UpdaterTests {
             )
 
         val newNote = Notes.One.copy(title = "New Title-1")
-        val writeRequest = StoreWriteRequest.of<String, CommonNote, NotesWriteResponse>(
-            key = Notes.One.id,
+        val writeRequest = StoreWriteRequest.of<NotesKey, CommonNote, NotesWriteResponse>(
+            key = NotesKey.Single(Notes.One.id),
             value = CommonNote(NoteData.Single(newNote))
         )
         val storeWriteResponse = store.write(writeRequest)
 
-        assertEquals(StoreWriteResponse.Success.Typed(NotesWriteResponse(Notes.One.id, true)), storeWriteResponse)
-        assertEquals(NetworkNote(NoteData.Single(newNote)), api.db[Notes.One.id])
+        assertEquals(
+            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            storeWriteResponse
+        )
+        assertEquals(NetworkNote(NoteData.Single(newNote)), api.db[NotesKey.Single(Notes.One.id)])
     }
 }

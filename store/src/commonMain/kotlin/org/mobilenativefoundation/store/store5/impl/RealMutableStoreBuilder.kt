@@ -26,13 +26,19 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFro
     sourceOfTruth: SourceOfTruth<Key, Local>,
 ): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth)
 
+fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
+    memoryCache: Cache<Key, Output>
+): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+
 internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    private val memoryCache: Cache<Key, Output>? = null
 ) : MutableStoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
-    private var cache: Cache<Key, Output>? = null
     private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
 
@@ -43,11 +49,6 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
 
     override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local> {
         cachePolicy = memoryPolicy
-        return this
-    }
-
-    override fun cache(memoryCache: Cache<Key, Output>): MutableStoreBuilder<Key, Network, Output, Local> {
-        this.cache = memoryCache
         return this
     }
 
@@ -72,7 +73,7 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
         fetcher = fetcher,
         converter = converter,
         validator = validator,
-        memCache = cache ?: cachePolicy?.let {
+        memCache = memoryCache ?: cachePolicy?.let {
             CacheBuilder<Key, Output>().apply {
                 if (cachePolicy!!.hasAccessPolicy) {
                     expireAfterAccess(cachePolicy!!.expireAfterAccess)

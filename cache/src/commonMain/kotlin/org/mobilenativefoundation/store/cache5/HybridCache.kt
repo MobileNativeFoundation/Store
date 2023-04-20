@@ -7,7 +7,10 @@ class HybridCache<Key : Any, Output : Identifiable<Key>>(
     private val listCacheBuilder = CacheBuilder<Key, List<Output>>().apply {
         expireAfterAccess(cacheBuilder.expireAfterAccess)
         expireAfterWrite(cacheBuilder.expireAfterWrite)
-        maximumSize(cacheBuilder.maximumSize)
+
+        if (cacheBuilder.maximumSize > 0) {
+            maximumSize(cacheBuilder.maximumSize)
+        }
         // TODO(): Support weigher
     }
 
