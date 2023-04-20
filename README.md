@@ -3,6 +3,8 @@
     <h1 style="font-size:48px">Store5</h1>
 </div>
 
+[![codecov](https://codecov.io/gh/MobileNativeFoundation/Store/branch/main/graph/badge.svg?token=0UCmG3QHPf)](https://codecov.io/gh/MobileNativeFoundation/Store)
+
 <div align="center">
     <h4>Full documentation can be found on our <a href="https://mobilenativefoundation.github.io/Store/">website</a>!</h4>
 </div>
