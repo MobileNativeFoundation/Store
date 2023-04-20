@@ -60,9 +60,9 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Run tests
+        uses: ./gradlew check --rerun-tasks --stacktrace
         with:
           api-level: 29
-          script: ./gradlew check --rerun-tasks --stacktrace
         env:
           API_LEVEL: ${{ matrix.api-level }}
       - name: Upload code coverage
