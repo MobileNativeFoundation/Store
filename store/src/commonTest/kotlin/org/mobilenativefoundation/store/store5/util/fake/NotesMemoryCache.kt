@@ -1,11 +1,11 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
 import org.mobilenativefoundation.store.cache5.Cache
-import org.mobilenativefoundation.store.cache5.HybridCache
+import org.mobilenativefoundation.store.cache5.MultiCache
 import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 
-internal class NotesMemoryCache(private val delegate: HybridCache<String, Note>) : Cache<NotesKey, NoteData> {
+internal class NotesMemoryCache(private val delegate: MultiCache<String, Note>) : Cache<NotesKey, NoteData> {
     override fun getIfPresent(key: NotesKey): NoteData? = when (key) {
         is NotesKey.Collection -> {
             val items = delegate.getList(key.id)

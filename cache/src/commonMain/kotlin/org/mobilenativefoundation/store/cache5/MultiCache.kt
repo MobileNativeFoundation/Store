@@ -1,9 +1,14 @@
 package org.mobilenativefoundation.store.cache5
 
-class HybridCache<Key : Any, Output : Identifiable<Key>>(
+
+/**
+ * Implementation of a cache with collection decomposition.
+ * Stores and manages the relationship among single items and collections.
+ * Delegates cache storage and behavior to Guava caches.
+ */
+class MultiCache<Key : Any, Output : Identifiable<Key>>(
     cacheBuilder: CacheBuilder<Key, Output>
 ) {
-
     private val listCacheBuilder = CacheBuilder<Key, List<Output>>().apply {
         expireAfterAccess(cacheBuilder.expireAfterAccess)
         expireAfterWrite(cacheBuilder.expireAfterWrite)
@@ -64,9 +69,8 @@ class HybridCache<Key : Any, Output : Identifiable<Key>>(
         listCache.invalidateAll()
         itemCache.invalidateAll()
     }
+
     fun size(): Long {
         return itemCache.size() + listCache.size()
     }
 }
-
-fun <Key : Any, Output : Identifiable<Key>> CacheBuilder<Key, Output>.asHybridCache() = HybridCache(this)

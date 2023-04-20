@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.cache5.CacheBuilder
-import org.mobilenativefoundation.store.cache5.HybridCache
+import org.mobilenativefoundation.store.cache5.MultiCache
 import org.mobilenativefoundation.store.store5.util.fake.NoteCollections
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
@@ -21,7 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class MutableStoreWithHybridCacheTests {
+class MutableStoreWithMultiCacheTests {
     private val testScope = TestScope()
     private lateinit var api: NotesApi
     private lateinit var database: NotesDatabase
@@ -34,7 +34,7 @@ class MutableStoreWithHybridCacheTests {
 
     @Test
     fun givenEmptyStoreWhenListFromFetcherThenListIsDecomposed() = testScope.runTest {
-        val memoryCache = NotesMemoryCache(HybridCache<String, Note>(CacheBuilder()))
+        val memoryCache = NotesMemoryCache(MultiCache<String, Note>(CacheBuilder()))
 
 
         val store = StoreBuilder.from<NotesKey, NetworkNote, NoteData, SOTNote>(
