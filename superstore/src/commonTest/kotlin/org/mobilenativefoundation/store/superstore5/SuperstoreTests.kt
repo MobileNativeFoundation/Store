@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.superstore5
 
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
@@ -60,6 +61,64 @@ class SuperstoreTests {
                 ),
                 responses
             )
+        }
+
+    @Test
+    fun givenNonEmptyStoreAndSourceOfTruthAsFallbackWhenFailureFromPrimaryApiThenSuperstoreResponseOfSourceOfTruthResult() =
+        testScope.runTest {
+
+            val sourceOfTruth = SourceOfTruth.of<String, Page>(
+                nonFlowReader = { key -> pagesDatabase.get(key) },
+                writer = { key, page -> pagesDatabase.put(key, page) },
+                delete = null,
+                deleteAll = null
+            )
+
+            val sourceOfTruthWarehouse = object : Warehouse<String, Page> {
+                override val name: String = "SourceOfTruth"
+
+                override suspend fun get(key: String): WarehouseResponse<Page> {
+                    val local = sourceOfTruth.reader(key).firstOrNull()
+                    return if (local != null) {
+                        WarehouseResponse.Data(local, origin = name)
+                    } else {
+                        WarehouseResponse.Empty
+                    }
+
+                }
+            }
+
+
+            val ttl = null
+            var fail = false
+            val store = StoreBuilder.from<String, Page, Page>(
+                fetcher = Fetcher.of { key -> api.fetch(key, fail, ttl) },
+                sourceOfTruth = sourceOfTruth
+            ).build()
+            val superstore = Superstore.from(
+                store = store,
+                warehouses = listOf(sourceOfTruthWarehouse)
+            )
+
+            val responsesWithEmptyStore = superstore.stream(StoreReadRequest.fresh("1")).take(2).toList()
+
+            assertEquals(
+                listOf(
+                    SuperstoreResponse.Loading,
+                    SuperstoreResponse.Data(Page.Data("1", null), SuperstoreResponseOrigin.Fetcher)
+                ),
+                responsesWithEmptyStore
+            )
+            fail = true
+            val responsesWithNonEmptyStore = superstore.stream(StoreReadRequest.fresh("1")).take(2).toList()
+            assertEquals(
+                listOf(
+                    SuperstoreResponse.Loading,
+                    SuperstoreResponse.Data(Page.Data("1", null), SuperstoreResponseOrigin.Warehouse("SourceOfTruth"))
+                ),
+                responsesWithNonEmptyStore
+            )
+
         }
 
     @Test
