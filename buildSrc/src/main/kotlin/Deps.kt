@@ -39,12 +39,17 @@ object Deps {
         const val serializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Version.kotlinxSerialization}"
         const val coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Version.kotlinxCoroutines}"
         const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinxCoroutines}"
+        const val coroutinesRx2 = "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:${Version.kotlinxCoroutines}"
         const val dateTime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
     }
 
     object Ktor {
         const val clientCore = "io.ktor:ktor-client-core:${Version.ktor}"
         const val clientCio = "io.ktor:ktor-client-cio:${Version.ktor}"
+    }
+
+    object Rx {
+        const val rx2 = "io.reactivex.rxjava2:rxjava:2.2.21"
     }
 
     object SqlDelight {
@@ -61,6 +66,7 @@ object Deps {
         const val core = "androidx.test:core:${Version.testCore}"
         const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Version.kotlinxCoroutines}"
         const val junit = "junit:junit:${Version.junit}"
+        const val truth = "com.google.truth:truth:${Version.truth}"
     }
 
     object Touchlab {
