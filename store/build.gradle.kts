@@ -16,11 +16,16 @@ plugins {
     id("kotlinx-atomicfu")
 }
 
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.13.1"
+}
+
 kotlin {
     android()
     jvm()
     iosArm64()
     iosX64()
+    linuxX64()
     iosSimulatorArm64()
     js {
         browser()

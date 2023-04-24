@@ -43,7 +43,7 @@ class ClearAllStoreTests {
 
     @Test
     fun callingClearAllOnStoreWithPersisterAndNoInMemoryCacheDeletesAllEntriesFromThePersister() = testScope.runTest {
-        val store = StoreBuilder.from<String, Int, Int, Int>(
+        val store = StoreBuilder.from<String, Int, Int>(
             fetcher = fetcher,
             sourceOfTruth = persister.asSourceOfTruth()
         ).scope(testScope)
