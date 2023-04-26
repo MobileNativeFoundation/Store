@@ -9,9 +9,9 @@ class HardcodedPages {
     }
 
     private fun seed() {
-        db["1"] = Page.Data("One")
-        db["2"] = Page.Data("Two")
-        db["3"] = Page.Data("Three")
+        db["1"] = Page.Data("1")
+        db["2"] = Page.Data("2")
+        db["3"] = Page.Data("3")
     }
 
     fun get(key: String) = db[key] ?: throw Exception()

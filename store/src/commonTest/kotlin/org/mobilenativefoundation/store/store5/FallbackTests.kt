@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5
 
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
@@ -93,7 +92,8 @@ class FallbackTests {
                 responsesWithEmptyStore
             )
             fail = true
-            val responsesWithNonEmptyStore = store.stream(StoreReadRequest.freshButFallBackOnSourceOfTruth("1")).take(2).toList()
+            val responsesWithNonEmptyStore =
+                store.stream(StoreReadRequest.freshButFallBackOnSourceOfTruth("1")).take(2).toList()
             assertEquals(
                 listOf(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
@@ -141,4 +141,44 @@ class FallbackTests {
             )
         }
 
+    @Test
+    fun givenEmptyStoreWhenFailureFromPrimaryAndSecondaryApisThenSuperstoreResponseOfHardcodedData() =
+
+        testScope.runTest {
+            val ttl = null
+            val fail = true
+
+            val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
+            val throwingSecondaryApiFetcher =
+                Fetcher.ofWithFallback<String, Page>(secondaryApi.name, hardcodedPagesFetcher) { throw Exception() }
+
+            val store = StoreBuilder.from<String, Page, Page>(
+                fetcher = Fetcher.ofWithFallback(api.name, throwingSecondaryApiFetcher) { key ->
+                    api.fetch(
+                        key,
+                        fail,
+                        ttl
+                    )
+                },
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = { key -> pagesDatabase.get(key) },
+                    writer = { key, page -> pagesDatabase.put(key, page) },
+                    delete = null,
+                    deleteAll = null
+                )
+            ).build()
+
+            val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
+
+            assertEquals(
+                listOf(
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data(
+                        Page.Data("1", null),
+                        StoreReadResponseOrigin.Fetcher(hardcodedPagesFetcher.name)
+                    )
+                ),
+                responses
+            )
+        }
 }
