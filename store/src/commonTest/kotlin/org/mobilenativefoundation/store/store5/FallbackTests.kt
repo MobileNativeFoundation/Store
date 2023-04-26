@@ -28,7 +28,6 @@ class FallbackTests {
         pagesDatabase = PagesDatabase()
     }
 
-
     @Test
     fun givenEmptyStoreWhenSuccessFromPrimaryApiThenStoreReadResponseOfPrimaryApiResult() =
         testScope.runTest {
@@ -50,7 +49,6 @@ class FallbackTests {
                     deleteAll = null
                 )
             ).build()
-
 
             val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
 
