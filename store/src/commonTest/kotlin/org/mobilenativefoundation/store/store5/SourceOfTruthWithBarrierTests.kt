@@ -76,7 +76,7 @@ class SourceOfTruthWithBarrierTests {
                     value = null
                 ),
                 StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.Fetcher,
+                    origin = StoreReadResponseOrigin.Fetcher(),
                     value = "a"
                 )
             ),
@@ -125,7 +125,7 @@ class SourceOfTruthWithBarrierTests {
                     value = "a"
                 ),
                 StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.Fetcher,
+                    origin = StoreReadResponseOrigin.Fetcher(),
                     value = "b"
                 )
             ),
@@ -200,7 +200,7 @@ class SourceOfTruthWithBarrierTests {
                 ),
                 StoreReadResponse.Data(
                     // this is fetcher since we are using the write API
-                    origin = StoreReadResponseOrigin.Fetcher,
+                    origin = StoreReadResponseOrigin.Fetcher(),
                     value = "a"
                 )
             ),
@@ -258,7 +258,7 @@ class SourceOfTruthWithBarrierTests {
             advanceUntilIdle()
             assertEquals(
                 eventsUntilFailure + StoreReadResponse.Data<String?>(
-                    origin = StoreReadResponseOrigin.Fetcher,
+                    origin = StoreReadResponseOrigin.Fetcher(),
                     value = "succeed"
                 ),
                 collected

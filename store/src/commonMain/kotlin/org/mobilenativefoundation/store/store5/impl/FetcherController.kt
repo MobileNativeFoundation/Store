@@ -68,23 +68,23 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                         is FetcherResult.Data -> {
                             StoreReadResponse.Data(
                                 it.value,
-                                origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
+                                origin = StoreReadResponseOrigin.Fetcher(it.origin)
                             ) as StoreReadResponse<Network>
                         }
 
                         is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
                             it.message,
-                            origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
+                            origin = StoreReadResponseOrigin.Fetcher()
                         )
 
                         is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
                             it.error,
-                            origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
+                            origin = StoreReadResponseOrigin.Fetcher()
                         )
                     }
                 }.onEmpty {
                     val origin =
-                        if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
+                        StoreReadResponseOrigin.Fetcher()
                     emit(StoreReadResponse.NoNewData(origin))
                 },
                 /**

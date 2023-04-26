@@ -57,8 +57,8 @@ class FallbackTests {
 
             assertEquals(
                 listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher)
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher(api.name))
                 ),
                 responses
             )
@@ -87,8 +87,8 @@ class FallbackTests {
 
             assertEquals(
                 listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher)
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher())
                 ),
                 responsesWithEmptyStore
             )
@@ -96,12 +96,49 @@ class FallbackTests {
             val responsesWithNonEmptyStore = store.stream(StoreReadRequest.freshButFallBackOnSourceOfTruth("1")).take(2).toList()
             assertEquals(
                 listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                     StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.SourceOfTruth)
                 ),
                 responsesWithNonEmptyStore
             )
 
+        }
+
+
+    @Test
+    fun givenEmptyStoreWhenFailureFromPrimaryApiThenSuperstoreResponseOfSecondaryApiResult() =
+        testScope.runTest {
+            val ttl = null
+            val fail = true
+
+            val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
+            val secondaryApiFetcher = Fetcher.ofWithFallback<String, Page>(
+                secondaryApi.name,
+                hardcodedPagesFetcher
+            ) { key -> secondaryApi.get(key) }
+
+            val store = StoreBuilder.from<String, Page, Page>(
+                fetcher = Fetcher.ofWithFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = { key -> pagesDatabase.get(key) },
+                    writer = { key, page -> pagesDatabase.put(key, page) },
+                    delete = null,
+                    deleteAll = null
+                )
+            ).build()
+
+            val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
+
+            assertEquals(
+                listOf(
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data(
+                        Page.Data("1", null),
+                        StoreReadResponseOrigin.Fetcher(secondaryApiFetcher.name)
+                    )
+                ),
+                responses
+            )
         }
 
 }

@@ -30,11 +30,11 @@ class HotFlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -54,11 +54,11 @@ class HotFlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )

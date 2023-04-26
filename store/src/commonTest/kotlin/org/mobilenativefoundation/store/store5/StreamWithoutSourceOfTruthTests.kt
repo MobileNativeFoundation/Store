@@ -37,11 +37,11 @@ class StreamWithoutSourceOfTruthTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -49,15 +49,15 @@ class StreamWithoutSourceOfTruthTests {
         assertEquals(
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             ),
             twoItemsNoRefresh.await()
@@ -84,11 +84,11 @@ class StreamWithoutSourceOfTruthTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -96,15 +96,15 @@ class StreamWithoutSourceOfTruthTests {
         assertEquals(
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             ),
             twoItemsNoRefresh.await()

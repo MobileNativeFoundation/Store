@@ -80,7 +80,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
-                                                StoreReadResponseOrigin.Fetcher
+                                                StoreReadResponseOrigin.Fetcher()
                                             } else {
                                                 // when a write fails, we still get a new reader because
                                                 // we've disabled the previous reader before starting the

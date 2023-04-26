@@ -127,9 +127,7 @@ sealed class StoreReadResponseOrigin {
     /**
      * [StoreReadResponse] is sent from a fetcher,
      */
-    object Fetcher : StoreReadResponseOrigin()
-
-    data class Fallback(val name: String) : StoreReadResponseOrigin()
+    data class Fetcher(val name: String? = null) : StoreReadResponseOrigin()
 }
 
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
