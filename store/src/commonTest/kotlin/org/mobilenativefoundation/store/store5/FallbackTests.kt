@@ -30,7 +30,7 @@ class FallbackTests {
 
 
     @Test
-    fun givenEmptyStoreWhenSuccessFromPrimaryApiThenSuperstoreResponseOfPrimaryApiResult() =
+    fun givenEmptyStoreWhenSuccessFromPrimaryApiThenStoreReadResponseOfPrimaryApiResult() =
         testScope.runTest {
             val ttl = null
             val fail = false
@@ -63,50 +63,8 @@ class FallbackTests {
             )
         }
 
-
     @Test
-    fun givenNonEmptyStoreAndSourceOfTruthAsFallbackWhenFailureFromPrimaryApiThenSuperstoreResponseOfSourceOfTruthResult() =
-        testScope.runTest {
-
-            val sourceOfTruth = SourceOfTruth.of<String, Page>(
-                nonFlowReader = { key -> pagesDatabase.get(key) },
-                writer = { key, page -> pagesDatabase.put(key, page) },
-                delete = null,
-                deleteAll = null
-            )
-
-            val ttl = null
-            var fail = false
-            val store = StoreBuilder.from<String, Page, Page>(
-                fetcher = Fetcher.of { key -> api.fetch(key, fail, ttl) },
-                sourceOfTruth = sourceOfTruth
-            ).build()
-
-            val responsesWithEmptyStore = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
-
-            assertEquals(
-                listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher())
-                ),
-                responsesWithEmptyStore
-            )
-            fail = true
-            val responsesWithNonEmptyStore =
-                store.stream(StoreReadRequest.freshButFallBackOnSourceOfTruth("1")).take(2).toList()
-            assertEquals(
-                listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.SourceOfTruth)
-                ),
-                responsesWithNonEmptyStore
-            )
-
-        }
-
-
-    @Test
-    fun givenEmptyStoreWhenFailureFromPrimaryApiThenSuperstoreResponseOfSecondaryApiResult() =
+    fun givenEmptyStoreWhenFailureFromPrimaryApiThenStoreReadResponseOfSecondaryApiResult() =
         testScope.runTest {
             val ttl = null
             val fail = true
@@ -142,7 +100,7 @@ class FallbackTests {
         }
 
     @Test
-    fun givenEmptyStoreWhenFailureFromPrimaryAndSecondaryApisThenSuperstoreResponseOfHardcodedData() =
+    fun givenEmptyStoreWhenFailureFromPrimaryAndSecondaryApisThenStoreReadResponseOfHardcodedData() =
 
         testScope.runTest {
             val ttl = null
