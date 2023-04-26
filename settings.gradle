@@ -1,5 +1,4 @@
 include ':store'
-include ':superstore'
 include ':cache'
 include ':multicast'
 include ':rx2'
