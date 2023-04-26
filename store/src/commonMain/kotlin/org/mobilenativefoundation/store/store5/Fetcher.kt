@@ -101,8 +101,6 @@ interface Fetcher<Key : Any, Network : Any> {
         ): Fetcher<Key, Network> = FactoryFetcherWithFallback(name = name, factory = { key: Key ->
             flowFactory(key)
                 .map<Network, FetcherResult<Network>> {
-                    println("HITTING OFFLOWWITHFALLBACK = $it")
-                    println("NAME = $name")
                     FetcherResult.Data(it, name)
                 }
                 .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }

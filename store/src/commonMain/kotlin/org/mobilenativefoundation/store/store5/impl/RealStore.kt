@@ -123,7 +123,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             }
             emitAll(
                 stream.transform { output ->
-                    println("OUTPUT = $output")
                     val data = output.dataOrNull()
                     val shouldSkipValidation =
                         validator == null || data == null || output.origin is StoreReadResponseOrigin.Fetcher
@@ -133,7 +132,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             if (network != null) {
                                 val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
                                 if (newOutput != null) {
-                                    println("STORE READ RESPONSE ORIGIN = ${storeReadResponse.origin}")
                                     emit(StoreReadResponse.Data(newOutput, origin = storeReadResponse.origin))
                                 } else {
                                     emit(StoreReadResponse.NoNewData(origin = storeReadResponse.origin))
@@ -141,7 +139,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             }
                         }
                     } else {
-                        println("ELSE = $output")
                         emit(output)
                         if (output is StoreReadResponse.NoNewData && cachedToEmit == null) {
                             // In the special case where fetcher returned no new data we actually want to
@@ -171,7 +168,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             // whenever a value is dispatched, save it to the memory cache
             if (it.origin != StoreReadResponseOrigin.Cache) {
                 it.dataOrNull()?.let { data ->
-                    println("MEM CACHE PUT = $data")
                     memCache?.put(request.key, data)
                 }
             }
@@ -260,7 +256,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
                 is Either.Right -> {
                     // right, that is data from disk
-                    println("RIGHT = $it")
                     when (val diskData = it.value) {
                         is StoreReadResponse.Data -> {
                             val origin = diskData.origin
@@ -316,24 +311,13 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         piggybackOnly: Boolean = false
     ): Flow<StoreReadResponse<Network>> {
         return fetcherController
-            .getFetcher(request.key, piggybackOnly).map {
-                println("IT === $it")
-                if (it is StoreReadResponse.Data) {
-                    it.copy(origin = it.origin)
-                } else {
-                    it
-                }
-            }
+            .getFetcher(request.key, piggybackOnly)
             .onStart {
                 // wait until disk gives us the go
                 networkLock?.await()
                 if (!piggybackOnly) {
                     emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()))
                 }
-            }
-            .map {
-                println(it)
-                it
             }
     }
 
