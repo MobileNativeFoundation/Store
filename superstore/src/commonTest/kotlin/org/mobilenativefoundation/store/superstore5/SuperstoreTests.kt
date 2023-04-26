@@ -84,10 +84,8 @@ class SuperstoreTests {
                     } else {
                         WarehouseResponse.Empty
                     }
-
                 }
             }
-
 
             val ttl = null
             var fail = false
@@ -118,7 +116,6 @@ class SuperstoreTests {
                 ),
                 responsesWithNonEmptyStore
             )
-
         }
 
     @Test

@@ -113,21 +113,23 @@ sealed class StoreReadResponse<out Output> {
 /**
  * Represents the origin for a [StoreReadResponse].
  */
-enum class StoreReadResponseOrigin {
+sealed class StoreReadResponseOrigin {
     /**
      * [StoreReadResponse] is sent from the cache
      */
-    Cache,
+    object Cache : StoreReadResponseOrigin()
 
     /**
      * [StoreReadResponse] is sent from the persister
      */
-    SourceOfTruth,
+    object SourceOfTruth : StoreReadResponseOrigin()
 
     /**
      * [StoreReadResponse] is sent from a fetcher,
      */
-    Fetcher
+    object Fetcher : StoreReadResponseOrigin()
+
+    data class Fallback(val name: String) : StoreReadResponseOrigin()
 }
 
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {

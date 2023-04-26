@@ -69,6 +69,9 @@ private class FakeFlowFetcher<Key : Any, Output : Any>(
     vararg val responses: Pair<Key, Output>
 ) : Fetcher<Key, Output> {
     private var index = 0
+    override val name: String? = null
+
+    override val fallback: Fetcher<Key, Output>? = null
 
     override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {

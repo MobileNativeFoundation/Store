@@ -24,12 +24,10 @@ package org.mobilenativefoundation.store.store5
  *
  */
 data class StoreReadRequest<Key> private constructor(
-
     val key: Key,
-
     private val skippedCaches: Int,
-
-    val refresh: Boolean = false
+    val refresh: Boolean = false,
+    val fallBackOnSourceOfTruth: Boolean = false
 ) {
 
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
@@ -43,22 +41,23 @@ data class StoreReadRequest<Key> private constructor(
         }
 
         /**
-         * Create a Store Request which will skip all caches and hit your fetcher
+         * Create a [StoreReadRequest] which will skip all caches and hit your fetcher
          * (filling your caches).
          *
-         * Note: If the [Fetcher] does not return any data (i.e the returned
+         * Note: If the [Fetcher] does not return any data (i.e., the returned
          * [kotlinx.coroutines.Flow], when collected, is empty). Then store will fall back to local
          * data **even** if you explicitly requested fresh data.
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
-        fun <Key> fresh(key: Key) = StoreReadRequest(
+        fun <Key> fresh(key: Key, fallBackOnSourceOfTruth: Boolean = false) = StoreReadRequest(
             key = key,
             skippedCaches = allCaches,
-            refresh = true
+            refresh = true,
+            fallBackOnSourceOfTruth = fallBackOnSourceOfTruth
         )
 
         /**
-         * Create a Store Request which will return data from memory/disk caches
+         * Create a [StoreReadRequest] which will return data from memory/disk caches
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> cached(key: Key, refresh: Boolean) = StoreReadRequest(
@@ -68,7 +67,7 @@ data class StoreReadRequest<Key> private constructor(
         )
 
         /**
-         * Create a Store Request which will return data from disk cache
+         * Create a [StoreReadRequest] which will return data from disk cache
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreReadRequest(
@@ -76,6 +75,11 @@ data class StoreReadRequest<Key> private constructor(
             skippedCaches = CacheType.MEMORY.flag,
             refresh = refresh
         )
+
+        /**
+         * Creates a [StoreReadRequest] skipping all caches and returning data from network on success and data from [SourceOfTruth] on failure.
+         */
+        fun <Key> freshButFallBackOnSourceOfTruth(key: Key) = fresh(key, fallBackOnSourceOfTruth = true)
     }
 }
 

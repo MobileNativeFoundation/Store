@@ -124,16 +124,17 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             emitAll(
                 stream.transform { output ->
                     val data = output.dataOrNull()
-                    val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
+                    val shouldSkipValidation =
+                        validator == null || data == null || output.origin is StoreReadResponseOrigin.Fetcher
                     if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
                         fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
                             val network = storeReadResponse.dataOrNull()
                             if (network != null) {
                                 val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
                                 if (newOutput != null) {
-                                    emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
+                                    emit(StoreReadResponse.Data(newOutput, origin = storeReadResponse.origin))
                                 } else {
-                                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
+                                    emit(StoreReadResponse.NoNewData(origin = storeReadResponse.origin))
                                 }
                             }
                         }
@@ -232,7 +233,10 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData) {
+
+                    val fallBackOnSourceOfTruth = it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth
+
+                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || fallBackOnSourceOfTruth) {
                         // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
                         // cached disk data.
@@ -241,7 +245,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         diskLock.complete(Unit)
                     }
 
-                    if (it.value !is StoreReadResponse.Data) {
+                    if (it.value !is StoreReadResponse.Data && !(it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth)) {
                         emit(it.value.swapType())
                     }
                 }
@@ -312,6 +316,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
-    private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+    private suspend fun fromSourceOfTruth(key: Key) =
+        sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 }

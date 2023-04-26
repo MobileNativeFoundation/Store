@@ -68,22 +68,24 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                         is FetcherResult.Data -> {
                             StoreReadResponse.Data(
                                 it.value,
-                                origin = StoreReadResponseOrigin.Fetcher
+                                origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
                             ) as StoreReadResponse<Network>
                         }
 
                         is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
                             it.message,
-                            origin = StoreReadResponseOrigin.Fetcher
+                            origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
                         )
 
                         is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
                             it.error,
-                            origin = StoreReadResponseOrigin.Fetcher
+                            origin = if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
                         )
                     }
                 }.onEmpty {
-                    emit(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Fetcher))
+                    val origin =
+                        if (realFetcher.name != null) StoreReadResponseOrigin.Fallback(realFetcher.name!!) else StoreReadResponseOrigin.Fetcher
+                    emit(StoreReadResponse.NoNewData(origin))
                 },
                 /**
                  * When enabled, downstream collectors are never closed, instead, they are kept active to
