@@ -29,50 +29,50 @@ class RxSingleStoreExtensionsTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-            StoreBuilder.from<Int, String, String, String>(
-                    fetcher = Fetcher.ofResultSingle {
-                        Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
-                    },
-                    sourceOfTruth = SourceOfTruth.ofMaybe(
-                            reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
-                            writer = { key, value ->
-                                Completable.fromAction { fakeDisk[key] = value }
-                            },
-                            delete = { key ->
-                                Completable.fromAction { fakeDisk.remove(key) }
-                            },
-                            deleteAll = {
-                                Completable.fromAction { fakeDisk.clear() }
-                            }
-                    )
+        StoreBuilder.from<Int, String, String>(
+            fetcher = Fetcher.ofResultSingle {
+                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
+            },
+            sourceOfTruth = SourceOfTruth.ofMaybe(
+                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+                writer = { key, value ->
+                    Completable.fromAction { fakeDisk[key] = value }
+                },
+                delete = { key ->
+                    Completable.fromAction { fakeDisk.remove(key) }
+                },
+                deleteAll = {
+                    Completable.fromAction { fakeDisk.clear() }
+                }
             )
-                    .withScheduler(Schedulers.trampoline())
-                    .build()
+        )
+            .withScheduler(Schedulers.trampoline())
+            .build()
 
     @Test
     fun `store rx extension tests`() {
         // Return from cache - after initial fetch
         store.getSingle(3)
-                .test()
-                .await()
-                .assertValue("3 1")
+            .test()
+            .await()
+            .assertValue("3 1")
 
         // Return from cache
         store.getSingle(3)
-                .test()
-                .await()
-                .assertValue("3 1")
+            .test()
+            .await()
+            .assertValue("3 1")
 
         // Return from fresh - forcing a new fetch
         store.freshSingle(3)
-                .test()
-                .await()
-                .assertValue("3 2")
+            .test()
+            .await()
+            .assertValue("3 2")
 
         // Return from cache - different to initial
         store.getSingle(3)
-                .test()
-                .await()
-                .assertValue("3 2")
+            .test()
+            .await()
+            .assertValue("3 2")
     }
 }

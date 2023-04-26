@@ -33,59 +33,59 @@ class RxSingleStoreTest {
     private val atomicInteger = AtomicInteger(0)
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
-            StoreBuilder.from<Int, String, String, String>(
-                    fetcher = Fetcher.ofResultSingle {
-                        Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
-                    },
-                    sourceOfTruth = SourceOfTruth.ofMaybe(
-                            reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
-                            writer = { key, value ->
-                                Completable.fromAction { fakeDisk[key] = value }
-                            },
-                            delete = { key ->
-                                Completable.fromAction { fakeDisk.remove(key) }
-                            },
-                            deleteAll = {
-                                Completable.fromAction { fakeDisk.clear() }
-                            }
-                    )
+        StoreBuilder.from<Int, String, String>(
+            fetcher = Fetcher.ofResultSingle {
+                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
+            },
+            sourceOfTruth = SourceOfTruth.ofMaybe(
+                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+                writer = { key, value ->
+                    Completable.fromAction { fakeDisk[key] = value }
+                },
+                delete = { key ->
+                    Completable.fromAction { fakeDisk.remove(key) }
+                },
+                deleteAll = {
+                    Completable.fromAction { fakeDisk.clear() }
+                }
             )
-                    .withScheduler(Schedulers.trampoline())
-                    .build()
+        )
+            .withScheduler(Schedulers.trampoline())
+            .build()
 
     @Test
     fun simpleTest() {
         store.observe(StoreReadRequest.cached(3, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+            )
 
         store.observe(StoreReadRequest.cached(3, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Cache),
-                        StoreReadResponse.Data("3 1", StoreReadResponseOrigin.SourceOfTruth)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Cache),
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.SourceOfTruth)
+            )
 
         store.observe(StoreReadRequest.fresh(3))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Fetcher)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Fetcher())
+            )
 
         store.observe(StoreReadRequest.cached(3, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Cache),
-                        StoreReadResponse.Data("3 2", StoreReadResponseOrigin.SourceOfTruth)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Cache),
+                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.SourceOfTruth)
+            )
     }
 
     @Test
@@ -95,12 +95,12 @@ class RxSingleStoreTest {
         store.observeClear(3).blockingGet()
 
         store.observe(StoreReadRequest.cached(3, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+            )
     }
 
     @Test
@@ -111,19 +111,19 @@ class RxSingleStoreTest {
         store.observeClearAll().blockingGet()
 
         store.observe(StoreReadRequest.cached(3, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+            )
 
         store.observe(StoreReadRequest.cached(4, false))
-                .test()
-                .awaitCount(2)
-                .assertValues(
-                        StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                        StoreReadResponse.Data("4 2", StoreReadResponseOrigin.Fetcher)
-                )
+            .test()
+            .awaitCount(2)
+            .assertValues(
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data("4 2", StoreReadResponseOrigin.Fetcher())
+            )
     }
 }
