@@ -6,14 +6,12 @@ name: Build project & run tests
 
 on:
   push:
-    branches: [ main, Kmp, store5 ]
-  pull_request:
     branches: [ main ]
 
 jobs:
   publish:
     runs-on: macos-latest
-    if: github.repository == 'MobileNativeFoundation/Store' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/store5')
+    if: github.repository == 'MobileNativeFoundation/Store' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
@@ -60,11 +58,6 @@ jobs:
           distribution: zulu
           java-version: 11
       - name: Run tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: ./gradlew check --rerun-tasks --stacktrace
-        env:
-          API_LEVEL: ${{ matrix.api-level }}
+        run: ./gradlew check --rerun-tasks --stacktrace
       - name: Upload code coverage
         run: bash <(curl -s https://codecov.io/bash)
