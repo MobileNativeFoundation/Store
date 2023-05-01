@@ -158,6 +158,8 @@ interface Fetcher<Key : Any, Network : Any> {
                     is FetcherResult.Error -> {
                         if (fallback != null) {
                             tryFetch(key, fallback::invoke, fallback.fallback).collect { send(it) }
+                        } else {
+                            send(fetcherResult)
                         }
                     }
                 }
