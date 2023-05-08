@@ -27,7 +27,7 @@ data class StoreReadRequest<Key> private constructor(
     val key: Key,
     private val skippedCaches: Int,
     val refresh: Boolean = false,
-    val fallBackOnSourceOfTruth: Boolean = false
+    val fallBackToSourceOfTruth: Boolean = false
 ) {
 
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
@@ -53,7 +53,7 @@ data class StoreReadRequest<Key> private constructor(
             key = key,
             skippedCaches = allCaches,
             refresh = true,
-            fallBackOnSourceOfTruth = fallBackToSourceOfTruth
+            fallBackToSourceOfTruth = fallBackToSourceOfTruth
         )
 
         /**

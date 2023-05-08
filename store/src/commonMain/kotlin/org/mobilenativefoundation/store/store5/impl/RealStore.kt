@@ -238,9 +238,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     val responseOrigin = it.value.origin as StoreReadResponseOrigin.Fetcher
                     requestKeyToFetcherName[request.key] = responseOrigin.name
 
-                    val fallBackOnSourceOfTruth = it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth
+                    val fallBackToSourceOfTruth = it.value is StoreReadResponse.Error && request.fallBackToSourceOfTruth
 
-                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || (it.value is StoreReadResponse.Error && fallBackOnSourceOfTruth)) {
+                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || fallBackToSourceOfTruth) {
                         // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
                         // cached disk data.
@@ -249,7 +249,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         diskLock.complete(Unit)
                     }
 
-                    if (it.value !is StoreReadResponse.Data && !(it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth)) {
+                    if (it.value !is StoreReadResponse.Data && !fallBackToSourceOfTruth) {
                         emit(it.value.swapType())
                     }
                 }
@@ -258,12 +258,12 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // right, that is data from disk
                     when (val diskData = it.value) {
                         is StoreReadResponse.Data -> {
-                            val origin = diskData.origin
-
-                            val responseOriginWithFetcherName = if (origin is StoreReadResponseOrigin.Fetcher) {
-                                origin.copy(name = requestKeyToFetcherName[request.key])
-                            } else {
-                                origin
+                            val responseOriginWithFetcherName = diskData.origin.let { origin ->
+                                if (origin is StoreReadResponseOrigin.Fetcher) {
+                                    origin.copy(name = requestKeyToFetcherName[request.key])
+                                } else {
+                                    origin
+                                }
                             }
 
                             val diskValue = diskData.value
