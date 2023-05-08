@@ -30,11 +30,11 @@ class HotFlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -54,11 +54,11 @@ class HotFlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -69,6 +69,9 @@ private class FakeFlowFetcher<Key : Any, Output : Any>(
     vararg val responses: Pair<Key, Output>
 ) : Fetcher<Key, Output> {
     private var index = 0
+    override val name: String? = null
+
+    override val fallback: Fetcher<Key, Output>? = null
 
     override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {

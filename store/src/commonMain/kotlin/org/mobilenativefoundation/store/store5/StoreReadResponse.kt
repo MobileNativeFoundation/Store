@@ -113,21 +113,22 @@ sealed class StoreReadResponse<out Output> {
 /**
  * Represents the origin for a [StoreReadResponse].
  */
-enum class StoreReadResponseOrigin {
+sealed class StoreReadResponseOrigin {
     /**
      * [StoreReadResponse] is sent from the cache
      */
-    Cache,
+    object Cache : StoreReadResponseOrigin()
 
     /**
      * [StoreReadResponse] is sent from the persister
      */
-    SourceOfTruth,
+    object SourceOfTruth : StoreReadResponseOrigin()
 
     /**
-     * [StoreReadResponse] is sent from a fetcher,
+     * [StoreReadResponse] is sent from a fetcher
+     * @property name Unique name to enable differentiation when [org.mobilenativefoundation.store.store5.Fetcher.fallback] exists
      */
-    Fetcher
+    data class Fetcher(val name: String? = null) : StoreReadResponseOrigin()
 }
 
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {

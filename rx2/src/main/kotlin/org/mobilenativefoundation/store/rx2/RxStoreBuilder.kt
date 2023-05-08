@@ -19,8 +19,8 @@ import org.mobilenativefoundation.store.store5.StoreBuilder
  *   @param scheduler - scheduler to use for sharing
  *  if a scheduler is not set Store will use [GlobalScope]
  */
-fun <Key : Any, Network : Any, Output : Any, Local : Any> StoreBuilder<Key, Network, Output, Local>.withScheduler(
-        scheduler: Scheduler
-): StoreBuilder<Key, Network, Output, Local> {
+fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.withScheduler(
+    scheduler: Scheduler
+): StoreBuilder<Key, Output> {
     return scope(CoroutineScope(scheduler.asCoroutineDispatcher()))
 }
