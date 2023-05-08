@@ -102,19 +102,6 @@ interface SourceOfTruth<Key : Any, Local : Any> {
             realDeleteAll = deleteAll
         )
 
-        fun <Key : Any, Local : Any, Output : Any> of(
-            nonFlowReader: suspend (Key) -> Local?,
-            writer: suspend (Key, Local) -> Unit,
-            delete: (suspend (Key) -> Unit)? = null,
-            deleteAll: (suspend () -> Unit)? = null,
-            fallback: Fallback<Key, Output>
-        ): SourceOfTruth<Key, Local> = PersistentNonFlowingSourceOfTruth(
-            realReader = nonFlowReader,
-            realWriter = writer,
-            realDelete = delete,
-            realDeleteAll = deleteAll
-        )
-
         /**
          * Creates a ([Flow]) source of truth that is accessed via [reader], [writer],
          * [delete] and [deleteAll].
