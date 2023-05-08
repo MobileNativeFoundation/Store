@@ -34,7 +34,7 @@ class ClearStoreByKeyTests {
         // should receive data from network first time
         assertEquals(
             Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value
             ),
             store.getData(key)
@@ -55,7 +55,7 @@ class ClearStoreByKeyTests {
         // should fetch data from network again
         assertEquals(
             Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value
             ),
             store.getData(key)
@@ -73,7 +73,7 @@ class ClearStoreByKeyTests {
         // should receive data from network first time
         assertEquals(
             Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value
             ),
             store.getData(key)
@@ -94,7 +94,7 @@ class ClearStoreByKeyTests {
         // should fetch data from network again
         assertEquals(
             Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value
             ),
             store.getData(key)
@@ -135,7 +135,7 @@ class ClearStoreByKeyTests {
         // getting data for key1 should hit the network again
         assertEquals(
             Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value1
             ),
             store.getData(key1)

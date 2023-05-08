@@ -124,16 +124,17 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             emitAll(
                 stream.transform { output ->
                     val data = output.dataOrNull()
-                    val shouldSkipValidation = validator == null || data == null || output.origin == StoreReadResponseOrigin.Fetcher
+                    val shouldSkipValidation =
+                        validator == null || data == null || output.origin is StoreReadResponseOrigin.Fetcher
                     if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
                         fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
                             val network = storeReadResponse.dataOrNull()
                             if (network != null) {
                                 val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
                                 if (newOutput != null) {
-                                    emit(StoreReadResponse.Data(newOutput, origin = StoreReadResponseOrigin.Fetcher))
+                                    emit(StoreReadResponse.Data(newOutput, origin = storeReadResponse.origin))
                                 } else {
-                                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Fetcher))
+                                    emit(StoreReadResponse.NoNewData(origin = storeReadResponse.origin))
                                 }
                             }
                         }
@@ -225,6 +226,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 networkLock.complete(Unit)
             }
         }
+
+        val requestKeyToFetcherName: MutableMap<Key, String?> = mutableMapOf()
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
         return networkFlow.merge(diskFlow).transform {
@@ -232,7 +235,12 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             when (it) {
                 is Either.Left -> {
                     // left, that is data from network
-                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData) {
+                    val responseOrigin = it.value.origin as StoreReadResponseOrigin.Fetcher
+                    requestKeyToFetcherName[request.key] = responseOrigin.name
+
+                    val fallBackOnSourceOfTruth = it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth
+
+                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || (it.value is StoreReadResponse.Error && fallBackOnSourceOfTruth)) {
                         // Unlocking disk only if network sent data or reported no new data
                         // so that fresh data request never receives new fetcher data after
                         // cached disk data.
@@ -241,7 +249,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         diskLock.complete(Unit)
                     }
 
-                    if (it.value !is StoreReadResponse.Data) {
+                    if (it.value !is StoreReadResponse.Data && !(it.value is StoreReadResponse.Error && request.fallBackOnSourceOfTruth)) {
                         emit(it.value.swapType())
                     }
                 }
@@ -250,10 +258,20 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // right, that is data from disk
                     when (val diskData = it.value) {
                         is StoreReadResponse.Data -> {
+                            val origin = diskData.origin
+
+                            val responseOriginWithFetcherName = if (origin is StoreReadResponseOrigin.Fetcher) {
+                                origin.copy(name = requestKeyToFetcherName[request.key])
+                            } else {
+                                origin
+                            }
+
                             val diskValue = diskData.value
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
-                                emit(diskData as StoreReadResponse<Output>)
+                                val output =
+                                    diskData.copy(origin = responseOriginWithFetcherName) as StoreReadResponse<Output>
+                                emit(output)
                             }
                             // If the disk value is null or refresh was requested then allow fetcher
                             // to start emitting values.
@@ -298,7 +316,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 // wait until disk gives us the go
                 networkLock?.await()
                 if (!piggybackOnly) {
-                    emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher))
+                    emit(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()))
                 }
             }
     }
@@ -312,6 +330,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     }
 
     internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
-    private suspend fun fromSourceOfTruth(key: Key) = sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+    private suspend fun fromSourceOfTruth(key: Key) =
+        sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
+
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 }

@@ -55,7 +55,7 @@ class ClearAllStoreTests {
         advanceUntilIdle()
         assertEquals(
             StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value1
             ),
             responseOneA
@@ -64,7 +64,7 @@ class ClearAllStoreTests {
         advanceUntilIdle()
         assertEquals(
             StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value2
             ),
             responseTwoA
@@ -98,7 +98,7 @@ class ClearAllStoreTests {
         advanceUntilIdle()
         assertEquals(
             StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value1
             ),
             responseOneC
@@ -108,7 +108,7 @@ class ClearAllStoreTests {
         advanceUntilIdle()
         assertEquals(
             StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
+                origin = StoreReadResponseOrigin.Fetcher(),
                 value = value2
             ),
             responseTwoC
@@ -116,60 +116,61 @@ class ClearAllStoreTests {
     }
 
     @Test
-    fun callingClearAllOnStoreWithInMemoryCacheAndNoPersisterDeletesAllEntriesFromTheInMemoryCache() = testScope.runTest {
-        val store = StoreBuilder.from<String, Int, Int>(
-            fetcher = fetcher
-        ).scope(testScope).build()
+    fun callingClearAllOnStoreWithInMemoryCacheAndNoPersisterDeletesAllEntriesFromTheInMemoryCache() =
+        testScope.runTest {
+            val store = StoreBuilder.from<String, Int, Int>(
+                fetcher = fetcher
+            ).scope(testScope).build()
 
-        // should receive data from network first time
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
-                value = value1
-            ),
-            store.getData(key1)
-        )
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
-                value = value2
-            ),
-            store.getData(key2)
-        )
+            // should receive data from network first time
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher(),
+                    value = value1
+                ),
+                store.getData(key1)
+            )
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher(),
+                    value = value2
+                ),
+                store.getData(key2)
+            )
 
-        // should receive data from cache
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Cache,
-                value = value1
-            ),
-            store.getData(key1)
-        )
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Cache,
-                value = value2
-            ),
-            store.getData(key2)
-        )
+            // should receive data from cache
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Cache,
+                    value = value1
+                ),
+                store.getData(key1)
+            )
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Cache,
+                    value = value2
+                ),
+                store.getData(key2)
+            )
 
-        // clear all entries in store
-        store.clear()
+            // clear all entries in store
+            store.clear()
 
-        // should fetch data from network again
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
-                value = value1
-            ),
-            store.getData(key1)
-        )
-        assertEquals(
-            StoreReadResponse.Data(
-                origin = StoreReadResponseOrigin.Fetcher,
-                value = value2
-            ),
-            store.getData(key2)
-        )
-    }
+            // should fetch data from network again
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher(),
+                    value = value1
+                ),
+                store.getData(key1)
+            )
+            assertEquals(
+                StoreReadResponse.Data(
+                    origin = StoreReadResponseOrigin.Fetcher(),
+                    value = value2
+                ),
+                store.getData(key2)
+            )
+        }
 }

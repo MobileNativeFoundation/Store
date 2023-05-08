@@ -79,8 +79,8 @@ class UpdaterTests {
         assertEmitsExactly(
             stream,
             listOf(
-                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher())
             )
         )
 
@@ -154,8 +154,8 @@ class UpdaterTests {
         assertEmitsExactly(
             stream,
             listOf(
-                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher),
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher())
             )
         )
 
@@ -170,7 +170,7 @@ class UpdaterTests {
         assertEmitsExactly(
             cachedStream,
             listOf(
-                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher)
+                StoreReadResponse.Data(CommonNote(NoteData.Single(Notes.One), ttl = ttl), StoreReadResponseOrigin.Fetcher())
             )
         )
     }
