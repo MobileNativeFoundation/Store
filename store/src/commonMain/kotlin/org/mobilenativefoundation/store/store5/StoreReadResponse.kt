@@ -125,7 +125,8 @@ sealed class StoreReadResponseOrigin {
     object SourceOfTruth : StoreReadResponseOrigin()
 
     /**
-     * [StoreReadResponse] is sent from a fetcher,
+     * [StoreReadResponse] is sent from a fetcher
+     * @property name Unique name to enable differentiation when [org.mobilenativefoundation.store.store5.Fetcher.fallback] exists
      */
     data class Fetcher(val name: String? = null) : StoreReadResponseOrigin()
 }

@@ -19,6 +19,8 @@ import org.mobilenativefoundation.store.store5.Fetcher.Companion.ofResult
  * See [ofResult] for easily translating from a regular `suspend` function.
  * See [ofFlow], [of] for easily translating to [FetcherResult] (and
  * automatically transforming exceptions into [FetcherResult.Error]).
+ *
+ * @property name Unique name to enable differentiation when [fallback] exists.
  */
 interface Fetcher<Key : Any, Network : Any> {
     val name: String?
@@ -46,6 +48,11 @@ interface Fetcher<Key : Any, Network : Any> {
             flowFactory: (Key) -> Flow<FetcherResult<Network>>
         ): Fetcher<Key, Network> = FactoryFetcher(factory = flowFactory)
 
+        /**
+         * Creates a [Fetcher] with a [fallback] from a [flowFactory].
+         * Use instead of [ofResultFlow] if implementing fallback mechanisms.
+         * @param name Unique name to enable differentiation of fetchers.
+         */
         fun <Key : Any, Network : Any> ofResultFlowWithFallback(
             name: String,
             flowFactory: (Key) -> Flow<FetcherResult<Network>>,
@@ -67,6 +74,11 @@ interface Fetcher<Key : Any, Network : Any> {
             fetch: suspend (Key) -> FetcherResult<Network>
         ): Fetcher<Key, Network> = ofResultFlow(fetch.asFlow())
 
+        /**
+         * Creates a [Fetcher] with a [fallback] from a non-Flow source.
+         * Use instead of [ofResult] if implementing fallback mechanisms.
+         * @param name Unique name to enable differentiation of fetchers.
+         */
         fun <Key : Any, Network : Any> ofResultWithFallback(
             name: String,
             fetch: suspend (Key) -> FetcherResult<Network>,
@@ -94,6 +106,11 @@ interface Fetcher<Key : Any, Network : Any> {
                 .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
         }
 
+        /**
+         * Creates a [Fetcher] with a [fallback] from a [flowFactory].
+         * Use instead of [ofFlow] if implementing fallback mechanisms.
+         * @param name Unique name to enable differentiation of fetchers
+         */
         fun <Key : Any, Network : Any> ofFlowWithFallback(
             name: String,
             fallback: Fetcher<Key, Network>,
@@ -123,6 +140,11 @@ interface Fetcher<Key : Any, Network : Any> {
         ): Fetcher<Key, Network> =
             ofFlow(name, fetch.asFlow())
 
+        /**
+         * Creates a [Fetcher] with a [fallback] from a non-Flow source.
+         * Use instead of [of] if implementing fallback mechanisms.
+         * @param name Unique name to enable differentiation of fetchers
+         */
         fun <Key : Any, Network : Any> ofWithFallback(
             name: String,
             fallback: Fetcher<Key, Network>,

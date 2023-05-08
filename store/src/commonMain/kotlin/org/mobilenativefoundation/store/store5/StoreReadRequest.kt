@@ -49,11 +49,11 @@ data class StoreReadRequest<Key> private constructor(
          * data **even** if you explicitly requested fresh data.
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
-        fun <Key> fresh(key: Key, fallBackOnSourceOfTruth: Boolean = false) = StoreReadRequest(
+        fun <Key> fresh(key: Key, fallBackToSourceOfTruth: Boolean = false) = StoreReadRequest(
             key = key,
             skippedCaches = allCaches,
             refresh = true,
-            fallBackOnSourceOfTruth = fallBackOnSourceOfTruth
+            fallBackOnSourceOfTruth = fallBackToSourceOfTruth
         )
 
         /**
@@ -79,7 +79,7 @@ data class StoreReadRequest<Key> private constructor(
         /**
          * Creates a [StoreReadRequest] skipping all caches and returning data from network on success and data from [SourceOfTruth] on failure.
          */
-        fun <Key> freshButFallBackOnSourceOfTruth(key: Key) = fresh(key, fallBackOnSourceOfTruth = true)
+        fun <Key> freshWithFallBackToSourceOfTruth(key: Key) = fresh(key, fallBackToSourceOfTruth = true)
     }
 }
 

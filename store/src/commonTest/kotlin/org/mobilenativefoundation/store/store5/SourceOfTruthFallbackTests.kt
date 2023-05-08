@@ -57,7 +57,7 @@ class SourceOfTruthFallbackTests {
             )
             fail = true
             val responsesWithNonEmptyStore =
-                store.stream(StoreReadRequest.freshButFallBackOnSourceOfTruth("1")).take(2).toList()
+                store.stream(StoreReadRequest.freshWithFallBackToSourceOfTruth("1")).take(2).toList()
             assertEquals(
                 listOf(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
