@@ -32,5 +32,6 @@ object Version {
     const val navigationCompose = "2.5.2"
     const val sqlDelight = "1.5.4"
     const val sqlDelightGradlePlugin = sqlDelight
-    const val store = "5.0.0-alpha05"
+    const val store = "5.0.0-alpha06"
+    const val truth = "1.1.3"
 }

@@ -43,7 +43,7 @@ class FetcherControllerTests {
         assertEquals(
             Data(
                 value = 9,
-                origin = StoreReadResponseOrigin.Fetcher
+                origin = StoreReadResponseOrigin.Fetcher()
             ),
             received
         )
@@ -80,7 +80,7 @@ class FetcherControllerTests {
             assertEquals(
                 Data(
                     value = 9,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 it.await()
             )

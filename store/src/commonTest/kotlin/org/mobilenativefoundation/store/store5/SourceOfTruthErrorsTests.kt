@@ -44,7 +44,7 @@ class SourceOfTruthErrorsTests {
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
-                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                 StoreReadResponse.Error.Exception(
                     error = WriteException(
                         key = 3,
@@ -88,7 +88,7 @@ class SourceOfTruthErrorsTests {
                 ),
                 // after disk fails, we should still invoke fetcher
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 // and after fetcher writes the value, it will trigger another read which will also
                 // fail
@@ -127,7 +127,7 @@ class SourceOfTruthErrorsTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = WriteException(
@@ -139,7 +139,7 @@ class SourceOfTruthErrorsTests {
                 ),
                 StoreReadResponse.Data(
                     value = "b",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = WriteException(
@@ -157,7 +157,7 @@ class SourceOfTruthErrorsTests {
                 ),
                 StoreReadResponse.Data(
                     value = "d",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -215,11 +215,11 @@ class SourceOfTruthErrorsTests {
 //                ),
 //                // now we'll unlock the fetcher after disk is read
 //                StoreReadResponse.Loading(
-//                    origin = StoreReadResponseOrigin.Fetcher
+//                    origin = StoreReadResponseOrigin.Fetcher(
 //                ),
 //                StoreReadResponse.Data(
 //                    value = "d",
-//                    origin = StoreReadResponseOrigin.Fetcher
+//                    origin = StoreReadResponseOrigin.Fetcher(
 //                )
 //            )
 //        )
@@ -271,11 +271,11 @@ class SourceOfTruthErrorsTests {
                 // don't receive the write exception because technically it started before we
                 // started reading
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = "d",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -317,11 +317,11 @@ class SourceOfTruthErrorsTests {
 //            pipeline.stream(StoreReadRequest.fresh(3)),
 //            listOf(
 //                StoreReadResponse.Loading(
-//                    origin = StoreReadResponseOrigin.Fetcher
+//                    origin = StoreReadResponseOrigin.Fetcher(
 //                ),
 //                StoreReadResponse.Data(
 //                    value = "d",
-//                    origin = StoreReadResponseOrigin.Fetcher
+//                    origin = StoreReadResponseOrigin.Fetcher(
 //                )
 //            )
 //        )
@@ -358,11 +358,11 @@ class SourceOfTruthErrorsTests {
                         )
                     ),
                     StoreReadResponse.Loading(
-                        origin = StoreReadResponseOrigin.Fetcher
+                        origin = StoreReadResponseOrigin.Fetcher()
                     ),
                     StoreReadResponse.Data(
                         value = "a",
-                        origin = StoreReadResponseOrigin.Fetcher
+                        origin = StoreReadResponseOrigin.Fetcher()
                     )
                 )
             )

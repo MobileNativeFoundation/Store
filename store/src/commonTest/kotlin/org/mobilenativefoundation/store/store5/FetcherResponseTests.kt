@@ -49,9 +49,9 @@ class FetcherResponseTests {
                     StoreReadRequest.fresh(1)
                 ),
                 listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher),
-                    StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher)
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher())
                 )
             )
         }
@@ -67,11 +67,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = 9,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -105,11 +105,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Message(
                     message = "zero",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -117,11 +117,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = 1,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -148,11 +148,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = e,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -160,11 +160,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = 1,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -189,11 +189,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = e,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -201,11 +201,11 @@ class FetcherResponseTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Data(
                     value = 1,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )

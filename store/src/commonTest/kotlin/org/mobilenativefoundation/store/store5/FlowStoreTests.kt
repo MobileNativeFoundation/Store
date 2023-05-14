@@ -63,11 +63,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)).take(2).toList(),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -86,11 +86,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)).take(2).toList(),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -122,11 +122,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -152,11 +152,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -193,11 +193,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -214,11 +214,11 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.SourceOfTruth
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -238,11 +238,11 @@ class FlowStoreTests {
             listOf
             (
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -255,11 +255,11 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.Cache
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -278,11 +278,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.skipMemory(3, refresh = false)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -291,11 +291,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.skipMemory(3, refresh = false)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -320,15 +320,15 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -340,15 +340,15 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.SourceOfTruth
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -377,7 +377,7 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "local-1",
@@ -385,7 +385,7 @@ class FlowStoreTests {
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
 
             )
@@ -419,7 +419,7 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "local-1",
@@ -427,7 +427,7 @@ class FlowStoreTests {
                 ),
                 Data(
                     value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "local-2",
@@ -435,7 +435,7 @@ class FlowStoreTests {
                 ),
                 Data(
                     value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -462,11 +462,11 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(key = 3, refresh = true)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = exception,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "local-1",
@@ -482,11 +482,11 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.SourceOfTruth
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.Error.Exception(
                     error = exception,
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -510,10 +510,10 @@ class FlowStoreTests {
                 pipeline.stream(StoreReadRequest.fresh(3)),
                 listOf(
                     Loading(
-                        origin = StoreReadResponseOrigin.Fetcher
+                        origin = StoreReadResponseOrigin.Fetcher()
                     ),
                     StoreReadResponse.NoNewData(
-                        origin = StoreReadResponseOrigin.Fetcher
+                        origin = StoreReadResponseOrigin.Fetcher()
                     ),
                     Data(
                         value = "local-1",
@@ -552,10 +552,10 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.SourceOfTruth
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.NoNewData(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -582,10 +582,10 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.NoNewData(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 Data(
                     value = "remote-1",
@@ -620,10 +620,10 @@ class FlowStoreTests {
                     origin = StoreReadResponseOrigin.Cache
                 ),
                 Loading(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 ),
                 StoreReadResponse.NoNewData(
-                    origin = StoreReadResponseOrigin.Fetcher
+                    origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
         )
@@ -673,7 +673,7 @@ class FlowStoreTests {
             secondCollect,
             Data(
                 value = "three-2",
-                origin = StoreReadResponseOrigin.Fetcher
+                origin = StoreReadResponseOrigin.Fetcher()
             )
         )
 
@@ -744,7 +744,7 @@ class FlowStoreTests {
             secondCollect,
             Data(
                 value = "three-2",
-                origin = StoreReadResponseOrigin.Fetcher
+                origin = StoreReadResponseOrigin.Fetcher()
             )
         )
         collection.cancelAndJoin()
@@ -772,8 +772,8 @@ class FlowStoreTests {
             testScope.advanceUntilIdle()
             assertEquals(
                 listOf(
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-1")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-1")
                 ),
                 fetcher1Collected
             )
@@ -782,8 +782,8 @@ class FlowStoreTests {
                 pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
                 listOf(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-1"),
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-2")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2")
                 )
             )
 
@@ -791,17 +791,17 @@ class FlowStoreTests {
                 pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
                 listOf(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-2"),
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-3")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-3")
                 )
             )
             testScope.advanceUntilIdle()
             assertEquals(
                 listOf(
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-1"),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-2"),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-3")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-1"),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2"),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-3")
                 ),
                 fetcher1Collected
             )
@@ -828,8 +828,8 @@ class FlowStoreTests {
             testScope.runCurrent()
             assertEquals(
                 listOf(
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-1")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-1")
                 ),
                 fetcher1Collected
             )
@@ -838,16 +838,16 @@ class FlowStoreTests {
                 pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
                 listOf(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-1"),
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-2")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2")
                 )
             )
             testScope.runCurrent()
             assertEquals(
                 listOf(
-                    Loading(origin = StoreReadResponseOrigin.Fetcher),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-1"),
-                    Data(origin = StoreReadResponseOrigin.Fetcher, value = "three-2")
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-1"),
+                    Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2")
                 ),
                 fetcher1Collected
             )
