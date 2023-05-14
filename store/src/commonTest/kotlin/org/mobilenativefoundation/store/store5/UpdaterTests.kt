@@ -84,7 +84,8 @@ class UpdaterTests {
                 StoreReadResponse.Data(
                     CommonNote(NoteData.Single(Notes.One), ttl = ttl),
                     StoreReadResponseOrigin.Fetcher
-                ())
+                    ()
+                )
             )
         )
 
@@ -174,7 +175,8 @@ class UpdaterTests {
                 StoreReadResponse.Data(
                     CommonNote(NoteData.Single(Notes.One), ttl = ttl),
                     StoreReadResponseOrigin.Fetcher
-                ())
+                    ()
+                )
             )
         )
 
@@ -192,7 +194,8 @@ class UpdaterTests {
                 StoreReadResponse.Data(
                     CommonNote(NoteData.Single(Notes.One), ttl = ttl),
                     StoreReadResponseOrigin.Fetcher
-                ())
+                    ()
+                )
             )
         )
     }

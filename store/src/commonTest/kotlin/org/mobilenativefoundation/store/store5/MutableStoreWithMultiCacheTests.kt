@@ -64,8 +64,8 @@ class MutableStoreWithMultiCacheTests {
 
         val actualResultFromFreshStream = freshStream.take(2).toList()
         val expectedResultFromFreshStream = listOf(
-            StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher),
-            StoreReadResponse.Data(NoteCollections.OneAndTwo, StoreReadResponseOrigin.Fetcher)
+            StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+            StoreReadResponse.Data(NoteCollections.OneAndTwo, StoreReadResponseOrigin.Fetcher())
         )
 
         assertEquals(expectedResultFromFreshStream, actualResultFromFreshStream)
