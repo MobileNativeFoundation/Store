@@ -25,12 +25,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
-import org.mobilenativefoundation.store.cache5.CacheBuilder
+import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.CacheType
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
-import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
@@ -47,7 +46,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     sourceOfTruth: SourceOfTruth<Key, Local>? = null,
     private val converter: Converter<Network, Output, Local>? = null,
     private val validator: Validator<Output>?,
-    private val memoryPolicy: MemoryPolicy<Key, Output>?
+    private val memCache: Cache<Key, Output>?
 ) : Store<Key, Output> {
     /**
      * This source of truth is either a real database or an in memory source of truth created by
@@ -60,24 +59,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         sourceOfTruth?.let {
             SourceOfTruthWithBarrier(it, converter)
         }
-
-    private val memCache = memoryPolicy?.let {
-        CacheBuilder<Key, Output>().apply {
-            if (memoryPolicy.hasAccessPolicy) {
-                expireAfterAccess(memoryPolicy.expireAfterAccess)
-            }
-            if (memoryPolicy.hasWritePolicy) {
-                expireAfterWrite(memoryPolicy.expireAfterWrite)
-            }
-            if (memoryPolicy.hasMaxSize) {
-                maximumSize(memoryPolicy.maxSize)
-            }
-
-            if (memoryPolicy.hasMaxWeight) {
-                weigher(memoryPolicy.maxWeight) { key, value -> memoryPolicy.weigher.weigh(key, value) }
-            }
-        }.build()
-    }
 
     /**
      * Fetcher controller maintains 1 and only 1 `Multicaster` for a given key to ensure network

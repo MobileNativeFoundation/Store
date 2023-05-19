@@ -6,7 +6,7 @@ import org.mobilenativefoundation.store.store5.util.model.CommonNote
 import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
 
 internal class NotesUpdaterProvider(private val api: NotesApi) {
-    fun provide(): Updater<String, CommonNote, NotesWriteResponse> = Updater.by(
+    fun provide(): Updater<NotesKey, CommonNote, NotesWriteResponse> = Updater.by(
         post = { key, input ->
             val response = api.post(key, input)
             if (response.ok) {

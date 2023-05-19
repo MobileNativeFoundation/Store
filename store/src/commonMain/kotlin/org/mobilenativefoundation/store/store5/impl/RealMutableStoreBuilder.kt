@@ -2,6 +2,8 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
+import org.mobilenativefoundation.store.cache5.Cache
+import org.mobilenativefoundation.store.cache5.CacheBuilder
 import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
@@ -24,9 +26,16 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFro
     sourceOfTruth: SourceOfTruth<Key, Local>,
 ): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth)
 
+fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
+    memoryCache: Cache<Key, Output>
+): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+
 internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    private val memoryCache: Cache<Key, Output>? = null
 ) : MutableStoreBuilder<Key, Network, Output, Local> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -62,9 +71,25 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, L
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        memoryPolicy = cachePolicy,
         converter = converter,
-        validator = validator
+        validator = validator,
+        memCache = memoryCache ?: cachePolicy?.let {
+            CacheBuilder<Key, Output>().apply {
+                if (cachePolicy!!.hasAccessPolicy) {
+                    expireAfterAccess(cachePolicy!!.expireAfterAccess)
+                }
+                if (cachePolicy!!.hasWritePolicy) {
+                    expireAfterWrite(cachePolicy!!.expireAfterWrite)
+                }
+                if (cachePolicy!!.hasMaxSize) {
+                    maximumSize(cachePolicy!!.maxSize)
+                }
+
+                if (cachePolicy!!.hasMaxWeight) {
+                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                }
+            }.build()
+        }
     )
 
     override fun <UpdaterResult : Any> build(

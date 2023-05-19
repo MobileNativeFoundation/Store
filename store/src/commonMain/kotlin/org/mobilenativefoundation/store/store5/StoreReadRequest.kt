@@ -23,7 +23,7 @@ package org.mobilenativefoundation.store.store5
  *  starting the stream from the local [com.dropbox.android.external.store4.impl.SourceOfTruth] and memory cache
  *
  */
-data class StoreReadRequest<Key> private constructor(
+data class StoreReadRequest<out Key> private constructor(
     val key: Key,
     private val skippedCaches: Int,
     val refresh: Boolean = false,
