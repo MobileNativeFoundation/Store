@@ -16,8 +16,10 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.CoroutineScope
+import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcher
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSourceOfTruth
+import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourceOfTruthAndMemoryCache
 
 /**
  * Main entry point for creating a [Store].
@@ -69,6 +71,17 @@ interface StoreBuilder<Key : Any, Output : Any> {
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
             sourceOfTruth: SourceOfTruth<Key, Input>
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+        ): StoreBuilder<Key, Output> =
+            storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+
+        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local>,
+            memoryCache: Cache<Key, Output>,
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+            fetcher,
+            sourceOfTruth,
+            memoryCache
+        )
     }
 }

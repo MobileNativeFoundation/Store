@@ -3,8 +3,8 @@ package org.mobilenativefoundation.store.store5.util.fake
 import org.mobilenativefoundation.store.store5.util.model.SOTNote
 
 internal class NotesDatabase {
-    private val db: MutableMap<String, SOTNote?> = mutableMapOf()
-    fun put(key: String, input: SOTNote, fail: Boolean = false): Boolean {
+    private val db: MutableMap<NotesKey, SOTNote?> = mutableMapOf()
+    fun put(key: NotesKey, input: SOTNote, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
         }
@@ -13,7 +13,7 @@ internal class NotesDatabase {
         return true
     }
 
-    fun get(key: String, fail: Boolean = false): SOTNote? {
+    fun get(key: NotesKey, fail: Boolean = false): SOTNote? {
         if (fail) {
             throw Exception()
         }
@@ -21,7 +21,7 @@ internal class NotesDatabase {
         return db[key]
     }
 
-    fun clear(key: String, fail: Boolean = false): Boolean {
+    fun clear(key: NotesKey, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
         }

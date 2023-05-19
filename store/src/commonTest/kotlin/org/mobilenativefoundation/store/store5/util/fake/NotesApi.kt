@@ -6,14 +6,14 @@ import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
 
-internal class NotesApi : TestApi<String, NetworkNote, CommonNote, NotesWriteResponse> {
-    internal val db = mutableMapOf<String, NetworkNote>()
+internal class NotesApi : TestApi<NotesKey, NetworkNote, CommonNote, NotesWriteResponse> {
+    internal val db = mutableMapOf<NotesKey, NetworkNote>()
 
     init {
         seed()
     }
 
-    override fun get(key: String, fail: Boolean, ttl: Long?): NetworkNote {
+    override fun get(key: NotesKey, fail: Boolean, ttl: Long?): NetworkNote {
         if (fail) {
             throw Exception()
         }
@@ -26,7 +26,7 @@ internal class NotesApi : TestApi<String, NetworkNote, CommonNote, NotesWriteRes
         }
     }
 
-    override fun post(key: String, value: CommonNote, fail: Boolean): NotesWriteResponse {
+    override fun post(key: NotesKey, value: CommonNote, fail: Boolean): NotesWriteResponse {
         if (fail) {
             throw Exception()
         }
@@ -37,15 +37,16 @@ internal class NotesApi : TestApi<String, NetworkNote, CommonNote, NotesWriteRes
     }
 
     private fun seed() {
-        db[Notes.One.id] = NetworkNote(NoteData.Single(Notes.One))
-        db[Notes.Two.id] = NetworkNote(NoteData.Single(Notes.Two))
-        db[Notes.Three.id] = NetworkNote(NoteData.Single(Notes.Three))
-        db[Notes.Four.id] = NetworkNote(NoteData.Single(Notes.Four))
-        db[Notes.Five.id] = NetworkNote(NoteData.Single(Notes.Five))
-        db[Notes.Six.id] = NetworkNote(NoteData.Single(Notes.Six))
-        db[Notes.Seven.id] = NetworkNote(NoteData.Single(Notes.Seven))
-        db[Notes.Eight.id] = NetworkNote(NoteData.Single(Notes.Eight))
-        db[Notes.Nine.id] = NetworkNote(NoteData.Single(Notes.Nine))
-        db[Notes.Ten.id] = NetworkNote(NoteData.Single(Notes.Ten))
+        db[NotesKey.Single(Notes.One.id)] = NetworkNote(NoteData.Single(Notes.One))
+        db[NotesKey.Single(Notes.Two.id)] = NetworkNote(NoteData.Single(Notes.Two))
+        db[NotesKey.Single(Notes.Three.id)] = NetworkNote(NoteData.Single(Notes.Three))
+        db[NotesKey.Single(Notes.Four.id)] = NetworkNote(NoteData.Single(Notes.Four))
+        db[NotesKey.Single(Notes.Five.id)] = NetworkNote(NoteData.Single(Notes.Five))
+        db[NotesKey.Single(Notes.Six.id)] = NetworkNote(NoteData.Single(Notes.Six))
+        db[NotesKey.Single(Notes.Seven.id)] = NetworkNote(NoteData.Single(Notes.Seven))
+        db[NotesKey.Single(Notes.Eight.id)] = NetworkNote(NoteData.Single(Notes.Eight))
+        db[NotesKey.Single(Notes.Nine.id)] = NetworkNote(NoteData.Single(Notes.Nine))
+        db[NotesKey.Single(Notes.Ten.id)] = NetworkNote(NoteData.Single(Notes.Ten))
+        db[NotesKey.Collection(NoteCollections.Keys.OneAndTwo)] = NetworkNote(NoteCollections.OneAndTwo)
     }
 }

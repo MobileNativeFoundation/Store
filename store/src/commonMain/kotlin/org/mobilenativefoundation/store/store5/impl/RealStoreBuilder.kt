@@ -4,6 +4,8 @@ package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
+import org.mobilenativefoundation.store.cache5.Cache
+import org.mobilenativefoundation.store.cache5.CacheBuilder
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
@@ -24,9 +26,16 @@ fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTru
     sourceOfTruth: SourceOfTruth<Key, *>,
 ): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
 
+fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local>,
+    memoryCache: Cache<Key, Output>,
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
-    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null
+    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null,
+    private val memoryCache: Cache<Key, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -57,17 +66,42 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        memoryPolicy = cachePolicy,
         converter = converter,
-        validator = validator
+        validator = validator,
+        memCache = memoryCache ?: cachePolicy?.let {
+            CacheBuilder<Key, Output>().apply {
+                if (cachePolicy!!.hasAccessPolicy) {
+                    expireAfterAccess(cachePolicy!!.expireAfterAccess)
+                }
+                if (cachePolicy!!.hasWritePolicy) {
+                    expireAfterWrite(cachePolicy!!.expireAfterWrite)
+                }
+                if (cachePolicy!!.hasMaxSize) {
+                    maximumSize(cachePolicy!!.maxSize)
+                }
+
+                if (cachePolicy!!.hasMaxWeight) {
+                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                }
+            }.build()
+        }
     )
 
     override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
         fetcher as Fetcher<Key, Network>
-        return if (sourceOfTruth == null) {
+        return if (sourceOfTruth == null && memoryCache == null) {
             mutableStoreBuilderFromFetcher(fetcher)
+        } else if (memoryCache == null) {
+            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(
+                fetcher,
+                sourceOfTruth as SourceOfTruth<Key, Local>
+            )
         } else {
-            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(fetcher, sourceOfTruth as SourceOfTruth<Key, Local>)
+            mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
+                fetcher,
+                sourceOfTruth as SourceOfTruth<Key, Local>,
+                memoryCache
+            )
         }.apply {
             if (this@RealStoreBuilder.scope != null) {
                 scope(this@RealStoreBuilder.scope!!)

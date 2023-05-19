@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [5.0.0-beta01] (2023-05-19)
+
+* Delegate memory cache implementation and provide a hybrid cache with automatic list decomposition as a separate
+  artifact [#548](https://github.com/MobileNativeFoundation/Store/pull/548)
+
 ## [5.0.0-alpha06] (2023-05-08)
 
 * Separate MutableStoreBuilder from
@@ -255,7 +260,9 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-alpha06...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-beta01...HEAD
+
+[5.0.0-beta01]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-beta01
 
 [5.0.0-alpha06]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-alpha06
 
