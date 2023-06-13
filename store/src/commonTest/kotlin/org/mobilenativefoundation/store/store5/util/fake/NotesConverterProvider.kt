@@ -8,8 +8,7 @@ import org.mobilenativefoundation.store.store5.util.model.SOTNote
 
 internal class NotesConverterProvider {
     fun provide(): Converter<NetworkNote, CommonNote, SOTNote> = Converter.Builder<NetworkNote, CommonNote, SOTNote>()
-        .fromLocalToOutput { value -> CommonNote(data = value.data, ttl = value.ttl) }
         .fromOutputToLocal { value -> SOTNote(data = value.data, ttl = value.ttl ?: inHours(12)) }
-        .fromNetworkToOutput { value -> CommonNote(data = value.data, ttl = value.ttl) }
+        .fromNetworkToOutput { value: NetworkNote -> SOTNote(data = value.data, ttl = value.ttl?: inHours(12)) }
         .build()
 }

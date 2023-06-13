@@ -40,7 +40,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
  */
 @Suppress("UNCHECKED_CAST")
 internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, Local : Any>(
-    private val delegate: SourceOfTruth<Key, Local>,
+    private val delegate: SourceOfTruth<Key, Local, Output>,
     private val converter: Converter<Network, Output, Local>? = null,
 ) {
     /**
@@ -76,7 +76,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                             }
                             val readFlow: Flow<StoreReadResponse<Output?>> = when (barrierMessage) {
                                 is BarrierMsg.Open ->
-                                    delegate.reader(key).mapIndexed { index, local ->
+                                    delegate.reader(key).mapIndexed { index, local: Output? ->
                                         if (index == 0 && messageArrivedAfterMe) {
                                             val firstMsgOrigin = if (writeError == null) {
                                                 // restarted barrier without an error means write succeeded
@@ -88,25 +88,15 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                                 // use the SourceOfTruth as the origin
                                                 StoreReadResponseOrigin.SourceOfTruth
                                             }
-
-                                            val output = when {
-                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
-                                                else -> null
-                                            }
-
                                             StoreReadResponse.Data(
                                                 origin = firstMsgOrigin,
-                                                value = output
+                                                value = local
                                             )
                                         } else {
-                                            val output = when {
-                                                local != null -> converter?.fromLocalToOutput(local) ?: local as? Output
-                                                else -> null
-                                            }
 
                                             StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                value = output
+                                                value = local
                                             ) as StoreReadResponse<Output?>
                                         }
                                     }.catch { throwable ->
@@ -148,14 +138,12 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun write(key: Key, value: Output) {
+    suspend fun write(key: Key, value: Local) {
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
-            val writeError = try {
-                val local = converter?.fromOutputToLocal(value)
-                val input = local ?: value
-                delegate.write(key, input as Local)
+                val writeError = try {
+                delegate.write(key, value)
                 null
             } catch (throwable: Throwable) {
                 if (throwable !is CancellationException) {

@@ -46,14 +46,14 @@ import kotlin.jvm.JvmName
  * transform them to another type when placing them in local storage.
  *
  */
-interface SourceOfTruth<Key : Any, Local : Any> {
+interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
 
     /**
      * Used by [Store] to read records from the source of truth.
      *
      * @param key The key to read for.
      */
-    fun reader(key: Key): Flow<Local?>
+    fun reader(key: Key): Flow<Output?>
 
     /**
      * Used by [Store] to write records **coming in from the fetcher (network)** to the source of
@@ -90,12 +90,12 @@ interface SourceOfTruth<Key : Any, Local : Any> {
          * @param delete function for deleting records in the source of truth for the given key
          * @param deleteAll function for deleting all records in the source of truth
          */
-        fun <Key : Any, Local : Any> of(
-            nonFlowReader: suspend (Key) -> Local?,
+        fun <Key : Any, Local : Any, Output:Any> of(
+            nonFlowReader: suspend (Key) -> Output?,
             writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Local> = PersistentNonFlowingSourceOfTruth(
+        ): SourceOfTruth<Key, Local, Output> = PersistentNonFlowingSourceOfTruth(
             realReader = nonFlowReader,
             realWriter = writer,
             realDelete = delete,
@@ -112,12 +112,12 @@ interface SourceOfTruth<Key : Any, Local : Any> {
          * @param deleteAll function for deleting all records in the source of truth
          */
         @JvmName("ofFlow")
-        fun <Key : Any, Local : Any> of(
-            reader: (Key) -> Flow<Local?>,
+        fun <Key : Any, Local : Any, Output:Any> of(
+            reader: (Key) -> Flow<Output?>,
             writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
             deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Local> = PersistentSourceOfTruth(
+        ): SourceOfTruth<Key, Local, Output> = PersistentSourceOfTruth(
             realReader = reader,
             realWriter = writer,
             realDelete = delete,

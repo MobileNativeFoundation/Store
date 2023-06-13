@@ -40,6 +40,7 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
  * fetcher requests receives values dispatched by later requests even if they don't share the
  * request.
  */
+@Suppress("UNCHECKED_CAST")
 internal class FetcherController<Key : Any, Network : Any, Output : Any, Local : Any>(
     /**
      * The [CoroutineScope] to use when collecting from the fetcher
@@ -55,7 +56,16 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
      */
     private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
 
-    private val converter: Converter<Network, Output, Local>? = null
+    private val converter: Converter<Network, Output, Local> = object : Converter<Network, Output, Local> {
+
+        override fun fromNetworkToLocal(network: Network): Local {
+              return network as Local
+        }
+
+        override fun fromOutputToLocal(output: Output): Local {
+           return output as Local
+        }
+    }
 ) {
     @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
     private val fetchers = RefCountedResource(
@@ -94,10 +104,9 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                  */
                 piggybackingDownstream = true,
                 onEach = { response ->
-                    response.dataOrNull()?.let { network ->
-                        val output = converter?.fromNetworkToOutput(network)
-                        val input = output ?: network
-                        sourceOfTruth?.write(key, input as Output)
+                    response.dataOrNull()?.let { network: Network ->
+                        val local: Local = converter.fromNetworkToLocal(network)
+                        sourceOfTruth?.write(key, local)
                     }
                 }
             )

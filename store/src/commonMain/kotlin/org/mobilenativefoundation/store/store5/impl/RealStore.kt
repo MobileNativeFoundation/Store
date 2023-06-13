@@ -43,8 +43,8 @@ import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWrit
 internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
-    sourceOfTruth: SourceOfTruth<Key, Local>? = null,
-    private val converter: Converter<Network, Output, Local>? = null,
+    sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
+    private val converter: Converter<Network, Output, Local>,
     private val validator: Validator<Output>?,
     private val memCache: Cache<Key, Output>?
 ) : Store<Key, Output> {
@@ -79,17 +79,16 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             } else {
                 val output = memCache?.getIfPresent(request.key)
                 when {
-                    output == null -> null
-                    validator?.isValid(output) == false -> null
+                    output == null || validator?.isValid(output) == false   -> null
                     else -> output
                 }
             }
 
-            cachedToEmit?.let {
+            cachedToEmit?.let { it: Output ->
                 // if we read a value from cache, dispatch it first
                 emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
             }
-            val stream = if (sourceOfTruth == null) {
+            val stream: Flow<StoreReadResponse<Output>> = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
                 val piggybackOnly = !request.refresh && cachedToEmit != null
                 @Suppress("UNCHECKED_CAST")
@@ -103,23 +102,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 diskNetworkCombined(request, sourceOfTruth)
             }
             emitAll(
-                stream.transform { output ->
-                    val data = output.dataOrNull()
-                    val shouldSkipValidation =
-                        validator == null || data == null || output.origin is StoreReadResponseOrigin.Fetcher
-                    if (data != null && !shouldSkipValidation && validator?.isValid(data) == false) {
-                        fetcherController.getFetcher(request.key, false).collect { storeReadResponse ->
-                            val network = storeReadResponse.dataOrNull()
-                            if (network != null) {
-                                val newOutput = converter?.fromNetworkToOutput(network) ?: network as? Output
-                                if (newOutput != null) {
-                                    emit(StoreReadResponse.Data(newOutput, origin = storeReadResponse.origin))
-                                } else {
-                                    emit(StoreReadResponse.NoNewData(origin = storeReadResponse.origin))
-                                }
-                            }
-                        }
-                    } else {
+                stream.transform { output: StoreReadResponse<Output> ->
                         emit(output)
                         if (output is StoreReadResponse.NoNewData && cachedToEmit == null) {
                             // In the special case where fetcher returned no new data we actually want to
@@ -142,7 +125,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                                 emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
                             }
                         }
-                    }
                 }
             )
         }.onEach {
@@ -230,7 +212,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         diskLock.complete(Unit)
                     }
 
-                    if (it.value !is StoreReadResponse.Data && !fallBackToSourceOfTruth) {
+                    if (it.value !is StoreReadResponse.Data) {
                         emit(it.value.swapType())
                     }
                 }
@@ -248,14 +230,17 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             }
 
                             val diskValue = diskData.value
+                            val isValid = diskValue?.let { it1 -> validator?.isValid(it1) } == true
                             if (diskValue != null) {
                                 @Suppress("UNCHECKED_CAST")
                                 val output =
                                     diskData.copy(origin = responseOriginWithFetcherName) as StoreReadResponse<Output>
                                 emit(output)
                             }
-                            // If the disk value is null or refresh was requested then allow fetcher
-                            // to start emitting values.
+                            // If the disk value is null
+                            // or refresh was requested
+                            // or the  disk value is not valid
+                            // then allow fetcher to start emitting values.
                             if (request.refresh || diskData.value == null) {
                                 networkLock.complete(Unit)
                             }
@@ -304,7 +289,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
         memCache?.put(key, value)
-        sourceOfTruth?.write(key, value)
+        sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
         StoreDelegateWriteResult.Error.Exception(error)

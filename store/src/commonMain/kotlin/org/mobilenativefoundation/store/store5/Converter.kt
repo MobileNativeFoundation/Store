@@ -1,47 +1,36 @@
 package org.mobilenativefoundation.store.store5
 
 interface Converter<Network : Any, Output : Any, Local : Any> {
-    fun fromNetworkToOutput(network: Network): Output?
-    fun fromOutputToLocal(output: Output): Local?
-    fun fromLocalToOutput(local: Local): Output?
+    fun fromNetworkToLocal(network: Network): Local
+    fun fromOutputToLocal(output: Output): Local
 
     class Builder<Network : Any, Output : Any, Local : Any> {
 
-        private var fromOutputToLocal: ((output: Output) -> Local)? = null
-        private var fromNetworkToOutput: ((network: Network) -> Output)? = null
-        private var fromLocalToOutput: ((local: Local) -> Output)? = null
+        lateinit var fromOutputToLocal: ((output: Output) -> Local)
+        lateinit var fromNetworkToLocal: ((network: Network) -> Local)
 
         fun build(): Converter<Network, Output, Local> =
-            RealConverter(fromOutputToLocal, fromNetworkToOutput, fromLocalToOutput)
+            RealConverter(fromOutputToLocal, fromNetworkToLocal)
 
         fun fromOutputToLocal(converter: (output: Output) -> Local): Builder<Network, Output, Local> {
             fromOutputToLocal = converter
             return this
         }
 
-        fun fromLocalToOutput(converter: (local: Local) -> Output): Builder<Network, Output, Local> {
-            fromLocalToOutput = converter
-            return this
-        }
-
-        fun fromNetworkToOutput(converter: (network: Network) -> Output): Builder<Network, Output, Local> {
-            fromNetworkToOutput = converter
+        fun fromNetworkToOutput(converter: (network: Network) -> Local): Builder<Network, Output, Local> {
+            fromNetworkToLocal = converter
             return this
         }
     }
 }
 
 private class RealConverter<Network : Any, Output : Any, Local : Any>(
-    private val fromOutputToLocal: ((output: Output) -> Local)?,
-    private val fromNetworkToOutput: ((network: Network) -> Output)?,
-    private val fromLocalToOutput: ((local: Local) -> Output)?,
+    private val fromOutputToLocal: ((output: Output) -> Local),
+    private val fromNetworkToLocal: ((network: Network) -> Local),
 ) : Converter<Network, Output, Local> {
-    override fun fromNetworkToOutput(network: Network): Output? =
-        fromNetworkToOutput?.invoke(network)
+    override fun fromNetworkToLocal(network: Network): Local =
+        fromNetworkToLocal.invoke(network)
 
-    override fun fromOutputToLocal(output: Output): Local? =
-        fromOutputToLocal?.invoke(output)
-
-    override fun fromLocalToOutput(local: Local): Output? =
-        fromLocalToOutput?.invoke(local)
+    override fun fromOutputToLocal(output: Output): Local =
+        fromOutputToLocal.invoke(output)
 }

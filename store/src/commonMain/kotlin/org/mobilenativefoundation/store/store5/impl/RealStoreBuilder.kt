@@ -16,30 +16,39 @@ import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.StoreDefaults
 import org.mobilenativefoundation.store.store5.Validator
 
-fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcher(
-    fetcher: Fetcher<Key, Input>,
-    sourceOfTruth: SourceOfTruth<Key, *>? = null,
-): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
-
-fun <Key : Any, Input : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTruth(
-    fetcher: Fetcher<Key, Input>,
-    sourceOfTruth: SourceOfTruth<Key, *>,
-): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
-
-fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
-    sourceOfTruth: SourceOfTruth<Key, Local>,
+    sourceOfTruth: SourceOfTruth<Key, Network, Output>? = null,
+): StoreBuilder<Key, Output> =
+    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+
+fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTruth(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Network, Output>,
+): StoreBuilder<Key, Output> =
+    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+
+fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Network, Output>,
     memoryCache: Cache<Key, Output>,
-): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+): StoreBuilder<Key, Output> =
+    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
-    private val sourceOfTruth: SourceOfTruth<Key, Local>? = null,
-    private val memoryCache: Cache<Key, Output>? = null
+    private val sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
+    private val memoryCache: Cache<Key, Output>? = null,
+    private val converter: Converter<Network, Output, Local> = object :
+        Converter<Network, Output, Local> {
+        override fun fromOutputToLocal(output: Output): Local =
+            throw IllegalStateException("Writing to local is not supported, please use MutableStore instead")
+
+        override fun fromNetworkToLocal(network: Network): Local = network as Local
+    }
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
-    private var converter: Converter<Network, Output, Local>? = null
     private var validator: Validator<Output>? = null
 
     override fun scope(scope: CoroutineScope): StoreBuilder<Key, Output> {
@@ -62,7 +71,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
-    override fun build(): Store<Key, Output> = RealStore(
+    override fun build(): Store<Key, Output> = RealStore<Key, Network, Output, Local>(
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
@@ -81,26 +90,33 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
                 }
 
                 if (cachePolicy!!.hasMaxWeight) {
-                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                    weigher(cachePolicy!!.maxWeight) { key, value ->
+                        cachePolicy!!.weigher.weigh(
+                            key,
+                            value
+                        )
+                    }
                 }
             }.build()
         }
     )
 
-    override fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Output, Local>): MutableStoreBuilder<Key, Network, Output, Local> {
         fetcher as Fetcher<Key, Network>
         return if (sourceOfTruth == null && memoryCache == null) {
             mutableStoreBuilderFromFetcher(fetcher)
         } else if (memoryCache == null) {
-            mutableStoreBuilderFromFetcherAndSourceOfTruth<Key, Network, Output, Local>(
+            mutableStoreBuilderFromFetcherAndSourceOfTruth(
                 fetcher,
-                sourceOfTruth as SourceOfTruth<Key, Local>
+                sourceOfTruth as SourceOfTruth<Key, Local, Output>,
+                converter
             )
         } else {
             mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
                 fetcher,
-                sourceOfTruth as SourceOfTruth<Key, Local>,
-                memoryCache
+                sourceOfTruth as SourceOfTruth<Key, Local, Output>,
+                memoryCache,
+                converter
             )
         }.apply {
             if (this@RealStoreBuilder.scope != null) {

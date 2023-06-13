@@ -27,7 +27,7 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourc
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
-    fun <Network : Any, Local : Any> toMutableStoreBuilder(): MutableStoreBuilder<Key, Network, Output, Local>
+    fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Output, Local>): MutableStoreBuilder<Key, Network, Output, Local>
 
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -70,13 +70,13 @@ interface StoreBuilder<Key : Any, Output : Any> {
          */
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input>
+            sourceOfTruth: SourceOfTruth<Key, Input, Output>
         ): StoreBuilder<Key, Output> =
             storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
 
         fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Local>,
+            sourceOfTruth: SourceOfTruth<Key, Network, Output>,
             memoryCache: Cache<Key, Output>,
         ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
             fetcher,
