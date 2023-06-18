@@ -3208,14 +3208,14 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/StoreWriteResponse$Error$Message" sourcefilename="StoreWriteResponse.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/String;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/StoreWriteResponse$Success" sourcefilename="StoreWriteResponse.kt">
 <method name="&lt;init&gt;" desc="()V">
@@ -3366,14 +3366,14 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterResult$Error$Message" sourcefilename="UpdaterResult.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/String;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterResult$Success" sourcefilename="UpdaterResult.kt">
 <method name="&lt;init&gt;" desc="()V">
@@ -3958,11 +3958,11 @@
 <class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="20" covered="229"/>
-<counter type="BRANCH" missed="7" covered="7"/>
+<counter type="BRANCH" missed="6" covered="8"/>
 <counter type="LINE" missed="0" covered="25"/>
 </method>
 <counter type="INSTRUCTION" missed="20" covered="229"/>
-<counter type="BRANCH" missed="7" covered="7"/>
+<counter type="BRANCH" missed="6" covered="8"/>
 <counter type="LINE" missed="0" covered="25"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
@@ -4747,10 +4747,10 @@
 <line nr="7" mi="8" ci="0" mb="0" cb="0"/>
 <line nr="10" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="11" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="12" mi="8" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="16" covered="24"/>
+<line nr="12" mi="0" ci="8" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="8" covered="32"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="2" covered="5"/>
+<counter type="LINE" missed="1" covered="6"/>
 </sourcefile>
 <sourcefile name="SourceOfTruthErrorsTests.kt">
 <line nr="21" mi="0" ci="2" mb="0" cb="0"/>
@@ -5142,7 +5142,7 @@
 <line nr="185" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="188" mi="0" ci="12" mb="0" cb="0"/>
 <line nr="190" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="193" mi="0" ci="26" mb="1" cb="1"/>
+<line nr="193" mi="0" ci="26" mb="0" cb="2"/>
 <line nr="193" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="194" mi="0" ci="13" mb="0" cb="0"/>
 <line nr="195" mi="0" ci="4" mb="0" cb="0"/>
@@ -5324,7 +5324,7 @@
 <line nr="422" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="425" mi="0" ci="2" mb="0" cb="0"/>
 <counter type="INSTRUCTION" missed="572" covered="2269"/>
-<counter type="BRANCH" missed="70" covered="44"/>
+<counter type="BRANCH" missed="69" covered="45"/>
 <counter type="LINE" missed="33" covered="263"/>
 </sourcefile>
 <sourcefile name="MemoryPolicy.kt">
@@ -6710,16 +6710,16 @@
 <line nr="6" mi="8" ci="0" mb="0" cb="0"/>
 <line nr="9" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="10" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="11" mi="8" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="16" covered="24"/>
+<line nr="11" mi="0" ci="8" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="8" covered="32"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="2" covered="5"/>
+<counter type="LINE" missed="1" covered="6"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="1108" covered="15257"/>
-<counter type="BRANCH" missed="173" covered="175"/>
-<counter type="LINE" missed="96" covered="2206"/>
-<counter type="METHOD" missed="60" covered="405"/>
-<counter type="CLASS" missed="48" covered="269"/>
+<counter type="INSTRUCTION" missed="1092" covered="15273"/>
+<counter type="BRANCH" missed="172" covered="176"/>
+<counter type="LINE" missed="94" covered="2208"/>
+<counter type="METHOD" missed="58" covered="407"/>
+<counter type="CLASS" missed="46" covered="271"/>
 </package>
 <package name="org/mobilenativefoundation/store/store5/impl">
 <class name="org/mobilenativefoundation/store/store5/impl/FetcherController" sourcefilename="FetcherController.kt">
@@ -7436,8 +7436,8 @@
 <counter type="LINE" missed="0" covered="3"/>
 </method>
 <method name="postLatest" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="16" covered="88"/>
-<counter type="BRANCH" missed="2" covered="6"/>
+<counter type="INSTRUCTION" missed="8" covered="96"/>
+<counter type="BRANCH" missed="1" covered="7"/>
 <counter type="LINE" missed="0" covered="12"/>
 </method>
 <method name="tryUpdateServer" desc="(Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
@@ -7451,9 +7451,9 @@
 <counter type="LINE" missed="2" covered="4"/>
 </method>
 <method name="handleErrorUpdaterResult" desc="(Lorg/mobilenativefoundation/store/store5/UpdaterResult$Error;)Lorg/mobilenativefoundation/store/store5/StoreWriteResponse;">
-<counter type="INSTRUCTION" missed="11" covered="17"/>
-<counter type="BRANCH" missed="2" covered="2"/>
-<counter type="LINE" missed="1" covered="2"/>
+<counter type="INSTRUCTION" missed="0" covered="28"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="3"/>
 </method>
 <method name="handleUpdateServerResult" desc="(Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="53"/>
@@ -7465,9 +7465,9 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="5"/>
 </method>
-<counter type="INSTRUCTION" missed="81" covered="353"/>
-<counter type="BRANCH" missed="12" covered="20"/>
-<counter type="LINE" missed="4" covered="47"/>
+<counter type="INSTRUCTION" missed="62" covered="372"/>
+<counter type="BRANCH" missed="9" covered="23"/>
+<counter type="LINE" missed="3" covered="48"/>
 <counter type="METHOD" missed="0" covered="8"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealWriteRequestStackHandler" sourcefilename="RealWriteRequestStackHandler.kt">
@@ -8456,7 +8456,7 @@
 <line nr="76" mi="0" ci="6" mb="0" cb="0"/>
 <line nr="79" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="80" mi="0" ci="11" mb="0" cb="2"/>
-<line nr="81" mi="8" ci="3" mb="1" cb="1"/>
+<line nr="81" mi="0" ci="11" mb="0" cb="2"/>
 <line nr="82" mi="8" ci="3" mb="1" cb="1"/>
 <line nr="83" mi="0" ci="3" mb="0" cb="2"/>
 <line nr="84" mi="0" ci="12" mb="0" cb="0"/>
@@ -8468,15 +8468,15 @@
 <line nr="101" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="104" mi="11" ci="4" mb="1" cb="1"/>
 <line nr="109" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="110" mi="0" ci="11" mb="1" cb="1"/>
-<line nr="111" mi="11" ci="4" mb="1" cb="1"/>
-<counter type="INSTRUCTION" missed="81" covered="353"/>
-<counter type="BRANCH" missed="12" covered="20"/>
-<counter type="LINE" missed="4" covered="47"/>
+<line nr="110" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="111" mi="0" ci="15" mb="0" cb="2"/>
+<counter type="INSTRUCTION" missed="62" covered="372"/>
+<counter type="BRANCH" missed="9" covered="23"/>
+<counter type="LINE" missed="3" covered="48"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="366" covered="3794"/>
-<counter type="BRANCH" missed="81" covered="261"/>
-<counter type="LINE" missed="50" covered="564"/>
+<counter type="INSTRUCTION" missed="347" covered="3813"/>
+<counter type="BRANCH" missed="78" covered="264"/>
+<counter type="LINE" missed="49" covered="565"/>
 <counter type="METHOD" missed="12" covered="130"/>
 <counter type="CLASS" missed="4" covered="54"/>
 </package>
@@ -8875,11 +8875,11 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/util/fake/NotesUpdaterProvider$provideUpdaterThatFailsOnlyOnce$1" sourcefilename="NotesUpdaterProvider.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="INSTRUCTION" missed="0" covered="39"/>
 <counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="5"/>
 </method>
-<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="INSTRUCTION" missed="0" covered="39"/>
 <counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="5"/>
 <counter type="METHOD" missed="0" covered="1"/>
@@ -8916,9 +8916,9 @@
 <line nr="29" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="30" mi="0" ci="4" mb="0" cb="2"/>
 <line nr="31" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="32" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="32" mi="0" ci="6" mb="0" cb="0"/>
 <line nr="34" mi="0" ci="14" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="5" covered="114"/>
+<counter type="INSTRUCTION" missed="5" covered="116"/>
 <counter type="BRANCH" missed="1" covered="3"/>
 <counter type="LINE" missed="1" covered="16"/>
 </sourcefile>
@@ -9106,7 +9106,7 @@
 <counter type="BRANCH" missed="6" covered="2"/>
 <counter type="LINE" missed="12" covered="9"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="284" covered="732"/>
+<counter type="INSTRUCTION" missed="284" covered="734"/>
 <counter type="BRANCH" missed="30" covered="26"/>
 <counter type="LINE" missed="61" covered="95"/>
 <counter type="METHOD" missed="18" covered="43"/>
@@ -10510,10 +10510,10 @@
 <counter type="METHOD" missed="0" covered="8"/>
 <counter type="CLASS" missed="0" covered="4"/>
 </package>
-<counter type="INSTRUCTION" missed="1901" covered="21534"/>
-<counter type="BRANCH" missed="305" covered="503"/>
-<counter type="LINE" missed="225" covered="3127"/>
-<counter type="METHOD" missed="101" covered="676"/>
-<counter type="CLASS" missed="59" covered="404"/>
+<counter type="INSTRUCTION" missed="1866" covered="21571"/>
+<counter type="BRANCH" missed="301" covered="507"/>
+<counter type="LINE" missed="222" covered="3130"/>
+<counter type="METHOD" missed="99" covered="678"/>
+<counter type="CLASS" missed="57" covered="406"/>
 </report>
 

@@ -29,7 +29,7 @@ internal class NotesUpdaterProvider(private val api: NotesApi) {
             post = { key, input ->
                 if (count == 0) {
                     count++
-                    throw Exception()
+                    UpdaterResult.Error.Message("")
                 } else {
                     UpdaterResult.Success.Typed(api.post(key, input))
                 }
