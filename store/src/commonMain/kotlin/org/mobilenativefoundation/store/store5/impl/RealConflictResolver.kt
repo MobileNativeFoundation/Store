@@ -41,7 +41,7 @@ internal class RealConflictResolver<Key : Any, Output : Any, Response : Any>(
     }
 
     private suspend fun updateNetworkIfConflictsMightExist(key: Key):
-            EagerConflictResolutionResult<Response> {
+        EagerConflictResolutionResult<Response> {
         val latest = delegate.latestOrNull(key)
         val conflictsMightExist = conflictsMightExist(key)
 
