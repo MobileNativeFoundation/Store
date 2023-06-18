@@ -125,12 +125,7 @@ koverMerged {
 
     xmlReport {
         onCheck.set(true)
-        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
-    }
-
-    htmlReport {
-        onCheck.set(true)
-        reportDir.set(layout.projectDirectory.dir("kover/html"))
+        reportFile.set(rootProject.file("kover/coverage.xml"))
     }
 
     verify {
