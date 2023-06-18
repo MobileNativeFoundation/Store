@@ -38,7 +38,7 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
-import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
+import org.mobilenativefoundation.store.store5.impl.result.StoreDelegateWriteResult
 
 internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,

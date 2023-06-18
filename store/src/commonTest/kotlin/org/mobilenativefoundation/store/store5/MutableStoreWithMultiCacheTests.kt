@@ -10,8 +10,8 @@ import org.mobilenativefoundation.store.store5.util.fake.NoteCollections
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
-import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.fake.NotesKey
+import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
@@ -58,9 +58,10 @@ class MutableStoreWithMultiCacheTests {
                 )
             )
 
-        val freshRequest = StoreReadRequest.fresh(NotesKey.Collection(NoteCollections.Keys.OneAndTwo))
+        val freshRequest =
+            StoreReadRequest.fresh(NotesKey.Collection(NoteCollections.Keys.OneAndTwo))
 
-        val freshStream = store.stream<UpdaterResult>(freshRequest)
+        val freshStream = store.stream(freshRequest)
 
         val actualResultFromFreshStream = freshStream.take(2).toList()
         val expectedResultFromFreshStream = listOf(
@@ -75,7 +76,7 @@ class MutableStoreWithMultiCacheTests {
         assertEquals(singleFromMemoryCache.item, Notes.One)
 
         val cachedRequest = StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = true)
-        val cachedStream = store.stream<UpdaterResult>(cachedRequest)
+        val cachedStream = store.stream(cachedRequest)
         val actualResultFromCachedStream = cachedStream.take(1).toList()
         val expectedResultFromCachedStream = listOf(
             StoreReadResponse.Data(NoteData.Single(Notes.One), StoreReadResponseOrigin.Cache)

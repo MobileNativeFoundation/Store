@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.internal.result
+package org.mobilenativefoundation.store.store5.impl.result
 
 import org.mobilenativefoundation.store.store5.UpdaterResult
 

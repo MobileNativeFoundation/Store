@@ -12,6 +12,6 @@ interface Read {
     }
 
     interface StreamWithConflictResolution<Key : Any, Output : Any> {
-        fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>>
+        fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>>
     }
 }

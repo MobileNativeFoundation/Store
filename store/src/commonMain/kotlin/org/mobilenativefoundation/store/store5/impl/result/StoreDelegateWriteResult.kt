@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.internal.result
+package org.mobilenativefoundation.store.store5.impl.result
 
 sealed class StoreDelegateWriteResult {
     object Success : StoreDelegateWriteResult()

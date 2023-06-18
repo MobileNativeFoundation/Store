@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.internal.concurrent
+package org.mobilenativefoundation.store.store5.impl.concurrent
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

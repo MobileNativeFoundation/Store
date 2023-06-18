@@ -20,7 +20,7 @@ ktlint = "0.39.0"
 kover = "0.6.0"
 store = "5.0.0-beta01"
 truth = "1.1.3"
-
+turbine = "0.13.0"
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "baseKotlin" }
@@ -46,3 +46,4 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
+turbine = {group = "app.cash.turbine", name = "turbine", version.ref = "turbine"}

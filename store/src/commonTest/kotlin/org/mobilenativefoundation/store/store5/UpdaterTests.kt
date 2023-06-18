@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -43,7 +44,7 @@ class UpdaterTests {
     }
 
     @Test
-    fun givenNonEmptyMarketWhenWriteThenStoredAndAPIUpdated() = testScope.runTest {
+    fun givenNonEmptyStoreWhenWriteThenStoredAndAPIUpdated() = testScope.runTest {
         val ttl = inHours(1)
 
         val converter = NotesConverterProvider().provide()
@@ -74,20 +75,27 @@ class UpdaterTests {
 
         val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
 
-        val stream = store.stream<NotesWriteResponse>(readRequest)
+        val stream = store.stream(readRequest)
 
         // Read is success
-        assertEmitsExactly(
-            stream,
-            listOf(
-                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data(
-                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
-                    StoreReadResponseOrigin.Fetcher
-                    ()
-                )
+        stream.test {
+            val response1 = awaitItem()
+            assertEquals(
+                expected = StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                actual = response1
             )
-        )
+
+            val response2 = awaitItem()
+            assertEquals(
+                expected = StoreReadResponse.Data(
+                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher()
+                ),
+                actual = response2
+            )
+
+            expectNoEvents()
+        }
 
         val newNote = Notes.One.copy(title = "New Title-1")
         val writeRequest = StoreWriteRequest.of<NotesKey, CommonNote, NotesWriteResponse>(
@@ -99,12 +107,18 @@ class UpdaterTests {
 
         // Write is success
         assertEquals(
-            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            StoreWriteResponse.Success.Typed(
+                NotesWriteResponse(
+                    NotesKey.Single(Notes.One.id),
+                    true
+                )
+            ),
             storeWriteResponse
         )
 
-        val cachedReadRequest = StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
-        val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
+        val cachedReadRequest =
+            StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
+        val cachedStream = store.stream(cachedReadRequest)
 
         // Cache + SOT are updated
         val firstResponse = cachedStream.first()
@@ -127,78 +141,88 @@ class UpdaterTests {
 
         // API is updated
         assertEquals(
-            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            StoreWriteResponse.Success.Typed(
+                NotesWriteResponse(
+                    NotesKey.Single(Notes.One.id),
+                    true
+                )
+            ),
             storeWriteResponse
         )
-        assertEquals(NetworkNote(NoteData.Single(newNote), ttl = null), api.db[NotesKey.Single(Notes.One.id)])
+        assertEquals(
+            NetworkNote(NoteData.Single(newNote), ttl = null),
+            api.db[NotesKey.Single(Notes.One.id)]
+        )
     }
 
     @Test
-    fun givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher() = testScope.runTest {
-        val ttl = inHours(1)
+    fun givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher() =
+        testScope.runTest {
+            val ttl = inHours(1)
 
-        val converter = NotesConverterProvider().provide()
-        val validator = NotesValidator(expiration = inHours(12))
-        val updater = NotesUpdaterProvider(api).provide()
-        val bookkeeper = Bookkeeper.by(
-            getLastFailedSync = bookkeeping::getLastFailedSync,
-            setLastFailedSync = bookkeeping::setLastFailedSync,
-            clear = bookkeeping::clear,
-            clearAll = bookkeeping::clear
-        )
-
-        val store = MutableStoreBuilder.from<NotesKey, NetworkNote, CommonNote, SOTNote>(
-            fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
-            sourceOfTruth = SourceOfTruth.of(
-                nonFlowReader = { key -> notes.get(key) },
-                writer = { key, sot -> notes.put(key, sot) },
-                delete = { key -> notes.clear(key) },
-                deleteAll = { notes.clear() }
-            )
-        )
-            .converter(converter)
-            .validator(validator)
-            .build(
-                updater = updater,
-                bookkeeper = bookkeeper
+            val converter = NotesConverterProvider().provide()
+            val validator = NotesValidator(expiration = inHours(12))
+            val updater = NotesUpdaterProvider(api).provide()
+            val bookkeeper = Bookkeeper.by(
+                getLastFailedSync = bookkeeping::getLastFailedSync,
+                setLastFailedSync = bookkeeping::setLastFailedSync,
+                clear = bookkeeping::clear,
+                clearAll = bookkeeping::clear
             )
 
-        val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
-
-        val stream = store.stream<NotesWriteResponse>(readRequest)
-
-        // Fetch is success and validator is not used
-        assertEmitsExactly(
-            stream,
-            listOf(
-                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data(
-                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
-                    StoreReadResponseOrigin.Fetcher
-                    ()
+            val store = MutableStoreBuilder.from<NotesKey, NetworkNote, CommonNote, SOTNote>(
+                fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
+                sourceOfTruth = SourceOfTruth.of(
+                    nonFlowReader = { key -> notes.get(key) },
+                    writer = { key, sot -> notes.put(key, sot) },
+                    delete = { key -> notes.clear(key) },
+                    deleteAll = { notes.clear() }
                 )
             )
-        )
+                .converter(converter)
+                .validator(validator)
+                .build(
+                    updater = updater,
+                    bookkeeper = bookkeeper
+                )
 
-        val cachedReadRequest = StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
-        val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
+            val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
 
-        // Cache + SOT are updated
-        // But item is invalid
-        // So we do not emit value in cache or SOT
-        // Instead we get latest from network even though refresh = false
+            val stream = store.stream(readRequest)
 
-        assertEmitsExactly(
-            cachedStream,
-            listOf(
-                StoreReadResponse.Data(
-                    CommonNote(NoteData.Single(Notes.One), ttl = ttl),
-                    StoreReadResponseOrigin.Fetcher
-                    ()
+            // Fetch is success and validator is not used
+            assertEmitsExactly(
+                stream,
+                listOf(
+                    StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Data(
+                        CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                        StoreReadResponseOrigin.Fetcher
+                        ()
+                    )
                 )
             )
-        )
-    }
+
+            val cachedReadRequest =
+                StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
+            val cachedStream = store.stream(cachedReadRequest)
+
+            // Cache + SOT are updated
+            // But item is invalid
+            // So we do not emit value in cache or SOT
+            // Instead we get latest from network even though refresh = false
+
+            assertEmitsExactly(
+                cachedStream,
+                listOf(
+                    StoreReadResponse.Data(
+                        CommonNote(NoteData.Single(Notes.One), ttl = ttl),
+                        StoreReadResponseOrigin.Fetcher
+                        ()
+                    )
+                )
+            )
+        }
 
     @Test
     fun givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated() = testScope.runTest {
@@ -239,7 +263,12 @@ class UpdaterTests {
         val storeWriteResponse = store.write(writeRequest)
 
         assertEquals(
-            StoreWriteResponse.Success.Typed(NotesWriteResponse(NotesKey.Single(Notes.One.id), true)),
+            StoreWriteResponse.Success.Typed(
+                NotesWriteResponse(
+                    NotesKey.Single(Notes.One.id),
+                    true
+                )
+            ),
             storeWriteResponse
         )
         assertEquals(NetworkNote(NoteData.Single(newNote)), api.db[NotesKey.Single(Notes.One.id)])
