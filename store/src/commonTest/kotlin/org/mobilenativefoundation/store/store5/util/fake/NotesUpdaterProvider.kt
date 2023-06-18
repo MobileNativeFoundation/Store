@@ -16,4 +16,24 @@ internal class NotesUpdaterProvider(private val api: NotesApi) {
             }
         }
     )
+
+    fun provideFailingUpdater(): Updater<NotesKey, CommonNote, NotesWriteResponse> = Updater.by(
+        post = { _, _ ->
+            throw Exception()
+        }
+    )
+
+    fun provideUpdaterThatFailsOnlyOnce(): Updater<NotesKey, CommonNote, NotesWriteResponse> {
+        var count = 0
+        return Updater.by(
+            post = { key, input ->
+                if (count == 0) {
+                    count++
+                    throw Exception()
+                } else {
+                    UpdaterResult.Success.Typed(api.post(key, input))
+                }
+            }
+        )
+    }
 }

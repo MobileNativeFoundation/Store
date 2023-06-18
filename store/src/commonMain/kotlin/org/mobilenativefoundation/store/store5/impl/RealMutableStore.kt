@@ -13,11 +13,12 @@ import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.impl.concurrent.ThreadSafetyController
+import org.mobilenativefoundation.store.store5.impl.result.EagerConflictResolutionResult
 
 internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val writeRequestHandler: WriteRequestHandler<Key, Output>,
-    private val conflictResolver: ConflictResolver<Key>,
+    private val conflictResolver: ConflictResolver<Key, *>,
     private val threadSafetyController: ThreadSafetyController<Key>,
     private val writeRequestStackHandler: WriteRequestStackHandler<Key, Output>
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
@@ -25,8 +26,19 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
             safeInitStore(request.key)
-            conflictResolver.eagerlyResolveConflicts(request.key)
-            delegate.stream(request).collect { emit(it) }
+
+            when (conflictResolver.eagerlyResolveConflicts(request.key)) {
+                is EagerConflictResolutionResult.Error -> {
+                    delegate.stream(StoreReadRequest.cached(request.key, false)).collect {
+                        emit(it)
+                    }
+                }
+
+                is EagerConflictResolutionResult.Success.ConflictsResolved,
+                EagerConflictResolutionResult.Success.NoConflicts -> {
+                    delegate.stream(request).collect { emit(it) }
+                }
+            }
         }
 
     @ExperimentalStoreApi

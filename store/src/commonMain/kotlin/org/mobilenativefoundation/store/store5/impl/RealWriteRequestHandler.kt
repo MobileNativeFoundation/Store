@@ -70,7 +70,11 @@ internal class RealWriteRequestHandler<Key : Any, Output : Any>(
 
     private suspend fun <Response : Any> postLatest(key: Key): UpdaterResult {
         val writer = writeRequestStackHandler.getLatest<Response>(key)
-        val updaterResult = updater.post(key, writer.value)
+        val updaterResult = try {
+            updater.post(key, writer.value)
+        } catch (error: Throwable) {
+            UpdaterResult.Error.Exception(error)
+        }
 
         return when (updaterResult) {
             is UpdaterResult.Error.Exception -> UpdaterResult.Error.Exception(updaterResult.error)

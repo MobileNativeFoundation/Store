@@ -27,16 +27,17 @@ internal class RealConflictResolver<Key : Any, Output : Any, Response : Any>(
     private val writeRequestStackHandler: WriteRequestStackHandler<Key, Output>,
     private val threadSafetyController: ThreadSafetyController<Key>,
     private val bookkeeper: Bookkeeper<Key>?
-) : ConflictResolver<Key> {
+) : ConflictResolver<Key, Response> {
 
     private val logger = Logger.apply {
         setLogWriters(listOf(CommonWriter()))
         setTag(STORE)
     }
 
-    override suspend fun eagerlyResolveConflicts(key: Key) {
+    override suspend fun eagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<Response> {
         val eagerConflictResolutionResult = updateNetworkIfConflictsMightExist(key)
         log(eagerConflictResolutionResult)
+        return eagerConflictResolutionResult
     }
 
     private suspend fun updateNetworkIfConflictsMightExist(key: Key):
@@ -65,7 +66,7 @@ internal class RealConflictResolver<Key : Any, Output : Any, Response : Any>(
     }
 
     private suspend fun tryUpdateNetwork(key: Key, latest: Output): UpdaterResult = try {
-        updater.post(key, latest).also { updaterResult ->
+        updater.post(key, latest).let { updaterResult ->
             if (updaterResult is UpdaterResult.Success) {
                 writeRequestStackHandler.update<Response>(
                     key = key,
@@ -73,6 +74,7 @@ internal class RealConflictResolver<Key : Any, Output : Any, Response : Any>(
                     updaterResult = updaterResult
                 )
             }
+            updaterResult
         }
     } catch (error: Throwable) {
         UpdaterResult.Error.Exception(error)

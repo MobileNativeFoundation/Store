@@ -3186,25 +3186,25 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/StoreWriteResponse$Error" sourcefilename="StoreWriteResponse.kt">
 <method name="&lt;init&gt;" desc="()V">
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/StoreWriteResponse$Error$Exception" sourcefilename="StoreWriteResponse.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/Throwable;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/StoreWriteResponse$Error$Message" sourcefilename="StoreWriteResponse.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/String;)V">
@@ -3344,25 +3344,25 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterResult$Error" sourcefilename="UpdaterResult.kt">
 <method name="&lt;init&gt;" desc="()V">
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterResult$Error$Exception" sourcefilename="UpdaterResult.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/Throwable;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterResult$Error$Message" sourcefilename="UpdaterResult.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/String;)V">
@@ -3414,17 +3414,27 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
+<method name="givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="12"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="12"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
 <method name="before" desc="()V">
 <counter type="INSTRUCTION" missed="0" covered="15"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="3"/>
 </method>
-<method name="givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated" desc="()V">
+<method name="givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated" desc="()V">
 <counter type="INSTRUCTION" missed="0" covered="12"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
-<method name="givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher" desc="()V">
+<method name="givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork" desc="()V">
 <counter type="INSTRUCTION" missed="0" covered="12"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
@@ -3434,12 +3444,12 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="2"/>
 </method>
-<counter type="INSTRUCTION" missed="0" covered="59"/>
+<counter type="INSTRUCTION" missed="0" covered="83"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="8"/>
-<counter type="METHOD" missed="0" covered="5"/>
+<counter type="LINE" missed="0" covered="10"/>
+<counter type="METHOD" missed="0" covered="7"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="24" covered="239"/>
 <counter type="BRANCH" missed="6" covered="6"/>
@@ -3450,7 +3460,7 @@
 <counter type="LINE" missed="0" covered="29"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="6" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3461,7 +3471,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="7" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3472,7 +3482,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="6" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3483,7 +3493,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="5" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3494,7 +3504,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$1" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;)Lkotlinx/coroutines/flow/Flow;">
 <counter type="INSTRUCTION" missed="25" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3505,7 +3515,7 @@
 <counter type="LINE" missed="2" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$1$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$1$1" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="23" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3516,7 +3526,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$2" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$2" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="19" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3527,7 +3537,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$3" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$3" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="4" covered="18"/>
 <counter type="BRANCH" missed="1" covered="1"/>
@@ -3538,7 +3548,7 @@
 <counter type="LINE" missed="0" covered="1"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$4" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$4" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="21" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3549,7 +3559,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyMarketWhenWriteThenSuccessResponsesAndApiUpdated$1$store$5" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenEmptyStoreWhenWriteThenSuccessResponsesAndApiUpdated$1$store$5" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="20" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3560,18 +3570,29 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="20" covered="249"/>
-<counter type="BRANCH" missed="5" covered="5"/>
-<counter type="LINE" missed="0" covered="34"/>
+<counter type="INSTRUCTION" missed="20" covered="256"/>
+<counter type="BRANCH" missed="6" covered="6"/>
+<counter type="LINE" missed="0" covered="26"/>
 </method>
-<counter type="INSTRUCTION" missed="20" covered="249"/>
-<counter type="BRANCH" missed="5" covered="5"/>
-<counter type="LINE" missed="0" covered="34"/>
+<counter type="INSTRUCTION" missed="20" covered="256"/>
+<counter type="BRANCH" missed="6" covered="6"/>
+<counter type="LINE" missed="0" covered="26"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="136"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="17"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="136"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="17"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="6"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3582,7 +3603,7 @@
 <counter type="LINE" missed="0" covered="1"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="7" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3593,7 +3614,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="6" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3604,7 +3625,7 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
 <method name="invoke" desc="(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="5" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -3615,18 +3636,29 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$1" sourcefilename="UpdaterTests.kt">
-<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="4" covered="19"/>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$1" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;)Lkotlinx/coroutines/flow/Flow;">
+<counter type="INSTRUCTION" missed="4" covered="21"/>
 <counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="21"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$1$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="23"/>
+<counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="4" covered="19"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="INSTRUCTION" missed="0" covered="23"/>
+<counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$2" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$2" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="4" covered="15"/>
 <counter type="BRANCH" missed="1" covered="1"/>
@@ -3637,7 +3669,7 @@
 <counter type="LINE" missed="0" covered="1"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$3" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$3" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="4" covered="18"/>
 <counter type="BRANCH" missed="1" covered="1"/>
@@ -3648,7 +3680,7 @@
 <counter type="LINE" missed="0" covered="1"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$4" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$4" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="21" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3659,7 +3691,139 @@
 <counter type="LINE" missed="1" covered="0"/>
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
-<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$5" sourcefilename="UpdaterTests.kt">
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailedSyncWhenReadThenEagerlyResolveAndReturnLatestFromNetwork$1$store$5" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="20" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="20" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="20" covered="256"/>
+<counter type="BRANCH" missed="6" covered="6"/>
+<counter type="LINE" missed="0" covered="26"/>
+</method>
+<counter type="INSTRUCTION" missed="20" covered="256"/>
+<counter type="BRANCH" missed="6" covered="6"/>
+<counter type="LINE" missed="0" covered="26"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="161"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="22"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="161"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="22"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="6" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="6" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$1" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;)Lkotlinx/coroutines/flow/Flow;">
+<counter type="INSTRUCTION" missed="25" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="25" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$1$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="23" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="23" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$2" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="15"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="15"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$3" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$4" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="21" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="21" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenFailingSyncWhenReadThenTryToEagerlyResolveButReturnCached$1$store$5" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="20" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -3781,6 +3945,138 @@
 <counter type="METHOD" missed="1" covered="0"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWhenWriteThenStoredAndAPIUpdated$1$store$5" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="20" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="20" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="20" covered="229"/>
+<counter type="BRANCH" missed="6" covered="8"/>
+<counter type="LINE" missed="0" covered="25"/>
+</method>
+<counter type="INSTRUCTION" missed="20" covered="229"/>
+<counter type="BRANCH" missed="6" covered="8"/>
+<counter type="LINE" missed="0" covered="25"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="75"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="12"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="75"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="12"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$2" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="47"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="47"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$1" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$2" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$3" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="6" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="6" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$bookkeeper$4" sourcefilename="UpdaterTests.kt">
+<method name="invoke" desc="(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$1" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="19"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="19"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$2" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="15"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="15"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$3" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$4" sourcefilename="UpdaterTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="21" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="21" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/UpdaterTests$givenNonEmptyStoreWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher$1$store$5" sourcefilename="UpdaterTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="20" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
@@ -4449,12 +4745,12 @@
 <line nr="5" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="6" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="7" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="10" mi="3" ci="0" mb="0" cb="0"/>
-<line nr="11" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="10" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="11" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="12" mi="8" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="27" covered="13"/>
+<counter type="INSTRUCTION" missed="16" covered="24"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="4" covered="3"/>
+<counter type="LINE" missed="2" covered="5"/>
 </sourcefile>
 <sourcefile name="SourceOfTruthErrorsTests.kt">
 <line nr="21" mi="0" ci="2" mb="0" cb="0"/>
@@ -4731,179 +5027,305 @@
 <counter type="LINE" missed="0" covered="6"/>
 </sourcefile>
 <sourcefile name="UpdaterTests.kt">
-<line nr="32" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="34" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="31" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="33" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="40" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="41" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="42" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="43" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="47" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="47" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="48" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="50" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="51" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="52" mi="4" ci="10" mb="1" cb="1"/>
-<line nr="53" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="54" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="54" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="55" mi="4" ci="17" mb="1" cb="1"/>
-<line nr="55" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="56" mi="4" ci="16" mb="1" cb="1"/>
-<line nr="56" mi="6" ci="0" mb="0" cb="0"/>
-<line nr="57" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="57" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="60" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="61" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="61" mi="4" ci="19" mb="1" cb="1"/>
-<line nr="62" mi="0" ci="30" mb="0" cb="0"/>
-<line nr="63" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="64" mi="4" ci="18" mb="1" cb="1"/>
-<line nr="65" mi="21" ci="0" mb="2" cb="0"/>
-<line nr="66" mi="20" ci="0" mb="2" cb="0"/>
-<line nr="69" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="70" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="46" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="46" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="47" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="49" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="50" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="51" mi="4" ci="10" mb="1" cb="1"/>
+<line nr="52" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="53" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="53" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="54" mi="4" ci="17" mb="1" cb="1"/>
+<line nr="54" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="55" mi="4" ci="16" mb="1" cb="1"/>
+<line nr="55" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="56" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="56" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="59" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="60" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="60" mi="4" ci="19" mb="1" cb="1"/>
+<line nr="61" mi="0" ci="30" mb="0" cb="0"/>
+<line nr="62" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="63" mi="4" ci="18" mb="1" cb="1"/>
+<line nr="64" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="65" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="68" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="69" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="70" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="71" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="72" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="73" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="76" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="78" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="81" mi="0" ci="23" mb="1" cb="1"/>
-<line nr="81" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="82" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="83" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="84" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="85" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="88" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="89" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="90" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="91" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="92" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="94" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="97" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="100" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="101" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="102" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="103" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="106" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="109" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="75" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="77" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="80" mi="0" ci="23" mb="1" cb="1"/>
+<line nr="80" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="81" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="82" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="83" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="84" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="87" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="88" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="89" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="90" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="91" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="93" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="96" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="99" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="100" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="101" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="102" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="105" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="108" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="109" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="110" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="111" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="112" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="113" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="116" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="119" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="120" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="121" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="124" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="125" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="126" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="127" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="128" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="130" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="133" mi="0" ci="21" mb="0" cb="0"/>
-<line nr="134" mi="0" ci="23" mb="0" cb="0"/>
-<line nr="135" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="136" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="137" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="138" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="139" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="140" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="143" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="111" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="112" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="115" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="118" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="119" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="120" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="123" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="124" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="125" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="126" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="127" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="129" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="132" mi="0" ci="21" mb="0" cb="0"/>
+<line nr="133" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="134" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="135" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="136" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="137" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="138" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="139" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="142" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="143" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="144" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="145" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="146" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="147" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="150" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="152" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="153" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="154" mi="4" ci="13" mb="1" cb="1"/>
-<line nr="160" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="160" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="161" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="163" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="164" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="165" mi="4" ci="10" mb="1" cb="1"/>
-<line nr="166" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="167" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="167" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="168" mi="4" ci="17" mb="1" cb="1"/>
-<line nr="168" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="169" mi="4" ci="16" mb="1" cb="1"/>
-<line nr="169" mi="6" ci="0" mb="0" cb="0"/>
-<line nr="170" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="170" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="173" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="174" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="174" mi="4" ci="19" mb="1" cb="1"/>
-<line nr="175" mi="0" ci="30" mb="0" cb="0"/>
-<line nr="176" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="177" mi="4" ci="18" mb="1" cb="1"/>
-<line nr="178" mi="21" ci="0" mb="2" cb="0"/>
-<line nr="179" mi="20" ci="0" mb="2" cb="0"/>
-<line nr="182" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="183" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="145" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="146" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="149" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="151" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="152" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="153" mi="4" ci="13" mb="1" cb="1"/>
+<line nr="159" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="159" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="160" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="162" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="163" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="164" mi="4" ci="10" mb="1" cb="1"/>
+<line nr="165" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="166" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="166" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="167" mi="4" ci="17" mb="1" cb="1"/>
+<line nr="167" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="168" mi="4" ci="16" mb="1" cb="1"/>
+<line nr="168" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="169" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="169" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="172" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="173" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="173" mi="4" ci="19" mb="1" cb="1"/>
+<line nr="174" mi="0" ci="30" mb="0" cb="0"/>
+<line nr="175" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="176" mi="4" ci="18" mb="1" cb="1"/>
+<line nr="177" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="178" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="181" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="182" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="183" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="184" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="185" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="186" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="189" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="191" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="194" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="196" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="197" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="198" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="199" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="200" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="188" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="190" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="193" mi="0" ci="26" mb="0" cb="2"/>
+<line nr="193" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="194" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="195" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="196" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="197" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="200" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="201" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="202" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="203" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="204" mi="0" ci="7" mb="0" cb="0"/>
 <line nr="206" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="207" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="208" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="215" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="217" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="218" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="219" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="220" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="228" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="228" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="229" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="230" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="231" mi="4" ci="10" mb="1" cb="1"/>
-<line nr="232" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="233" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="233" mi="6" ci="0" mb="0" cb="0"/>
-<line nr="234" mi="4" ci="17" mb="1" cb="1"/>
-<line nr="234" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="235" mi="4" ci="16" mb="1" cb="1"/>
-<line nr="235" mi="6" ci="0" mb="0" cb="0"/>
-<line nr="236" mi="4" ci="15" mb="1" cb="1"/>
-<line nr="236" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="239" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="240" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="241" mi="18" ci="0" mb="2" cb="0"/>
+<line nr="209" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="212" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="213" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="214" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="221" mi="0" ci="23" mb="1" cb="1"/>
+<line nr="221" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="222" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="223" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="224" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="225" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="226" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="228" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="231" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="236" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="236" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="237" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="238" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="239" mi="4" ci="10" mb="1" cb="1"/>
+<line nr="240" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="241" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="241" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="242" mi="4" ci="17" mb="1" cb="1"/>
 <line nr="242" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="242" mi="23" ci="0" mb="0" cb="0"/>
-<line nr="244" mi="0" ci="30" mb="0" cb="0"/>
-<line nr="245" mi="19" ci="0" mb="2" cb="0"/>
-<line nr="246" mi="4" ci="18" mb="1" cb="1"/>
-<line nr="247" mi="21" ci="0" mb="2" cb="0"/>
-<line nr="248" mi="20" ci="0" mb="2" cb="0"/>
-<line nr="251" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="252" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="253" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="254" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="255" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="258" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="259" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="260" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="261" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="263" mi="0" ci="14" mb="0" cb="0"/>
-<line nr="265" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="266" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="267" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="268" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="269" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="272" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="274" mi="4" ci="28" mb="1" cb="1"/>
-<counter type="INSTRUCTION" missed="346" covered="1212"/>
-<counter type="BRANCH" missed="41" covered="25"/>
-<counter type="LINE" missed="20" covered="150"/>
+<line nr="243" mi="4" ci="16" mb="1" cb="1"/>
+<line nr="243" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="244" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="244" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="247" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="248" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="249" mi="18" ci="0" mb="2" cb="0"/>
+<line nr="250" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="250" mi="23" ci="0" mb="0" cb="0"/>
+<line nr="252" mi="0" ci="30" mb="0" cb="0"/>
+<line nr="253" mi="19" ci="0" mb="2" cb="0"/>
+<line nr="254" mi="4" ci="18" mb="1" cb="1"/>
+<line nr="255" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="256" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="259" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="260" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="261" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="262" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="263" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="266" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="267" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="268" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="269" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="271" mi="0" ci="14" mb="0" cb="0"/>
+<line nr="273" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="274" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="275" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="276" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="277" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="280" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="282" mi="4" ci="28" mb="1" cb="1"/>
+<line nr="286" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="286" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="287" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="288" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="289" mi="4" ci="10" mb="1" cb="1"/>
+<line nr="290" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="291" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="291" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="292" mi="4" ci="17" mb="1" cb="1"/>
+<line nr="292" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="293" mi="4" ci="16" mb="1" cb="1"/>
+<line nr="293" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="294" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="294" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="297" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="298" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="299" mi="18" ci="0" mb="2" cb="0"/>
+<line nr="300" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="300" mi="23" ci="0" mb="0" cb="0"/>
+<line nr="302" mi="0" ci="30" mb="0" cb="0"/>
+<line nr="303" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="304" mi="4" ci="18" mb="1" cb="1"/>
+<line nr="305" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="306" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="309" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="310" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="311" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="312" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="313" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="316" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="317" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="318" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="319" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="321" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="323" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="325" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="326" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="328" mi="0" ci="26" mb="1" cb="1"/>
+<line nr="328" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="329" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="330" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="331" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="332" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="333" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="334" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="335" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="338" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="339" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="340" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="343" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="344" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="345" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="346" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="347" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="348" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="349" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="351" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="352" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="353" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="356" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="361" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="361" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="362" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="363" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="364" mi="4" ci="10" mb="1" cb="1"/>
+<line nr="365" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="366" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="366" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="367" mi="4" ci="17" mb="1" cb="1"/>
+<line nr="367" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="368" mi="4" ci="16" mb="1" cb="1"/>
+<line nr="368" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="369" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="369" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="372" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="373" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="374" mi="4" ci="14" mb="1" cb="1"/>
+<line nr="375" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="375" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="377" mi="0" ci="30" mb="0" cb="0"/>
+<line nr="378" mi="4" ci="15" mb="1" cb="1"/>
+<line nr="379" mi="4" ci="18" mb="1" cb="1"/>
+<line nr="380" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="381" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="384" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="385" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="386" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="387" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="388" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="391" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="392" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="393" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="394" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="396" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="398" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="400" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="401" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="403" mi="0" ci="26" mb="1" cb="1"/>
+<line nr="403" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="404" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="405" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="406" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="407" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="408" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="411" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="412" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="413" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="414" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="415" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="416" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="417" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="420" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="421" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="422" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="425" mi="0" ci="2" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="572" covered="2269"/>
+<counter type="BRANCH" missed="69" covered="45"/>
+<counter type="LINE" missed="33" covered="263"/>
 </sourcefile>
 <sourcefile name="MemoryPolicy.kt">
 <line nr="17" mi="1" ci="0" mb="0" cb="0"/>
@@ -6286,18 +6708,18 @@
 <line nr="4" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="5" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="6" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="9" mi="3" ci="0" mb="0" cb="0"/>
-<line nr="10" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="9" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="10" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="11" mi="8" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="27" covered="13"/>
+<counter type="INSTRUCTION" missed="16" covered="24"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="4" covered="3"/>
+<counter type="LINE" missed="2" covered="5"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="904" covered="14178"/>
-<counter type="BRANCH" missed="144" covered="156"/>
-<counter type="LINE" missed="87" covered="2089"/>
-<counter type="METHOD" missed="52" covered="385"/>
-<counter type="CLASS" missed="40" covered="251"/>
+<counter type="INSTRUCTION" missed="1108" covered="15257"/>
+<counter type="BRANCH" missed="172" covered="176"/>
+<counter type="LINE" missed="96" covered="2206"/>
+<counter type="METHOD" missed="60" covered="405"/>
+<counter type="CLASS" missed="48" covered="269"/>
 </package>
 <package name="org/mobilenativefoundation/store/store5/impl">
 <class name="org/mobilenativefoundation/store/store5/impl/FetcherController" sourcefilename="FetcherController.kt">
@@ -6541,9 +6963,9 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealConflictResolver" sourcefilename="RealConflictResolver.kt">
 <method name="tryUpdateNetwork" desc="(Ljava/lang/Object;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="91" covered="0"/>
-<counter type="BRANCH" missed="4" covered="0"/>
-<counter type="LINE" missed="10" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="89"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="0" covered="10"/>
 </method>
 <method name="updateNetworkIfConflictsMightExist" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="12"/>
@@ -6551,19 +6973,19 @@
 <counter type="LINE" missed="0" covered="1"/>
 </method>
 <method name="writeRequestOnStack" desc="(Ljava/lang/Object;)Z">
-<counter type="INSTRUCTION" missed="2" covered="6"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
 <method name="processUpdaterResult" desc="(Lorg/mobilenativefoundation/store/store5/UpdaterResult;)Lorg/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult;">
-<counter type="INSTRUCTION" missed="34" covered="4"/>
-<counter type="BRANCH" missed="5" covered="1"/>
-<counter type="LINE" missed="7" covered="0"/>
+<counter type="INSTRUCTION" missed="5" covered="33"/>
+<counter type="BRANCH" missed="1" covered="5"/>
+<counter type="LINE" missed="1" covered="6"/>
 </method>
 <method name="log" desc="(Lorg/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult;)V">
-<counter type="INSTRUCTION" missed="23" covered="25"/>
-<counter type="BRANCH" missed="3" covered="5"/>
-<counter type="LINE" missed="3" covered="6"/>
+<counter type="INSTRUCTION" missed="7" covered="41"/>
+<counter type="BRANCH" missed="1" covered="7"/>
+<counter type="LINE" missed="1" covered="8"/>
 </method>
 <method name="unresolvedFailedSyncExists" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="2" covered="25"/>
@@ -6571,9 +6993,9 @@
 <counter type="LINE" missed="0" covered="2"/>
 </method>
 <method name="eagerlyResolveConflicts" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="0" covered="21"/>
+<counter type="INSTRUCTION" missed="0" covered="22"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="3"/>
+<counter type="LINE" missed="0" covered="4"/>
 </method>
 <method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/store5/impl/RealStore;Lorg/mobilenativefoundation/store/store5/Updater;Lorg/mobilenativefoundation/store/store5/impl/WriteRequestStackHandler;Lorg/mobilenativefoundation/store/store5/impl/concurrent/ThreadSafetyController;Lorg/mobilenativefoundation/store/store5/Bookkeeper;)V">
 <counter type="INSTRUCTION" missed="0" covered="38"/>
@@ -6582,13 +7004,13 @@
 </method>
 <method name="conflictsMightExist" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="2" covered="30"/>
-<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="BRANCH" missed="1" covered="3"/>
 <counter type="LINE" missed="0" covered="2"/>
 </method>
-<counter type="INSTRUCTION" missed="154" covered="161"/>
-<counter type="BRANCH" missed="16" covered="12"/>
-<counter type="LINE" missed="20" covered="25"/>
-<counter type="METHOD" missed="2" covered="7"/>
+<counter type="INSTRUCTION" missed="16" covered="298"/>
+<counter type="BRANCH" missed="6" covered="22"/>
+<counter type="LINE" missed="2" covered="44"/>
+<counter type="METHOD" missed="0" covered="9"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealConflictResolver$Companion" sourcefilename="RealConflictResolver.kt">
 <method name="&lt;init&gt;" desc="()V">
@@ -6603,13 +7025,13 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealConflictResolver$updateNetworkIfConflictsMightExist$2" sourcefilename="RealConflictResolver.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="22" covered="44"/>
-<counter type="BRANCH" missed="1" covered="3"/>
-<counter type="LINE" missed="2" covered="5"/>
+<counter type="INSTRUCTION" missed="0" covered="66"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="7"/>
 </method>
-<counter type="INSTRUCTION" missed="22" covered="44"/>
-<counter type="BRANCH" missed="1" covered="3"/>
-<counter type="LINE" missed="2" covered="5"/>
+<counter type="INSTRUCTION" missed="0" covered="66"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="7"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealMutableStore" sourcefilename="RealMutableStore.kt">
@@ -6645,16 +7067,27 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealMutableStore$stream$1" sourcefilename="RealMutableStore.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="0" covered="65"/>
-<counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="4"/>
+<counter type="INSTRUCTION" missed="0" covered="105"/>
+<counter type="BRANCH" missed="1" covered="5"/>
+<counter type="LINE" missed="0" covered="8"/>
 </method>
-<counter type="INSTRUCTION" missed="0" covered="65"/>
-<counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="4"/>
+<counter type="INSTRUCTION" missed="0" covered="105"/>
+<counter type="BRANCH" missed="1" covered="5"/>
+<counter type="LINE" missed="0" covered="8"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealMutableStore$stream$1$1" sourcefilename="RealMutableStore.kt">
+<method name="emit" desc="(Lorg/mobilenativefoundation/store/store5/StoreReadResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/impl/RealMutableStore$stream$1$2" sourcefilename="RealMutableStore.kt">
 <method name="emit" desc="(Lorg/mobilenativefoundation/store/store5/StoreReadResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="10"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -7014,14 +7447,14 @@
 <counter type="LINE" missed="0" covered="3"/>
 </method>
 <method name="postLatest" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="24" covered="67"/>
-<counter type="BRANCH" missed="3" covered="5"/>
-<counter type="LINE" missed="0" covered="9"/>
+<counter type="INSTRUCTION" missed="16" covered="88"/>
+<counter type="BRANCH" missed="2" covered="6"/>
+<counter type="LINE" missed="0" covered="12"/>
 </method>
 <method name="tryUpdateServer" desc="(Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="43" covered="67"/>
-<counter type="BRANCH" missed="7" covered="3"/>
-<counter type="LINE" missed="1" covered="9"/>
+<counter type="INSTRUCTION" missed="35" covered="75"/>
+<counter type="BRANCH" missed="5" covered="5"/>
+<counter type="LINE" missed="0" covered="10"/>
 </method>
 <method name="invoke" desc="(Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="8" covered="46"/>
@@ -7029,13 +7462,13 @@
 <counter type="LINE" missed="2" covered="4"/>
 </method>
 <method name="handleErrorUpdaterResult" desc="(Lorg/mobilenativefoundation/store/store5/UpdaterResult$Error;)Lorg/mobilenativefoundation/store/store5/StoreWriteResponse;">
-<counter type="INSTRUCTION" missed="24" covered="4"/>
-<counter type="BRANCH" missed="3" covered="1"/>
-<counter type="LINE" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="11" covered="17"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="1" covered="2"/>
 </method>
 <method name="handleUpdateServerResult" desc="(Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="5" covered="48"/>
-<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="INSTRUCTION" missed="0" covered="53"/>
+<counter type="BRANCH" missed="0" covered="4"/>
 <counter type="LINE" missed="0" covered="8"/>
 </method>
 <method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/store5/impl/RealStore;Lorg/mobilenativefoundation/store/store5/Updater;Lorg/mobilenativefoundation/store/store5/impl/WriteRequestStackHandler;Lorg/mobilenativefoundation/store/store5/Bookkeeper;)V">
@@ -7043,10 +7476,10 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="5"/>
 </method>
-<counter type="INSTRUCTION" missed="115" covered="306"/>
-<counter type="BRANCH" missed="17" covered="15"/>
-<counter type="LINE" missed="7" covered="41"/>
-<counter type="METHOD" missed="1" covered="7"/>
+<counter type="INSTRUCTION" missed="81" covered="353"/>
+<counter type="BRANCH" missed="12" covered="20"/>
+<counter type="LINE" missed="4" covered="47"/>
+<counter type="METHOD" missed="0" covered="8"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealWriteRequestStackHandler" sourcefilename="RealWriteRequestStackHandler.kt">
 <method name="processCompletedWriteRequest" desc="(Lorg/mobilenativefoundation/store/store5/UpdaterResult$Success;Lorg/mobilenativefoundation/store/store5/OnUpdaterCompletion;Lorg/mobilenativefoundation/store/store5/StoreWriteRequest;)V">
@@ -7075,8 +7508,8 @@
 <counter type="LINE" missed="0" covered="3"/>
 </method>
 <method name="isEmpty" desc="(Ljava/lang/Object;)Z">
-<counter type="INSTRUCTION" missed="3" covered="11"/>
-<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="INSTRUCTION" missed="2" covered="12"/>
+<counter type="BRANCH" missed="1" covered="3"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
 <method name="update" desc="(Ljava/lang/Object;JLorg/mobilenativefoundation/store/store5/UpdaterResult$Success;Lorg/mobilenativefoundation/store/store5/OnUpdaterCompletion;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
@@ -7094,8 +7527,8 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="40" covered="175"/>
-<counter type="BRANCH" missed="10" covered="8"/>
+<counter type="INSTRUCTION" missed="39" covered="176"/>
+<counter type="BRANCH" missed="9" covered="9"/>
 <counter type="LINE" missed="4" covered="20"/>
 <counter type="METHOD" missed="0" covered="9"/>
 </class>
@@ -7112,13 +7545,13 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealWriteRequestStackHandler$getLatest$2" sourcefilename="RealWriteRequestStackHandler.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="21" covered="71"/>
-<counter type="BRANCH" missed="6" covered="6"/>
-<counter type="LINE" missed="1" covered="8"/>
+<counter type="INSTRUCTION" missed="19" covered="53"/>
+<counter type="BRANCH" missed="4" covered="4"/>
+<counter type="LINE" missed="1" covered="6"/>
 </method>
-<counter type="INSTRUCTION" missed="21" covered="71"/>
-<counter type="BRANCH" missed="6" covered="6"/>
-<counter type="LINE" missed="1" covered="8"/>
+<counter type="INSTRUCTION" missed="19" covered="53"/>
+<counter type="BRANCH" missed="4" covered="4"/>
+<counter type="LINE" missed="1" covered="6"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealWriteRequestStackHandler$processWriteRequests$2" sourcefilename="RealWriteRequestStackHandler.kt">
@@ -7156,13 +7589,13 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RealWriteRequestStackHandler$withWriteRequestStackLock$2" sourcefilename="RealWriteRequestStackHandler.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="16" covered="78"/>
-<counter type="BRANCH" missed="1" covered="1"/>
-<counter type="LINE" missed="1" covered="6"/>
+<counter type="INSTRUCTION" missed="6" covered="72"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="0" covered="6"/>
 </method>
-<counter type="INSTRUCTION" missed="16" covered="78"/>
-<counter type="BRANCH" missed="1" covered="1"/>
-<counter type="LINE" missed="1" covered="6"/>
+<counter type="INSTRUCTION" missed="6" covered="72"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="0" covered="6"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/RefCountedResource" sourcefilename="RefCountedResource.kt">
@@ -7636,7 +8069,7 @@
 <line nr="10" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="16" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="21" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="27" mi="3" ci="11" mb="2" cb="2"/>
+<line nr="27" mi="2" ci="12" mb="1" cb="3"/>
 <line nr="34" mi="0" ci="11" mb="0" cb="0"/>
 <line nr="34" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="35" mi="0" ci="5" mb="0" cb="0"/>
@@ -7645,52 +8078,49 @@
 <line nr="42" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="43" mi="0" ci="7" mb="0" cb="2"/>
 <line nr="44" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="55" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="55" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="56" mi="0" ci="18" mb="0" cb="0"/>
-<line nr="57" mi="4" ci="22" mb="1" cb="1"/>
-<line nr="58" mi="12" ci="0" mb="0" cb="0"/>
-<line nr="59" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="60" mi="0" ci="18" mb="0" cb="0"/>
-<line nr="61" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="69" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="75" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="76" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="78" mi="0" ci="25" mb="0" cb="0"/>
-<line nr="78" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="79" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="91" mi="0" ci="13" mb="0" cb="0"/>
-<line nr="91" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="92" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="94" mi="0" ci="10" mb="0" cb="2"/>
-<line nr="95" mi="0" ci="6" mb="1" cb="1"/>
-<line nr="96" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="98" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="101" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="112" mi="8" ci="3" mb="3" cb="1"/>
-<line nr="114" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="115" mi="0" ci="3" mb="1" cb="1"/>
-<line nr="116" mi="2" ci="6" mb="1" cb="1"/>
-<line nr="117" mi="0" ci="2" mb="1" cb="1"/>
-<line nr="118" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="120" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="124" mi="11" ci="4" mb="1" cb="1"/>
-<line nr="127" mi="2" ci="8" mb="1" cb="1"/>
-<line nr="128" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="129" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="141" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="141" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="142" mi="0" ci="18" mb="1" cb="1"/>
-<line nr="143" mi="0" ci="9" mb="0" cb="0"/>
-<line nr="144" mi="2" ci="10" mb="2" cb="2"/>
-<line nr="146" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="147" mi="4" ci="20" mb="3" cb="3"/>
-<line nr="148" mi="15" ci="0" mb="0" cb="0"/>
-<line nr="149" mi="0" ci="7" mb="0" cb="0"/>
-<line nr="150" mi="0" ci="1" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="83" covered="410"/>
-<counter type="BRANCH" missed="19" covered="21"/>
-<counter type="LINE" missed="7" covered="48"/>
+<line nr="56" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="56" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="57" mi="0" ci="18" mb="0" cb="0"/>
+<line nr="58" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="59" mi="1" ci="18" mb="1" cb="1"/>
+<line nr="61" mi="0" ci="18" mb="0" cb="0"/>
+<line nr="62" mi="5" ci="4" mb="1" cb="1"/>
+<line nr="71" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="77" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="78" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="80" mi="0" ci="25" mb="0" cb="0"/>
+<line nr="80" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="81" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="93" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="93" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="94" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="96" mi="0" ci="10" mb="0" cb="2"/>
+<line nr="97" mi="0" ci="6" mb="1" cb="1"/>
+<line nr="98" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="100" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="103" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="114" mi="8" ci="3" mb="3" cb="1"/>
+<line nr="116" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="117" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="118" mi="2" ci="6" mb="1" cb="1"/>
+<line nr="119" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="120" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="122" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="126" mi="11" ci="4" mb="1" cb="1"/>
+<line nr="129" mi="2" ci="8" mb="1" cb="1"/>
+<line nr="130" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="131" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="143" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="143" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="144" mi="0" ci="18" mb="1" cb="1"/>
+<line nr="145" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="146" mi="4" ci="21" mb="3" cb="3"/>
+<line nr="147" mi="15" ci="0" mb="0" cb="0"/>
+<line nr="148" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="149" mi="0" ci="1" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="70" covered="387"/>
+<counter type="BRANCH" missed="17" covered="21"/>
+<counter type="LINE" missed="6" covered="46"/>
 </sourcefile>
 <sourcefile name="RealConflictResolver.kt">
 <line nr="24" mi="0" ci="2" mb="0" cb="0"/>
@@ -7706,49 +8136,50 @@
 <line nr="37" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="38" mi="0" ci="13" mb="0" cb="0"/>
 <line nr="39" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="43" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="43" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="44" mi="0" ci="14" mb="0" cb="0"/>
-<line nr="45" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="47" mi="0" ci="4" mb="1" cb="3"/>
-<line nr="48" mi="17" ci="0" mb="0" cb="0"/>
-<line nr="49" mi="5" ci="0" mb="0" cb="0"/>
-<line nr="51" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="55" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="56" mi="2" ci="25" mb="2" cb="2"/>
-<line nr="59" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="60" mi="2" ci="20" mb="1" cb="3"/>
-<line nr="64" mi="2" ci="6" mb="1" cb="1"/>
-<line nr="67" mi="34" ci="0" mb="0" cb="0"/>
-<line nr="68" mi="22" ci="0" mb="0" cb="0"/>
-<line nr="69" mi="3" ci="0" mb="2" cb="0"/>
-<line nr="70" mi="19" ci="0" mb="2" cb="0"/>
-<line nr="71" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="72" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="73" mi="2" ci="0" mb="0" cb="0"/>
-<line nr="76" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="77" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="78" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="82" mi="2" ci="0" mb="0" cb="0"/>
-<line nr="83" mi="8" ci="0" mb="2" cb="0"/>
-<line nr="84" mi="3" ci="0" mb="0" cb="0"/>
-<line nr="87" mi="8" ci="0" mb="2" cb="0"/>
-<line nr="88" mi="3" ci="0" mb="0" cb="0"/>
-<line nr="91" mi="8" ci="4" mb="1" cb="1"/>
-<line nr="92" mi="2" ci="0" mb="0" cb="0"/>
-<line nr="98" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="99" mi="0" ci="3" mb="1" cb="1"/>
-<line nr="100" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="103" mi="0" ci="3" mb="1" cb="1"/>
-<line nr="104" mi="7" ci="0" mb="0" cb="0"/>
-<line nr="107" mi="0" ci="3" mb="1" cb="1"/>
-<line nr="108" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="111" mi="0" ci="4" mb="0" cb="2"/>
-<line nr="112" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="116" mi="0" ci="2" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="176" covered="207"/>
-<counter type="BRANCH" missed="17" covered="15"/>
-<counter type="LINE" missed="22" covered="31"/>
+<line nr="40" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="44" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="44" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="45" mi="0" ci="14" mb="0" cb="0"/>
+<line nr="46" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="48" mi="0" ci="4" mb="0" cb="4"/>
+<line nr="49" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="50" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="52" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="56" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="57" mi="2" ci="25" mb="1" cb="3"/>
+<line nr="60" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="61" mi="2" ci="20" mb="1" cb="3"/>
+<line nr="65" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="68" mi="0" ci="33" mb="0" cb="0"/>
+<line nr="69" mi="0" ci="20" mb="0" cb="0"/>
+<line nr="70" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="71" mi="0" ci="19" mb="1" cb="1"/>
+<line nr="72" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="73" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="74" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="77" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="79" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="80" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="84" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="85" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="86" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="89" mi="2" ci="6" mb="1" cb="1"/>
+<line nr="90" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="93" mi="0" ci="12" mb="0" cb="2"/>
+<line nr="94" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="100" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="101" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="102" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="105" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="106" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="109" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="110" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="113" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="114" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="118" mi="0" ci="2" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="16" covered="366"/>
+<counter type="BRANCH" missed="6" covered="26"/>
+<counter type="LINE" missed="2" covered="52"/>
 </sourcefile>
 <sourcefile name="FetcherController.kt">
 <line nr="43" mi="0" ci="12" mb="0" cb="0"/>
@@ -7812,35 +8243,40 @@
 <counter type="LINE" missed="1" covered="55"/>
 </sourcefile>
 <sourcefile name="RealMutableStore.kt">
-<line nr="17" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="18" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="18" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="19" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="20" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="21" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="22" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="26" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="26" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="27" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="28" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="29" mi="0" ci="24" mb="0" cb="0"/>
-<line nr="29" mi="0" ci="10" mb="0" cb="0"/>
-<line nr="34" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="34" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="35" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="36" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="36" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="37" mi="0" ci="16" mb="0" cb="0"/>
-<line nr="38" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="40" mi="0" ci="16" mb="0" cb="0"/>
-<line nr="40" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="41" mi="0" ci="31" mb="0" cb="0"/>
-<line nr="47" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="49" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="23" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="27" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="27" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="28" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="30" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="31" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="32" mi="0" ci="29" mb="0" cb="0"/>
+<line nr="33" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="37" mi="0" ci="5" mb="0" cb="2"/>
+<line nr="38" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="39" mi="0" ci="23" mb="0" cb="0"/>
+<line nr="39" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="46" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="46" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="47" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="48" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="48" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="49" mi="0" ci="16" mb="0" cb="0"/>
 <line nr="50" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="51" mi="0" ci="18" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="0" covered="259"/>
-<counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="26"/>
+<line nr="52" mi="0" ci="16" mb="0" cb="0"/>
+<line nr="52" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="53" mi="0" ci="31" mb="0" cb="0"/>
+<line nr="59" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="61" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="62" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="63" mi="0" ci="18" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="0" covered="309"/>
+<counter type="BRANCH" missed="1" covered="5"/>
+<counter type="LINE" missed="0" covered="31"/>
 </sourcefile>
 <sourcefile name="OnStoreWriteCompletion.kt">
 <line nr="5" mi="2" ci="0" mb="0" cb="0"/>
@@ -8008,7 +8444,7 @@
 <line nr="37" mi="7" ci="0" mb="0" cb="0"/>
 <line nr="41" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="42" mi="0" ci="16" mb="0" cb="0"/>
-<line nr="43" mi="5" ci="3" mb="1" cb="1"/>
+<line nr="43" mi="0" ci="8" mb="0" cb="2"/>
 <line nr="44" mi="0" ci="3" mb="0" cb="2"/>
 <line nr="45" mi="0" ci="14" mb="0" cb="0"/>
 <line nr="46" mi="0" ci="2" mb="0" cb="0"/>
@@ -8016,42 +8452,45 @@
 <line nr="48" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="54" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="55" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="57" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="57" mi="0" ci="3" mb="0" cb="2"/>
 <line nr="58" mi="0" ci="22" mb="1" cb="1"/>
 <line nr="59" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="60" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="61" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="63" mi="16" ci="13" mb="1" cb="1"/>
-<line nr="65" mi="27" ci="0" mb="4" cb="0"/>
+<line nr="65" mi="19" ci="8" mb="3" cb="1"/>
 <line nr="68" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="71" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="72" mi="0" ci="17" mb="0" cb="0"/>
-<line nr="73" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="75" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="76" mi="8" ci="3" mb="1" cb="1"/>
-<line nr="77" mi="8" ci="3" mb="1" cb="1"/>
-<line nr="78" mi="8" ci="3" mb="1" cb="1"/>
-<line nr="79" mi="0" ci="3" mb="0" cb="2"/>
-<line nr="80" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="85" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="90" mi="0" ci="22" mb="1" cb="1"/>
-<line nr="91" mi="0" ci="4" mb="0" cb="0"/>
-<line nr="95" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="96" mi="0" ci="3" mb="1" cb="1"/>
-<line nr="97" mi="0" ci="8" mb="0" cb="0"/>
-<line nr="100" mi="11" ci="4" mb="1" cb="1"/>
-<line nr="105" mi="2" ci="0" mb="0" cb="0"/>
-<line nr="106" mi="11" ci="0" mb="2" cb="0"/>
-<line nr="107" mi="11" ci="4" mb="1" cb="1"/>
-<counter type="INSTRUCTION" missed="115" covered="306"/>
-<counter type="BRANCH" missed="17" covered="15"/>
-<counter type="LINE" missed="7" covered="41"/>
+<line nr="73" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="74" mi="0" ci="22" mb="0" cb="0"/>
+<line nr="75" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="76" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="79" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="80" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="81" mi="8" ci="3" mb="1" cb="1"/>
+<line nr="82" mi="8" ci="3" mb="1" cb="1"/>
+<line nr="83" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="84" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="89" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="94" mi="0" ci="22" mb="1" cb="1"/>
+<line nr="95" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="99" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="100" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="101" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="104" mi="11" ci="4" mb="1" cb="1"/>
+<line nr="109" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="110" mi="0" ci="11" mb="1" cb="1"/>
+<line nr="111" mi="11" ci="4" mb="1" cb="1"/>
+<counter type="INSTRUCTION" missed="81" covered="353"/>
+<counter type="BRANCH" missed="12" covered="20"/>
+<counter type="LINE" missed="4" covered="47"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="573" covered="3565"/>
-<counter type="BRANCH" missed="98" covered="240"/>
-<counter type="LINE" missed="74" covered="535"/>
-<counter type="METHOD" missed="15" covered="127"/>
-<counter type="CLASS" missed="4" covered="54"/>
+<counter type="INSTRUCTION" missed="366" covered="3798"/>
+<counter type="BRANCH" missed="81" covered="261"/>
+<counter type="LINE" missed="50" covered="565"/>
+<counter type="METHOD" missed="12" covered="131"/>
+<counter type="CLASS" missed="4" covered="55"/>
 </package>
 <package name="org/mobilenativefoundation/store/store5/util/fake">
 <class name="org/mobilenativefoundation/store/store5/util/fake/NoteCollections" sourcefilename="NoteCollections.kt">
@@ -8399,6 +8838,16 @@
 <counter type="METHOD" missed="7" covered="3"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/util/fake/NotesUpdaterProvider" sourcefilename="NotesUpdaterProvider.kt">
+<method name="provideFailingUpdater" desc="()Lorg/mobilenativefoundation/store/store5/Updater;">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="provideUpdaterThatFailsOnlyOnce" desc="()Lorg/mobilenativefoundation/store/store5/Updater;">
+<counter type="INSTRUCTION" missed="0" covered="16"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
 <method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/store5/util/fake/NotesApi;)V">
 <counter type="INSTRUCTION" missed="0" covered="5"/>
 <counter type="BRANCH" missed="0" covered="0"/>
@@ -8409,10 +8858,10 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="0" covered="16"/>
+<counter type="INSTRUCTION" missed="0" covered="42"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="0" covered="2"/>
-<counter type="METHOD" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="5"/>
+<counter type="METHOD" missed="0" covered="4"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/util/fake/NotesUpdaterProvider$provide$1" sourcefilename="NotesUpdaterProvider.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
@@ -8423,6 +8872,28 @@
 <counter type="INSTRUCTION" missed="5" covered="26"/>
 <counter type="BRANCH" missed="1" covered="1"/>
 <counter type="LINE" missed="1" covered="4"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/util/fake/NotesUpdaterProvider$provideFailingUpdater$1" sourcefilename="NotesUpdaterProvider.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/store5/util/fake/NotesUpdaterProvider$provideUpdaterThatFailsOnlyOnce$1" sourcefilename="NotesUpdaterProvider.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="5"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/util/fake/NotesValidator" sourcefilename="NotesValidator.kt">
@@ -8449,9 +8920,19 @@
 <line nr="12" mi="0" ci="3" mb="1" cb="1"/>
 <line nr="13" mi="0" ci="6" mb="0" cb="0"/>
 <line nr="15" mi="5" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="5" covered="42"/>
-<counter type="BRANCH" missed="1" covered="1"/>
-<counter type="LINE" missed="1" covered="6"/>
+<line nr="20" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="21" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="22" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="27" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="28" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="29" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="30" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="31" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="32" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="34" mi="0" ci="14" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="5" covered="114"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="1" covered="16"/>
 </sourcefile>
 <sourcefile name="NotesConverterProvider.kt">
 <line nr="9" mi="0" ci="2" mb="0" cb="0"/>
@@ -8637,11 +9118,11 @@
 <counter type="BRANCH" missed="6" covered="2"/>
 <counter type="LINE" missed="12" covered="9"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="284" covered="660"/>
-<counter type="BRANCH" missed="30" covered="24"/>
-<counter type="LINE" missed="61" covered="85"/>
-<counter type="METHOD" missed="18" covered="39"/>
-<counter type="CLASS" missed="1" covered="16"/>
+<counter type="INSTRUCTION" missed="284" covered="732"/>
+<counter type="BRANCH" missed="30" covered="26"/>
+<counter type="LINE" missed="61" covered="95"/>
+<counter type="METHOD" missed="18" covered="43"/>
+<counter type="CLASS" missed="1" covered="18"/>
 </package>
 <package name="org/mobilenativefoundation/store/store5/impl/result">
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult" sourcefilename="EagerConflictResolutionResult.kt">
@@ -8657,25 +9138,25 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult$Error" sourcefilename="EagerConflictResolutionResult.kt">
 <method name="&lt;init&gt;" desc="()V">
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult$Error$Exception" sourcefilename="EagerConflictResolutionResult.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/Throwable;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult$Error$Message" sourcefilename="EagerConflictResolutionResult.kt">
 <method name="&lt;init&gt;" desc="(Ljava/lang/String;)V">
@@ -8701,14 +9182,14 @@
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult$Success$ConflictsResolved" sourcefilename="EagerConflictResolutionResult.kt">
 <method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/store5/UpdaterResult$Success;)V">
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-<counter type="METHOD" missed="1" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/result/EagerConflictResolutionResult$Success$NoConflicts" sourcefilename="EagerConflictResolutionResult.kt">
 <method name="&lt;init&gt;" desc="()V">
@@ -8780,13 +9261,13 @@
 <line nr="5" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="7" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="8" mi="0" ci="3" mb="0" cb="0"/>
-<line nr="9" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="12" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="9" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="12" mi="0" ci="3" mb="0" cb="0"/>
 <line nr="13" mi="8" ci="0" mb="0" cb="0"/>
-<line nr="14" mi="8" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="27" covered="8"/>
+<line nr="14" mi="0" ci="8" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="8" covered="27"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="4" covered="3"/>
+<counter type="LINE" missed="1" covered="6"/>
 </sourcefile>
 <sourcefile name="StoreDelegateWriteResult.kt">
 <line nr="3" mi="0" ci="2" mb="0" cb="0"/>
@@ -8798,11 +9279,11 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="3" covered="2"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="46" covered="13"/>
+<counter type="INSTRUCTION" missed="27" covered="32"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="7" covered="5"/>
-<counter type="METHOD" missed="7" covered="5"/>
-<counter type="CLASS" missed="7" covered="5"/>
+<counter type="LINE" missed="4" covered="8"/>
+<counter type="METHOD" missed="4" covered="8"/>
+<counter type="CLASS" missed="4" covered="8"/>
 </package>
 <package name="org/mobilenativefoundation/store/store5/impl/operators">
 <class name="org/mobilenativefoundation/store/store5/impl/operators/Either" sourcefilename="FlowMerge.kt">
@@ -9945,10 +10426,15 @@
 <counter type="METHOD" missed="0" covered="3"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/concurrent/RealThreadSafetyController" sourcefilename="RealThreadSafetyController.kt">
+<method name="getCounter" desc="()I">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
 <method name="withThreadSafety" desc="(Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
-<counter type="INSTRUCTION" missed="9" covered="62"/>
-<counter type="BRANCH" missed="2" covered="2"/>
-<counter type="LINE" missed="0" covered="6"/>
+<counter type="INSTRUCTION" missed="35" covered="97"/>
+<counter type="BRANCH" missed="3" covered="3"/>
+<counter type="LINE" missed="5" covered="12"/>
 </method>
 <method name="safeInit" desc="(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="46"/>
@@ -9960,10 +10446,10 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="3"/>
 </method>
-<counter type="INSTRUCTION" missed="9" covered="122"/>
-<counter type="BRANCH" missed="2" covered="4"/>
-<counter type="LINE" missed="0" covered="13"/>
-<counter type="METHOD" missed="0" covered="3"/>
+<counter type="INSTRUCTION" missed="40" covered="157"/>
+<counter type="BRANCH" missed="3" covered="5"/>
+<counter type="LINE" missed="6" covered="19"/>
+<counter type="METHOD" missed="1" covered="3"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/concurrent/StoreThreadSafety" sourcefilename="ThreadSafety.kt">
 <method name="&lt;init&gt;" desc="(Lkotlinx/coroutines/sync/Mutex;Lorg/mobilenativefoundation/store/store5/impl/concurrent/Lightswitch;)V">
@@ -10011,19 +10497,31 @@
 <line nr="6" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="8" mi="0" ci="6" mb="0" cb="0"/>
 <line nr="9" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="11" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="15" mi="0" ci="22" mb="1" cb="1"/>
-<line nr="16" mi="9" ci="9" mb="1" cb="1"/>
-<line nr="17" mi="0" ci="19" mb="0" cb="0"/>
-<line nr="18" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="19" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="22" mi="0" ci="27" mb="0" cb="0"/>
-<line nr="23" mi="0" ci="5" mb="0" cb="2"/>
-<line nr="24" mi="0" ci="12" mb="0" cb="0"/>
-<line nr="26" mi="0" ci="2" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="9" covered="122"/>
-<counter type="BRANCH" missed="2" covered="4"/>
-<counter type="LINE" missed="0" covered="13"/>
+<line nr="10" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="12" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="15" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="16" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="17" mi="0" ci="15" mb="0" cb="0"/>
+<line nr="18" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="19" mi="9" ci="8" mb="1" cb="1"/>
+<line nr="20" mi="0" ci="19" mb="0" cb="0"/>
+<line nr="21" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="22" mi="0" ci="16" mb="0" cb="0"/>
+<line nr="23" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="25" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="26" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="27" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="28" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="29" mi="12" ci="0" mb="0" cb="0"/>
+<line nr="30" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="32" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="35" mi="0" ci="27" mb="0" cb="0"/>
+<line nr="36" mi="0" ci="5" mb="0" cb="2"/>
+<line nr="37" mi="0" ci="12" mb="0" cb="0"/>
+<line nr="39" mi="0" ci="2" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="40" covered="157"/>
+<counter type="BRANCH" missed="3" covered="5"/>
+<counter type="LINE" missed="6" covered="19"/>
 </sourcefile>
 <sourcefile name="ThreadSafety.kt">
 <line nr="5" mi="0" ci="14" mb="0" cb="0"/>
@@ -10036,16 +10534,16 @@
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="6"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="18" covered="274"/>
-<counter type="BRANCH" missed="7" covered="9"/>
-<counter type="LINE" missed="0" covered="34"/>
-<counter type="METHOD" missed="0" covered="8"/>
+<counter type="INSTRUCTION" missed="49" covered="309"/>
+<counter type="BRANCH" missed="8" covered="10"/>
+<counter type="LINE" missed="6" covered="40"/>
+<counter type="METHOD" missed="1" covered="8"/>
 <counter type="CLASS" missed="0" covered="4"/>
 </package>
-<counter type="INSTRUCTION" missed="1923" covered="20157"/>
-<counter type="BRANCH" missed="294" covered="462"/>
-<counter type="LINE" missed="243" covered="2969"/>
-<counter type="METHOD" missed="99" covered="646"/>
-<counter type="CLASS" missed="54" covered="381"/>
+<counter type="INSTRUCTION" missed="1932" covered="21595"/>
+<counter type="BRANCH" missed="306" covered="506"/>
+<counter type="LINE" missed="231" covered="3135"/>
+<counter type="METHOD" missed="102" covered="677"/>
+<counter type="CLASS" missed="59" covered="405"/>
 </report>
 

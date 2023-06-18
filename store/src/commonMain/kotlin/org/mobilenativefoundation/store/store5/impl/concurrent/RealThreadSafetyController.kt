@@ -8,15 +8,29 @@ internal class RealThreadSafetyController<Key : Any, Output : Any> : ThreadSafet
     private val storeLock = Mutex()
     private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
 
+    var counter: Int = 0 // TODO(matt-ramotar)
+
     override suspend fun <Output> withThreadSafety(
         key: Key,
         block: suspend ThreadSafety.() -> Output
-    ): Output {
-        storeLock.lock()
+    ): Output = try {
+        val count = counter + 1
+        println("LOCKING for $key $count")
+        storeLock.tryLock()
         val threadSafety = requireNotNull(keyToThreadSafety[key])
         val output = threadSafety.block()
-        storeLock.unlock()
-        return output
+        if (storeLock.isLocked) {
+            println("UNLOCKED for $key $count")
+            storeLock.unlock()
+        }
+        counter++
+        output
+    } catch (error: Throwable) {
+        if (storeLock.isLocked) {
+            println("UNLOCKED for $key")
+            storeLock.unlock()
+        }
+        throw error
     }
 
     override suspend fun safeInit(key: Key) = storeLock.withLock {

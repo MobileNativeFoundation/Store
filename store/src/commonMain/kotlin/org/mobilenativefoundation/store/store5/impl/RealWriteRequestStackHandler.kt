@@ -52,13 +52,15 @@ internal class RealWriteRequestStackHandler<Key : Any, Output : Any>(
     private suspend fun <Result : Any> withWriteRequestStackLock(
         key: Key,
         block: suspend WriteRequestStack<Key, Output, *>.() -> Result
-    ): Result = threadSafetyController.withThreadSafety(key) {
-        writeRequests.lightswitch.lock(writeRequests.mutex)
-        val output = requireNotNull(keyToWriteRequestStack[key]) {
-            "There is no stack of write requests for key '$key'"
-        }.block()
-        writeRequests.lightswitch.unlock(writeRequests.mutex)
-        output
+    ): Result {
+        return threadSafetyController.withThreadSafety(key) {
+            writeRequests.lightswitch.lock(writeRequests.mutex)
+            val output1 = keyToWriteRequestStack[key]
+            val output = output1?.block()
+
+            writeRequests.lightswitch.unlock(writeRequests.mutex)
+            output ?: throw Exception()
+        }
     }
 
     /**
@@ -140,9 +142,6 @@ internal class RealWriteRequestStackHandler<Key : Any, Output : Any>(
     override suspend fun <Response : Any> getLatest(key: Key): StoreWriteRequest<Key, Output, Response> =
         threadSafetyController.withThreadSafety(key) {
             writeRequests.mutex.lock()
-            val stack = keyToWriteRequestStack[key]
-            val lastWriteRequest = stack?.last() as? StoreWriteRequest<Key, Output, Response>
-
             val writeRequest =
                 keyToWriteRequestStack[key]?.lastOrNull() as? StoreWriteRequest<Key, Output, Response>
                     ?: throw Exception("There is no stack for key '$key'")
