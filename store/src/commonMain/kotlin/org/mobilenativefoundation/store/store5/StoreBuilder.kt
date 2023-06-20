@@ -58,9 +58,9 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        fun <Key : Any, Input : Any, Output : Any> from(
+        fun <Key : Any, Input : Any> from(
             fetcher: Fetcher<Key, Input>,
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcher(fetcher = fetcher)
+        ): StoreBuilder<Key, Input> = storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].

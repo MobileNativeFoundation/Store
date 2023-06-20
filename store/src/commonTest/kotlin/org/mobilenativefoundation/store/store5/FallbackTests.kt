@@ -35,13 +35,13 @@ class FallbackTests {
             val fail = false
 
             val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
-            val secondaryApiFetcher = Fetcher.ofWithFallback<String, Page>(
+            val secondaryApiFetcher = Fetcher.withFallback(
                 secondaryApi.name,
                 hardcodedPagesFetcher
             ) { key -> secondaryApi.get(key) }
 
-            val store = StoreBuilder.from<String, Page, Page>(
-                fetcher = Fetcher.ofWithFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
+            val store = StoreBuilder.from(
+                fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
                 sourceOfTruth = SourceOfTruth.of(
                     nonFlowReader = { key -> pagesDatabase.get(key) },
                     writer = { key, page -> pagesDatabase.put(key, page) },
@@ -68,13 +68,13 @@ class FallbackTests {
             val fail = true
 
             val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
-            val secondaryApiFetcher = Fetcher.ofWithFallback<String, Page>(
+            val secondaryApiFetcher = Fetcher.withFallback(
                 secondaryApi.name,
                 hardcodedPagesFetcher
             ) { key -> secondaryApi.get(key) }
 
-            val store = StoreBuilder.from<String, Page, Page>(
-                fetcher = Fetcher.ofWithFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
+            val store = StoreBuilder.from(
+                fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
                 sourceOfTruth = SourceOfTruth.of(
                     nonFlowReader = { key -> pagesDatabase.get(key) },
                     writer = { key, page -> pagesDatabase.put(key, page) },
@@ -106,10 +106,10 @@ class FallbackTests {
 
             val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
             val throwingSecondaryApiFetcher =
-                Fetcher.ofWithFallback<String, Page>(secondaryApi.name, hardcodedPagesFetcher) { throw Exception() }
+                Fetcher.withFallback(secondaryApi.name, hardcodedPagesFetcher) { throw Exception() }
 
-            val store = StoreBuilder.from<String, Page, Page>(
-                fetcher = Fetcher.ofWithFallback(api.name, throwingSecondaryApiFetcher) { key ->
+            val store = StoreBuilder.from(
+                fetcher = Fetcher.withFallback(api.name, throwingSecondaryApiFetcher) { key ->
                     api.fetch(
                         key,
                         fail,

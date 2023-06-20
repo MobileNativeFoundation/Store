@@ -10,12 +10,11 @@ import org.mobilenativefoundation.store.store5.util.fake.NoteCollections
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
-import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.fake.NotesKey
+import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.model.InputNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.NoteData
-import org.mobilenativefoundation.store.store5.util.model.OutputNote
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

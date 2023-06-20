@@ -19,7 +19,7 @@ class FetcherResponseTests {
 
     @Test
     fun givenAFetcherThatThrowsAnExceptionInInvokeWhenStreamingThenTheExceptionsShouldNotBeCaught() = testScope.runTest {
-        val store = StoreBuilder.from<Int, Int, Int>(
+        val store = StoreBuilder.from(
             Fetcher.ofResult {
                 throw RuntimeException("don't catch me")
             }
@@ -35,7 +35,7 @@ class FetcherResponseTests {
     fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() {
         val exception = RuntimeException("first error")
         testScope.runTest {
-            val store = StoreBuilder.from<Int, String, String>(
+            val store = StoreBuilder.from(
                 fetcher = Fetcher.ofResultFlow { key: Int ->
                     flowOf(
                         FetcherResult.Error.Exception(exception),
@@ -61,7 +61,7 @@ class FetcherResponseTests {
     fun givenTransformerWhenRawValueThenUnwrappedValueReturnedAndValueIsCached() = testScope.runTest {
         val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
         val pipeline = StoreBuilder
-            .from<Int, Int, Int>(fetcher).buildWithTestScope()
+            .from(fetcher).buildWithTestScope()
 
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
@@ -98,7 +98,7 @@ class FetcherResponseTests {
                 }
             }
         }
-        val pipeline = StoreBuilder.from<Int, Int, Int>(fetcher)
+        val pipeline = StoreBuilder.from(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -141,7 +141,7 @@ class FetcherResponseTests {
             }
         }
         val pipeline = StoreBuilder
-            .from<Int, Int, Int>(fetcher)
+            .from(fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
@@ -182,7 +182,7 @@ class FetcherResponseTests {
             count - 1
         }
         val pipeline = StoreBuilder
-            .from<Int, Int, Int>(fetcher = fetcher)
+            .from(fetcher = fetcher)
             .buildWithTestScope()
 
         assertEmitsExactly(
