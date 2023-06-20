@@ -41,7 +41,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
 @Suppress("UNCHECKED_CAST")
 internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val delegate: SourceOfTruth<Key, Local, Output>,
-    private val converter: Converter<Network, Output, Local>? = null,
+    private val converter: Converter<Network, Local, Output>? = null,
 ) {
     /**
      * Each key has a barrier so that we can block reads while writing.

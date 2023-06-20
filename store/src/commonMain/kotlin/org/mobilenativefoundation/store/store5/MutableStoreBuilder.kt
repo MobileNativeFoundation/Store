@@ -3,7 +3,7 @@ package org.mobilenativefoundation.store.store5
 import kotlinx.coroutines.CoroutineScope
 import org.mobilenativefoundation.store.store5.impl.mutableStoreBuilderFromFetcherAndSourceOfTruth
 
-interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any> {
+interface MutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : Any> {
 
     fun <Response : Any> build(
         updater: Updater<Key, Output, Response>,
@@ -17,21 +17,21 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
      *
      *   @param scope - scope to use for sharing
      */
-    fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, Network, Output, Local>
+    fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, Network, Local, Output>
 
     /**
      * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
      *  or size based eviction
      *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
      */
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local>
+    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Local, Output>
 
     /**
      * by default a Store caches in memory with a default policy of max items = 100
      */
-    fun disableCache(): MutableStoreBuilder<Key, Network, Output, Local>
+    fun disableCache(): MutableStoreBuilder<Key, Network, Local, Output>
 
-    fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Output, Local>
+    fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network,Local, Output, >
 
     companion object {
         /**
@@ -40,11 +40,11 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : An
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
+        fun <Key : Any, Network : Any,Local : Any, Output : Any, > from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
-            converter: Converter<Network, Output, Local>
-        ): MutableStoreBuilder<Key, Network, Output, Local> =
+            converter: Converter<Network, Local, Output>
+        ): MutableStoreBuilder<Key, Network, Local, Output> =
             mutableStoreBuilderFromFetcherAndSourceOfTruth(
                 fetcher = fetcher, sourceOfTruth = sourceOfTruth,
                 converter = converter

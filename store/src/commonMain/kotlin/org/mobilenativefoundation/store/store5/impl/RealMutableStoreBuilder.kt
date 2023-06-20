@@ -18,55 +18,50 @@ import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
 //we don't have a source of truth and can use a dummy converter
-fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcher(
+fun <Key : Any, Network : Any, Local : Any, Output : Any> mutableStoreBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
-): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, converter = object :
-    Converter<Network, Output, Local> {
-    override fun fromOutputToLocal(output: Output): Local =
-        throw IllegalStateException("Writing to local is not supported, please use MutableStore instead")
+    converter: Converter<Network, Local, Output>
+): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, converter = converter)
 
-    override fun fromNetworkToLocal(network: Network): Local = network as Local
-})
-
-fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherAndSourceOfTruth(
+fun <Key : Any, Network : Any, Local : Any, Output : Any> mutableStoreBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>,
-    converter: Converter<Network, Output, Local>
-): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth, converter = converter)
+    converter: Converter<Network, Local, Output>
+): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, sourceOfTruth, converter = converter)
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>,
     memoryCache: Cache<Key, Output>,
-    converter: Converter<Network, Output, Local>,
-): MutableStoreBuilder<Key, Network, Output, Local> = RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache, converter = converter)
+    converter: Converter<Network, Local,Output>,
+): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache, converter = converter)
 
-internal class RealMutableStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
+internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
     private val memoryCache: Cache<Key, Output>? = null,
-    private val converter: Converter<Network, Output, Local>
-) : MutableStoreBuilder<Key, Network, Output, Local> {
+    private val converter: Converter<Network, Local, Output>
+) : MutableStoreBuilder<Key, Network, Local, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var validator: Validator<Output>? = null
 
-    override fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, Network, Local, Output> {
         this.scope = scope
         return this
     }
 
-    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): MutableStoreBuilder<Key, Network, Local, Output> {
         cachePolicy = memoryPolicy
         return this
     }
 
-    override fun disableCache(): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun disableCache(): MutableStoreBuilder<Key, Network, Local, Output> {
         cachePolicy = null
         return this
     }
 
-    override fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Local, Output> {
         this.validator = validator
         return this
     }

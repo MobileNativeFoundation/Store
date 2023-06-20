@@ -33,14 +33,14 @@ fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTrut
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
     memoryCache: Cache<Key, Output>,
 ): StoreBuilder<Key, Output> =
-    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
+    RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
     private val memoryCache: Cache<Key, Output>? = null,
-    private val converter: Converter<Network, Output, Local> = object :
-        Converter<Network, Output, Local> {
+    private val converter: Converter<Network, Local, Output> = object :
+        Converter<Network, Local, Output> {
         override fun fromOutputToLocal(output: Output): Local =
             throw IllegalStateException("Writing to local is not supported, please use MutableStore instead")
 
@@ -101,10 +101,10 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         }
     )
 
-    override fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Output, Local>): MutableStoreBuilder<Key, Network, Output, Local> {
+    override fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Local, Output>): MutableStoreBuilder<Key, Network, Local, Output> {
         fetcher as Fetcher<Key, Network>
         return if (sourceOfTruth == null && memoryCache == null) {
-            mutableStoreBuilderFromFetcher(fetcher)
+            mutableStoreBuilderFromFetcher(fetcher, converter)
         } else if (memoryCache == null) {
             mutableStoreBuilderFromFetcherAndSourceOfTruth(
                 fetcher,

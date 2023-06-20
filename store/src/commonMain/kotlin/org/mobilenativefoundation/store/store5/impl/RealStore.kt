@@ -44,7 +44,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
-    private val converter: Converter<Network, Output, Local>,
+    private val converter: Converter<Network, Local, Output>,
     private val validator: Validator<Output>?,
     private val memCache: Cache<Key, Output>?
 ) : Store<Key, Output> {

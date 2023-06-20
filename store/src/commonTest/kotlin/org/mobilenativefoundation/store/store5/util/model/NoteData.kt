@@ -18,12 +18,12 @@ internal data class NetworkNote(
     val ttl: Long? = null,
 )
 
-internal data class CommonNote(
+internal data class InputNote(
     val data: NoteData? = null,
     val ttl: Long? = null,
 )
 
-internal data class SOTNote(
+internal data class OutputNote(
     val data: NoteData? = null,
     val ttl: Long
 )
