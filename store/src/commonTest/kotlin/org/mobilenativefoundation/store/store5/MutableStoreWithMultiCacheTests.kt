@@ -36,10 +36,11 @@ class MutableStoreWithMultiCacheTests {
         val memoryCache =
             NotesMemoryCache(MultiCache(CacheBuilder()))
 
-        val converter: Converter<NetworkNote, NetworkNote, NoteData> = Converter.Builder<NetworkNote, NetworkNote, NoteData>()
-            .fromNetworkToLocal { network: NetworkNote -> network }
-            .fromOutputToLocal { output: NoteData -> NetworkNote(output, Long.MAX_VALUE) }
-            .build()
+        val converter: Converter<NetworkNote, NetworkNote, NoteData> =
+            Converter.Builder<NetworkNote, NetworkNote, NoteData>()
+                .fromNetworkToLocal { network: NetworkNote -> network }
+                .fromOutputToLocal { output: NoteData -> NetworkNote(output, Long.MAX_VALUE) }
+                .build()
         val store = StoreBuilder.from(
             fetcher = Fetcher.of { key -> api.get(key) },
             sourceOfTruth = SourceOfTruth.of(
@@ -52,10 +53,10 @@ class MutableStoreWithMultiCacheTests {
         ).toMutableStoreBuilder(
             converter
         ).build(
-                updater = Updater.by(
-                    post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }
-                )
+            updater = Updater.by(
+                post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }
             )
+        )
 
         val freshRequest =
             StoreReadRequest.fresh(NotesKey.Collection(NoteCollections.Keys.OneAndTwo))

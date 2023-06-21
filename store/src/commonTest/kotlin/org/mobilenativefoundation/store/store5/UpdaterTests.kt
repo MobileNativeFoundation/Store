@@ -241,7 +241,7 @@ class UpdaterTests {
                 delete = { key -> notes.clear(key) },
                 deleteAll = { notes.clear() }
             ),
-             converter
+            converter
         )
 
             .validator(validator)

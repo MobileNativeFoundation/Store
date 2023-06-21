@@ -21,20 +21,23 @@ import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 fun <Key : Any, Network : Any, Local : Any, Output : Any> mutableStoreBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
     converter: Converter<Network, Local, Output>
-): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, converter = converter)
+): MutableStoreBuilder<Key, Network, Local, Output> =
+    RealMutableStoreBuilder(fetcher, converter = converter)
 
 fun <Key : Any, Network : Any, Local : Any, Output : Any> mutableStoreBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>,
     converter: Converter<Network, Local, Output>
-): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, sourceOfTruth, converter = converter)
+): MutableStoreBuilder<Key, Network, Local, Output> =
+    RealMutableStoreBuilder(fetcher, sourceOfTruth, converter = converter)
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>,
     memoryCache: Cache<Key, Output>,
-    converter: Converter<Network, Local,Output>,
-): MutableStoreBuilder<Key, Network, Local, Output> = RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache, converter = converter)
+    converter: Converter<Network, Local, Output>,
+): MutableStoreBuilder<Key, Network, Local, Output> =
+    RealMutableStoreBuilder(fetcher, sourceOfTruth, memoryCache, converter = converter)
 
 internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : Any>(
     private val fetcher: Fetcher<Key, Network>,
@@ -85,7 +88,12 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Ou
                 }
 
                 if (cachePolicy!!.hasMaxWeight) {
-                    weigher(cachePolicy!!.maxWeight) { key, value -> cachePolicy!!.weigher.weigh(key, value) }
+                    weigher(cachePolicy!!.maxWeight) { key, value ->
+                        cachePolicy!!.weigher.weigh(
+                            key,
+                            value
+                        )
+                    }
                 }
             }.build()
         }
