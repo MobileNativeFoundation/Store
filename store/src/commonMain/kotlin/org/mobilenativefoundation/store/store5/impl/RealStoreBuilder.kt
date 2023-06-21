@@ -42,7 +42,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     private val converter: Converter<Network, Local, Output> = object :
         Converter<Network, Local, Output> {
         override fun fromOutputToLocal(output: Output): Local =
-            throw IllegalStateException("Writing to local is not supported, please use MutableStore instead")
+            throw IllegalStateException("non mutable store never call this function")
 
         override fun fromNetworkToLocal(network: Network): Local = network as Local
     }

@@ -56,14 +56,15 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
      */
     private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
 
-    private val converter: Converter<Network, Local, Output> = object : Converter<Network, Local, Output> {
+    private val converter: Converter<Network, Local, Output> = object :
+        Converter<Network, Local, Output> {
 
         override fun fromNetworkToLocal(network: Network): Local {
-              return network as Local
+            return network as Local
         }
 
         override fun fromOutputToLocal(output: Output): Local {
-           return output as Local
+            throw IllegalStateException("Not used")
         }
     }
 ) {
