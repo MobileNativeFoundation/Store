@@ -31,7 +31,7 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : An
      */
     fun disableCache(): MutableStoreBuilder<Key, Network, Local, Output>
 
-    fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network,Local, Output, >
+    fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Local, Output, >
 
     companion object {
         /**
@@ -40,7 +40,7 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : An
          * @param fetcher a function for fetching a flow of network records.
          * @param sourceOfTruth a [SourceOfTruth] for the store.
          */
-        fun <Key : Any, Network : Any,Local : Any, Output : Any, > from(
+        fun <Key : Any, Network : Any, Local : Any, Output : Any,> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
             converter: Converter<Network, Local, Output>

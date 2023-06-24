@@ -17,7 +17,7 @@ import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 
-//we don't have a source of truth and can use a dummy converter
+// we don't have a source of truth and can use a dummy converter
 fun <Key : Any, Network : Any, Local : Any, Output : Any> mutableStoreBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
     converter: Converter<Network, Local, Output>
