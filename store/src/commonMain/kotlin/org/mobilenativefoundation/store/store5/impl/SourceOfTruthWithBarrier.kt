@@ -142,7 +142,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
-                val writeError = try {
+            val writeError = try {
                 delegate.write(key, value)
                 null
             } catch (throwable: Throwable) {
