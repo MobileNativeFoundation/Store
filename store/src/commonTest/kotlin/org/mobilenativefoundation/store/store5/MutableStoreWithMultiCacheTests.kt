@@ -20,6 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
+@OptIn(ExperimentalStoreApi::class)
 class MutableStoreWithMultiCacheTests {
     private val testScope = TestScope()
     private lateinit var api: NotesApi
