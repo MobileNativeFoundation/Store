@@ -27,6 +27,7 @@ import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
 import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
 
+@ExperimentalStoreApi
 internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val updater: Updater<Key, Output, *>,

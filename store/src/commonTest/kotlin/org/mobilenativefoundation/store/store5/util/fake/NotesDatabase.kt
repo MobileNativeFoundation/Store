@@ -1,19 +1,20 @@
 package org.mobilenativefoundation.store.store5.util.fake
 
-import org.mobilenativefoundation.store.store5.util.model.SOTNote
+import org.mobilenativefoundation.store.store5.util.model.InputNote
+import org.mobilenativefoundation.store.store5.util.model.OutputNote
 
 internal class NotesDatabase {
-    private val db: MutableMap<NotesKey, SOTNote?> = mutableMapOf()
-    fun put(key: NotesKey, input: SOTNote, fail: Boolean = false): Boolean {
+    private val db: MutableMap<NotesKey, OutputNote?> = mutableMapOf()
+    fun put(key: NotesKey, input: InputNote, fail: Boolean = false): Boolean {
         if (fail) {
             throw Exception()
         }
 
-        db[key] = input
+        db[key] = OutputNote(input.data, input.ttl ?: 0)
         return true
     }
 
-    fun get(key: NotesKey, fail: Boolean = false): SOTNote? {
+    fun get(key: NotesKey, fail: Boolean = false): OutputNote? {
         if (fail) {
             throw Exception()
         }

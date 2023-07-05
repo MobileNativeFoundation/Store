@@ -42,7 +42,7 @@ import kotlin.test.assertNull
 class SourceOfTruthWithBarrierTests {
     private val testScope = TestScope()
     private val persister = InMemoryPersister<Int, String>()
-    private val delegate: SourceOfTruth<Int, String> =
+    private val delegate: SourceOfTruth<Int, String, String> =
         PersistentSourceOfTruth(
             realReader = { key ->
                 flow {

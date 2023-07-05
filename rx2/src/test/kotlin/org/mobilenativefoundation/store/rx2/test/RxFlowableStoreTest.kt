@@ -44,7 +44,7 @@ class RxFlowableStoreTest {
                 BackpressureStrategy.BUFFER
             )
         },
-        sourceOfTruth = SourceOfTruth.ofFlowable<Int, String>(
+        sourceOfTruth = SourceOfTruth.ofFlowable<Int, String, String>(
             reader = {
                 if (fakeDisk[it] != null)
                     Flowable.fromCallable { fakeDisk[it]!! }
