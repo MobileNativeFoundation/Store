@@ -14,19 +14,17 @@ plugins {
 }
 
 dependencies {
-    implementation(Deps.Kotlinx.coroutinesRx2)
-    implementation(Deps.Kotlinx.coroutinesCore)
-    implementation(Deps.Kotlinx.coroutinesAndroid)
-    implementation(Deps.Rx.rx2)
+    implementation(libs.kotlinx.coroutines.rx2)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.rxjava)
     implementation(project(":store"))
 
     testImplementation(kotlin("test"))
-    with(Deps.Test) {
-        testImplementation(junit)
-        testImplementation(core)
-        testImplementation(coroutinesTest)
-        testImplementation(truth)
-    }
+    testImplementation(libs.junit)
+    testImplementation(libs.google.truth)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 android {

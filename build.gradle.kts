@@ -11,18 +11,15 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:${Version.androidGradlePlugin}")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.baseKotlin}")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:${Version.baseKotlin}")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Version.dokkaGradlePlugin}")
-        classpath("org.jlleitschuh.gradle:ktlint-gradle:${Version.ktlintGradle}")
-        classpath("com.diffplug.spotless:spotless-plugin-gradle:${Version.spotlessPluginGradle}")
-        classpath("org.jacoco:org.jacoco.core:${Version.jacocoGradlePlugin}")
-        classpath("com.vanniktech:gradle-maven-publish-plugin:${Version.mavenPublishPlugin}")
-        classpath("org.jetbrains.kotlinx:kover:${Version.kover}")
-        classpath("com.squareup.anvil:gradle-plugin:${Version.anvilGradlePlugin}")
-        classpath("com.squareup.sqldelight:gradle-plugin:${Version.sqlDelightGradlePlugin}")
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Version.atomicFu}")
+        classpath(libs.android.gradle.plugin)
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.kotlin.serialization.plugin)
+        classpath(libs.dokka.gradle.plugin)
+        classpath(libs.ktlint.gradle.plugin)
+        classpath(libs.jacoco.gradle.plugin)
+        classpath(libs.maven.publish.plugin)
+        classpath(libs.kover.plugin)
+        classpath(libs.atomic.fu.gradle.plugin)
     }
 }
 
