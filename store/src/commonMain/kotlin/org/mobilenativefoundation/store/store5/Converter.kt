@@ -1,47 +1,45 @@
 package org.mobilenativefoundation.store.store5
 
-interface Converter<Network : Any, Output : Any, Local : Any> {
-    fun fromNetworkToOutput(network: Network): Output?
-    fun fromOutputToLocal(output: Output): Local?
-    fun fromLocalToOutput(local: Local): Output?
+/**
+ * Converter is a utility interface that can be used to convert a network or output model to a local model.
+ * Network to Local conversion is needed when the network model is different what you are saving in
+ * your Source of Truth.
+ * Output to Local conversion is needed when you are doing local writes in a MutableStore
+ * @param Network The network data source model type. This is the type used in [Fetcher]
+ * @param Output The common model type emitted from Store, typically the type returend from your Source of Truth
+ * @param Local The local data source model type. This is the type used to save to your Source of Truth
+ */
+interface Converter<Network : Any, Local : Any, Output : Any> {
+    fun fromNetworkToLocal(network: Network): Local
+    fun fromOutputToLocal(output: Output): Local
 
-    class Builder<Network : Any, Output : Any, Local : Any> {
+    class Builder<Network : Any, Local : Any, Output : Any> {
 
-        private var fromOutputToLocal: ((output: Output) -> Local)? = null
-        private var fromNetworkToOutput: ((network: Network) -> Output)? = null
-        private var fromLocalToOutput: ((local: Local) -> Output)? = null
+        lateinit var fromOutputToLocal: ((output: Output) -> Local)
+        lateinit var fromNetworkToLocal: ((network: Network) -> Local)
 
-        fun build(): Converter<Network, Output, Local> =
-            RealConverter(fromOutputToLocal, fromNetworkToOutput, fromLocalToOutput)
+        fun build(): Converter<Network, Local, Output> =
+            RealConverter(fromOutputToLocal, fromNetworkToLocal)
 
-        fun fromOutputToLocal(converter: (output: Output) -> Local): Builder<Network, Output, Local> {
+        fun fromOutputToLocal(converter: (output: Output) -> Local): Builder<Network, Local, Output> {
             fromOutputToLocal = converter
             return this
         }
 
-        fun fromLocalToOutput(converter: (local: Local) -> Output): Builder<Network, Output, Local> {
-            fromLocalToOutput = converter
-            return this
-        }
-
-        fun fromNetworkToOutput(converter: (network: Network) -> Output): Builder<Network, Output, Local> {
-            fromNetworkToOutput = converter
+        fun fromNetworkToLocal(converter: (network: Network) -> Local): Builder<Network, Local, Output> {
+            fromNetworkToLocal = converter
             return this
         }
     }
 }
 
-private class RealConverter<Network : Any, Output : Any, Local : Any>(
-    private val fromOutputToLocal: ((output: Output) -> Local)?,
-    private val fromNetworkToOutput: ((network: Network) -> Output)?,
-    private val fromLocalToOutput: ((local: Local) -> Output)?,
-) : Converter<Network, Output, Local> {
-    override fun fromNetworkToOutput(network: Network): Output? =
-        fromNetworkToOutput?.invoke(network)
+private class RealConverter<Network : Any, Local : Any, Output : Any>(
+    private val fromOutputToLocal: ((output: Output) -> Local),
+    private val fromNetworkToLocal: ((network: Network) -> Local),
+) : Converter<Network, Local, Output> {
+    override fun fromNetworkToLocal(network: Network): Local =
+        fromNetworkToLocal.invoke(network)
 
-    override fun fromOutputToLocal(output: Output): Local? =
-        fromOutputToLocal?.invoke(output)
-
-    override fun fromLocalToOutput(local: Local): Output? =
-        fromLocalToOutput?.invoke(local)
+    override fun fromOutputToLocal(output: Output): Local =
+        fromOutputToLocal.invoke(output)
 }

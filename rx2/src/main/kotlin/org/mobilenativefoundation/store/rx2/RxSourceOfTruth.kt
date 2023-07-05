@@ -19,12 +19,12 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Local : Any> SourceOfTruth.Companion.ofMaybe(
-        reader: (Key) -> Maybe<Local>,
-        writer: (Key, Local) -> Completable,
-        delete: ((Key) -> Completable)? = null,
-        deleteAll: (() -> Completable)? = null
-): SourceOfTruth<Key, Local> {
+fun <Key : Any, Local : Any, Output:Any> SourceOfTruth.Companion.ofMaybe(
+    reader: (Key) -> Maybe<Output>,
+    writer: (Key, Local) -> Completable,
+    delete: ((Key) -> Completable)? = null,
+    deleteAll: (() -> Completable)? = null
+): SourceOfTruth<Key, Local, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
             if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
@@ -46,12 +46,12 @@ fun <Key : Any, Local : Any> SourceOfTruth.Companion.ofMaybe(
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Local : Any> SourceOfTruth.Companion.ofFlowable(
-        reader: (Key) -> Flowable<Local>,
+fun <Key : Any, Local : Any, Output:Any> SourceOfTruth.Companion.ofFlowable(
+        reader: (Key) -> Flowable<Output>,
         writer: (Key, Local) -> Completable,
         delete: ((Key) -> Completable)? = null,
         deleteAll: (() -> Completable)? = null
-): SourceOfTruth<Key, Local> {
+): SourceOfTruth<Key, Local, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
             if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }

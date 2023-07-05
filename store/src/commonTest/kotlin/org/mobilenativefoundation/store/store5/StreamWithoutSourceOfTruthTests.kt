@@ -24,7 +24,7 @@ class StreamWithoutSourceOfTruthTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from<Int, String, String>(fetcher)
+        val pipeline = StoreBuilder.from(fetcher)
             .scope(testScope)
             .build()
         val twoItemsNoRefresh = async {
@@ -70,7 +70,7 @@ class StreamWithoutSourceOfTruthTests {
             3 to "three-1",
             3 to "three-2"
         )
-        val pipeline = StoreBuilder.from<Int, String, String>(fetcher)
+        val pipeline = StoreBuilder.from(fetcher)
             .scope(testScope)
             .disableCache()
             .build()

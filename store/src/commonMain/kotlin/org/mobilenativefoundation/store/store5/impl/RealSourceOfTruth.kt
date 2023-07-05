@@ -19,14 +19,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 
-internal class PersistentSourceOfTruth<Key : Any, Local : Any>(
-    private val realReader: (Key) -> Flow<Local?>,
+internal class PersistentSourceOfTruth<Key : Any, Local : Any, Output : Any>(
+    private val realReader: (Key) -> Flow<Output?>,
     private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)? = null
-) : SourceOfTruth<Key, Local> {
+) : SourceOfTruth<Key, Local, Output> {
 
-    override fun reader(key: Key): Flow<Local?> = realReader.invoke(key)
+    override fun reader(key: Key): Flow<Output?> = realReader.invoke(key)
 
     override suspend fun write(key: Key, value: Local) = realWriter(key, value)
 
@@ -39,14 +39,14 @@ internal class PersistentSourceOfTruth<Key : Any, Local : Any>(
     }
 }
 
-internal class PersistentNonFlowingSourceOfTruth<Key : Any, Local : Any>(
-    private val realReader: suspend (Key) -> Local?,
+internal class PersistentNonFlowingSourceOfTruth<Key : Any, Local : Any, Output : Any>(
+    private val realReader: suspend (Key) -> Output?,
     private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
     private val realDeleteAll: (suspend () -> Unit)?
-) : SourceOfTruth<Key, Local> {
+) : SourceOfTruth<Key, Local, Output> {
 
-    override fun reader(key: Key): Flow<Local?> =
+    override fun reader(key: Key): Flow<Output?> =
         flow {
             val sot = realReader(key)
             emit(sot)

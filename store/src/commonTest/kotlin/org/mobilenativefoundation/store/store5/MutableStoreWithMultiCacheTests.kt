@@ -10,17 +10,17 @@ import org.mobilenativefoundation.store.store5.util.fake.NoteCollections
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesDatabase
-import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
 import org.mobilenativefoundation.store.store5.util.fake.NotesKey
+import org.mobilenativefoundation.store.store5.util.fake.NotesMemoryCache
+import org.mobilenativefoundation.store.store5.util.model.InputNote
 import org.mobilenativefoundation.store.store5.util.model.NetworkNote
-import org.mobilenativefoundation.store.store5.util.model.Note
 import org.mobilenativefoundation.store.store5.util.model.NoteData
-import org.mobilenativefoundation.store.store5.util.model.SOTNote
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
+@OptIn(ExperimentalStoreApi::class)
 class MutableStoreWithMultiCacheTests {
     private val testScope = TestScope()
     private lateinit var api: NotesApi
@@ -34,31 +34,33 @@ class MutableStoreWithMultiCacheTests {
 
     @Test
     fun givenEmptyStoreWhenListFromFetcherThenListIsDecomposed() = testScope.runTest {
-        val memoryCache = NotesMemoryCache(MultiCache<String, Note>(CacheBuilder()))
+        val memoryCache =
+            NotesMemoryCache(MultiCache(CacheBuilder()))
 
-        val store = StoreBuilder.from<NotesKey, NetworkNote, NoteData, SOTNote>(
-            fetcher = Fetcher.of<NotesKey, NetworkNote> { key -> api.get(key) },
-            sourceOfTruth = SourceOfTruth.of<NotesKey, SOTNote>(
-                nonFlowReader = { key -> database.get(key) },
-                writer = { key, note -> database.put(key, note) },
+        val converter: Converter<NetworkNote, NetworkNote, NoteData> =
+            Converter.Builder<NetworkNote, NetworkNote, NoteData>()
+                .fromNetworkToLocal { network: NetworkNote -> network }
+                .fromOutputToLocal { output: NoteData -> NetworkNote(output, Long.MAX_VALUE) }
+                .build()
+        val store = StoreBuilder.from(
+            fetcher = Fetcher.of { key -> api.get(key) },
+            sourceOfTruth = SourceOfTruth.of(
+                nonFlowReader = { key -> database.get(key)!!.data },
+                writer = { key, note -> database.put(key, InputNote(note.data, Long.MAX_VALUE)) },
                 delete = null,
                 deleteAll = null
             ),
             memoryCache = memoryCache
-        ).toMutableStoreBuilder<NetworkNote, SOTNote>()
-            .converter(
-                Converter.Builder<NetworkNote, NoteData, SOTNote>()
-                    .fromLocalToOutput { local -> local.data!! }
-                    .fromNetworkToOutput { network -> network.data!! }
-                    .fromOutputToLocal { output -> SOTNote(output, Long.MAX_VALUE) }
-                    .build()
-            ).build(
-                updater = Updater.by(
-                    post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }
-                )
+        ).toMutableStoreBuilder(
+            converter
+        ).build(
+            updater = Updater.by(
+                post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }
             )
+        )
 
-        val freshRequest = StoreReadRequest.fresh(NotesKey.Collection(NoteCollections.Keys.OneAndTwo))
+        val freshRequest =
+            StoreReadRequest.fresh(NotesKey.Collection(NoteCollections.Keys.OneAndTwo))
 
         val freshStream = store.stream<UpdaterResult>(freshRequest)
 

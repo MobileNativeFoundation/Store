@@ -145,7 +145,7 @@ interface Fetcher<Key : Any, Network : Any> {
          * Use instead of [of] if implementing fallback mechanisms.
          * @param name Unique name to enable differentiation of fetchers
          */
-        fun <Key : Any, Network : Any> ofWithFallback(
+        fun <Key : Any, Network : Any> withFallback(
             name: String,
             fallback: Fetcher<Key, Network>,
             fetch: suspend (key: Key) -> Network
