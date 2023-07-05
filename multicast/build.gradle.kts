@@ -30,7 +30,7 @@ kotlin {
         summary = "Multicast5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
-        version = Version.store
+        version = libs.versions.store.get()
     }
 
     sourceSets {
@@ -43,10 +43,8 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                with(Deps.Kotlinx) {
-                    api(atomicFu)
-                    implementation(coroutinesCore)
-                }
+                api(libs.kotlinx.atomic.fu)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val jvmMain by getting

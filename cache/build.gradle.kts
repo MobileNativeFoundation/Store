@@ -30,7 +30,7 @@ kotlin {
         summary = "Cache5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
-        version = Version.store
+        version = libs.versions.store.get()
     }
 
     sourceSets {
@@ -43,9 +43,7 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                with(Deps.Kotlinx) {
-                    api(atomicFu)
-                }
+                api(libs.kotlinx.atomic.fu)
             }
         }
         val jvmMain by getting

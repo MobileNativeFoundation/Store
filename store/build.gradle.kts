@@ -10,7 +10,7 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version Version.kmmBridge
+    id("co.touchlab.faktory.kmmbridge") version("0.3.2")
     `maven-publish`
     kotlin("native.cocoapods")
     id("kotlinx-atomicfu")
@@ -35,7 +35,7 @@ kotlin {
         summary = "Store5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
-        version = Version.store
+        version = libs.versions.store.get()
     }
 
     sourceSets {
@@ -48,14 +48,12 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                with(Deps.Kotlinx) {
-                    implementation(stdLib)
-                    implementation(coroutinesCore)
-                    implementation(serializationCore)
-                    implementation(dateTime)
-                    api(atomicFu)
-                }
-                implementation(Deps.Touchlab.kermit)
+                implementation(libs.kotlin.stdlib)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.core)
+                implementation(libs.kotlinx.datetime)
+                api(libs.kotlinx.atomic.fu)
+                implementation(libs.touchlab.kermit)
                 implementation(project(":multicast"))
                 implementation(project(":cache"))
             }
@@ -65,11 +63,8 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("test"))
-                with(Deps.Test) {
-                    implementation(junit)
-                    implementation(core)
-                    implementation(coroutinesTest)
-                }
+                implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 

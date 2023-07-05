@@ -1,0 +1,48 @@
+[versions]
+androidMinSdk = "24"
+androidCompileSdk = "33"
+androidGradlePlugin = "7.4.2"
+androidTargetSdk = "33"
+atomicFu = "0.20.2"
+baseKotlin = "1.8.21"
+dokkaGradlePlugin = "1.6.0"
+ktlintGradle = "10.2.1"
+jacocoGradlePlugin = "0.8.7"
+mavenPublishPlugin = "0.22.0"
+spotlessPluginGradle = "6.4.1"
+junit = "4.13.2"
+kotlinxCoroutines = "1.7.1"
+kotlinxSerialization = "1.5.1"
+kermit = "1.2.2"
+testCore = "1.5.0"
+kmmBridge = "0.3.2"
+ktlint = "0.39.0"
+kover = "0.6.0"
+store = "5.0.0-beta01"
+truth = "1.1.3"
+
+[libraries]
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "baseKotlin" }
+kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "baseKotlin" }
+dokka-gradle-plugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokkaGradlePlugin" }
+ktlint-gradle-plugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlintGradle" }
+jacoco-gradle-plugin = { group = "org.jacoco", name = "org.jacoco.core", version.ref = "jacocoGradlePlugin" }
+maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "mavenPublishPlugin" }
+kover-plugin = { group = "org.jetbrains.kotlinx", name = "kover", version.ref = "kover" }
+atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
+
+kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }
+kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "kotlinxCoroutines" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.4.0" }
+rxjava = { group = "io.reactivex.rxjava2", name = "rxjava", version = "2.2.21" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "testCore" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
