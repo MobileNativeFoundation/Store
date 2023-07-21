@@ -2,16 +2,23 @@
 
 ## [Unreleased]
 
+## [5.0.0-beta02] (2023-07-21)
+
+* Fix breaking changes with Source of
+  Truth [#560](https://github.com/MobileNativeFoundation/Store/pull/560)
+
 ## [5.0.0-beta01] (2023-05-19)
 
-* Delegate memory cache implementation and provide a hybrid cache with automatic list decomposition as a separate
+* Delegate memory cache implementation and provide a hybrid cache with automatic list decomposition
+  as a separate
   artifact [#548](https://github.com/MobileNativeFoundation/Store/pull/548)
 
 ## [5.0.0-alpha06] (2023-05-08)
 
 * Separate MutableStoreBuilder from
   StoreBuilder [#542](https://github.com/MobileNativeFoundation/Store/commit/e050a15afc21c22ffea10a6a7d5f1b436ee34a6a)
-* Support Rx2 [#531](https://github.com/MobileNativeFoundation/Store/commit/7d73f08cc07294d00b176325af792b51874dfeff)
+* Support
+  Rx2 [#531](https://github.com/MobileNativeFoundation/Store/commit/7d73f08cc07294d00b176325af792b51874dfeff)
 * Introduce Fallback
   Mechanisms [#545](https://github.com/MobileNativeFoundation/Store/commit/d1e46a9d02703c798738bc5fb645344fefb90dd4)
 
@@ -260,7 +267,9 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-beta01...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-beta02...HEAD
+
+[5.0.0-beta02]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-beta02
 
 [5.0.0-beta01]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-beta01
 
