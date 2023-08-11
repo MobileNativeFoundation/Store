@@ -66,7 +66,6 @@ class UpdaterTests {
             ),
             converter = converter
         )
-
             .validator(validator)
             .build(
                 updater = updater,
@@ -78,16 +77,16 @@ class UpdaterTests {
         val stream = store.stream<NotesWriteResponse>(readRequest)
 
         // Read is success
+        val expected = listOf(
+            StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+            StoreReadResponse.Data(
+                OutputNote(NoteData.Single(Notes.One), ttl = ttl),
+                StoreReadResponseOrigin.Fetcher()
+            )
+        )
         assertEmitsExactly(
             stream,
-            listOf(
-                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data(
-                    OutputNote(NoteData.Single(Notes.One), ttl = ttl),
-                    StoreReadResponseOrigin.Fetcher
-                        ()
-                )
-            )
+            expected
         )
 
         val newNote = Notes.One.copy(title = "New Title-1")
@@ -173,7 +172,6 @@ class UpdaterTests {
                 ),
                 converter = converter
             )
-
                 .validator(validator)
                 .build(
                     updater = updater,
@@ -185,16 +183,16 @@ class UpdaterTests {
             val stream = store.stream<NotesWriteResponse>(readRequest)
 
             // Fetch is success and validator is not used
+            val expected = listOf(
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Data(
+                    OutputNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher()
+                )
+            )
             assertEmitsExactly(
                 stream,
-                listOf(
-                    StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Data(
-                        OutputNote(NoteData.Single(Notes.One), ttl = ttl),
-                        StoreReadResponseOrigin.Fetcher
-                            ()
-                    )
-                )
+                expected
             )
 
             val cachedReadRequest =
@@ -212,8 +210,7 @@ class UpdaterTests {
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher(name = null)),
                     StoreReadResponse.Data(
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
-                        StoreReadResponseOrigin.Fetcher
-                            ()
+                        StoreReadResponseOrigin.Fetcher()
                     )
                 )
             )
@@ -244,7 +241,6 @@ class UpdaterTests {
             ),
             converter
         )
-
             .validator(validator)
             .build(
                 updater = updater,
