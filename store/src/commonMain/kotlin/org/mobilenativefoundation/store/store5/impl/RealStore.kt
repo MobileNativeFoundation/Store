@@ -77,9 +77,10 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             val cachedToEmit = if (request.shouldSkipCache(CacheType.MEMORY)) {
                 null
             } else {
-                val output = memCache?.getIfPresent(request.key)
+                val output: Output? = memCache?.getIfPresent(request.key)
+                val isInvalid = output != null && validator?.isValid(output) == false
                 when {
-                    output == null || validator?.isValid(output) == false -> null
+                    output == null || isInvalid -> null
                     else -> output
                 }
             }
@@ -122,7 +123,12 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                         // Source of truth
                         // (future Source of truth updates)
                         memCache?.getIfPresent(request.key)?.let {
-                            emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                            emit(
+                                StoreReadResponse.Data(
+                                    value = it,
+                                    origin = StoreReadResponseOrigin.Cache
+                                )
+                            )
                         }
                     }
                 }
@@ -201,7 +207,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     val responseOrigin = it.value.origin as StoreReadResponseOrigin.Fetcher
                     requestKeyToFetcherName[request.key] = responseOrigin.name
 
-                    val fallBackToSourceOfTruth = it.value is StoreReadResponse.Error && request.fallBackToSourceOfTruth
+                    val fallBackToSourceOfTruth =
+                        it.value is StoreReadResponse.Error && request.fallBackToSourceOfTruth
 
                     if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || fallBackToSourceOfTruth) {
                         // Unlocking disk only if network sent data or reported no new data
@@ -230,8 +237,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             }
 
                             val diskValue = diskData.value
-                            val isValid = diskValue?.let { it1 -> validator?.isValid(it1) } == true
-                            if (diskValue != null) {
+                            val isValid = (validator == null && diskValue != null) ||
+                                diskData.origin is StoreReadResponseOrigin.Fetcher ||
+                                (diskValue != null && validator?.isValid(diskValue) ?: true)
+
+                            if (isValid) {
                                 @Suppress("UNCHECKED_CAST")
                                 val output =
                                     diskData.copy(origin = responseOriginWithFetcherName) as StoreReadResponse<Output>
@@ -241,7 +251,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             // or refresh was requested
                             // or the  disk value is not valid
                             // then allow fetcher to start emitting values.
-                            if (request.refresh || diskData.value == null) {
+                            if (request.refresh || diskData.value == null || !isValid) {
                                 networkLock.complete(Unit)
                             }
                         }
@@ -295,7 +305,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         StoreDelegateWriteResult.Error.Exception(error)
     }
 
-    internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
+    internal suspend fun latestOrNull(key: Key): Output? =
+        fromMemCache(key) ?: fromSourceOfTruth(key)
+
     private suspend fun fromSourceOfTruth(key: Key) =
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
 
