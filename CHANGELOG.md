@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [5.0.0-beta03] (2023-08-11)
+
+* Fix validator regression https://github.com/MobileNativeFoundation/Store/pull/573
+
 ## [5.0.0-beta02] (2023-07-21)
 
 * Fix breaking changes with Source of
