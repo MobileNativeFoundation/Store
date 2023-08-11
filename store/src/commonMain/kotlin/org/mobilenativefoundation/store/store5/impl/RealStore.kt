@@ -237,7 +237,10 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             }
 
                             val diskValue = diskData.value
-                            val isValid = validator == null || diskData.origin is StoreReadResponseOrigin.Fetcher || diskValue != null && validator.isValid(diskValue)
+                            val isValid =
+                                (validator == null && diskValue != null) || diskData.origin is StoreReadResponseOrigin.Fetcher || (diskValue != null && validator?.isValid(
+                                    diskValue
+                                ) ?: true)
 
                             if (isValid) {
                                 @Suppress("UNCHECKED_CAST")
