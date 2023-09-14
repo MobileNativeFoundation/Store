@@ -1,6 +1,16 @@
 # Changelog
 
-## [Unreleased]
+### Thank you to all our wonderful contributors and users
+
+## [5.0.0] (2023-09-14 ) 
+### Stable release of Store 5, major additions since Store 4 (no breaking changes)
+* MutableStore
+* Validator
+* Fallback Mechanism
+* KMP support
+* Conflict Resolution for store writes
+* Removal of experimental duration APIs
+* StoreResult.NoNewData
 
 ## [5.0.0-beta03] (2023-08-11)
 
