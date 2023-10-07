@@ -7,6 +7,7 @@
 
 <div align="center">
     <h4>Full documentation can be found on our <a href="https://mobilenativefoundation.github.io/Store/">website</a>!</h4>
+    <h4>Join our official Slack on <a href="https://kotlinlang.slack.com/archives/C06007Z01HU">kotlinlang</a>!</h4>
 </div>
 
 ### Concepts
