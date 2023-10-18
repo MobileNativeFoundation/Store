@@ -16,10 +16,8 @@ class FakePostApi : PostApi {
     override suspend fun get(postId: String): PostGetRequestResult {
         val post = posts[postId]
         return if (post != null) {
-            println("HITTING 2 :)")
             PostGetRequestResult.Data(post)
         } else {
-            println("HITTING 2 :(")
             PostGetRequestResult.Error.Message("Post $postId was not found")
         }
     }

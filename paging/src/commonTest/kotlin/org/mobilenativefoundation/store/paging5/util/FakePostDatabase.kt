@@ -16,7 +16,6 @@ class FakePostDatabase(private val userId: String) : PostDatabase {
 
         nextFeed?.let {
             feeds[userId] = PostData.Feed(nextFeed)
-            println("UPDATED FEED $it")
         }
     }
 
@@ -30,7 +29,6 @@ class FakePostDatabase(private val userId: String) : PostDatabase {
 
     override fun findFeedByUserId(cursor: String?, size: Int): PostData.Feed? {
         val feed = feeds[userId]
-        println("FEED RETURNING = $feed")
         return feed
 
     }

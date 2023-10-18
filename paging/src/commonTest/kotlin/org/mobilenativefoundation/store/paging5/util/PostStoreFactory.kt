@@ -15,7 +15,6 @@ typealias PostStore = MutableStore<PostKey, PostData>
 class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
 
     private fun createFetcher(): Fetcher<PostKey, PostData> = Fetcher.of { key ->
-        println("HITTING IN FETCHER")
         when (key) {
             is PostKey.Single -> {
                 when (val result = api.get(key.id)) {
@@ -54,7 +53,6 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
 
     private fun createSourceOfTruth(): SourceOfTruth<PostKey, PostData, PostData> = SourceOfTruth.of(
         reader = { key ->
-            println("HITTING IN SOT")
             flow {
                 when (key) {
                     is PostKey.Single -> {
