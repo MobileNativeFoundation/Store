@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.paging5.util
 
-import org.mobilenativefoundation.store.paging5.InsertionStrategy
-import org.mobilenativefoundation.store.paging5.StoreKey
+import org.mobilenativefoundation.store.core5.InsertionStrategy
+import org.mobilenativefoundation.store.core5.StoreKey
 
 sealed class PostKey : StoreKey<String> {
     data class Cursor(

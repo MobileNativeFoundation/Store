@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.paging5.util
 
-import org.mobilenativefoundation.store.paging5.InsertionStrategy
-import org.mobilenativefoundation.store.paging5.StoreData
+import org.mobilenativefoundation.store.core5.InsertionStrategy
+import org.mobilenativefoundation.store.core5.StoreData
 
 sealed class PostData : StoreData<String> {
     data class Post(val postId: String, val title: String) : StoreData.Single<String>, PostData() {

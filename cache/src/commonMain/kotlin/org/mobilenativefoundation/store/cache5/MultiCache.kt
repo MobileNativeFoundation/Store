@@ -7,6 +7,7 @@ package org.mobilenativefoundation.store.cache5
  * Stores and manages the relationship among single items and collections.
  * Delegates cache storage and behavior to Guava caches.
  */
+@Deprecated("Use StoreMultiCache")
 class MultiCache<Key : Any, Output : Identifiable<Key>>(
     cacheBuilder: CacheBuilder<Key, Output>
 ) {

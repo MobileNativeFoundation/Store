@@ -4,9 +4,9 @@ package org.mobilenativefoundation.store.paging5.util
 
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.cache5.Cache
-import org.mobilenativefoundation.store.paging5.KeyProvider
-import org.mobilenativefoundation.store.paging5.PagingCache
-import org.mobilenativefoundation.store.paging5.StoreKey
+import org.mobilenativefoundation.store.core5.KeyProvider
+import org.mobilenativefoundation.store.cache5.StoreMultiCache
+import org.mobilenativefoundation.store.core5.StoreKey
 import org.mobilenativefoundation.store.store5.*
 import kotlin.math.floor
 
@@ -115,7 +115,7 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
         }
 
     private fun createMemoryCache(): Cache<PostKey, PostData> =
-        PagingCache(createPagingCacheKeyProvider())
+        StoreMultiCache(createPagingCacheKeyProvider())
 
     fun create(): MutableStore<PostKey, PostData> = StoreBuilder.from(
         fetcher = createFetcher(),

@@ -56,6 +56,7 @@ kotlin {
                 implementation(libs.touchlab.kermit)
                 implementation(project(":multicast"))
                 implementation(project(":cache"))
+                api(project(":core"))
             }
         }
 

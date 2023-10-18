@@ -44,6 +44,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(libs.kotlinx.atomic.fu)
+                api(project(":core"))
             }
         }
         val jvmMain by getting

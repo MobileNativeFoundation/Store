@@ -7,6 +7,8 @@ package org.mobilenativefoundation.store.paging5
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.mobilenativefoundation.store.core5.StoreData
+import org.mobilenativefoundation.store.core5.StoreKey
 import org.mobilenativefoundation.store.store5.*
 
 private class StopProcessingException : Exception()

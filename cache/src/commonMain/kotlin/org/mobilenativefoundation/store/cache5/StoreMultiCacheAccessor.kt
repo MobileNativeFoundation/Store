@@ -1,32 +1,34 @@
-package org.mobilenativefoundation.store.paging5
+package org.mobilenativefoundation.store.cache5
 
-import org.mobilenativefoundation.store.cache5.CacheBuilder
+import org.mobilenativefoundation.store.core5.StoreData
+import org.mobilenativefoundation.store.core5.StoreKey
 
 /**
- * Intermediate data manager for a caching system supporting pagination.
+ * Intermediate data manager for a caching system supporting list decomposition.
  * Tracks keys for rapid data retrieval and modification.
  */
-class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single>, Single : StoreData.Single<Id>> {
-    private val collections = CacheBuilder<StoreKey.Collection<Id>, Collection>().build()
-    private val singles = CacheBuilder<StoreKey.Single<Id>, Single>().build()
+class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single>, Single : StoreData.Single<Id>>(
+    private val singlesCache: Cache<StoreKey.Single<Id>, Single>,
+    private val collectionsCache: Cache<StoreKey.Collection<Id>, Collection>,
+) {
     private val keys = mutableSetOf<StoreKey<Id>>()
 
 
     /**
      * Retrieves a collection of items from the cache using the provided key.
      */
-    fun getCollection(key: StoreKey.Collection<Id>): Collection? = collections.getIfPresent(key)
+    fun getCollection(key: StoreKey.Collection<Id>): Collection? = collectionsCache.getIfPresent(key)
 
     /**
      * Retrieves an individual item from the cache using the provided key.
      */
-    fun getSingle(key: StoreKey.Single<Id>): Single? = singles.getIfPresent(key)
+    fun getSingle(key: StoreKey.Single<Id>): Single? = singlesCache.getIfPresent(key)
 
     /**
      * Stores a collection of items in the cache and updates the key set.
      */
     fun putCollection(key: StoreKey.Collection<Id>, collection: Collection) {
-        collections.put(key, collection)
+        collectionsCache.put(key, collection)
         keys.add(key)
     }
 
@@ -34,7 +36,7 @@ class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single
      * Stores an individual item in the cache and updates the key set.
      */
     fun putSingle(key: StoreKey.Single<Id>, single: Single) {
-        singles.put(key, single)
+        singlesCache.put(key, single)
         keys.add(key)
     }
 
@@ -42,8 +44,8 @@ class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single
      * Removes all cache entries and clears the key set.
      */
     fun invalidateAll() {
-        collections.invalidateAll()
-        singles.invalidateAll()
+        collectionsCache.invalidateAll()
+        singlesCache.invalidateAll()
         keys.clear()
     }
 
@@ -51,7 +53,7 @@ class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single
      * Removes an individual item from the cache and updates the key set.
      */
     fun invalidateSingle(key: StoreKey.Single<Id>) {
-        singles.invalidate(key)
+        singlesCache.invalidate(key)
         keys.remove(key)
     }
 
@@ -59,7 +61,7 @@ class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single
      * Removes a collection of items from the cache and updates the key set.
      */
     fun invalidateCollection(key: StoreKey.Collection<Id>) {
-        collections.invalidate(key)
+        collectionsCache.invalidate(key)
         keys.remove(key)
     }
 
@@ -73,14 +75,14 @@ class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single
         for (key in keys) {
             when (key) {
                 is StoreKey.Single<Id> -> {
-                    val single = singles.getIfPresent(key)
+                    val single = singlesCache.getIfPresent(key)
                     if (single != null) {
                         count++
                     }
                 }
 
                 is StoreKey.Collection<Id> -> {
-                    val collection = collections.getIfPresent(key)
+                    val collection = collectionsCache.getIfPresent(key)
                     if (collection != null) {
                         count += collection.items.size
                     }
