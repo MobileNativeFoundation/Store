@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.paging5.util
 
+import org.mobilenativefoundation.store.paging5.InsertionStrategy
 import org.mobilenativefoundation.store.paging5.StoreKey
 
 sealed class PostKey : StoreKey<String> {
@@ -8,7 +9,7 @@ sealed class PostKey : StoreKey<String> {
         override val size: Int,
         override val sort: StoreKey.Sort? = null,
         override val filters: List<StoreKey.Filter<*>>? = null,
-        override val loadType: StoreKey.LoadType = StoreKey.LoadType.PREPEND
+        override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND
     ) : StoreKey.Collection.Cursor<String>, PostKey()
 
     data class Single(

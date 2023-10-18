@@ -30,6 +30,6 @@ interface StoreData<out Id : Any> {
         /**
          * Inserts items to the existing collection and returns the updated collection.
          */
-        fun insertItems(type: StoreKey.LoadType, items: List<S>): Collection<Id, S>
+        fun insertItems(strategy: InsertionStrategy, items: List<S>): Collection<Id, S>
     }
 }

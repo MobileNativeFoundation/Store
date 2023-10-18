@@ -10,8 +10,6 @@ import org.mobilenativefoundation.store.paging5.StoreKey
 import org.mobilenativefoundation.store.store5.*
 import kotlin.math.floor
 
-typealias PostStore = MutableStore<PostKey, PostData>
-
 class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
 
     private fun createFetcher(): Fetcher<PostKey, PostData> = Fetcher.of { key ->

@@ -19,7 +19,7 @@ interface StoreKey<out Id : Any> {
      * Represents a key for fetching collections of items.
      */
     interface Collection<out Id : Any> : StoreKey<Id> {
-        val loadType: LoadType
+        val insertionStrategy: InsertionStrategy
 
         /**
          * Represents a key for page-based fetching.
@@ -57,10 +57,5 @@ interface StoreKey<out Id : Any> {
      */
     interface Filter<Value : Any> {
         operator fun invoke(items: List<Value>): List<Value>
-    }
-
-    enum class LoadType {
-        APPEND,
-        PREPEND
     }
 }

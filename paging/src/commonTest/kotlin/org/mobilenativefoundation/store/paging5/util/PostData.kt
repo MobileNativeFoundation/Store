@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.paging5.util
 
+import org.mobilenativefoundation.store.paging5.InsertionStrategy
 import org.mobilenativefoundation.store.paging5.StoreData
-import org.mobilenativefoundation.store.paging5.StoreKey
 
 sealed class PostData : StoreData<String> {
     data class Post(val postId: String, val title: String) : StoreData.Single<String>, PostData() {
@@ -11,16 +11,16 @@ sealed class PostData : StoreData<String> {
     data class Feed(val posts: List<Post>) : StoreData.Collection<String, Post>, PostData() {
         override val items: List<Post> get() = posts
         override fun copyWith(items: List<Post>): StoreData.Collection<String, Post> = copy(posts = items)
-        override fun insertItems(type: StoreKey.LoadType, items: List<Post>): StoreData.Collection<String, Post> {
+        override fun insertItems(strategy: InsertionStrategy, items: List<Post>): StoreData.Collection<String, Post> {
 
-            return when (type) {
-                StoreKey.LoadType.APPEND -> {
+            return when (strategy) {
+                InsertionStrategy.APPEND -> {
                     val updatedItems = items.toMutableList()
                     updatedItems.addAll(posts)
                     copyWith(items = updatedItems)
                 }
 
-                StoreKey.LoadType.PREPEND -> {
+                InsertionStrategy.PREPEND -> {
                     val updatedItems = posts.toMutableList()
                     updatedItems.addAll(items)
                     copyWith(items = updatedItems)

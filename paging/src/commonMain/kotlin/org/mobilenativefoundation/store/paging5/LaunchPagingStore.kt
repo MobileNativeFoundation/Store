@@ -104,7 +104,7 @@ private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> jo
 
     val currentData = currentResponse.value as StoreData.Collection<Id, StoreData.Single<Id>>
 
-    val joinedOutput = (lastOutput?.insertItems(key.loadType, currentData.items) ?: currentData) as Output
+    val joinedOutput = (lastOutput?.insertItems(key.insertionStrategy, currentData.items) ?: currentData) as Output
     return StoreReadResponse.Data(joinedOutput, currentResponse.origin)
 }
 
