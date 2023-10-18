@@ -5,38 +5,59 @@ package org.mobilenativefoundation.store.paging5
 
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
-import org.mobilenativefoundation.store.store5.MutableStore
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.impl.extensions.fresh
+import org.mobilenativefoundation.store.store5.*
 
-
-typealias LoadedCollection<Id> = StoreState.Loaded.Collection<Id, StoreData.Single<Id>, StoreData.Collection<Id, StoreData.Single<Id>>>
+private class StopProcessingException : Exception()
 
 
 /**
  * Initializes and returns a [StateFlow] that reflects the state of the Store, updating by a flow of provided keys.
  * @param scope A [CoroutineScope].
  * @param keys A flow of keys that dictate how the Store should be updated.
- * @param fresh A lambda that invokes [Store.fresh].
+ * @param stream A lambda that invokes [Store.stream].
  * @return A read-only [StateFlow] reflecting the state of the Store.
  */
 private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
-    fresh: suspend (currentState: StoreState<Id, Output>, key: Key) -> StoreState<Id, Output>
-): StateFlow<StoreState<Id, Output>> {
-    val stateFlow = MutableStateFlow<StoreState<Id, Output>>(StoreState.Loading)
+    stream: (key: Key) -> Flow<StoreReadResponse<Output>>,
+): StateFlow<StoreReadResponse<Output>> {
+    val stateFlow = MutableStateFlow<StoreReadResponse<Output>>(StoreReadResponse.Initial)
+
 
     scope.launch {
-        keys.collect { key ->
-            val nextState = fresh(stateFlow.value, key)
-            stateFlow.emit(nextState)
+
+        try {
+            val firstKey = keys.first()
+            if (firstKey !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
+
+            stream(firstKey).collect { response ->
+                if (response is StoreReadResponse.Data<Output>) {
+                    val joinedDataResponse = joinData(firstKey, stateFlow.value, response)
+                    stateFlow.emit(joinedDataResponse)
+                } else {
+                    stateFlow.emit(response)
+                }
+
+                if (response is StoreReadResponse.Data<Output> ||
+                    response is StoreReadResponse.Error ||
+                    response is StoreReadResponse.NoNewData
+                ) {
+                    throw StopProcessingException()
+                }
+            }
+
+        } catch (_: StopProcessingException) {
+
+        }
+
+        keys.drop(1).collect { key ->
+            if (key !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
+            val firstDataResponse = stream(key).first { it.dataOrNull() != null } as StoreReadResponse.Data<Output>
+            val joinedDataResponse = joinData(key, stateFlow.value, firstDataResponse)
+            stateFlow.emit(joinedDataResponse)
         }
     }
 
@@ -50,9 +71,9 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchStore(
 fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.launchStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
-): StateFlow<StoreState<Id, Output>> {
-    return launchStore(scope, keys) { currentState, key ->
-        this.freshAndInsertUpdatedItems(currentState, key)
+): StateFlow<StoreReadResponse<Output>> {
+    return launchStore(scope, keys) { key ->
+        this.stream(StoreReadRequest.fresh(key))
     }
 }
 
@@ -64,72 +85,26 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.la
 fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.launchStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
-): StateFlow<StoreState<Id, Output>> {
-    return launchStore(scope, keys) { currentState, key ->
-        this.freshAndInsertUpdatedItems(currentState, key)
+): StateFlow<StoreReadResponse<Output>> {
+    return launchStore(scope, keys) { key ->
+        this.stream<Any>(StoreReadRequest.fresh(key))
     }
 }
 
 
-/**
- * Updates the Store's state based on a provided key and a retrieval mechanism.
- * @param currentState The current state of the Store.
- * @param key The key that dictates how the state should be updated.
- * @param get A lambda that defines how to retrieve data from the Store based on a key.
- */
-private suspend fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> freshAndInsertUpdatedItems(
-    currentState: StoreState<Id, Output>,
+private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> joinData(
     key: Key,
-    get: suspend (key: Key) -> Output,
-): StoreState<Id, Output> {
-    return try {
-        if (key !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
-
-        val lastOutput = when (currentState) {
-            is StoreState.Loaded.Collection<*, *, *> -> (currentState as LoadedCollection<Id>).data
-            else -> null
-        }
-
-        val nextOutput = get(key) as StoreData.Collection<Id, StoreData.Single<Id>>
-
-        val output = (lastOutput?.insertItems(key.loadType, nextOutput.items) ?: nextOutput)
-        StoreState.Loaded.Collection(output) as StoreState<Id, Output>
-
-    } catch (error: Exception) {
-        StoreState.Error.Exception(error)
+    prevResponse: StoreReadResponse<Output>,
+    currentResponse: StoreReadResponse.Data<Output>
+): StoreReadResponse.Data<Output> {
+    val lastOutput = when (prevResponse) {
+        is StoreReadResponse.Data<Output> -> prevResponse.value as? StoreData.Collection<Id, StoreData.Single<Id>>
+        else -> null
     }
-}
 
-/**
- * Updates the [Store]'s state based on a provided key.
- * @see [freshAndInsertUpdatedItems].
- */
-private suspend fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.freshAndInsertUpdatedItems(
-    currentState: StoreState<Id, Output>,
-    key: Key
-): StoreState<Id, Output> {
-    return freshAndInsertUpdatedItems(
-        currentState,
-        key
-    ) {
-        this.fresh(it)
-    }
-}
+    val currentData = currentResponse.value as StoreData.Collection<Id, StoreData.Single<Id>>
 
-/**
- * Updates the [MutableStore]'s state based on a provided key.
- * @see [freshAndInsertUpdatedItems].
- */
-@OptIn(ExperimentalStoreApi::class)
-private suspend fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.freshAndInsertUpdatedItems(
-    currentState: StoreState<Id, Output>,
-    key: Key
-): StoreState<Id, Output> {
-    return freshAndInsertUpdatedItems(
-        currentState,
-        key
-    ) {
-        this.fresh<Key, Output, Any>(it)
-    }
+    val joinedOutput = (lastOutput?.insertItems(key.loadType, currentData.items) ?: currentData) as Output
+    return StoreReadResponse.Data(joinedOutput, currentResponse.origin)
 }
 

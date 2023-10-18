@@ -29,14 +29,18 @@ class PagingTests {
 
         val stateFlow = store.launchStore(this, keys)
         stateFlow.test {
+            val initialState = awaitItem()
+            assertIs<StoreReadResponse.Initial>(initialState)
             val loadingState = awaitItem()
-            assertIs<StoreState.Loading>(loadingState)
+            assertIs<StoreReadResponse.Loading>(loadingState)
             val loadedState1 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(loadedState1)
-            assertEquals(10, loadedState1.data.posts.size)
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState1)
+            val data1 = loadedState1.value
+            assertEquals(10, data1.posts.size)
             val loadedState2 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(loadedState2)
-            assertEquals(20, loadedState2.data.posts.size)
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
+            val data2 = loadedState2.value
+            assertEquals(20, data2.posts.size)
         }
 
         val cached = store.stream<PostPutRequestResult>(StoreReadRequest.cached(key1, refresh = false))

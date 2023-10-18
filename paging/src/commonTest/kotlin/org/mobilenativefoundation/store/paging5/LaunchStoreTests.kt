@@ -9,6 +9,7 @@ import org.junit.Test
 import org.mobilenativefoundation.store.paging5.util.*
 import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.StoreReadResponse
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
@@ -37,9 +38,11 @@ class LaunchStoreTests {
 
         stateFlow.test {
             val state1 = awaitItem()
-            assertIs<StoreState.Loading>(state1)
+            assertIs<StoreReadResponse.Initial>(state1)
             val state2 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(state2)
+            assertIs<StoreReadResponse.Loading>(state2)
+            val state3 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData>>(state3)
             expectNoEvents()
         }
     }
@@ -53,13 +56,18 @@ class LaunchStoreTests {
 
         stateFlow.test {
             val state1 = awaitItem()
-            assertIs<StoreState.Loading>(state1)
+            assertIs<StoreReadResponse.Initial>(state1)
             val state2 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(state2)
-
+            assertIs<StoreReadResponse.Loading>(state2)
             val state3 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(state3)
-            assertEquals(20, state3.data.items.size)
+            assertIs<StoreReadResponse.Data<PostData>>(state3)
+            expectNoEvents()
+
+            val state4 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData>>(state4)
+            val data4 = state4.value
+            assertIs<PostData.Feed>(data4)
+            assertEquals(20, data4.items.size)
 
             expectNoEvents()
         }
@@ -73,10 +81,11 @@ class LaunchStoreTests {
 
         stateFlow.test {
             val state1 = awaitItem()
-            assertIs<StoreState.Loading>(state1)
+            assertIs<StoreReadResponse.Initial>(state1)
             val state2 = awaitItem()
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(state2)
-
+            assertIs<StoreReadResponse.Loading>(state2)
+            val state3 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData>>(state3)
             expectNoEvents()
         }
     }
