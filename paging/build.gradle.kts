@@ -12,8 +12,7 @@ plugins {
 }
 
 kotlin {
-    android()
-    jvm()
+    androidTarget()
 
     sourceSets {
         val commonMain by getting {
@@ -25,6 +24,7 @@ kotlin {
                 implementation(libs.molecule.runtime)
                 implementation(compose.ui)
                 implementation(compose.foundation)
+                implementation(compose.material)
 
 
             }
@@ -33,6 +33,17 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.paging.runtime)
+                implementation(libs.androidx.paging.compose)
+            }
+        }
+        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.turbine)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(compose.uiTestJUnit4)
+                implementation(compose.ui)
             }
         }
     }
