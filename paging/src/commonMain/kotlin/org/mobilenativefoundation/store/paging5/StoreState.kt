@@ -3,7 +3,7 @@ package org.mobilenativefoundation.store.paging5
 /**
  * An interface that defines various states of data-fetching operations.
  */
-sealed interface StoreState<out Id : Any, out Output : Identifiable<Id>> {
+sealed interface StoreState<out Id : Any, out Output : StoreData<Id>> {
 
     /**
      * Represents the initial state.
@@ -19,17 +19,17 @@ sealed interface StoreState<out Id : Any, out Output : Identifiable<Id>> {
     /**
      * Represents successful fetch operations.
      */
-    sealed interface Loaded<Id : Any, Output : Identifiable<Id>> : StoreState<Id, Output> {
+    sealed interface Loaded<Id : Any, Output : StoreData<Id>> : StoreState<Id, Output> {
 
         /**
          * Represents a successful fetch of an individual item.
          */
-        data class Single<Id : Any, Output : Identifiable.Single<Id>>(val data: Output) : Loaded<Id, Output>
+        data class Single<Id : Any, Output : StoreData.Single<Id>>(val data: Output) : Loaded<Id, Output>
 
         /**
          * Represents a successful fetch of a collection of items.
          */
-        data class Collection<Id : Any, SO : Identifiable.Single<Id>, CO : Identifiable.Collection<Id, SO>>(val data: CO) :
+        data class Collection<Id : Any, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, SO>>(val data: CO) :
             Loaded<Id, CO>
     }
 

@@ -6,7 +6,7 @@ import org.mobilenativefoundation.store.cache5.CacheBuilder
  * Intermediate data manager for a caching system supporting pagination.
  * Tracks keys for rapid data retrieval and modification.
  */
-class PagingCacheAccessor<Id : Any, Collection : Identifiable.Collection<Id, Single>, Single : Identifiable.Single<Id>> {
+class PagingCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single>, Single : StoreData.Single<Id>> {
     private val collections = CacheBuilder<StoreKey.Collection<Id>, Collection>().build()
     private val singles = CacheBuilder<StoreKey.Single<Id>, Single>().build()
     private val keys = mutableSetOf<StoreKey<Id>>()

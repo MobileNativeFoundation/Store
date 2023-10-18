@@ -10,7 +10,7 @@ import org.mobilenativefoundation.store.cache5.Cache
  * Depends on [PagingCacheAccessor] for internal data management.
  * @see [Cache].
  */
-class PagingCache<Id : Any, Key : StoreKey<Id>, StoreOutput : Identifiable<Id>, Collection : Identifiable.Collection<Id, Single>, Single : Identifiable.Single<Id>>(
+class PagingCache<Id : Any, Key : StoreKey<Id>, StoreOutput : StoreData<Id>, Collection : StoreData.Collection<Id, Single>, Single : StoreData.Single<Id>>(
     private val keyProvider: KeyProvider<Id, Single>,
 ) : Cache<Key, StoreOutput> {
 

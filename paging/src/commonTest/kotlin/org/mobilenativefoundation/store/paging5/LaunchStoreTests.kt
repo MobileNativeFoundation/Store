@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 @OptIn(ExperimentalStoreApi::class)
-class InitStoreStateFlowTests {
+class LaunchStoreTests {
     private val testScope = TestScope()
 
     private val userId = "123"
@@ -33,7 +33,7 @@ class InitStoreStateFlowTests {
     fun `state transitions from Loading to Loaded Collection for valid Cursor key`() = testScope.runTest {
         val key = PostKey.Cursor("1", 10)
         val keys = flowOf(key)
-        val stateFlow = store.initStoreStateFlow(this, keys)
+        val stateFlow = store.launchStore(this, keys)
 
         stateFlow.test {
             val state1 = awaitItem()
@@ -49,7 +49,7 @@ class InitStoreStateFlowTests {
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
         val keys = flowOf(key1, key2)
-        val stateFlow = store.initStoreStateFlow(this, keys)
+        val stateFlow = store.launchStore(this, keys)
 
         stateFlow.test {
             val state1 = awaitItem()
@@ -69,7 +69,7 @@ class InitStoreStateFlowTests {
     fun `state remains consistent if the same key is emitted multiple times`() = testScope.runTest {
         val key = PostKey.Cursor("1", 10)
         val keys = flowOf(key, key)
-        val stateFlow = store.initStoreStateFlow(this, keys)
+        val stateFlow = store.launchStore(this, keys)
 
         stateFlow.test {
             val state1 = awaitItem()

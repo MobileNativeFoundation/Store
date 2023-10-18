@@ -1,17 +1,17 @@
 package org.mobilenativefoundation.store.paging5.util
 
-import org.mobilenativefoundation.store.paging5.Identifiable
+import org.mobilenativefoundation.store.paging5.StoreData
 import org.mobilenativefoundation.store.paging5.StoreKey
 
-sealed class PostData : Identifiable<String> {
-    data class Post(val postId: String, val title: String) : Identifiable.Single<String>, PostData() {
+sealed class PostData : StoreData<String> {
+    data class Post(val postId: String, val title: String) : StoreData.Single<String>, PostData() {
         override val id: String get() = postId
     }
 
-    data class Feed(val posts: List<Post>) : Identifiable.Collection<String, Post>, PostData() {
+    data class Feed(val posts: List<Post>) : StoreData.Collection<String, Post>, PostData() {
         override val items: List<Post> get() = posts
-        override fun copyWith(items: List<Post>): Identifiable.Collection<String, Post> = copy(posts = items)
-        override fun insertItems(type: StoreKey.LoadType, items: List<Post>): Identifiable.Collection<String, Post> {
+        override fun copyWith(items: List<Post>): StoreData.Collection<String, Post> = copy(posts = items)
+        override fun insertItems(type: StoreKey.LoadType, items: List<Post>): StoreData.Collection<String, Post> {
 
             return when (type) {
                 StoreKey.LoadType.APPEND -> {

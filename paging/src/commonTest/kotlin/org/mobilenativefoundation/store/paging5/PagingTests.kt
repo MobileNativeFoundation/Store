@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.paging5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -24,11 +25,18 @@ class PagingTests {
 
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
+        val keys = flowOf(key1, key2)
 
-        flowOf(key1, key2).collect { key ->
-            val state = store.updateStoreState(StoreState.Initial, key)
-            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(state)
-            assertEquals(10, state.data.posts.size)
+        val stateFlow = store.launchStore(this, keys)
+        stateFlow.test {
+            val loadingState = awaitItem()
+            assertIs<StoreState.Loading>(loadingState)
+            val loadedState1 = awaitItem()
+            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(loadedState1)
+            assertEquals(10, loadedState1.data.posts.size)
+            val loadedState2 = awaitItem()
+            assertIs<StoreState.Loaded.Collection<String, PostData.Post, PostData.Feed>>(loadedState2)
+            assertEquals(20, loadedState2.data.posts.size)
         }
 
         val cached = store.stream<PostPutRequestResult>(StoreReadRequest.cached(key1, refresh = false))

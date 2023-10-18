@@ -3,23 +3,23 @@ package org.mobilenativefoundation.store.paging5
 
 /**
  * An interface that defines items that can be uniquely identified.
- * Every item that implements the [Identifiable] interface must have a means of identification.
+ * Every item that implements the [StoreData] interface must have a means of identification.
  * This is useful in scenarios when data can be represented as singles or collections.
  */
 
-interface Identifiable<out Id : Any> {
+interface StoreData<out Id : Any> {
 
     /**
      * Represents a single identifiable item.
      */
-    interface Single<Id : Any> : Identifiable<Id> {
+    interface Single<Id : Any> : StoreData<Id> {
         val id: Id
     }
 
     /**
      * Represents a collection of identifiable items.
      */
-    interface Collection<Id : Any, S : Single<Id>> : Identifiable<Id> {
+    interface Collection<Id : Any, S : Single<Id>> : StoreData<Id> {
         val items: List<S>
 
         /**
