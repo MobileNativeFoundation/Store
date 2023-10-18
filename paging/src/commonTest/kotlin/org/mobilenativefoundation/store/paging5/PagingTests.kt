@@ -27,7 +27,7 @@ class PagingTests {
         val key2 = PostKey.Cursor("11", 10)
         val keys = flowOf(key1, key2)
 
-        val stateFlow = store.launchStore(this, keys)
+        val stateFlow = store.launchPagingStore(this, keys)
         stateFlow.test {
             val initialState = awaitItem()
             assertIs<StoreReadResponse.Initial>(initialState)

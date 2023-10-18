@@ -19,7 +19,7 @@ private class StopProcessingException : Exception()
  * @param stream A lambda that invokes [Store.stream].
  * @return A read-only [StateFlow] reflecting the state of the Store.
  */
-private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchStore(
+private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
     stream: (key: Key) -> Flow<StoreReadResponse<Output>>,
@@ -66,27 +66,27 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchStore(
 
 /**
  * Initializes and returns a [StateFlow] that reflects the state of the [Store], updating by a flow of provided keys.
- * @see [launchStore].
+ * @see [launchPagingStore].
  */
-fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.launchStore(
+fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
 ): StateFlow<StoreReadResponse<Output>> {
-    return launchStore(scope, keys) { key ->
+    return launchPagingStore(scope, keys) { key ->
         this.stream(StoreReadRequest.fresh(key))
     }
 }
 
 /**
  * Initializes and returns a [StateFlow] that reflects the state of the [Store], updating by a flow of provided keys.
- * @see [launchStore].
+ * @see [launchPagingStore].
  */
 @OptIn(ExperimentalStoreApi::class)
-fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.launchStore(
+fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
 ): StateFlow<StoreReadResponse<Output>> {
-    return launchStore(scope, keys) { key ->
+    return launchPagingStore(scope, keys) { key ->
         this.stream<Any>(StoreReadRequest.fresh(key))
     }
 }
