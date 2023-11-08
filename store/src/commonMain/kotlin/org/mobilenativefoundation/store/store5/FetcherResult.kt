@@ -5,5 +5,6 @@ sealed class FetcherResult<out Network : Any> {
     sealed class Error : FetcherResult<Nothing>() {
         data class Exception(val error: Throwable) : Error()
         data class Message(val message: String) : Error()
+        data class Custom<E: Throwable>(val error: E): Error()
     }
 }

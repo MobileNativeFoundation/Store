@@ -58,6 +58,11 @@ sealed class StoreReadResponse<out Output> {
             val message: String,
             override val origin: StoreReadResponseOrigin
         ) : Error()
+
+        data class Custom<E: Throwable>(
+            val error: E,
+            override val origin: StoreReadResponseOrigin
+        ): Error()
     }
 
     /**
@@ -101,6 +106,23 @@ sealed class StoreReadResponse<out Output> {
         else -> null
     }
 
+    fun errorOrNull(): Throwable? {
+        if (this is Error.Exception) {
+            return error
+        }
+
+        return null
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <E: Throwable> errorOrNull(): E? {
+        if (this is Error.Custom<*>) {
+            return (this as? Error.Custom<E>)?.error
+        }
+
+        return errorOrNull() as? E
+    }
+
     @Suppress("UNCHECKED_CAST")
     internal fun <T> swapType(): StoreReadResponse<T> = when (this) {
         is Error -> this
@@ -134,4 +156,5 @@ sealed class StoreReadResponseOrigin {
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
     is StoreReadResponse.Error.Exception -> throw error
     is StoreReadResponse.Error.Message -> throw RuntimeException(message)
+    is StoreReadResponse.Error.Custom<*> -> throw error
 }
