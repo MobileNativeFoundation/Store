@@ -59,10 +59,10 @@ sealed class StoreReadResponse<out Output> {
             override val origin: StoreReadResponseOrigin
         ) : Error()
 
-        data class Custom<E: Throwable>(
+        data class Custom<E : Any>(
             val error: E,
             override val origin: StoreReadResponseOrigin
-        ): Error()
+        ) : Error()
     }
 
     /**
@@ -115,7 +115,7 @@ sealed class StoreReadResponse<out Output> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <E: Throwable> errorOrNull(): E? {
+    fun <E : Any> errorOrNull(): E? {
         if (this is Error.Custom<*>) {
             return (this as? Error.Custom<E>)?.error
         }
@@ -156,5 +156,11 @@ sealed class StoreReadResponseOrigin {
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
     is StoreReadResponse.Error.Exception -> throw error
     is StoreReadResponse.Error.Message -> throw RuntimeException(message)
-    is StoreReadResponse.Error.Custom<*> -> throw error
+    is StoreReadResponse.Error.Custom<*> -> {
+        if (error is Throwable) {
+            throw error
+        } else {
+            throw RuntimeException("Non-throwable custom error: $error")
+        }
+    }
 }
