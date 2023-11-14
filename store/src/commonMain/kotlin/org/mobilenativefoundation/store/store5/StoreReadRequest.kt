@@ -69,7 +69,7 @@ data class StoreReadRequest<out Key> private constructor(
         )
 
         /**
-         * Create a [StoreReadRequest] which will return data from memory/disk caches
+         * Create a [StoreReadRequest] which will return data from memory caches
          */
         fun <Key> cacheOnly(key: Key) = StoreReadRequest(
             key = key,
