@@ -21,13 +21,14 @@ package org.mobilenativefoundation.store.store5
  * @param skippedCaches List of cache types that should be skipped when retuning the response see [CacheType]
  * @param refresh If set to true  [Store] will always get fresh value from fetcher while also
  *  starting the stream from the local [com.dropbox.android.external.store4.impl.SourceOfTruth] and memory cache
- *
+ * @param fetch If set to false, then fetcher will not be used
  */
 data class StoreReadRequest<out Key> private constructor(
     val key: Key,
     private val skippedCaches: Int,
     val refresh: Boolean = false,
-    val fallBackToSourceOfTruth: Boolean = false
+    val fallBackToSourceOfTruth: Boolean = false,
+    val fetch: Boolean = true
 ) {
 
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
@@ -57,13 +58,23 @@ data class StoreReadRequest<out Key> private constructor(
         )
 
         /**
-         * Create a [StoreReadRequest] which will return data from memory/disk caches
+         * Create a [StoreReadRequest] which will return data from memory/disk caches if present,
+         * otherwise will hit your fetcher (filling your caches).
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
         fun <Key> cached(key: Key, refresh: Boolean) = StoreReadRequest(
             key = key,
             skippedCaches = 0,
             refresh = refresh
+        )
+
+        /**
+         * Create a [StoreReadRequest] which will return data from memory/disk caches
+         */
+        fun <Key> cacheOnly(key: Key) = StoreReadRequest(
+            key = key,
+            skippedCaches = 0,
+            fetch = false
         )
 
         /**

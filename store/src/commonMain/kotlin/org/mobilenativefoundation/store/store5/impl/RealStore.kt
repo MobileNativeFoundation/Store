@@ -85,10 +85,24 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 }
             }
 
-            cachedToEmit?.let { it: Output ->
+            if (cachedToEmit != null) {
                 // if we read a value from cache, dispatch it first
-                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+                emit(
+                    StoreReadResponse.Data(
+                        value = cachedToEmit,
+                        origin = StoreReadResponseOrigin.Cache
+                    )
+                )
+                if (!request.fetch) {
+                    // This request was only for cached items, so we stop here
+                    return@flow
+                }
+            } else if (!request.fetch) {
+                // The cache is empty or invalid but we don't want to hit the fetcher
+                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                return@flow
             }
+
             val stream: Flow<StoreReadResponse<Output>> = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
                 val piggybackOnly = !request.refresh && cachedToEmit != null
