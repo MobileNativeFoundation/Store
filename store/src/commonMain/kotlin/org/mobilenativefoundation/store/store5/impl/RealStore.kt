@@ -85,21 +85,20 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 }
             }
 
-            if (cachedToEmit != null) {
+            cachedToEmit?.let { it: Output ->
                 // if we read a value from cache, dispatch it first
-                emit(
-                    StoreReadResponse.Data(
-                        value = cachedToEmit,
+                emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
+            }
+
+            if (sourceOfTruth == null && !request.fetch) {
+                if (memCache == null) {
+                    emit(StoreReadResponse.Error.Exception(
+                        error = IllegalStateException("Cache-only request made with no cache configured"),
                         origin = StoreReadResponseOrigin.Cache
-                    )
-                )
-                if (!request.fetch) {
-                    // This request was only for cached items, so we stop here
-                    return@flow
+                    ))
+                } else if (cachedToEmit == null) {
+                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
                 }
-            } else if (!request.fetch) {
-                // The cache is empty or invalid but we don't want to hit the fetcher
-                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
                 return@flow
             }
 
@@ -113,8 +112,19 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     networkLock = null,
                     piggybackOnly = piggybackOnly
                 ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
-            } else {
+            } else if (request.fetch) {
                 diskNetworkCombined(request, sourceOfTruth)
+            } else {
+                val diskLock = CompletableDeferred<Unit>()
+                diskLock.complete(Unit)
+                sourceOfTruth.reader(request.key, diskLock).transform { response ->
+                    val data = response.dataOrNull()
+                    if (data == null || validator?.isValid(data) == false) {
+                        emit(StoreReadResponse.NoNewData(origin = response.origin))
+                    } else {
+                        emit(StoreReadResponse.Data(value = data, origin = response.origin))
+                    }
+                }
             }
             emitAll(
                 stream.transform { output: StoreReadResponse<Output> ->
