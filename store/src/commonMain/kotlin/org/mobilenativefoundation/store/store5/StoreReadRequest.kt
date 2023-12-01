@@ -72,7 +72,7 @@ data class StoreReadRequest<out Key> private constructor(
          * Create a [StoreReadRequest] which will return data from memory/disk caches if present,
          * otherwise will return [StoreReadResponse.NoNewData]
          */
-        fun <Key> cacheOnly(key: Key) = StoreReadRequest(
+        fun <Key> localOnly(key: Key) = StoreReadRequest(
             key = key,
             skippedCaches = 0,
             fetch = false

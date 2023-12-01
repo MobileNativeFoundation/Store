@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 
-class CacheOnlyTests {
+class LocalOnlyTests {
     private val testScope = TestScope()
 
     @Test
@@ -25,7 +25,7 @@ class CacheOnlyTests {
                     .build()
             )
             .build()
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), response)
     }
 
@@ -46,7 +46,7 @@ class CacheOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals("result", response.requireData())
         assertEquals(1, fetcherHitCounter.value)
     }
@@ -69,7 +69,7 @@ class CacheOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), response)
         assertEquals(1, fetcherHitCounter.value)
     }
@@ -84,7 +84,7 @@ class CacheOnlyTests {
             )
             .disableCache()
             .build()
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), response)
     }
 
@@ -105,7 +105,7 @@ class CacheOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals("result", response.requireData())
         assertEquals(StoreReadResponseOrigin.SourceOfTruth, response.origin)
         assertEquals(1, fetcherHitCounter.value)
@@ -130,7 +130,7 @@ class CacheOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), response)
         assertEquals(1, fetcherHitCounter.value)
     }
@@ -141,7 +141,7 @@ class CacheOnlyTests {
             .from(Fetcher.of { _: Int -> throw RuntimeException("Fetcher shouldn't be hit") })
             .disableCache()
             .build()
-        val response = store.stream(StoreReadRequest.cacheOnly(0)).first()
+        val response = store.stream(StoreReadRequest.localOnly(0)).first()
         assertTrue(response is StoreReadResponse.Error.Exception)
         assertTrue(response.error is IllegalStateException)
         assertEquals(StoreReadResponseOrigin.Cache, response.origin)
