@@ -15,6 +15,8 @@
  */
 package org.mobilenativefoundation.store.store5.impl
 
+import co.touchlab.kermit.CommonWriter
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -92,13 +94,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
             if (sourceOfTruth == null && !request.fetch) {
                 if (memCache == null) {
-                    emit(StoreReadResponse.Error.Exception(
-                        error = IllegalStateException("Cache-only request made with no cache configured"),
-                        origin = StoreReadResponseOrigin.Cache
-                    ))
-                } else if (cachedToEmit == null) {
-                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                    logger.w("Local-only request made with no cache or source of truth configured")
                 }
+                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
                 return@flow
             }
 
@@ -336,4 +334,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
 
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
+
+    companion object {
+        private val logger = Logger.apply {
+            setLogWriters(listOf(CommonWriter()))
+            setTag("Store")
+        }
+    }
 }

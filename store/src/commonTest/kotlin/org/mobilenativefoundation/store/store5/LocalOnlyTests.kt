@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import co.touchlab.kermit.Logger
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -136,14 +137,13 @@ class LocalOnlyTests {
     }
 
     @Test
-    fun givenNoCacheThenCacheOnlyRequestReturnsError() = testScope.runTest {
+    fun givenNoCacheThenCacheOnlyRequestReturnsNoNewData() = testScope.runTest {
         val store = StoreBuilder
             .from(Fetcher.of { _: Int -> throw RuntimeException("Fetcher shouldn't be hit") })
             .disableCache()
             .build()
         val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertTrue(response is StoreReadResponse.Error.Exception)
-        assertTrue(response.error is IllegalStateException)
+        assertTrue(response is StoreReadResponse.NoNewData)
         assertEquals(StoreReadResponseOrigin.Cache, response.origin)
     }
 }
