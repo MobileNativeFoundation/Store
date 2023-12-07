@@ -15,6 +15,8 @@
  */
 package org.mobilenativefoundation.store.store5.impl
 
+import co.touchlab.kermit.CommonWriter
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -89,6 +91,15 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 // if we read a value from cache, dispatch it first
                 emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache))
             }
+
+            if (sourceOfTruth == null && !request.fetch) {
+                if (memCache == null) {
+                    logger.w("Local-only request made with no cache or source of truth configured")
+                }
+                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                return@flow
+            }
+
             val stream: Flow<StoreReadResponse<Output>> = if (sourceOfTruth == null) {
                 // piggypack only if not specified fresh data AND we emitted a value from the cache
                 val piggybackOnly = !request.refresh && cachedToEmit != null
@@ -99,8 +110,19 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     networkLock = null,
                     piggybackOnly = piggybackOnly
                 ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
-            } else {
+            } else if (request.fetch) {
                 diskNetworkCombined(request, sourceOfTruth)
+            } else {
+                val diskLock = CompletableDeferred<Unit>()
+                diskLock.complete(Unit)
+                sourceOfTruth.reader(request.key, diskLock).transform { response ->
+                    val data = response.dataOrNull()
+                    if (data == null || validator?.isValid(data) == false) {
+                        emit(StoreReadResponse.NoNewData(origin = response.origin))
+                    } else {
+                        emit(StoreReadResponse.Data(value = data, origin = response.origin))
+                    }
+                }
             }
             emitAll(
                 stream.transform { output: StoreReadResponse<Output> ->
@@ -312,4 +334,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
 
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
+
+    companion object {
+        private val logger = Logger.apply {
+            setLogWriters(listOf(CommonWriter()))
+            setTag("Store")
+        }
+    }
 }
