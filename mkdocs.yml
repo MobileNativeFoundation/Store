@@ -1,6 +1,7 @@
 site_name: Store
 repo_url: https://github.com/MobileNativeFoundation/Store
 repo_name: store
+edit_uri: https://github.com/MobileNativeFoundation/Store/edit/docs/docs/
 
 theme:
   name: material
@@ -28,6 +29,7 @@ theme:
     repo: fontawesome/brands/github
   features:
     - navigation.sections
+    - content.action.edit
 
 extra:
   version:
