@@ -109,7 +109,7 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
                 val single = value as Single
                 accessor.putSingle(key.castSingle(), single)
 
-                val collectionKey = keyProvider.from(key.castSingle(), single)
+                val collectionKey = keyProvider.fromSingle(key.castSingle(), single)
                 val existingCollection = accessor.getCollection(collectionKey)
                 if (existingCollection != null) {
                     val updatedItems = existingCollection.items.toMutableList().map {
@@ -131,7 +131,7 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
                 collection.items.forEach {
                     val single = it as? Single
                     if (single != null) {
-                        accessor.putSingle(keyProvider.from(key.castCollection(), single), single)
+                        accessor.putSingle(keyProvider.fromCollection(key.castCollection(), single), single)
                     }
                 }
             }
