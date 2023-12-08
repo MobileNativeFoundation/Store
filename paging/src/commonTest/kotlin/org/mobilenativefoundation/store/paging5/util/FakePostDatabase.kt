@@ -30,7 +30,5 @@ class FakePostDatabase(private val userId: String) : PostDatabase {
     override fun findFeedByUserId(cursor: String?, size: Int): PostData.Feed? {
         val feed = feeds[userId]
         return feed
-
     }
-
 }

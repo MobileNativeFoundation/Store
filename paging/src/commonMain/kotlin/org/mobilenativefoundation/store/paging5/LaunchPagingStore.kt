@@ -1,18 +1,24 @@
 @file:Suppress("UNCHECKED_CAST")
 
-
 package org.mobilenativefoundation.store.paging5
 
-
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
-import org.mobilenativefoundation.store.store5.*
+import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
 
 private class StopProcessingException : Exception()
-
 
 /**
  * Initializes and returns a [StateFlow] that reflects the state of the Store, updating by a flow of provided keys.
@@ -27,7 +33,6 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingS
     stream: (key: Key) -> Flow<StoreReadResponse<Output>>,
 ): StateFlow<StoreReadResponse<Output>> {
     val stateFlow = MutableStateFlow<StoreReadResponse<Output>>(StoreReadResponse.Initial)
-
 
     scope.launch {
 
@@ -50,9 +55,7 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingS
                     throw StopProcessingException()
                 }
             }
-
         } catch (_: StopProcessingException) {
-
         }
 
         keys.drop(1).collect { key ->
@@ -93,7 +96,6 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Out
     }
 }
 
-
 private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> joinData(
     key: Key,
     prevResponse: StoreReadResponse<Output>,
@@ -109,4 +111,3 @@ private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> jo
     val joinedOutput = (lastOutput?.insertItems(key.insertionStrategy, currentData.items) ?: currentData) as Output
     return StoreReadResponse.Data(joinedOutput, currentResponse.origin)
 }
-

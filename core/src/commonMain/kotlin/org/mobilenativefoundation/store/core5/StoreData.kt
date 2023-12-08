@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.core5
 
-
 /**
  * An interface that defines items that can be uniquely identified.
  * Every item that implements the [StoreData] interface must have a means of identification.

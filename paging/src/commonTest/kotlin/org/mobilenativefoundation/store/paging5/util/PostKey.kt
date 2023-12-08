@@ -15,5 +15,4 @@ sealed class PostKey : StoreKey<String> {
     data class Single(
         override val id: String
     ) : StoreKey.Single<String>, PostKey()
-
 }

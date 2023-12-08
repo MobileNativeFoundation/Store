@@ -2,7 +2,13 @@ package org.mobilenativefoundation.store.store5.impl.extensions
 
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
-import org.mobilenativefoundation.store.store5.*
+import org.mobilenativefoundation.store.store5.Bookkeeper
+import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.Store
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.impl.RealMutableStore
 import org.mobilenativefoundation.store.store5.impl.RealStore
 
@@ -30,6 +36,7 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
         .first()
         .requireData()
 
+@OptIn(ExperimentalStoreApi::class)
 @Suppress("UNCHECKED_CAST")
 fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
     updater: Updater<Key, Output, Response>,
@@ -45,16 +52,15 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<
     )
 }
 
-
 @OptIn(ExperimentalStoreApi::class)
-suspend fun <Key : Any, Output : Any, Response: Any> MutableStore<Key, Output>.get(key: Key) =
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.get(key: Key) =
     stream<Response>(StoreReadRequest.cached(key, refresh = false))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
 
 @OptIn(ExperimentalStoreApi::class)
-suspend fun <Key : Any, Output : Any, Response: Any> MutableStore<Key, Output>.fresh(key: Key) =
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.fresh(key: Key) =
     stream<Response>(StoreReadRequest.fresh(key))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()

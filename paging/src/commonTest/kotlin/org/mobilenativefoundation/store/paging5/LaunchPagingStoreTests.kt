@@ -7,8 +7,20 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import org.mobilenativefoundation.store.paging5.util.*
-import org.mobilenativefoundation.store.store5.*
+import org.mobilenativefoundation.store.paging5.util.FakePostApi
+import org.mobilenativefoundation.store.paging5.util.FakePostDatabase
+import org.mobilenativefoundation.store.paging5.util.PostApi
+import org.mobilenativefoundation.store.paging5.util.PostData
+import org.mobilenativefoundation.store.paging5.util.PostDatabase
+import org.mobilenativefoundation.store.paging5.util.PostKey
+import org.mobilenativefoundation.store.paging5.util.PostPutRequestResult
+import org.mobilenativefoundation.store.paging5.util.PostStoreFactory
+import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.StoreReadRequest
+import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
+import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
@@ -131,7 +143,6 @@ class LaunchPagingStoreTests {
         val data2 = cached2.requireData()
         assertIs<PostData.Post>(data2)
         assertEquals("2", data2.title)
-
 
         store.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
 

@@ -35,7 +35,6 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                         throw Throwable(result.error)
                     }
                 }
-
             }
 
             is PostKey.Cursor -> {
@@ -121,7 +120,6 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                 val cursor = (floor(id.toDouble() / 10) * 10) + 1
                 return PostKey.Cursor(cursor.toInt().toString(), 10)
             }
-
         }
 
     private fun createMemoryCache(): Cache<PostKey, PostData> =

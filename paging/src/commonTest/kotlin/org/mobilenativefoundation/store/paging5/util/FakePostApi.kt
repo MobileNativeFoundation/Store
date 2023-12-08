@@ -33,5 +33,4 @@ class FakePostApi : PostApi {
         posts.put(post.id, post)
         return PostPutRequestResult.Data(post)
     }
-
 }

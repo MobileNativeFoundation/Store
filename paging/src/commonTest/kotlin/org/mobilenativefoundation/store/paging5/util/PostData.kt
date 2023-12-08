@@ -33,6 +33,3 @@ sealed class PostData : StoreData<String> {
         }
     }
 }
-
-
-
