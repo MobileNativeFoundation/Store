@@ -25,6 +25,10 @@ sealed class PostData : StoreData<String> {
                     updatedItems.addAll(items)
                     copyWith(items = updatedItems)
                 }
+
+                InsertionStrategy.REPLACE -> {
+                    copyWith(items = posts)
+                }
             }
         }
     }
