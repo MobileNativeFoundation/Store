@@ -1,17 +1,13 @@
-# This workflow will build the project with Gradle, run integration tests, and release.
-# Because secrets are not available on external forks, this job is expected to fail
-# on external pull requests.
-
 name: Build project & run tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, store6 ]
 
 jobs:
   publish:
     runs-on: macos-latest
-    if: github.repository == 'MobileNativeFoundation/Store' && github.ref == 'refs/heads/main'
+    if: github.repository == 'MobileNativeFoundation/Store' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/store6')
 
     steps:
       - name: Checkout
