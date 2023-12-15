@@ -1,42 +1,28 @@
-Contributing to Store
-=======================
+# Contributing to Store
+Thanks for considering contributing to Store. This document provides guidelines and information about how you can contribute.
 
-The Dropbox team welcomes contributions of all kinds, from simple bug reports through documentation, test cases,
-bugfixes, and features.
+## Getting Started
+- **Fork the Repository**: Start by forking the [MobileNativeFoundation/Store](https://github.com/MobileNativeFoundation/Store) repository.
+- **Clone the Fork**: Clone your fork to your machine to start working on the changes.
 
-DOs and DON'Ts
---------------
-* Do sign our CLA located here: https://opensource.dropbox.com/cla/
-* DO follow our coding style (as described below)
-* DO give priority to the current style of the project or file you're changing even if it diverges from the general guidelines.
-* DO include tests when adding new features. When fixing bugs, start with adding a test that highlights how the current behavior is broken.
-* DO keep the discussions focused. When a new or related topic comes up it's often better to create new issue than to side track the discussion.
-* DO run all Gradle verification tasks (`./gradlew check`) before submitting a pull request
+## Contribution Workflow
+### Reporting Issues
+- **Search Existing Issues**: Before creating a new issue, please do a search in existing issues to see if it has been reported or fixed.
+- **Create a Detailed Issue**: If you find a bug or have a feature request, please create an issue with a clear title and a detailed description.
+### Submitting Changes
+- **Create a Branch**: Create a branch in your fork for your contribution.
+- **Make Your Changes**: Make your changes and commit them to your branch. Make sure to write clear, concise commit messages.
+- **Write Tests**: If you are adding new features or fixing bugs, write tests that cover your changes.
+- **Run the Tests**: Run the project's existing tests to ensure nothing is broken.
+- **Create a Pull Request**: Submit a PR to the main repository for review. Include a clear description of the changes and any relevant issue numbers.
+### Code Review Process
+- **Wait for Review**: Maintainers will review your PR and might request changes.
+- **Make Requested Changes**: If changes are requested, make them and update your PR.
+- **Merge**: Once your PR is approved, a maintainer will merge it into the main codebase.
 
-* DO NOT send PRs for style changes.
-* DON'T surprise us with big pull requests. Instead, file an issue and start a discussion so we can agree on a direction before you invest a large amount of time.
-* DON'T commit code that you didn't write. If you find code that you think is a good fit, file an issue and start a discussion before proceeding.
-* DON'T submit PRs that alter licensing related files or headers. If you believe there's a problem with them, file an issue and we'll be happy to discuss it.
+## Community Guidelines
+- **Be Respectful**: Treat everyone with respect. We strive to create a welcoming and inclusive environment.
+- **Follow the Code of Conduct**: Familiarize yourself with our [Code of Conduct](https://github.com/MobileNativeFoundation/Store/blob/main/CODE_OF_CONDUCT.md).
 
-
-Coding Style
-------------
-
-The coding style employed here is fairly conventional Java - indentations are four spaces, class
-names are PascalCased, identifiers and methods are camelCased.
-
-We use [ktlint](https://github.com/pinterest/ktlint) with the [ktlint gradle plugin](https://github.com/JLLeitschuh/ktlint-gradle) for Kotlin code formatting.
-To make sure the IDE agrees with rules we use, please run `./gradlew ktlintApplyToIdea` to generate IntelliJ IDEA / Android Studio Kotlin style files in the project .idea/ folder.    
-
-Workflow
---------
-
-We love Github issues!  Before working on any new features, please open an issue so that we can agree on the
-direction, and hopefully avoid investing a lot of time on a feature that might need reworking.
-
-Small pull requests for things like typos, bugfixes, etc are always welcome.
-
-Please note that we will not accept pull requests for style changes.
-
-We use the [binary-compatibility-validator plugin](https://github.com/Kotlin/binary-compatibility-validator) for tracking the binary compatibility of the APIs we ship.
-If your change implies changes to any public API, run `./gradlew apiDump` to generate the updated API dumps and commit those changes.
+## Getting Help
+- **Join the Community**: If you have questions or need help, join our [Slack channel](https://kotlinlang.slack.com/archives/C06007Z01HU).

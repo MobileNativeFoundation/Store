@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5
 
-import co.touchlab.kermit.Logger
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -34,10 +33,12 @@ class LocalOnlyTests {
     fun givenPrimedMemoryCacheThenCacheOnlyRequestReturnsData() = testScope.runTest {
         val fetcherHitCounter = atomic(0)
         val store = StoreBuilder
-            .from(Fetcher.of { _: Int ->
-                fetcherHitCounter += 1
-                "result"
-            })
+            .from(
+                Fetcher.of { _: Int ->
+                    fetcherHitCounter += 1
+                    "result"
+                }
+            )
             .cachePolicy(
                 MemoryPolicy
                     .builder<Any, Any>()
@@ -56,10 +57,12 @@ class LocalOnlyTests {
     fun givenInvalidMemoryCacheThenCacheOnlyRequestReturnsNoNewData() = testScope.runTest {
         val fetcherHitCounter = atomic(0)
         val store = StoreBuilder
-            .from(Fetcher.of { _: Int ->
-                fetcherHitCounter += 1
-                "result"
-            })
+            .from(
+                Fetcher.of { _: Int ->
+                    fetcherHitCounter += 1
+                    "result"
+                }
+            )
             .cachePolicy(
                 MemoryPolicy
                     .builder<Any, Any>()
