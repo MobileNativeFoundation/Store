@@ -45,7 +45,7 @@ class SourceOfTruthErrorsTests {
             pipeline.stream(StoreReadRequest.fresh(3)),
             listOf(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "a",
@@ -79,7 +79,7 @@ class SourceOfTruthErrorsTests {
         assertEmitsExactly(
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
             listOf(
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = ReadException(
                         key = 3,
                         cause = TestException("null")
@@ -92,7 +92,7 @@ class SourceOfTruthErrorsTests {
                 ),
                 // and after fetcher writes the value, it will trigger another read which will also
                 // fail
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = ReadException(
                         key = 3,
                         cause = TestException("a")
@@ -129,7 +129,7 @@ class SourceOfTruthErrorsTests {
                 StoreReadResponse.Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "a",
@@ -141,7 +141,7 @@ class SourceOfTruthErrorsTests {
                     value = "b",
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = WriteException(
                         key = 3,
                         value = "c",
@@ -350,7 +350,7 @@ class SourceOfTruthErrorsTests {
             assertEmitsExactly(
                 pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
                 listOf(
-                    StoreReadResponse.Error.Exception(
+                    StoreReadResponse.Error(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error = ReadException(
                             key = 3,

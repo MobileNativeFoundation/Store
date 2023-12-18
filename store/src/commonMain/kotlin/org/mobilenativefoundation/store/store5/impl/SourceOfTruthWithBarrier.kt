@@ -101,7 +101,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                         }
                                     }.catch { throwable ->
                                         this.emit(
-                                            StoreReadResponse.Error.Exception(
+                                            StoreReadResponse.Error(
                                                 error = SourceOfTruth.ReadException(
                                                     key = key,
                                                     cause = throwable.cause ?: throwable
@@ -120,7 +120,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                     // if we have a pending error, make sure to dispatch it first.
                                     if (writeError != null) {
                                         emit(
-                                            StoreReadResponse.Error.Exception(
+                                            StoreReadResponse.Error(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
                                                 error = writeError
                                             )

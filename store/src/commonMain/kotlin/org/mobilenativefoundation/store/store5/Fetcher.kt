@@ -103,7 +103,7 @@ interface Fetcher<Key : Any, Network : Any> {
         ): Fetcher<Key, Network> = FactoryFetcher { key: Key ->
             flowFactory(key)
                 .map<Network, FetcherResult<Network>> { FetcherResult.Data(it, name) }
-                .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
+                .catch { throwable: Throwable -> emit(FetcherResult.Error(throwable)) }
         }
 
         /**
@@ -120,7 +120,7 @@ interface Fetcher<Key : Any, Network : Any> {
                 .map<Network, FetcherResult<Network>> {
                     FetcherResult.Data(it, name)
                 }
-                .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
+                .catch { throwable: Throwable -> emit(FetcherResult.Error(throwable)) }
         }, fallback = fallback)
 
         /**
@@ -177,7 +177,7 @@ interface Fetcher<Key : Any, Network : Any> {
                         send(fetcherResult)
                     }
 
-                    is FetcherResult.Error -> {
+                    is FetcherResult.Error<*> -> {
                         if (fallback != null) {
                             tryFetch(key, fallback::invoke, fallback.fallback).collect { send(it) }
                         } else {

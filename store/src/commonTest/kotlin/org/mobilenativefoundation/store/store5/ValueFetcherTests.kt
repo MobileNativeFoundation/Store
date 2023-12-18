@@ -31,7 +31,7 @@ class ValueFetcherTests {
         }
         assertEmitsExactly(
             fetcher(3),
-            listOf(FetcherResult.Error.Exception(e))
+            listOf(FetcherResult.Error(e))
         )
     }
 
@@ -51,6 +51,6 @@ class ValueFetcherTests {
         val fetcher = Fetcher.of<Int, Int> {
             throw e
         }
-        assertEmitsExactly(fetcher(3), listOf(FetcherResult.Error.Exception(e)))
+        assertEmitsExactly(fetcher(3), listOf(FetcherResult.Error(e)))
     }
 }

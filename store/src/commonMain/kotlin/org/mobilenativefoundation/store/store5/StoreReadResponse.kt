@@ -48,22 +48,10 @@ sealed class StoreReadResponse<out Output> {
     /**
      * Error dispatched by a pipeline
      */
-    sealed class Error : StoreReadResponse<Nothing>() {
-        data class Exception(
-            val error: Throwable,
-            override val origin: StoreReadResponseOrigin
-        ) : Error()
-
-        data class Message(
-            val message: String,
-            override val origin: StoreReadResponseOrigin
-        ) : Error()
-
-        data class Custom<E : Any>(
-            val error: E,
-            override val origin: StoreReadResponseOrigin
-        ) : Error()
-    }
+    data class Error<E: Any>(
+        val error: E,
+        override val origin: StoreReadResponseOrigin
+    ) : StoreReadResponse<Nothing>()
 
     /**
      * Returns the available data or throws [NullPointerException] if there is no data.
@@ -71,7 +59,7 @@ sealed class StoreReadResponse<out Output> {
     fun requireData(): Output {
         return when (this) {
             is Data -> value
-            is Error -> this.doThrow()
+            is Error<*> -> this.doThrow()
             else -> throw NullPointerException("there is no data in $this")
         }
     }
@@ -81,20 +69,22 @@ sealed class StoreReadResponse<out Output> {
      * Otherwise, does nothing.
      */
     fun throwIfError() {
-        if (this is Error) {
+        if (this is Error<*>) {
             this.doThrow()
         }
     }
 
     /**
      * If this [StoreReadResponse] is of type [StoreReadResponse.Error], returns the available error
-     * from it. Otherwise, returns `null`.
+     * message from it. Otherwise, returns `null`.
      */
     fun errorMessageOrNull(): String? {
-        return when (this) {
-            is Error.Message -> message
-            is Error.Exception -> error.message ?: "exception: ${error::class}"
-            else -> null
+        val error = (this as? Error<*>)?.error ?: return null
+
+        return when (error) {
+            is String -> error
+            is Exception -> error.message ?: "exception: ${error::class}"
+            else -> error.toString()
         }
     }
 
@@ -106,26 +96,9 @@ sealed class StoreReadResponse<out Output> {
         else -> null
     }
 
-    fun errorOrNull(): Throwable? {
-        if (this is Error.Exception) {
-            return error
-        }
-
-        return null
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <E : Any> errorOrNull(): E? {
-        if (this is Error.Custom<*>) {
-            return (this as? Error.Custom<E>)?.error
-        }
-
-        return errorOrNull() as? E
-    }
-
     @Suppress("UNCHECKED_CAST")
     internal fun <T> swapType(): StoreReadResponse<T> = when (this) {
-        is Error -> this
+        is Error<*> -> this
         is Loading -> this
         is NoNewData -> this
         is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
@@ -153,10 +126,10 @@ sealed class StoreReadResponseOrigin {
     data class Fetcher(val name: String? = null) : StoreReadResponseOrigin()
 }
 
-fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
-    is StoreReadResponse.Error.Exception -> throw error
-    is StoreReadResponse.Error.Message -> throw RuntimeException(message)
-    is StoreReadResponse.Error.Custom<*> -> {
+fun StoreReadResponse.Error<*>.doThrow(): Nothing = when (error) {
+    is Exception -> throw error
+    is String -> throw RuntimeException(error)
+    else -> {
         if (error is Throwable) {
             throw error
         } else {

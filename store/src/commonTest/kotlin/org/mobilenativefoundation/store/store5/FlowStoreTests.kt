@@ -464,7 +464,7 @@ class FlowStoreTests {
                 Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = exception,
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
@@ -484,7 +484,7 @@ class FlowStoreTests {
                 Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = exception,
                     origin = StoreReadResponseOrigin.Fetcher()
                 )

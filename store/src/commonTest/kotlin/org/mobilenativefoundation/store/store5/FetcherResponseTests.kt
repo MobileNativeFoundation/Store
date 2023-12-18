@@ -38,7 +38,7 @@ class FetcherResponseTests {
             val store = StoreBuilder.from(
                 fetcher = Fetcher.ofResultFlow { key: Int ->
                     flowOf(
-                        FetcherResult.Error.Exception(exception),
+                        FetcherResult.Error(exception),
                         FetcherResult.Data("$key")
                     )
                 }
@@ -50,7 +50,7 @@ class FetcherResponseTests {
                 ),
                 listOf(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
+                    StoreReadResponse.Error(exception, StoreReadResponseOrigin.Fetcher()),
                     StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher())
                 )
             )
@@ -94,7 +94,7 @@ class FetcherResponseTests {
                 if (it > 0) {
                     FetcherResult.Data(it)
                 } else {
-                    FetcherResult.Error.Message("zero")
+                    FetcherResult.Error("zero")
                 }
             }
         }
@@ -107,8 +107,8 @@ class FetcherResponseTests {
                 StoreReadResponse.Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Message(
-                    message = "zero",
+                StoreReadResponse.Error(
+                    error = "zero",
                     origin = StoreReadResponseOrigin.Fetcher()
                 )
             )
@@ -136,7 +136,7 @@ class FetcherResponseTests {
                 if (it > 0) {
                     FetcherResult.Data(it)
                 } else {
-                    FetcherResult.Error.Exception(e)
+                    FetcherResult.Error(e)
                 }
             }
         }
@@ -150,7 +150,7 @@ class FetcherResponseTests {
                 StoreReadResponse.Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = e,
                     origin = StoreReadResponseOrigin.Fetcher()
                 )
@@ -191,7 +191,7 @@ class FetcherResponseTests {
                 StoreReadResponse.Loading(
                     origin = StoreReadResponseOrigin.Fetcher()
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     error = e,
                     origin = StoreReadResponseOrigin.Fetcher()
                 )

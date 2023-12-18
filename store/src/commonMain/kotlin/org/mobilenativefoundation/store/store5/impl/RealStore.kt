@@ -230,7 +230,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     requestKeyToFetcherName[request.key] = responseOrigin.name
 
                     val fallBackToSourceOfTruth =
-                        it.value is StoreReadResponse.Error && request.fallBackToSourceOfTruth
+                        it.value is StoreReadResponse.Error<*> && request.fallBackToSourceOfTruth
 
                     if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || fallBackToSourceOfTruth) {
                         // Unlocking disk only if network sent data or reported no new data
@@ -278,7 +278,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             }
                         }
 
-                        is StoreReadResponse.Error -> {
+                        is StoreReadResponse.Error<*> -> {
                             // disk sent an error, send it down as well
                             emit(diskData)
 
@@ -286,9 +286,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             // values since there is nothing to read from disk. If disk sent a write
                             // error, we should NOT allow fetcher to start emitting values as we
                             // should always wait for the read attempt.
-                            if (diskData is StoreReadResponse.Error.Exception &&
-                                diskData.error is SourceOfTruth.ReadException
-                            ) {
+                            if (diskData.error is SourceOfTruth.ReadException) {
                                 networkLock.complete(Unit)
                             }
                             // for other errors, don't do anything, wait for the read attempt

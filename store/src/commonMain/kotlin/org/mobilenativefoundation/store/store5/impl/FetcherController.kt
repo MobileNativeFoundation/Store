@@ -83,19 +83,9 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                             ) as StoreReadResponse<Network>
                         }
 
-                        is FetcherResult.Error.Message -> StoreReadResponse.Error.Message(
-                            it.message,
-                            origin = StoreReadResponseOrigin.Fetcher()
-                        )
-
-                        is FetcherResult.Error.Exception -> StoreReadResponse.Error.Exception(
+                        is FetcherResult.Error<*> -> StoreReadResponse.Error(
                             it.error,
                             origin = StoreReadResponseOrigin.Fetcher()
-                        )
-
-                        is FetcherResult.Error.Custom<*> -> StoreReadResponse.Error.Custom(
-                            it.error,
-                            StoreReadResponseOrigin.Fetcher()
                         )
                     }
                 }.onEmpty {

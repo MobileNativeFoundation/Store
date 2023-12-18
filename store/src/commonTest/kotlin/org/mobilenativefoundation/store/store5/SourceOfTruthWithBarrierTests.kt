@@ -144,7 +144,7 @@ class SourceOfTruthWithBarrierTests {
         assertEmitsExactly(
             source.reader(1, CompletableDeferred(Unit)),
             listOf(
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
@@ -175,7 +175,7 @@ class SourceOfTruthWithBarrierTests {
         }
         advanceUntilIdle()
         assertEquals(
-            StoreReadResponse.Error.Exception(
+            StoreReadResponse.Error(
                 origin = StoreReadResponseOrigin.SourceOfTruth,
                 error = ReadException(
                     key = 1,
@@ -191,7 +191,7 @@ class SourceOfTruthWithBarrierTests {
         advanceUntilIdle()
         assertEquals(
             listOf<StoreReadResponse<String?>>(
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = ReadException(
                         key = 1,
@@ -237,7 +237,7 @@ class SourceOfTruthWithBarrierTests {
                     origin = StoreReadResponseOrigin.SourceOfTruth,
                     value = null
                 ),
-                StoreReadResponse.Error.Exception(
+                StoreReadResponse.Error(
                     origin = StoreReadResponseOrigin.SourceOfTruth,
                     error = WriteException(
                         key = 1,
