@@ -33,19 +33,20 @@ fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTrut
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
     memoryCache: Cache<Key, Output>,
 ): StoreBuilder<Key, Output> =
-    RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
+    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
+
+fun <Key : Any, Network : Any, Output : Any, Local: Any> storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+    fetcher: Fetcher<Key, Network>,
+    sourceOfTruth: SourceOfTruth<Key, Local, Output>,
+    memoryCache: Cache<Key, Output>?,
+    converter: Converter<Network, Local, Output>,
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth, memoryCache, converter)
 
 internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
     private val memoryCache: Cache<Key, Output>? = null,
-    private val converter: Converter<Network, Local, Output> = object :
-        Converter<Network, Local, Output> {
-        override fun fromOutputToLocal(output: Output): Local =
-            throw IllegalStateException("non mutable store never call this function")
-
-        override fun fromNetworkToLocal(network: Network): Local = network as Local
-    }
+    private val converter: Converter<Network, Local, Output>? = null
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -75,7 +76,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        converter = converter,
+        converter = converter?: defaultConverter(),
         validator = validator,
         memCache = memoryCache ?: cachePolicy?.let {
             CacheBuilder<Key, Output>().apply {
@@ -131,5 +132,12 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
                 validator(this@RealStoreBuilder.validator!!)
             }
         }
+    }
+
+     private fun <Network: Any, Local: Any, Output: Any> defaultConverter() = object : Converter<Network, Local, Output> {
+        override fun fromOutputToLocal(output: Output): Local =
+            throw IllegalStateException("non mutable store never call this function")
+
+        override fun fromNetworkToLocal(network: Network): Local = network as Local
     }
 }

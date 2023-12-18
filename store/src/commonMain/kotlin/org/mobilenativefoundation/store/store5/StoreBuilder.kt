@@ -20,6 +20,7 @@ import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcher
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSourceOfTruth
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourceOfTruthAndMemoryCache
+import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter
 
 /**
  * Main entry point for creating a [Store].
@@ -82,6 +83,29 @@ interface StoreBuilder<Key : Any, Output : Any> {
             fetcher,
             sourceOfTruth,
             memoryCache
+        )
+
+        fun <Key : Any, Network : Any, Output : Any, Local: Any> from(
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local, Output>,
+            converter: Converter<Network, Local, Output>
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+            fetcher,
+            sourceOfTruth,
+            null,
+            converter
+        )
+
+        fun <Key : Any, Network : Any, Output : Any, Local: Any> from(
+            fetcher: Fetcher<Key, Network>,
+            sourceOfTruth: SourceOfTruth<Key, Local, Output>,
+            memoryCache: Cache<Key, Output>,
+            converter: Converter<Network, Local, Output>
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+            fetcher,
+            sourceOfTruth,
+            memoryCache,
+            converter
         )
     }
 }
