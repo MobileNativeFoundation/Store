@@ -6,8 +6,5 @@ sealed class StoreWriteResponse {
         data class Untyped(val value: Any) : Success()
     }
 
-    sealed class Error : StoreWriteResponse() {
-        data class Exception(val error: Throwable) : Error()
-        data class Message(val message: String) : Error()
-    }
+    data class Error<E: Any>(val error: E) : StoreWriteResponse()
 }

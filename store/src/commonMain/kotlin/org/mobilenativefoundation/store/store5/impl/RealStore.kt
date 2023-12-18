@@ -322,7 +322,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
-        StoreDelegateWriteResult.Error.Exception(error)
+        StoreDelegateWriteResult.Error(error)
     }
 
     internal suspend fun latestOrNull(key: Key): Output? =

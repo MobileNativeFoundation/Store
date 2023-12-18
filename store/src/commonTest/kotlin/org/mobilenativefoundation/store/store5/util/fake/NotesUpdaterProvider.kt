@@ -13,7 +13,7 @@ internal class NotesUpdaterProvider(private val api: NotesApi) {
             if (response.ok) {
                 UpdaterResult.Success.Typed(response)
             } else {
-                UpdaterResult.Error.Message("Failed to sync")
+                UpdaterResult.Error("Failed to sync")
             }
         }
     )

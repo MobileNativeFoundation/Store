@@ -43,12 +43,8 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             safeInitStore(request.key)
 
             when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
-                is EagerConflictResolutionResult.Error.Exception -> {
+                is EagerConflictResolutionResult.Error<*> -> {
                     logger.e(eagerConflictResolutionResult.error.toString())
-                }
-
-                is EagerConflictResolutionResult.Error.Message -> {
-                    logger.e(eagerConflictResolutionResult.message)
                 }
 
                 is EagerConflictResolutionResult.Success.ConflictsResolved -> {
@@ -75,8 +71,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                     val storeWriteResponse = try {
                         delegate.write(writeRequest.key, writeRequest.value)
                         when (val updaterResult = tryUpdateServer(writeRequest)) {
-                            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                            is UpdaterResult.Error<*> -> StoreWriteResponse.Error(updaterResult.error)
                             is UpdaterResult.Success.Typed<*> -> {
                                 val typedValue = updaterResult.value as? Response
                                 if (typedValue == null) {
@@ -89,7 +84,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                             is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                         }
                     } catch (throwable: Throwable) {
-                        StoreWriteResponse.Error.Exception(throwable)
+                        StoreWriteResponse.Error(throwable)
                     }
                     emit(storeWriteResponse)
                 }
@@ -119,8 +114,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private suspend fun <Response : Any> postLatest(key: Key): UpdaterResult {
         val writer = getLatestWriteRequest(key)
         return when (val updaterResult = updater.post(key, writer.value)) {
-            is UpdaterResult.Error.Exception -> UpdaterResult.Error.Exception(updaterResult.error)
-            is UpdaterResult.Error.Message -> UpdaterResult.Error.Message(updaterResult.message)
+            is UpdaterResult.Error<*> -> UpdaterResult.Error(updaterResult.error)
             is UpdaterResult.Success.Untyped -> UpdaterResult.Success.Untyped(updaterResult.value)
             is UpdaterResult.Success.Typed<*> -> {
                 val typedValue = updaterResult.value as? Response
@@ -226,12 +220,11 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                         }
 
                         when (updaterResult) {
-                            is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(updaterResult.message)
+                            is UpdaterResult.Error<*> -> EagerConflictResolutionResult.Error(updaterResult.error)
                             is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)
                         }
                     } catch (throwable: Throwable) {
-                        EagerConflictResolutionResult.Error.Exception(throwable)
+                        EagerConflictResolutionResult.Error(throwable)
                     }
                 }
             }

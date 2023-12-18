@@ -7,8 +7,5 @@ sealed class UpdaterResult {
         data class Untyped(val value: Any) : Success()
     }
 
-    sealed class Error : UpdaterResult() {
-        data class Exception(val error: Throwable) : Error()
-        data class Message(val message: String) : Error()
-    }
+    data class Error<E: Any>(val error: E) : UpdaterResult()
 }

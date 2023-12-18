@@ -55,7 +55,7 @@ class MutableStoreWithMultiCacheTests {
             converter
         ).build(
             updater = Updater.by(
-                post = { _, _ -> UpdaterResult.Error.Exception(Exception()) }
+                post = { _, _ -> UpdaterResult.Error(Exception()) }
             )
         )
 

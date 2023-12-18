@@ -9,8 +9,5 @@ sealed class EagerConflictResolutionResult<out Response : Any> {
         data class ConflictsResolved<Response : Any>(val value: UpdaterResult.Success) : Success<Response>()
     }
 
-    sealed class Error : EagerConflictResolutionResult<Nothing>() {
-        data class Message(val message: String) : Error()
-        data class Exception(val error: Throwable) : Error()
-    }
+    data class Error<E: Any>(val error: E) : EagerConflictResolutionResult<Nothing>()
 }
