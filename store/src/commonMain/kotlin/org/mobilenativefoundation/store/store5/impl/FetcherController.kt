@@ -92,6 +92,10 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                             it.error,
                             origin = StoreReadResponseOrigin.Fetcher()
                         )
+                        is FetcherResult.Error.Custom<*> -> StoreReadResponse.Error.Custom(
+                            it.error,
+                            StoreReadResponseOrigin.Fetcher()
+                        )
                     }
                 }.onEmpty {
                     val origin =

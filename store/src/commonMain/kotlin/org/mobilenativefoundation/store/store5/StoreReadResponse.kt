@@ -44,8 +44,8 @@ sealed class StoreReadResponse<out Output> {
         StoreReadResponse<Output>()
 
     /**
-     * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e the
-     * returned [kotlinx.coroutines.Flow], when collected, was empty).
+     * No new data event dispatched by Store to signal the [Fetcher] returned no data (i.e., the
+     * returned [kotlinx.coroutines.flow.Flow], when collected, was empty).
      */
     data class NoNewData(override val origin: StoreReadResponseOrigin) : StoreReadResponse<Nothing>()
 
@@ -60,6 +60,11 @@ sealed class StoreReadResponse<out Output> {
 
         data class Message(
             val message: String,
+            override val origin: StoreReadResponseOrigin
+        ) : Error()
+
+        data class Custom<E : Any>(
+            val error: E,
             override val origin: StoreReadResponseOrigin
         ) : Error()
     }
@@ -105,6 +110,26 @@ sealed class StoreReadResponse<out Output> {
         else -> null
     }
 
+    private fun errorOrNull(): Throwable? {
+        if (this is Error.Exception) {
+            return error
+        }
+
+        return null
+    }
+
+    /**
+     * @returns Error if there is one, else null.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <E : Any> errorOrNull(): E? {
+        if (this is Error.Custom<*>) {
+            return (this as? Error.Custom<E>)?.error
+        }
+
+        return errorOrNull() as? E
+    }
+
     @Suppress("UNCHECKED_CAST")
     internal fun <T> swapType(): StoreReadResponse<T> = when (this) {
         is Error -> this
@@ -141,4 +166,11 @@ sealed class StoreReadResponseOrigin {
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
     is StoreReadResponse.Error.Exception -> throw error
     is StoreReadResponse.Error.Message -> throw RuntimeException(message)
+    is StoreReadResponse.Error.Custom<*> -> {
+        if (error is Throwable) {
+            throw error
+        } else {
+            throw RuntimeException("Non-throwable custom error: $error")
+        }
+    }
 }
