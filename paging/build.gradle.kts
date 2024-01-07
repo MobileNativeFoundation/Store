@@ -49,8 +49,22 @@ kotlin {
 }
 
 android {
-
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
 
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    defaultConfig {
+        minSdk = 24
+    }
+
+    lint {
+        disable += "ComposableModifierFactory"
+        disable += "ModifierFactoryExtensionFunction"
+        disable += "ModifierFactoryReturnType"
+        disable += "ModifierFactoryUnreferencedReceiver"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 }
