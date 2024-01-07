@@ -211,6 +211,32 @@ class FetcherResponseTests {
         )
     }
 
+    @Test
+    fun givenAFetcherThatEmitsCustomErrorWhenStreamingThenCustomErrorShouldBeEmitted() = testScope.runTest {
+        data class TestCustomError(val errorMessage: String)
+        val customError = TestCustomError("Test custom error")
+
+        val store = StoreBuilder.from(
+            fetcher = Fetcher.ofResultFlow { _: Int ->
+                flowOf(
+                    FetcherResult.Error.Custom(customError)
+                )
+            }
+        ).buildWithTestScope()
+
+        assertEmitsExactly(
+            store.stream(StoreReadRequest.fresh(1)),
+            listOf(
+                StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                StoreReadResponse.Error.Custom(
+                    error = customError,
+                    origin = StoreReadResponseOrigin.Fetcher()
+                )
+            )
+        )
+    }
+
+
     private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
         scope(testScope).build()
 }
