@@ -116,7 +116,7 @@ addGithubPackagesRepository()
 kmmbridge {
     githubReleaseArtifacts()
     githubReleaseVersions()
-    versionPrefix.set("5.0.0-alpha")
+    versionPrefix.set("5.0.0")
     spm()
 }
 
