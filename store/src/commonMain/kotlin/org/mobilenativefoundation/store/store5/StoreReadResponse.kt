@@ -28,6 +28,10 @@ sealed class StoreReadResponse<out Output> {
      */
     abstract val origin: StoreReadResponseOrigin
 
+    object Initial : StoreReadResponse<Nothing>() {
+        override val origin: StoreReadResponseOrigin = StoreReadResponseOrigin.Initial
+    }
+
     /**
      * Loading event dispatched by [Store] to signal the [Fetcher] is in progress.
      */
@@ -107,6 +111,7 @@ sealed class StoreReadResponse<out Output> {
         is Loading -> this
         is NoNewData -> this
         is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
+        is Initial -> this
     }
 }
 
@@ -129,6 +134,8 @@ sealed class StoreReadResponseOrigin {
      * @property name Unique name to enable differentiation when [org.mobilenativefoundation.store.store5.Fetcher.fallback] exists
      */
     data class Fetcher(val name: String? = null) : StoreReadResponseOrigin()
+
+    object Initial : StoreReadResponseOrigin()
 }
 
 fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {

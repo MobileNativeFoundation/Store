@@ -294,6 +294,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                             // for other errors, don't do anything, wait for the read attempt
                         }
 
+                        is StoreReadResponse.Initial,
                         is StoreReadResponse.Loading,
                         is StoreReadResponse.NoNewData -> {
                         }

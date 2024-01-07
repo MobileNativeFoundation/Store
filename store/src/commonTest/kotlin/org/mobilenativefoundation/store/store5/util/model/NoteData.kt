@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.store5.util.model
 
-import org.mobilenativefoundation.store.cache5.Identifiable
 import org.mobilenativefoundation.store.store5.util.fake.NotesKey
 
 internal sealed class NoteData {
@@ -29,7 +28,7 @@ internal data class OutputNote(
 )
 
 internal data class Note(
-    override val id: String,
+    val id: String,
     val title: String,
     val content: String
-) : Identifiable<String>
+)
