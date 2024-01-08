@@ -1,0 +1,47 @@
+---
+slug: /tutorial/2
+sidebar_position: 2
+sidebar_class_name: tutorial_2
+title: Adding Dependencies
+---
+
+Open `libs.versions.toml` and add:
+
+```yaml
+# gradle/libs.versions.toml
+
+[versions]
+kotlin = "1.9.21" # https://github.com/JetBrains/kotlin/releases
+serialization = "1.5.1" # https://github.com/Kotlin/kotlinx.serialization/releases
+store = "5.0.0"
+
+[libraries]
+serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+store = { module = "org.mobilenativefoundation.store:store5", version.ref = "store" }
+
+[plugins]
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+```
+
+Then update our `shared` module:
+
+```kts
+// shared/build.gradle.kts
+
+plugins {
+    alias(libs.plugins.serialization)
+}
+
+kotlin {
+     sourceSets {
+        commonMain {
+            dependencies {
+                implementation(libs.serialization.core)
+                implementation(libs.serialization.json)
+                implementation(libs.store)
+            }
+        }
+    }
+}
+```

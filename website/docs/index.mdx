@@ -1,0 +1,60 @@
+---
+slug: /tutorial
+sidebar_position: 1
+sidebar_class_name: tutorial_index
+---
+
+
+import {StoreNewsAppImage} from "../src/components/StoreNewsAppImage";
+
+# Store Fundamentals in 30 Minutes
+
+## Introduction
+
+In this tutorial, we will build a news app using Store. Our goal is to create a reliable and efficient mobile app that handles data well. Store is a tool for managing data fetching and caching. It ensures that users can access news articles quickly, even when offline.
+
+<StoreNewsAppImage/>
+
+The app we're building will mirror the functionality shown in the design mocks above. It will be simple: pulling news data from a remote source, caching it, and displaying it to users. As we go through the steps, you will learn to implement Store to handle data loading and storage.
+
+You will see how Store can streamline the process of building a data-centric application. By the end of this tutorial, you will understand the core principles of using the Store library in a mobile app, setting a foundation for further development and learning. Let's begin.
+
+## Prerequisites
+- Knowledge of Kotlin
+- Android Studio or IntelliJ installed
+- Familiarity with Jetpack Compose
+
+## Step 1: Setting Up Your Project
+Open your IDE and create a new project. Name it "StoreNewsApp". Ensure the target platform is correctly set for either Android or iOS.
+
+## Step 2: Adding Dependencies
+For Android, add Store library dependencies in build.gradle. For iOS, add Store via CocoaPods or Swift Package Manager. Sync your project after adding.
+
+## Step 3: Creating Data Models
+Define a NewsArticle class with properties such as title, description, and imageUrl. These models represent the articles in the app.
+
+## Step 4: Implementing Networking
+Set up the networking layer. Use Retrofit for Android or URLSession for iOS. Write functions to fetch news articles from a mock API endpoint.
+
+## Step 5: Integrating Store
+Create a NewsStore by extending the Store class. Configure it to fetch, cache, and return NewsArticle objects. Use the networking functions you wrote for data fetching.
+
+## Step 6: Building the UI
+Design the main screen using RecyclerView for Android or UICollectionView for iOS. Create item views for articles that display the title and image.
+
+## Step 7: Fetching and Displaying Data
+In the main activity or view controller, initialize NewsStore. Fetch articles and observe changes. Update the UI accordingly when data is fetched or updated.
+
+## Step 8: Handling User Interaction
+Implement pull-to-refresh to reload articles. When users trigger refresh, the Store should fetch new data and update the cache.
+
+## Step 9: Running and Testing
+Run the app in an emulator or on a device. Check if articles are fetched, cached, and displayed. Ensure pull-to-refresh updates articles.
+
+## Step 10: Exploring Advanced Store Features
+If time permits, look into Store's advanced features like Stream for real-time updates or explore different caching strategies provided by the library.
+
+Conclusion
+You now have a basic yet functional news app. The Store library is handling data operations seamlessly. Use this foundation to expand into a more robust application.
+
+Remember, this app is a starting point. The Store library is capable of handling more complex scenarios which you can explore as you become more familiar with its features.

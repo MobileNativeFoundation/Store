@@ -1,0 +1,81 @@
+---
+slug: /tutorial/3
+sidebar_position: 3
+sidebar_class_name: tutorial_3
+title: Creating Data Models
+---
+
+import {IssuesImage} from "../src/components/IssuesImage";
+import {PublicationsImage} from "../src/components/PublicationsImage";
+import {TopStoriesImage} from "../src/components/TopStoriesImage";
+import {StoryImage} from "../src/components/StoryImage";
+import {BusinessStoriesImage} from "../src/components/BusinessStoriesImage";
+
+## Publications View
+
+<PublicationsImage/>
+
+<div style={{height: 40, width: "100%"}}/>
+
+```kotlin
+@Serializable
+data class Publication(
+    val id: String,
+    val name: String,
+    val description: String,
+    val isFollowing: Boolean,
+    val issues: List<Issue>
+)
+```
+
+## Detailed Publication View
+
+<div style={{display: "flex", flexDirection: "row", justifyContent: "space-around"}}>
+<TopStoriesImage/>
+
+<IssuesImage/>
+
+<BusinessStoriesImage/>
+
+</div>
+
+<div style={{height: 40, width: "100%"}}/>
+
+```kotlin
+@Serializable
+data class Issue(
+    val id: String,
+    val title: String,
+    val coverImageUrl: String,
+    val datePublished: Long,
+    val topStories: List<Story>
+)
+```
+
+
+```kotlin
+@Serializable
+data class Tag(
+    val id: String,
+    val name: String,
+)
+```
+
+## Detailed Story View
+
+<StoryImage/>
+
+<div style={{height: 40, width: "100%"}}/>
+
+```kotlin
+@Serializable
+data class Story(
+    val id: String,
+    val title: String,
+    val summary: String,
+    val content: String,
+    val imageUrl: String,
+    val datePublished: String,
+    val tags: List<Tag>
+)
+```
