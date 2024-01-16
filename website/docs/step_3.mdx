@@ -2,80 +2,141 @@
 slug: /tutorial/3
 sidebar_position: 3
 sidebar_class_name: tutorial_3
-title: Creating Data Models
+title: Building Your First Store
 ---
 
-import {IssuesImage} from "../src/components/IssuesImage";
-import {PublicationsImage} from "../src/components/PublicationsImage";
-import {TopStoriesImage} from "../src/components/TopStoriesImage";
-import {StoryImage} from "../src/components/StoryImage";
-import {BusinessStoriesImage} from "../src/components/BusinessStoriesImage";
 
-## Publications View
+
+
+import {PublicationsImage} from "../src/components/PublicationsImage";
+
+### Publications View
 
 <PublicationsImage/>
 
 <div style={{height: 40, width: "100%"}}/>
 
+- Open `PublicationsStore.kt` under `:shared:feat:exploreTab:impl`.
+
+- We will leverage the Scoop SDK.
+
+- Here's the `Publication` data model.
+
 ```kotlin
-@Serializable
+// From the Scoop SDK
+
+package ai.wandering.scoop.v1.models
+
 data class Publication(
     val id: String,
-    val name: String,
-    val description: String,
-    val isFollowing: Boolean,
-    val issues: List<Issue>
-)
-```
-
-## Detailed Publication View
-
-<div style={{display: "flex", flexDirection: "row", justifyContent: "space-around"}}>
-<TopStoriesImage/>
-
-<IssuesImage/>
-
-<BusinessStoriesImage/>
-
-</div>
-
-<div style={{height: 40, width: "100%"}}/>
-
-```kotlin
-@Serializable
-data class Issue(
-    val id: String,
     val title: String,
-    val coverImageUrl: String,
-    val datePublished: Long,
-    val topStories: List<Story>
+    val logoUrl: String,
 )
 ```
 
+- Here's the `GetPublications` use case.
 
 ```kotlin
-@Serializable
-data class Tag(
-    val id: String,
-    val name: String,
+// From the Scoop SDK
+
+package ai.wandering.scoop.v1.models
+
+interface GetPublications {
+    suspend operator fun invoke(args: GetPublicationsArgs): GetPublicationsResponse
+}
+```
+
+- Here's the `GetPublicationsArgs` data model.
+
+```kotlin
+// From the Scoop SDK
+
+package ai.wandering.scoop.v1.models
+
+data class GetPublicationsArgs(
+    val count: Int,
+    val direction: CursorDirection,
+    val cursor: Cursor?,
 )
 ```
 
-## Detailed Story View
-
-<StoryImage/>
-
-<div style={{height: 40, width: "100%"}}/>
+- To fetch publications with the Scoop SDK, all we need to do is:
 
 ```kotlin
-@Serializable
-data class Story(
-    val id: String,
-    val title: String,
-    val summary: String,
-    val content: String,
-    val imageUrl: String,
-    val datePublished: String,
-    val tags: List<Tag>
+// PublicationsStore.kt
+
+package org.mobilenativefoundation.store.news.shared.feat.exploreTab.impl
+
+val args = GetPublicationsArgs(count = 100, direction = CursorDirection.NEWER, cursor = null)
+
+when (val response = scoopClient.getPublications(args)) {
+    is Error -> { /** TODO(): Handle error */ }
+    is Data -> { /** TODO(): Handle publications */ }
+}
+```
+
+- Let's introduce the concept of a `Fetcher`. A `Fetcher` is a class that fetches data from a remote source. In our case, we will be fetching data using the Scoop SDK, as above.
+
+```kotlin
+// PublicationsStore.kt
+
+package org.mobilenativefoundation.store.news.shared.feat.exploreTab.impl
+
+val fetcher = Fetcher.of<GetPublicationsArgs, Data> { args ->
+    flowOf(when (val response = scoopClient.getPublications(args)) {
+         is Error -> {
+            FetcherResult.Error.Message(response.value.message)
+        }
+
+        is Data -> {
+            response
+        }
+    })
+}
+
+```
+
+- Our next concept is a `SourceOfTruth`. A `SourceOfTruth` is a class that persists items. It's usually backed by a database or a disk cache, but it doesn't need to be. Here's a simple example:
+
+```kotlin
+// PublicationsStore.kt
+
+package org.mobilenativefoundation.store.news.shared.feat.exploreTab.impl
+
+val db = mutableMapOf<GetPublicationsArgs, Data>()
+
+// Don't worry too much about the generics right now.
+// We'll cover more advanced use cases with different network and local representations later.
+val sourceOfTruth = SourceOfTruth.of<GetPublicationsArgs, Data, Data>(
+    reader = {args: GetPublicationsArgs ->
+        flowOf(db[args])
+    },
+    writer = { (args: GetPublicationsArgs, data: Data) ->
+        db[args] = data
+    }
 )
+```
+
+- The last concept we need for getting started with Store is `StoreBuilder`. It builds a Store from a `Fetcher` and `SourceOfTruth`. It can also take in other classes and configurations (e.g., memory cache, validator, converter). We will cover these later.
+
+
+```kotlin
+// PublicationsStore.kt
+
+package org.mobilenativefoundation.store.news.shared.feat.exploreTab.impl
+
+val storeBuilder = StoreBuilder.from(
+    fetcher = fetcher,
+    sourceOfTruth = sourceOfTruth
+)
+```
+
+- Finally, to build the Store:
+
+```kotlin
+// PublicationsStore.kt
+
+package org.mobilenativefoundation.store.news.shared.feat.exploreTab.impl
+
+val store = storeBuilder.build()
 ```
