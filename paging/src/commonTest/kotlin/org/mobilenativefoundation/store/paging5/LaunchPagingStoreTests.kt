@@ -15,7 +15,7 @@ import org.mobilenativefoundation.store.paging5.util.PostDatabase
 import org.mobilenativefoundation.store.paging5.util.PostKey
 import org.mobilenativefoundation.store.paging5.util.PostPutRequestResult
 import org.mobilenativefoundation.store.paging5.util.PostStoreFactory
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse

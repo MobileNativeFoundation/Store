@@ -236,7 +236,6 @@ class FetcherResponseTests {
         )
     }
 
-
     private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() =
         scope(testScope).build()
 }
