@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.impl.extensions.inHours
 import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import org.mobilenativefoundation.store.store5.util.fake.Notes

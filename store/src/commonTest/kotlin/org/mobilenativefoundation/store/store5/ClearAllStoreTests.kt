@@ -5,6 +5,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import org.mobilenativefoundation.store.store5.util.getData

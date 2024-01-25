@@ -6,6 +6,7 @@ package org.mobilenativefoundation.store.core5
  * Provides mechanisms for ID-based fetch, page-based fetch, and cursor-based fetch.
  * Includes options for sorting and filtering.
  */
+@ExperimentalStoreApi
 interface StoreKey<out Id : Any> {
 
     /**

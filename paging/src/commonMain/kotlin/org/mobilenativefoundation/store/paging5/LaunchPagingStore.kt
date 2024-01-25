@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
@@ -27,6 +27,7 @@ private class StopProcessingException : Exception()
  * @param stream A lambda that invokes [Store.stream].
  * @return A read-only [StateFlow] reflecting the state of the Store.
  */
+@ExperimentalStoreApi
 private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
@@ -73,6 +74,7 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingS
  * Initializes and returns a [StateFlow] that reflects the state of the [Store], updating by a flow of provided keys.
  * @see [launchPagingStore].
  */
+@ExperimentalStoreApi
 fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
@@ -86,7 +88,7 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.la
  * Initializes and returns a [StateFlow] that reflects the state of the [Store], updating by a flow of provided keys.
  * @see [launchPagingStore].
  */
-@OptIn(ExperimentalStoreApi::class)
+@ExperimentalStoreApi
 fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.launchPagingStore(
     scope: CoroutineScope,
     keys: Flow<Key>,
@@ -96,6 +98,7 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Out
     }
 }
 
+@ExperimentalStoreApi
 private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> joinData(
     key: Key,
     prevResponse: StoreReadResponse<Output>,

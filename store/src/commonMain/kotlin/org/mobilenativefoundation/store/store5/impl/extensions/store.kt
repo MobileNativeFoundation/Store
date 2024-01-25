@@ -3,7 +3,7 @@ package org.mobilenativefoundation.store.store5.impl.extensions
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import org.mobilenativefoundation.store.store5.Bookkeeper
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest

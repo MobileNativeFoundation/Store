@@ -35,7 +35,7 @@ fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTrut
 ): StoreBuilder<Key, Output> =
     RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
 
-fun <Key : Any, Network : Any, Output : Any, Local: Any> storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>,
     memoryCache: Cache<Key, Output>?,
@@ -76,7 +76,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         scope = scope ?: GlobalScope,
         sourceOfTruth = sourceOfTruth,
         fetcher = fetcher,
-        converter = converter?: defaultConverter(),
+        converter = converter ?: defaultConverter(),
         validator = validator,
         memCache = memoryCache ?: cachePolicy?.let {
             CacheBuilder<Key, Output>().apply {
@@ -134,7 +134,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         }
     }
 
-     private fun <Network: Any, Local: Any, Output: Any> defaultConverter() = object : Converter<Network, Local, Output> {
+    private fun <Network : Any, Local : Any, Output : Any> defaultConverter() = object : Converter<Network, Local, Output> {
         override fun fromOutputToLocal(output: Output): Local =
             throw IllegalStateException("non mutable store never call this function")
 
