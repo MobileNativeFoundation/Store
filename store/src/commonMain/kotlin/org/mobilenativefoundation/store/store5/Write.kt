@@ -1,6 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
 import kotlinx.coroutines.flow.Flow
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 
 interface Write<Key : Any, Output : Any> {
     @ExperimentalStoreApi

@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.transform
 import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.CacheType
 import org.mobilenativefoundation.store.store5.Converter
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store

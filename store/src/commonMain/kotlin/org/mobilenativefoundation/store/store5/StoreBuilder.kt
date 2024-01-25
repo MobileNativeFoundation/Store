@@ -85,7 +85,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
             memoryCache
         )
 
-        fun <Key : Any, Network : Any, Output : Any, Local: Any> from(
+        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
             converter: Converter<Network, Local, Output>
@@ -96,7 +96,7 @@ interface StoreBuilder<Key : Any, Output : Any> {
             converter
         )
 
-        fun <Key : Any, Network : Any, Output : Any, Local: Any> from(
+        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
             memoryCache: Cache<Key, Output>,

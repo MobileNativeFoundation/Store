@@ -15,7 +15,7 @@ import org.mobilenativefoundation.store.rx2.observeClearAll
 import org.mobilenativefoundation.store.rx2.ofMaybe
 import org.mobilenativefoundation.store.rx2.ofResultSingle
 import org.mobilenativefoundation.store.rx2.withScheduler
-import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
 import org.mobilenativefoundation.store.store5.SourceOfTruth

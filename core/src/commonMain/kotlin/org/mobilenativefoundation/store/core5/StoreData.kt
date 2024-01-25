@@ -5,7 +5,7 @@ package org.mobilenativefoundation.store.core5
  * Every item that implements the [StoreData] interface must have a means of identification.
  * This is useful in scenarios when data can be represented as singles or collections.
  */
-
+@ExperimentalStoreApi
 interface StoreData<out Id : Any> {
 
     /**

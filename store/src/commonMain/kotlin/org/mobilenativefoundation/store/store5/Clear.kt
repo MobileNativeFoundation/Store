@@ -1,5 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
+
 interface Clear {
     interface Key<Key : Any> {
         /**

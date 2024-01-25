@@ -20,7 +20,6 @@ buildscript {
         classpath(libs.maven.publish.plugin)
         classpath(libs.kover.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
-        classpath(libs.molecule.gradle.plugin)
     }
 }
 

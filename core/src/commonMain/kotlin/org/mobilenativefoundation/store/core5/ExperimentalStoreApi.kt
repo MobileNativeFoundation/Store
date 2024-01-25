@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5
+package org.mobilenativefoundation.store.core5
 
 /**
  * Marks declarations that are still **experimental** in store API.
