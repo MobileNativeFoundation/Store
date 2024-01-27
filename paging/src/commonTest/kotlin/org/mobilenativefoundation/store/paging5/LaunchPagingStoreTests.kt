@@ -5,8 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.paging5.util.FakePostApi
 import org.mobilenativefoundation.store.paging5.util.FakePostDatabase
 import org.mobilenativefoundation.store.paging5.util.PostApi
@@ -15,12 +14,13 @@ import org.mobilenativefoundation.store.paging5.util.PostDatabase
 import org.mobilenativefoundation.store.paging5.util.PostKey
 import org.mobilenativefoundation.store.paging5.util.PostPutRequestResult
 import org.mobilenativefoundation.store.paging5.util.PostStoreFactory
-import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
@@ -33,7 +33,7 @@ class LaunchPagingStoreTests {
     private lateinit var db: PostDatabase
     private lateinit var store: MutableStore<PostKey, PostData>
 
-    @Before
+    @BeforeTest
     fun setup() {
         api = FakePostApi()
         db = FakePostDatabase(userId)
