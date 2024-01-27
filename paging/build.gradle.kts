@@ -32,7 +32,6 @@ kotlin {
         version = libs.versions.store.get()
     }
 
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -40,6 +39,7 @@ kotlin {
                 implementation(project(":store"))
                 implementation(project(":cache"))
                 api(project(":core"))
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
 
@@ -119,4 +119,3 @@ atomicfu {
     transformJvm = false
     transformJs = false
 }
-
