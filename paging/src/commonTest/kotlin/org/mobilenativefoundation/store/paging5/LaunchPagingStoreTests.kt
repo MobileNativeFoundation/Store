@@ -71,15 +71,16 @@ class LaunchPagingStoreTests {
             val state2 = awaitItem()
             assertIs<StoreReadResponse.Loading>(state2)
             val state3 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData>>(state3)
-            expectNoEvents()
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(state3)
+            assertEquals("1", state3.value.posts[0].postId)
 
             val state4 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData>>(state4)
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(state4)
+            assertEquals("11", state4.value.posts[0].postId)
+            assertEquals("1", state4.value.posts[10].postId)
             val data4 = state4.value
             assertIs<PostData.Feed>(data4)
             assertEquals(20, data4.items.size)
-
             expectNoEvents()
         }
     }
