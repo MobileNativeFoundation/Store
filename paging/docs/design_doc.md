@@ -1,246 +1,160 @@
-# Technical Design Doc: Native Paging Support in Store5
+# Paging Technical Design Doc
 
-## Context and Scope
-Feature request: [MobileNativeFoundation/Store#250](https://github.com/MobileNativeFoundation/Store/issues/250)
+## 1. Motivations
 
-This proposal addresses the need for paging support in Store. This enhancement aims to provide a simple, efficient, and flexible way to handle complex operations on large datasets.
+Powerful and extensible solution for paging in KMP projects, under the Mobile Native Foundation.
+Address these Android Paging limitations:
 
-## Goals and Non-Goals
-### Goals
-- Provide native support for page-based and cursor-based fetches, handling both single items and collections.
-- Enable read and write operations within a paging store.
-- Support complex loading and fetching operations such as sorting and filtering.
-- Ensure thread safety and concurrency support.
-- Layer on top of existing Store APIs: no breaking changes!
-### Non-Goals
-- Integration with Paging3.
-- Providing a one-size-fits-all solution: our approach should be flexible to cater to different use cases.
+- [x] Seamless integration with Store and Mutable Store
+- [x] Local mutations and streaming of child items within the list of paging items
+- [x] Custom reducer, middleware, and post-reducer effects
 
-## The Actual Design
+## 2. Overview
 
-### APIs
-#### StoreKey
-An interface that defines keys used by Store for data-fetching operations. Allows Store to load individual items and collections of items. Provides mechanisms for ID-based fetch, page-based fetch, and cursor-based fetch. Includes options for sorting and filtering.
+[//]: # (TODO: Arch diagram)
+
+Modular and flexible architecture. Using builder, reducer, middleware, and post-reducer effect patterns. Unidirectional
+data flow. The `Pager` is the main component. Actions are dispatched through the `Pager`. The `PagerBuilder` creates
+the `Pager`.
+It allows
+configuration of the paging behavior. The `PagingSource` defines the data loading logic. The `PageFetchingStrategy`
+determines when to fetch the next page.
+The `PageAggregatingStrategy` combines loaded pages into a single list. The `PagingReducer` handles state changes based
+on actions. When an action is dispatched, it goes through the middleware
+pipeline. The middleware can modify the action. The reducer then updates the
+state based on the action. After the reducer, we invoke post-reducer effects associated with the action and new state.
+The updated state is sent back the `Pager` and emitted to the UI.
+
+## 3. The Actual Design
+
+### 3.1 Key Components
+
+- `Pager`: The main entry point, responsible for coordinating the paging process and providing access to the paging
+  state and data.
+- `PagingSource`: Defines the data source and loading logic for paged data.
+- `PagingState`: Represents the current state of the paging data, including loaded pages, errors, and loading status.
+- `PagingAction`: Defines the actions that can be dispatched to modify the paging state.
+- `PagingReducer`: Reduces the paging state based on dispatched actions.
+- `PagingMiddleware`: Intercepts and modifies paging actions before they reach the reducer.
+- `PostReducerEffect`: Performs side effects after reducing the paging state.
+- `PageFetchingStrategy`: Determines when to fetch the next page of data.
+- `PageAggregatingStrategy`: Aggregates loaded pages into a single list.
+- `MutablePagingBuffer`: Efficiently stores and retrieves paging data.
+- `JobCoordinator`: Coordinates the execution of paging-related jobs.
+- `QueueManager`: Manages the queue of pages to be loaded.
+- `PagingStreamProvider`: Provides a stream of paging data.
+- `PagingKeyFactory`: Creates keys for paging data.
+- `PagingConfig`: Configures the paging behavior.
+- `ErrorHandlingStrategy`: Defines how to handle errors during the paging process.
+- `Logger`: Logs paging-related events and actions.
+
+### 3.2 Customizations
+
+We are providing many extension points and customization options to tailor the paging behavior. Some of the key
+customization points:
+
+- `PagingSource`: Developers can implement their own `PagingSource` to define how paged data is loaded from the data
+  source. This allows for integration with different data sources and loading mechanisms.
+- `PagingMiddleware`: Custom `PagingMiddleware` can be implemented to intercept and modify paging actions before they
+  reach the reducer. This enables preprocessing, logging, or any other custom logic.
+- `PagingReducer`: The `PagingReducer` can be customized to define how the paging state is reduced based on dispatched
+  actions. This allows for fine-grained control over the paging state transitions.
+- `PostReducerEffect`: Custom `PostReducerEffect` instances can be configured to perform side effects after reducing the
+  paging state. This is useful for triggering UI updates, analytics events, or any other necessary actions.
+- `PageFetchingStrategy`: Developers can implement their own `PageFetchingStrategy` to determine when to fetch the next
+  page of data based on the current state and configuration. This allows for customizing the prefetching behavior.
+- `PageAggregatingStrategy`: Custom `PageAggregatingStrategy` implementations can be provided to define how loaded pages
+  are aggregated into a single list. This enables different aggregation strategies based on the specific requirements of
+  the application.
+- `ErrorHandlingStrategy`: Developers can implement their own `ErrorHandlingStrategy` to define how errors during the
+  paging process are handled. This allows for custom error handling, retry mechanisms, or fallback behaviors.
+
+### 3.3 Data Flow
+
+[//]: # (TODO: Data flow diagram)
+
+Unidirectional data flow. Main steps:
+
+1. `Pager` is configured using `PagerBuilder` and provided an initial key, flow of anchor position, and paging config.
+2. `Pager` subscribes to the `PagingSource` to receive paging data updates.
+3. When a `PagingAction` is dispatched, it goes through the configured `PagingMiddleware` chain. This enables
+   interception and modification of the action.
+4. The modified action reaches the `PagingReducer`, which reduces the current `PagingState` based on the action and
+   returns a new `PagingState`.
+5. After reduction, any configured `PostReducerEffect` instances are executed, enabling side effects to be performed
+   based on the new `PagingState`.
+6. `Pager` updates `PagingStateManager` with the new `PagingState`.
+7. `PageFetchingStrategy` determines when to fetch the next page of data based on the `PagingConfig` and
+   current `PagingState`.
+8. When a new page needs to be fetched, `QueueManager` enqueues the page key, and the `JobCoordinator` coordinates the
+   execution of the paging job.
+9. `PagingSource` loads the requested page and emits the loaded data through the `PagingStreamProvider`.
+10. The loaded page is stored in the `MutablePagingBuffer` for efficient retrieval and aggregation.
+11. The `PageAggregatingStrategy` aggregates the loaded pages into a single list, which is then emitted through
+    the `Pager` for consumption by the UI.
+
+## 4. Sample Code
+
+Configuring the Pager using `PagerBuilder`:
 
 ```kotlin
-    interface StoreKey<out Id : Any> {
-        interface Single<Id : Any> : StoreKey<Id> {
-            val id: Id
-        }
-        interface Collection<out Id : Any> : StoreKey<Id> {
-            val insertionStrategy: InsertionStrategy
-            interface Page : Collection<Nothing> {
-                val page: Int
-                val size: Int
-                val sort: Sort?
-                val filters: List<Filter<*>>?
+val pager =
+    PagerBuilder<Int, CollectionKey, SingleData, CustomAction, CustomError>(
+        initialKey = CollectionKey(0),
+        anchorPosition = anchorPositionFlow,
+        pagingConfig = pagingConfig
+    )
+        .dispatcher(
+            logger = DefaultLogger(),
+        ) {
+
+            // Use the default reducer
+            defaultReducer {
+                errorHandlingStrategy(ErrorHandlingStrategy.PassThrough)
+                pagingBufferMaxSize(100)
             }
-            interface Cursor<out Id : Any> : Collection<Id> {
-                val cursor: Id?
-                val size: Int
-                val sort: Sort?
-                val filters: List<Filter<*>>?
-            }
+
+            middlewares(
+                listOf(
+                    // Add custom middleware
+                )
+            )
+
+            // Add custom post reducer effects
+            postReducerEffect<MyPagingState, MyPagingAction>(
+                state = MyPagingState::class,
+                action = MyPagingAction::class,
+                effect = MyPostReducerEffect
+            )
+
+            // Use the default post reducer effects
+            defaultPostReducerEffects(pagingSource = pagingSource)
         }
-    }
+
+        .build()
 ```
 
-#### StoreData
-An interface that defines items that can be uniquely identified. Every item that implements the `StoreData` interface must have a means of identification. This is useful in scenarios when data can be represented as singles or collections.
+Observing the paging state and dispatching actions:
 
 ```kotlin
-    interface StoreData<out Id : Any> {
-        interface Single<Id : Any> : StoreData<Id> {
-            val id: Id
-        }
-        interface Collection<Id : Any, S : Single<Id>> : StoreData<Id> {
-            val items: List<S>
-            fun copyWith(items: List<S>): Collection<Id, S>
-            fun insertItems(strategy: InsertionStrategy, items: List<S>): Collection<Id, S>
-        }
-    }
-```
-
-#### KeyProvider
-An interface to derive keys based on provided data. `StoreMultiCache` depends on `KeyProvider` to:
-
-1. Derive a single key for a collection item based on the collection’s key and that item’s value.
-2. Insert a single item into the correct collection based on its key and value.
-
-```kotlin
-    interface KeyProvider<Id : Any, Single : StoreData.Single<Id>> {
-        fun from(key: StoreKey.Collection<Id>, value: Single): StoreKey.Single<Id>
-        fun from(key: StoreKey.Single<Id>, value: Single): StoreKey.Collection<Id>
-    }
-```
-
-### Implementations
-
-#### StoreMultiCache
-Thread-safe caching system with collection decomposition. Manages data with utility functions to get, invalidate, and add items to the cache. Depends on `StoreMultiCacheAccessor` for internal data management. Should be used instead of `MultiCache`.
-
-```kotlin
-    class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id>, Collection : StoreData.Collection<Id, Single>, Output : StoreData<Id>>(
-        private val keyProvider: KeyProvider<Id, Single>,
-        singlesCache: Cache<StoreKey.Single<Id>, Single> = CacheBuilder<StoreKey.Single<Id>, Single>().build(),
-        collectionsCache: Cache<StoreKey.Collection<Id>, Collection> = CacheBuilder<StoreKey.Collection<Id>, Collection>().build(),
-    ): Cache<Key, Output>
-```
-
-#### StoreMultiCacheAccessor
-Thread-safe intermediate data manager for a caching system supporting list decomposition. Tracks keys for rapid data retrieval and modification.
-
-#### LaunchPagingStore
-Main entry point for the paging mechanism. This will launch and manage a `StateFlow` that reflects the current state of the Store.
-
-```kotlin
-    fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> Store<Key, Output>.launchPagingStore(
-        scope: CoroutineScope,
-        keys: Flow<Key>,
-    ): StateFlow<StoreReadResponse<Output>>
-    
-    @OptIn(ExperimentalStoreApi::class)
-    fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Output>.launchPagingStore(
-        scope: CoroutineScope,
-        keys: Flow<Key>,
-    ): StateFlow<StoreReadResponse<Output>>
-```
-
-## Usage
-### StoreKey Example
-```kotlin
-    sealed class ExampleKey : StoreKey<String> {
-        data class Cursor(
-            override val cursor: String?,
-            override val size: Int,
-            override val sort: StoreKey.Sort? = null,
-            override val filters: List<StoreKey.Filter<*>>? = null,
-            override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND
-        ) : StoreKey.Collection.Cursor<String>, ExampleKey()
-    
-        data class Single(
-            override val id: String
-        ) : StoreKey.Single<String>, ExampleKey()
-    }
-```
-
-### StoreData Example
-```kotlin
-    sealed class ExampleData : StoreData<String> {
-        data class Single(val postId: String, val title: String) : StoreData.Single<String>, ExampleData() {
-            override val id: String get() = postId
-        }
-    
-        data class Collection(val singles: List<Single>) : StoreData.Collection<String, Single>, ExampleData() {
-            override val items: List<Single> get() = singles
-            override fun copyWith(items: List<Single>): StoreData.Collection<String, Single> = copy(singles = items)
-            override fun insertItems(strategy: InsertionStrategy, items: List<Single>): StoreData.Collection<String, Single> {
-    
-                return when (strategy) {
-                    InsertionStrategy.APPEND -> {
-                        val updatedItems = items.toMutableList()
-                        updatedItems.addAll(singles)
-                        copyWith(items = updatedItems)
-                    }
-    
-                    InsertionStrategy.PREPEND -> {
-                        val updatedItems = singles.toMutableList()
-                        updatedItems.addAll(items)
-                        copyWith(items = updatedItems)
-                    }
-                }
+pager.state.collect { state ->
+    when (state) {
+        is PagingState.Data.Idle -> {
+            // Update UI with loaded data and provide dispatch callback
+            DataView(pagingItems = state.data) { action: PagingAction.User ->
+                pager.dispatch(action)
             }
         }
-    }
-```
-
-### LaunchPagingStore Example
-```kotlin
-    @OptIn(ExperimentalStoreApi::class)
-    class ExampleViewModel(
-        private val store: MutableStore<ExampleKey, ExampleData>,
-        private val coroutineScope: CoroutineScope = viewModelScope,
-        private val loadSize: Int = DEFAULT_LOAD_SIZE
-    ) : ViewModel() {
-    
-        private val keys = MutableStateFlow(ExampleKey.Cursor(null, loadSize))
-        private val _loading = MutableStateFlow(false)
-        private val _error = MutableStateFlow<Throwable?>(null)
-    
-        val stateFlow = store.launchPagingStore(coroutineScope, keys)
-        val loading: StateFlow<Boolean> = _loading.asStateFlow()
-        val error: StateFlow<Throwable?> = _error.asStateFlow()
-    
-        init {
-            TODO("Observe loading and error states and perform any other necessary initializations")
+        is PagingState.LoadingInitial -> {
+            // Show loading indicator
+            InitialLoadingView()
         }
-    
-        fun loadMore() {
-            if (_loading.value) return // Prevent loading more if already loading
-            _loading.value = true
-    
-            coroutineScope.launch {
-                try {
-                    val currentKey = keys.value
-                    val currentCursor = currentKey.cursor
-                    val nextCursor = determineNextCursor(currentCursor)
-                    val nextKey = currentKey.copy(cursor = nextCursor)
-                    keys.value = nextKey
-                } catch (e: Throwable) {
-                    _error.value = e
-                } finally {
-                    _loading.value = false
-                }
+        is PagingState.Error -> {
+            // Handle error state and provide dispatch callback
+            InitialErrorViewCoordinator(errorState = state) { action: PagingAction.User ->
+                pager.dispatch(action)
             }
         }
-    
-        fun write(key: ExampleKey.Single, value: ExampleData.Single) {
-            coroutineScope.launch {
-                try {
-                    store.write(StoreWriteRequest.of(key, value))
-                } catch (e: Throwable) {
-                    _error.value = e
-                }
-            }
-        }
-    
-        private fun determineNextCursor(cursor: String?): String? {
-            // Implementation based on specific use case
-            // Return the next cursor or null if there are no more items to load
-            TODO("Provide an implementation or handle accordingly")
-        }
-    
-        companion object {
-            private const val DEFAULT_LOAD_SIZE = 100
-        }
     }
+}
 ```
-
-## Degree of Constraint
-- Data items must implement the `StoreData` interface, ensuring they can be uniquely identified.
-- Keys for loading data must implement the `StoreKey` interface.
-
-## Deprecations
-- MultiCache
-- Identifiable
-
-## Alternatives Considered
-### Tailored Solution for Paging
-#### Direct integration with Paging3
-Paging3 doesn’t have built-in support for:
-- Singles and collections
-- Write operations
-- Sorting and filtering operations
-
-### Custom `StoreKey` and `StoreData` Structures
-#### Loose Typing
-#### Annotations and Reflection
-#### Functional Programming Approach
-
-## Cross-Cutting Concerns
-- Will Paging3 extensions be a maintenance nightmare?
-- Will these APIs be simpler than Paging3?
-
-## Future Directions
-- Bindings for Paging3 (follow-up PR)
-- Support for KMP Compose UI (follow-up PR)

@@ -2,6 +2,7 @@
 
 package org.mobilenativefoundation.store.cache5
 
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.KeyProvider
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
@@ -12,7 +13,8 @@ import org.mobilenativefoundation.store.core5.StoreKey
  * Depends on [StoreMultiCacheAccessor] for internal data management.
  * @see [Cache].
  */
-class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id>, Collection : StoreData.Collection<Id, Single>, Output : StoreData<Id>>(
+@OptIn(ExperimentalStoreApi::class)
+class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id>, Collection : StoreData.Collection<Id, *, Single>, Output : StoreData<Id>>(
     private val keyProvider: KeyProvider<Id, Single>,
     singlesCache: Cache<StoreKey.Single<Id>, Single> = CacheBuilder<StoreKey.Single<Id>, Single>().build(),
     collectionsCache: Cache<StoreKey.Collection<Id>, Collection> = CacheBuilder<StoreKey.Collection<Id>, Collection>().build(),

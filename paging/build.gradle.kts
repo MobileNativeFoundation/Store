@@ -36,7 +36,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                implementation(project(":store"))
+                api(project(":store"))
+                implementation(libs.touchlab.kermit)
                 implementation(project(":cache"))
                 api(project(":core"))
                 implementation(libs.kotlinx.coroutines.core)

@@ -1,9 +1,13 @@
 package org.mobilenativefoundation.store.store5.impl.extensions
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
-import org.mobilenativefoundation.store.store5.Bookkeeper
+import kotlinx.coroutines.flow.mapNotNull
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.core5.StoreData
+import org.mobilenativefoundation.store.core5.StoreKey
+import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
@@ -21,6 +25,45 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) =
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
+
+@Suppress("UNCHECKED_CAST")
+@ExperimentalStoreApi
+fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>, O : StoreData<Id>> MutableStore<K, O>.paged(
+    key: CK
+): Flow<PagingResult> {
+    val storeKey = key as K
+    return stream<Any>(StoreReadRequest.cached(storeKey, refresh = false)).mapNotNull {
+        when (it) {
+            is StoreReadResponse.Data -> PagingResult.Data((it as StoreReadResponse.Data<CO>).value)
+            is StoreReadResponse.Error -> PagingResult.Error(it.errorOrNull() ?: Throwable())
+            else -> null
+        }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+@ExperimentalStoreApi
+fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>, O : StoreData<Id>> Store<K, O>.paged(
+    key: CK
+): Flow<PagingResult> {
+    val storeKey = key as K
+    return stream(StoreReadRequest.cached(storeKey, refresh = false)).mapNotNull {
+        when (it) {
+            is StoreReadResponse.Data -> PagingResult.Data((it as StoreReadResponse.Data<CO>).value)
+            is StoreReadResponse.Error -> PagingResult.Error(it.errorOrNull() ?: Throwable())
+            else -> null
+        }
+    }
+}
+
+@ExperimentalStoreApi
+sealed class PagingResult {
+    data class Data<Id : Any, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>>(
+        val value: CO
+    ) : PagingResult()
+
+    data class Error(val throwable: Throwable) : PagingResult()
+}
 
 /**
  * Helper factory that will return fresh data for [key] while updating your caches

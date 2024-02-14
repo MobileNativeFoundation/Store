@@ -12,7 +12,7 @@ interface StoreKey<out Id : Any> {
     /**
      * Represents a key for fetching an individual item.
      */
-    interface Single<Id : Any> : StoreKey<Id> {
+    interface Single<out Id : Any> : StoreKey<Id> {
         val id: Id
     }
 

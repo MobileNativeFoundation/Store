@@ -10,7 +10,7 @@ ktlintGradle = "10.2.1"
 jacocoGradlePlugin = "0.8.7"
 mavenPublishPlugin = "0.22.0"
 moleculeGradlePlugin = "1.2.1"
-pagingCompose = "3.3.0-alpha02"
+pagingCompose = "3.3.0-alpha03"
 pagingRuntime = "3.2.1"
 spotlessPluginGradle = "6.4.1"
 junit = "4.13.2"
@@ -23,6 +23,8 @@ ktlint = "0.39.0"
 kover = "0.6.0"
 store = "5.1.0-alpha02"
 truth = "1.1.3"
+jetbrains-compose = "1.5.12"
+
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -55,3 +57,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 turbine = "app.cash.turbine:turbine:1.0.0"
+
+
+[plugins]
+compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }

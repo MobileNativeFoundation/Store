@@ -1,0 +1,8 @@
+package org.mobilenativefoundation.store.paging5
+
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
+
+@ExperimentalStoreApi
+fun interface AppDispatcher {
+    fun dispatch(action: PagingAction)
+}
