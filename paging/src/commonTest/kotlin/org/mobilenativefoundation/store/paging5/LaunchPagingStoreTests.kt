@@ -1,6 +1,7 @@
 package org.mobilenativefoundation.store.paging5
 
 import app.cash.turbine.test
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -62,7 +63,7 @@ class LaunchPagingStoreTests {
     fun multipleValidKeysEmittedInSuccession() = testScope.runTest {
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
-        val keys = flowOf(key1, key2)
+        val keys = MutableStateFlow(key1)
         val stateFlow = store.launchPagingStore(this, keys)
 
         stateFlow.test {
@@ -74,10 +75,15 @@ class LaunchPagingStoreTests {
             assertIs<StoreReadResponse.Data<PostData.Feed>>(state3)
             assertEquals("1", state3.value.posts[0].postId)
 
+            keys.emit(key2)
+
+            val loading2 = awaitItem()
+            assertIs<StoreReadResponse.Loading>(loading2)
+
             val state4 = awaitItem()
             assertIs<StoreReadResponse.Data<PostData.Feed>>(state4)
-            assertEquals("11", state4.value.posts[0].postId)
-            assertEquals("1", state4.value.posts[10].postId)
+            assertEquals("1", state4.value.posts[0].postId)
+            assertEquals("11", state4.value.posts[10].postId)
             val data4 = state4.value
             assertIs<PostData.Feed>(data4)
             assertEquals(20, data4.items.size)
@@ -111,9 +117,10 @@ class LaunchPagingStoreTests {
 
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
-        val keys = flowOf(key1, key2)
+        val keys = MutableStateFlow(key1)
 
         val stateFlow = store.launchPagingStore(this, keys)
+
         stateFlow.test {
             val initialState = awaitItem()
             assertIs<StoreReadResponse.Initial>(initialState)
@@ -123,10 +130,18 @@ class LaunchPagingStoreTests {
             assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState1)
             val data1 = loadedState1.value
             assertEquals(10, data1.posts.size)
+            assertEquals("1", data1.posts[0].postId)
+            expectNoEvents()
+
+            keys.emit(key2)
+
+            val loadingState2 = awaitItem()
+            assertIs<StoreReadResponse.Loading>(loadingState2)
             val loadedState2 = awaitItem()
             assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
             val data2 = loadedState2.value
             assertEquals(20, data2.posts.size)
+            assertEquals("1", data2.posts[0].postId)
         }
 
         val cached = store.stream<PostPutRequestResult>(StoreReadRequest.cached(key1, refresh = false))
@@ -163,5 +178,45 @@ class LaunchPagingStoreTests {
         val data4 = cached4.requireData()
         assertIs<PostData.Feed>(data4)
         assertEquals("2-modified", data4.posts[1].title)
+    }
+
+    @Test
+    fun multipleKeysWithReadsAndWritesUsingOneStream() = testScope.runTest {
+        val api = FakePostApi()
+        val db = FakePostDatabase(userId)
+        val factory = PostStoreFactory(api = api, db = db)
+        val mutableStore = factory.create()
+
+        val key1 = PostKey.Cursor("1", 10)
+        val key2 = PostKey.Cursor("11", 10)
+        val keys = flowOf(key1, key2)
+
+        val stateFlow = mutableStore.launchPagingStore(this, keys)
+        stateFlow.test {
+            val initialState = awaitItem()
+            assertIs<StoreReadResponse.Initial>(initialState)
+            val loadingState = awaitItem()
+            assertIs<StoreReadResponse.Loading>(loadingState)
+            val loadedState1 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState1)
+            val data1 = loadedState1.value
+            assertEquals(10, data1.posts.size)
+            assertEquals("1", data1.posts[0].postId)
+            val loadedState2 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
+            val data2 = loadedState2.value
+            assertEquals(20, data2.posts.size)
+            assertEquals("1", data1.posts[0].postId)
+        }
+
+        mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
+
+        stateFlow.test {
+            val loadedState3 = awaitItem()
+            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState3)
+            val data3 = loadedState3.value
+            assertEquals(20, data3.posts.size)
+            assertEquals("2-modified", data3.posts[1].title) // Actual is "2"
+        }
     }
 }

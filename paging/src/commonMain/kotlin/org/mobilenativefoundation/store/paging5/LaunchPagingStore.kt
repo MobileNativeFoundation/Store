@@ -3,13 +3,14 @@
 package org.mobilenativefoundation.store.paging5
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
@@ -17,8 +18,6 @@ import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
-
-private class StopProcessingException : Exception()
 
 /**
  * Initializes and returns a [StateFlow] that reflects the state of the Store, updating by a flow of provided keys.
@@ -33,38 +32,47 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingS
     keys: Flow<Key>,
     stream: (key: Key) -> Flow<StoreReadResponse<Output>>,
 ): StateFlow<StoreReadResponse<Output>> {
+    val childScope = scope + Job()
+
+    val prevData = MutableStateFlow<StoreReadResponse.Data<Output>?>(null)
     val stateFlow = MutableStateFlow<StoreReadResponse<Output>>(StoreReadResponse.Initial)
+    val activeStreams = mutableMapOf<Key, Job>()
 
-    scope.launch {
+    childScope.launch {
+        keys.collect { key ->
+            if (key !is StoreKey.Collection<*>) {
+                throw IllegalArgumentException("Invalid key type")
+            }
 
-        try {
-            val firstKey = keys.first()
-            if (firstKey !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
+            if (activeStreams[key]?.isActive != true) {
+                val job = this.launch {
+                    stream(key).collect { response ->
+                        when (response) {
+                            is StoreReadResponse.Data<Output> -> {
+                                val joinedDataResponse = joinData(key, prevData.value, response)
+                                prevData.emit(joinedDataResponse)
+                                stateFlow.emit(joinedDataResponse)
+                            }
 
-            stream(firstKey).collect { response ->
-                if (response is StoreReadResponse.Data<Output>) {
-                    val joinedDataResponse = joinData(firstKey, stateFlow.value, response)
-                    stateFlow.emit(joinedDataResponse)
-                } else {
-                    stateFlow.emit(response)
+                            else -> {
+                                stateFlow.emit(response)
+                            }
+                        }
+                    }
                 }
 
-                if (response is StoreReadResponse.Data<Output> ||
-                    response is StoreReadResponse.Error ||
-                    response is StoreReadResponse.NoNewData
-                ) {
-                    throw StopProcessingException()
+                activeStreams[key] = job
+
+                job.invokeOnCompletion {
+                    activeStreams[key]?.cancel()
+                    activeStreams.remove(key)
                 }
             }
-        } catch (_: StopProcessingException) {
         }
+    }
 
-        keys.drop(1).collect { key ->
-            if (key !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
-            val firstDataResponse = stream(key).first { it.dataOrNull() != null } as StoreReadResponse.Data<Output>
-            val joinedDataResponse = joinData(key, stateFlow.value, firstDataResponse)
-            stateFlow.emit(joinedDataResponse)
-        }
+    scope.coroutineContext[Job]?.invokeOnCompletion {
+        childScope.cancel()
     }
 
     return stateFlow.asStateFlow()
@@ -101,16 +109,14 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Out
 @ExperimentalStoreApi
 private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> joinData(
     key: Key,
-    prevResponse: StoreReadResponse<Output>,
+    prevResponse: StoreReadResponse.Data<Output>?,
     currentResponse: StoreReadResponse.Data<Output>
 ): StoreReadResponse.Data<Output> {
     val lastOutput = when (prevResponse) {
         is StoreReadResponse.Data<Output> -> prevResponse.value as? StoreData.Collection<Id, StoreData.Single<Id>>
         else -> null
     }
-
     val currentData = currentResponse.value as StoreData.Collection<Id, StoreData.Single<Id>>
-
     val joinedOutput = (lastOutput?.insertItems(key.insertionStrategy, currentData.items) ?: currentData) as Output
     return StoreReadResponse.Data(joinedOutput, currentResponse.origin)
 }

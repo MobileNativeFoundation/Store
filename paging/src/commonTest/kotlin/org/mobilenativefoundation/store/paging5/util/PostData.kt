@@ -1,8 +1,10 @@
 package org.mobilenativefoundation.store.paging5.util
 
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.InsertionStrategy
 import org.mobilenativefoundation.store.core5.StoreData
 
+@OptIn(ExperimentalStoreApi::class)
 sealed class PostData : StoreData<String> {
     data class Post(val postId: String, val title: String) : StoreData.Single<String>, PostData() {
         override val id: String get() = postId
@@ -15,14 +17,14 @@ sealed class PostData : StoreData<String> {
 
             return when (strategy) {
                 InsertionStrategy.APPEND -> {
-                    val updatedItems = items.toMutableList()
-                    updatedItems.addAll(posts)
+                    val updatedItems = posts.toMutableList()
+                    updatedItems.addAll(items)
                     copyWith(items = updatedItems)
                 }
 
                 InsertionStrategy.PREPEND -> {
-                    val updatedItems = posts.toMutableList()
-                    updatedItems.addAll(items)
+                    val updatedItems = items.toMutableList()
+                    updatedItems.addAll(posts)
                     copyWith(items = updatedItems)
                 }
 
