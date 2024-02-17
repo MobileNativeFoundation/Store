@@ -69,7 +69,6 @@ internal class RealPager<Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, S
 
                                             childrenKeys.add(childKey)
 
-                                            // TODO: This might result in a deadlock
                                             mutexForAllStreams.withLock {
                                                 allStreams[childKey] = childJob
                                             }
