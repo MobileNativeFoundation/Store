@@ -23,9 +23,11 @@ class FakePostApi : PostApi {
     }
 
     override suspend fun get(cursor: String?, size: Int): FeedGetRequestResult {
+        println("HITTING IN GET $cursor")
         val firstIndexInclusive = postsList.indexOfFirst { it.postId == cursor }
         val lastIndexExclusive = firstIndexInclusive + size
         val posts = postsList.subList(firstIndexInclusive, lastIndexExclusive)
+        println("ABOUT TO RETURN FOR $cursor")
         return FeedGetRequestResult.Data(PostData.Feed(posts = posts))
     }
 

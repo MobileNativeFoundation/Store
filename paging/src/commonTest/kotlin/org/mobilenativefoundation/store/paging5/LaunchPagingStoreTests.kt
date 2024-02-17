@@ -1,18 +1,22 @@
 package org.mobilenativefoundation.store.paging5
 
 import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.paging5.util.FakePostApi
 import org.mobilenativefoundation.store.paging5.util.FakePostDatabase
 import org.mobilenativefoundation.store.paging5.util.PostApi
 import org.mobilenativefoundation.store.paging5.util.PostData
+import org.mobilenativefoundation.store.paging5.util.PostDataJoiner
 import org.mobilenativefoundation.store.paging5.util.PostDatabase
 import org.mobilenativefoundation.store.paging5.util.PostKey
+import org.mobilenativefoundation.store.paging5.util.PostKeyFactory
 import org.mobilenativefoundation.store.paging5.util.PostPutRequestResult
 import org.mobilenativefoundation.store.paging5.util.PostStoreFactory
 import org.mobilenativefoundation.store.store5.MutableStore
@@ -33,6 +37,8 @@ class LaunchPagingStoreTests {
     private lateinit var api: PostApi
     private lateinit var db: PostDatabase
     private lateinit var store: MutableStore<PostKey, PostData>
+    private lateinit var joiner: PostDataJoiner
+    private val keyFactory = PostKeyFactory()
 
     @BeforeTest
     fun setup() {
@@ -40,13 +46,14 @@ class LaunchPagingStoreTests {
         db = FakePostDatabase(userId)
         val factory = PostStoreFactory(api, db)
         store = factory.create()
+        joiner = PostDataJoiner()
     }
 
     @Test
     fun transitionFromInitialToData() = testScope.runTest {
         val key = PostKey.Cursor("1", 10)
         val keys = flowOf(key)
-        val stateFlow = store.launchPagingStore(this, keys)
+        val stateFlow = store.launchPagingStore(this, keys, joiner, keyFactory = keyFactory)
 
         stateFlow.test {
             val state1 = awaitItem()
@@ -64,7 +71,7 @@ class LaunchPagingStoreTests {
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
         val keys = MutableStateFlow(key1)
-        val stateFlow = store.launchPagingStore(this, keys)
+        val stateFlow = store.launchPagingStore(this, keys, joiner, keyFactory = keyFactory)
 
         stateFlow.test {
             val state1 = awaitItem()
@@ -95,7 +102,7 @@ class LaunchPagingStoreTests {
     fun sameKeyEmittedMultipleTimes() = testScope.runTest {
         val key = PostKey.Cursor("1", 10)
         val keys = flowOf(key, key)
-        val stateFlow = store.launchPagingStore(this, keys)
+        val stateFlow = store.launchPagingStore(this, keys, joiner, keyFactory = keyFactory)
 
         stateFlow.test {
             val state1 = awaitItem()
@@ -119,7 +126,7 @@ class LaunchPagingStoreTests {
         val key2 = PostKey.Cursor("11", 10)
         val keys = MutableStateFlow(key1)
 
-        val stateFlow = store.launchPagingStore(this, keys)
+        val stateFlow = store.launchPagingStore(this, keys, joiner, keyFactory = keyFactory)
 
         stateFlow.test {
             val initialState = awaitItem()
@@ -140,6 +147,7 @@ class LaunchPagingStoreTests {
             val loadedState2 = awaitItem()
             assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
             val data2 = loadedState2.value
+            println(data2)
             assertEquals(20, data2.posts.size)
             assertEquals("1", data2.posts[0].postId)
         }
@@ -180,6 +188,7 @@ class LaunchPagingStoreTests {
         assertEquals("2-modified", data4.posts[1].title)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun multipleKeysWithReadsAndWritesUsingOneStream() = testScope.runTest {
         val api = FakePostApi()
@@ -189,9 +198,9 @@ class LaunchPagingStoreTests {
 
         val key1 = PostKey.Cursor("1", 10)
         val key2 = PostKey.Cursor("11", 10)
-        val keys = flowOf(key1, key2)
+        val keys = MutableStateFlow(key1)
 
-        val stateFlow = mutableStore.launchPagingStore(this, keys)
+        val stateFlow = mutableStore.launchPagingStore(this, keys, joiner, keyFactory = keyFactory)
         stateFlow.test {
             val initialState = awaitItem()
             assertIs<StoreReadResponse.Initial>(initialState)
@@ -202,16 +211,22 @@ class LaunchPagingStoreTests {
             val data1 = loadedState1.value
             assertEquals(10, data1.posts.size)
             assertEquals("1", data1.posts[0].postId)
+
+            keys.emit(key2)
+
+            val loadingState2 = awaitItem()
+            assertIs<StoreReadResponse.Loading>(loadingState2)
+
             val loadedState2 = awaitItem()
             assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
             val data2 = loadedState2.value
             assertEquals(20, data2.posts.size)
             assertEquals("1", data1.posts[0].postId)
-        }
 
-        mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
+            mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
+            println("WROTE TO STORE")
+            advanceUntilIdle()
 
-        stateFlow.test {
             val loadedState3 = awaitItem()
             assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState3)
             val data3 = loadedState3.value

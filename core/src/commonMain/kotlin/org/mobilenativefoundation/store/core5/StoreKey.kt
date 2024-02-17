@@ -1,5 +1,12 @@
 package org.mobilenativefoundation.store.core5
 
+
+@OptIn(ExperimentalStoreApi::class)
+interface KeyFactory<Id: Any, Key: StoreKey.Single<Id>> {
+    fun createSingleFor(id: Id): Key
+}
+
+
 /**
  * An interface that defines keys used by Store for data-fetching operations.
  * Allows Store to fetch individual items and collections of items.
@@ -12,7 +19,7 @@ interface StoreKey<out Id : Any> {
     /**
      * Represents a key for fetching an individual item.
      */
-    interface Single<Id : Any> : StoreKey<Id> {
+    interface Single<out Id : Any> : StoreKey<Id> {
         val id: Id
     }
 
