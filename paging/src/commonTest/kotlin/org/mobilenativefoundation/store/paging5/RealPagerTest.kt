@@ -22,7 +22,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalStoreApi::class, ExperimentalCoroutinesApi::class)
-class LaunchPagingStoreTests {
+class RealPagerTest {
     private val testScope = TestScope()
 
     private val userId = "123"

@@ -4,7 +4,6 @@ package org.mobilenativefoundation.store.paging5
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,84 +14,11 @@ import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
-import org.mobilenativefoundation.store.store5.MutableStore
-import org.mobilenativefoundation.store.store5.Store
-import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 
 
 @ExperimentalStoreApi
-data class PagingData<Id : Any, SO : StoreData.Single<Id>>(
-    val items: List<SO>
-)
-
-@ExperimentalStoreApi
-interface Pager<Id : Any, K : StoreKey<Id>, SO : StoreData.Single<Id>> {
-    val state: StateFlow<PagingData<Id, SO>>
-    fun load(key: K)
-
-    companion object {
-        fun <Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, O : StoreData<Id>> create(
-            scope: CoroutineScope,
-            store: Store<K, O>,
-            joiner: Joiner<Id, K, SO>,
-            keyFactory: KeyFactory<Id, SK>
-        ): Pager<Id, K, SO> {
-
-            val streamer = object : Streamer<Id, K, O> {
-                override fun invoke(key: K): Flow<StoreReadResponse<O>> {
-                    return store.stream(StoreReadRequest.fresh(key))
-                }
-            }
-
-            return RealPager(
-                scope,
-                streamer,
-                joiner,
-                keyFactory
-            )
-        }
-
-        fun <Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, O : StoreData<Id>> create(
-            scope: CoroutineScope,
-            store: MutableStore<K, O>,
-            joiner: Joiner<Id, K, SO>,
-            keyFactory: KeyFactory<Id, SK>
-        ): Pager<Id, K, SO> {
-
-            val streamer = object : Streamer<Id, K, O> {
-                override fun invoke(key: K): Flow<StoreReadResponse<O>> {
-                    return store.stream<Any>(StoreReadRequest.fresh(key))
-                }
-            }
-
-            return RealPager(
-                scope,
-                streamer,
-                joiner,
-                keyFactory
-            )
-        }
-    }
-}
-
-@ExperimentalStoreApi
-interface Joiner<Id : Any, K : StoreKey<Id>, SO : StoreData.Single<Id>> {
-    suspend operator fun invoke(data: Map<K, PagingData<Id, SO>>): PagingData<Id, SO>
-}
-
-@ExperimentalStoreApi
-interface Streamer<Id : Any, K : StoreKey<Id>, O : StoreData<Id>> {
-    operator fun invoke(key: K): Flow<StoreReadResponse<O>>
-}
-
-@ExperimentalStoreApi
-interface KeyFactory<Id : Any, SK : StoreKey.Single<Id>> {
-    fun createFor(id: Id): SK
-}
-
-@ExperimentalStoreApi
-class RealPager<Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, O : StoreData<Id>>(
+internal class RealPager<Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, O : StoreData<Id>>(
     private val scope: CoroutineScope,
     private val streamer: Streamer<Id, K, O>,
     private val joiner: Joiner<Id, K, SO>,
