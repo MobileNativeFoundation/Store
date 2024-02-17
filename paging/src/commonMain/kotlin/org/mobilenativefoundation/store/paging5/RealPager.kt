@@ -148,7 +148,6 @@ internal class RealPager<Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, S
                             }
                         }
                     }
-
                 }
             }
         }
@@ -156,8 +155,4 @@ internal class RealPager<Id : Any, SK : StoreKey.Single<Id>, K : StoreKey<Id>, S
 
     private fun emptyPagingData() = PagingData<Id, SO>(emptyList())
     private fun pagingDataFrom(items: List<SO>) = PagingData(items)
-
 }
-
-
-

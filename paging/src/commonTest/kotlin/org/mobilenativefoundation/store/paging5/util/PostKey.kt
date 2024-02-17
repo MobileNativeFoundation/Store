@@ -20,7 +20,6 @@ sealed class PostKey : StoreKey<String> {
     ) : StoreKey.Single<String>, PostKey()
 }
 
-
 @OptIn(ExperimentalStoreApi::class)
 class PostKeyFactory : KeyFactory<String, PostKey.Single> {
     override fun createFor(id: String): PostKey.Single {
