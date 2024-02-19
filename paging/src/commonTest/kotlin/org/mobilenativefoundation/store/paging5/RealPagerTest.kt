@@ -134,4 +134,44 @@ class RealPagerTest {
             assertEquals("11", state3.items[10].postId)
         }
     }
+
+    @Test
+    fun multipleCustomKeysWithReadsAndWrites() = testScope.runTest {
+        val api = FakePostApi()
+        val db = FakePostDatabase(userId)
+        val factory = PostStoreFactory(api = api, db = db)
+        val mutableStore = factory.create()
+
+        pager = Pager.create(this, mutableStore, joiner, keyFactory)
+
+        val key1 = PostKey.Custom("1", 10)
+        val key2 = PostKey.Custom("11", 10)
+
+        val stateFlow = pager.state
+        stateFlow.test {
+            pager.load(key1)
+            val initialState = awaitItem()
+            assertEquals(0, initialState.items.size)
+
+            val state1 = awaitItem()
+            assertEquals(10, state1.items.size)
+            assertEquals("1", state1.items[0].postId)
+
+            pager.load(key2)
+
+            val state2 = awaitItem()
+            assertEquals(20, state2.items.size)
+            assertEquals("1", state2.items[0].postId)
+            assertEquals("11", state2.items[10].postId)
+
+            mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
+            advanceUntilIdle()
+
+            val state3 = awaitItem()
+            assertEquals(20, state3.items.size)
+            assertEquals("1", state3.items[0].postId)
+            assertEquals("2-modified", state3.items[1].title)
+            assertEquals("11", state3.items[10].postId)
+        }
+    }
 }

@@ -47,6 +47,22 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                     }
                 }
             }
+
+            is PostKey.Custom -> {
+                when (val result = api.get(key.page, key.size)) {
+                    is FeedGetRequestResult.Data -> {
+                        result.data
+                    }
+
+                    is FeedGetRequestResult.Error.Exception -> {
+                        throw Throwable(result.error)
+                    }
+
+                    is FeedGetRequestResult.Error.Message -> {
+                        throw Throwable(result.error)
+                    }
+                }
+            }
         }
     }
 
@@ -63,6 +79,11 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                         val feed = db.findFeedByUserId(key.cursor, key.size)
                         emit(feed)
                     }
+
+                    is PostKey.Custom -> {
+                        val feed = db.findFeedByUserId(key.page, key.size)
+                        emit(feed)
+                    }
                 }
             }
         },
@@ -73,6 +94,10 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                 }
 
                 key is PostKey.Cursor && data is PostData.Feed -> {
+                    db.add(data)
+                }
+
+                key is PostKey.Custom && data is PostData.Feed -> {
                     db.add(data)
                 }
             }

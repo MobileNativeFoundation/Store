@@ -15,6 +15,13 @@ sealed class PostKey : StoreKey<String> {
         override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND
     ) : StoreKey.Collection.Cursor<String>, PostKey()
 
+    data class Custom(
+        val page: String,
+        val size: Int,
+        val sort: StoreKey.Sort? = null,
+        override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND
+    ): StoreKey.Collection<String>, PostKey()
+
     data class Single(
         override val id: String
     ) : StoreKey.Single<String>, PostKey()
