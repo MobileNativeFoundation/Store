@@ -51,6 +51,33 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Si
     }
 
     /**
+     * Retrieves all items from the cache.
+     *
+     * This operation is thread-safe.
+     */
+    fun getAllPresent(): Map<StoreKey<Id>, Any> = synchronized(this) {
+        val result = mutableMapOf<StoreKey<Id>, Any>()
+        for (key in keys) {
+            when (key) {
+                is StoreKey.Single<Id> -> {
+                    val single = singlesCache.getIfPresent(key)
+                    if (single != null) {
+                        result[key] = single
+                    }
+                }
+
+                is StoreKey.Collection<Id> -> {
+                    val collection = collectionsCache.getIfPresent(key)
+                    if (collection != null) {
+                        result[key] = collection
+                    }
+                }
+            }
+        }
+        result
+    }
+
+    /**
      * Stores a collection of items in the cache and updates the key set.
      *
      * This operation is thread-safe.
