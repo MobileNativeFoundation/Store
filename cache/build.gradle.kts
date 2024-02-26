@@ -2,6 +2,9 @@
 
 import com.vanniktech.maven.publish.SonatypeHost.S01
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 plugins {
     kotlin("multiplatform")
@@ -26,6 +29,10 @@ kotlin {
         browser()
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs()
+    }
     cocoapods {
         summary = "Cache5"
         homepage = "https://github.com/MobileNativeFoundation/Store"
@@ -48,15 +55,27 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
         val jvmMain by getting
         val androidMain by getting
         val nativeMain by creating {
             dependsOn(commonMain)
         }
     }
+
+    jvmToolchain(11)
 }
 
 android {
+    namespace = "org.mobilenativefoundation.store.cache5"
+
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
 
@@ -107,4 +126,13 @@ koverMerged {
     verify {
         onCheck.set(true)
     }
+}
+
+// See https://youtrack.jetbrains.com/issue/KT-63014
+rootProject.the<NodeJsRootExtension>().apply {
+    nodeVersion = "21.0.0-v8-canary20231024d0ddc81258"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+}
+tasks.withType<KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
 }
