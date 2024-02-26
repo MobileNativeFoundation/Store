@@ -2,6 +2,7 @@ package org.mobilenativefoundation.store.cache5
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
 
@@ -20,7 +21,8 @@ import org.mobilenativefoundation.store.core5.StoreKey
  * @property singlesCache The cache used to store single data items.
  * @property collectionsCache The cache used to store collections of data items.
  */
-class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, Single>, Single : StoreData.Single<Id>>(
+@ExperimentalStoreApi
+class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *, Single>, Single : StoreData.Single<Id>>(
     private val singlesCache: Cache<StoreKey.Single<Id>, Single>,
     private val collectionsCache: Cache<StoreKey.Collection<Id>, Collection>,
 ) : SynchronizedObject() {

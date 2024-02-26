@@ -2,6 +2,7 @@
 
 package org.mobilenativefoundation.store.paging5.util
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Converter
@@ -12,12 +13,12 @@ import org.mobilenativefoundation.store.store5.StoreBuilder
 import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.UpdaterResult
 
-class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
+class PostStoreFactory(private val scope: CoroutineScope, private val api: PostApi, private val db: PostDatabase) {
 
     private fun createFetcher(): Fetcher<PostKey, PostData> = Fetcher.of { key ->
         when (key) {
             is PostKey.Single -> {
-                when (val result = api.get(key.id)) {
+                when (val result = api.get(key)) {
                     is PostGetRequestResult.Data -> {
                         result.data
                     }
@@ -33,23 +34,7 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
             }
 
             is PostKey.Cursor -> {
-                when (val result = api.get(key.cursor, key.size)) {
-                    is FeedGetRequestResult.Data -> {
-                        result.data
-                    }
-
-                    is FeedGetRequestResult.Error.Exception -> {
-                        throw Throwable(result.error)
-                    }
-
-                    is FeedGetRequestResult.Error.Message -> {
-                        throw Throwable(result.error)
-                    }
-                }
-            }
-
-            is PostKey.Custom -> {
-                when (val result = api.get(key.page, key.size)) {
+                when (val result = api.get(key)) {
                     is FeedGetRequestResult.Data -> {
                         result.data
                     }
@@ -76,12 +61,7 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                     }
 
                     is PostKey.Cursor -> {
-                        val feed = db.findFeedByUserId(key.cursor, key.size)
-                        emit(feed)
-                    }
-
-                    is PostKey.Custom -> {
-                        val feed = db.findFeedByUserId(key.page, key.size)
+                        val feed = db.findFeedByKey(key, key.size)
                         emit(feed)
                     }
                 }
@@ -94,11 +74,7 @@ class PostStoreFactory(private val api: PostApi, private val db: PostDatabase) {
                 }
 
                 key is PostKey.Cursor && data is PostData.Feed -> {
-                    db.add(data)
-                }
-
-                key is PostKey.Custom && data is PostData.Feed -> {
-                    db.add(data)
+                    db.add(key, data)
                 }
             }
         }

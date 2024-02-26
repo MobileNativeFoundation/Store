@@ -5,6 +5,6 @@ import org.mobilenativefoundation.store.core5.StoreData
 import org.mobilenativefoundation.store.core5.StoreKey
 
 @ExperimentalStoreApi
-interface Joiner<Id : Any, K : StoreKey<Id>, SO : StoreData.Single<Id>> {
-    suspend operator fun invoke(data: Map<K, PagingData<Id, SO>>): PagingData<Id, SO>
+fun interface PageFetchingStrategy<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> {
+    fun shouldFetchNextPage(state: PagingState<Id, CK, SO>): Boolean
 }

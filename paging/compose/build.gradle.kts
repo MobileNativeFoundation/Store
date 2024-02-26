@@ -1,6 +1,4 @@
-@file:Suppress("UnstableApiUsage")
-
-import com.vanniktech.maven.publish.SonatypeHost.S01
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
@@ -10,14 +8,11 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version ("0.3.2")
+    id("co.touchlab.faktory.kmmbridge") version("0.3.2")
     `maven-publish`
     kotlin("native.cocoapods")
     id("kotlinx-atomicfu")
-}
-
-rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
-    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = "16.13.1"
+    alias(libs.plugins.compose)
 }
 
 kotlin {
@@ -32,46 +27,32 @@ kotlin {
         nodejs()
     }
     cocoapods {
-        summary = "Store5"
+        summary = "Store5/Paging"
         homepage = "https://github.com/MobileNativeFoundation/Store"
         ios.deploymentTarget = "13"
         version = libs.versions.store.get()
     }
 
     sourceSets {
-        all {
-            languageSettings.apply {
-                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
-                optIn("kotlin.RequiresOptIn")
-            }
-        }
-
         val commonMain by getting {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.serialization.core)
-                implementation(libs.kotlinx.datetime)
-                api(libs.kotlinx.atomic.fu)
-                implementation(libs.touchlab.kermit)
-                implementation(project(":multicast"))
+                implementation(project(":store"))
                 implementation(project(":cache"))
                 api(project(":core"))
+                implementation(compose.runtime)
+                implementation(libs.kotlinx.coroutines.core)
+                api(project(":paging"))
             }
         }
 
+        val androidMain by getting
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.junit)
+                implementation(libs.turbine)
                 implementation(libs.kotlinx.coroutines.test)
             }
-        }
-
-        val jvmMain by getting
-        val androidMain by getting
-        val nativeMain by creating {
-            dependsOn(commonMain)
         }
     }
 }
@@ -107,7 +88,7 @@ tasks.withType<DokkaTask>().configureEach {
 }
 
 mavenPublishing {
-    publishToMavenCentral(S01)
+    publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
 }
 

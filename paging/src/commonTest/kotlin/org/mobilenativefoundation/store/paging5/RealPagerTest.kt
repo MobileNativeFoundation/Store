@@ -1,27 +1,34 @@
 package org.mobilenativefoundation.store.paging5
 
 import app.cash.turbine.test
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
-import org.mobilenativefoundation.store.paging5.util.FakePostApi
-import org.mobilenativefoundation.store.paging5.util.FakePostDatabase
+import org.mobilenativefoundation.store.paging5.impl.DefaultPagingSource
+import org.mobilenativefoundation.store.paging5.impl.PagingKeyFactory
+import org.mobilenativefoundation.store.paging5.impl.defaultPagingStreamProvider
 import org.mobilenativefoundation.store.paging5.util.PostApi
 import org.mobilenativefoundation.store.paging5.util.PostData
 import org.mobilenativefoundation.store.paging5.util.PostDatabase
-import org.mobilenativefoundation.store.paging5.util.PostJoiner
 import org.mobilenativefoundation.store.paging5.util.PostKey
-import org.mobilenativefoundation.store.paging5.util.PostKeyFactory
 import org.mobilenativefoundation.store.paging5.util.PostStoreFactory
+import org.mobilenativefoundation.store.paging5.util.TestPostApi
+import org.mobilenativefoundation.store.paging5.util.TestPostDatabase
 import org.mobilenativefoundation.store.store5.MutableStore
-import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalStoreApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalStoreApi::class)
+class PostPagingKeyFactory : PagingKeyFactory<String, PostKey.Single, PostData.Post> {
+    override fun createKeyFor(data: PostData.Post): PostKey.Single {
+        return PostKey.Single(data.postId)
+    }
+}
+
+@OptIn(ExperimentalStoreApi::class)
 class RealPagerTest {
     private val testScope = TestScope()
 
@@ -29,149 +36,152 @@ class RealPagerTest {
     private lateinit var api: PostApi
     private lateinit var db: PostDatabase
     private lateinit var store: MutableStore<PostKey, PostData>
-    private lateinit var joiner: PostJoiner
-    private lateinit var keyFactory: PostKeyFactory
-    private lateinit var pager: Pager<String, PostKey, PostData.Post>
+    private lateinit var streamProvider: PagingStreamProvider<String, PostKey.Cursor>
+    private lateinit var pagingSource: PagingSource<String, PostKey.Cursor, PostData.Post>
+    private lateinit var pager: Pager<String, PostKey.Cursor, PostData.Post>
 
     @BeforeTest
     fun setup() {
-        api = FakePostApi()
-        db = FakePostDatabase(userId)
-        val factory = PostStoreFactory(api, db)
+        api = TestPostApi()
+        db = TestPostDatabase(userId)
+    }
+
+    private fun TestScope.runPagingTest(
+        anchorPosition: StateFlow<String?>,
+        initialKey: PostKey.Cursor = PostKey.Cursor("1", 10),
+        pagingConfig: PagingConfig = PagingConfig(prefetchDistance = 10),
+        testBody: suspend TestScope.() -> Unit
+    ) = runTest {
+        val factory = PostStoreFactory(this, api, db)
         store = factory.create()
-        joiner = PostJoiner()
-        keyFactory = PostKeyFactory()
+
+        val keyFactory = PostPagingKeyFactory()
+
+        streamProvider = store.defaultPagingStreamProvider(keyFactory)
+        pagingSource = DefaultPagingSource(streamProvider)
+
+        pager = Pager.create(
+            scope = this,
+            initialKey = initialKey,
+            pagingConfig = pagingConfig,
+            anchorPosition = anchorPosition
+        ) {
+            pagingSource
+        }
+
+        testBody()
     }
 
     @Test
-    fun multipleValidKeysEmittedInSuccession() = testScope.runTest {
-        pager = Pager.create(this, store, joiner, keyFactory)
+    fun testMultipleValidKeysWithIncreasingAnchorPosition() {
+        val anchorPosition = MutableStateFlow<String?>("1")
 
-        val key1 = PostKey.Cursor("1", 10)
-        val key2 = PostKey.Cursor("11", 10)
+        testScope.runPagingTest(anchorPosition) {
+            val flow = pager.data
 
-        val stateFlow = pager.state
+            flow.test {
+                val data1 = awaitItem()
+                assertEquals(0, data1.items.size)
 
-        stateFlow.test {
-            pager.load(key1)
-            val initialState = awaitItem()
-            assertEquals(0, initialState.items.size)
 
-            val state1 = awaitItem()
-            assertEquals(10, state1.items.size)
-            assertEquals("1", state1.items[0].postId)
+                val data2 = awaitItem()
+                assertEquals(10, data2.items.size)
+                data2.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
 
-            pager.load(key2)
+                expectNoEvents()
 
-            val state2 = awaitItem()
-            assertEquals(20, state2.items.size)
-            assertEquals("1", state2.items[0].postId)
-            assertEquals("11", state2.items[10].postId)
+                anchorPosition.value = "11"
 
-            expectNoEvents()
+                val data3 = awaitItem()
+                data3.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+
+                expectNoEvents()
+
+                anchorPosition.value = "21"
+
+                val data4 = awaitItem()
+                data4.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+
+                expectNoEvents()
+
+                anchorPosition.value = "31"
+
+                val data5 = awaitItem()
+                data5.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+
+                expectNoEvents()
+                anchorPosition.value = "41"
+
+                val data6 = awaitItem()
+                data6.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                expectNoEvents()
+            }
         }
     }
 
     @Test
-    fun sameKeyEmittedMultipleTimes() = testScope.runTest {
-        pager = Pager.create(this, store, joiner, keyFactory)
+    fun testMultipleValidKeysWithNoChangeInAnchorPositionAndPrefetchDistanceOf10() {
+        val anchorPosition = MutableStateFlow<String?>(null)
 
-        val key = PostKey.Cursor("1", 10)
+        testScope.runPagingTest(anchorPosition) {
+            val flow = pager.data
 
-        val stateFlow = pager.state
-
-        stateFlow.test {
-            pager.load(key)
-            val initialState = awaitItem()
-            assertEquals(0, initialState.items.size)
-
-            val state1 = awaitItem()
-            assertEquals(10, state1.items.size)
-            assertEquals("1", state1.items[0].postId)
-
-            pager.load(key)
-
-            expectNoEvents()
+            flow.test {
+                val data1 = awaitItem()
+                assertEquals(0, data1.items.size)
+                val data2 = awaitItem()
+                assertEquals(10, data2.items.size)
+                data2.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                expectNoEvents()
+            }
         }
     }
 
     @Test
-    fun multipleKeysWithReadsAndWrites() = testScope.runTest {
-        val api = FakePostApi()
-        val db = FakePostDatabase(userId)
-        val factory = PostStoreFactory(api = api, db = db)
-        val mutableStore = factory.create()
+    fun testMultipleValidKeysWithNoChangeInAnchorPositionAndPrefetchDistanceOf50() {
+        val anchorPosition = MutableStateFlow<String?>(null)
 
-        pager = Pager.create(this, mutableStore, joiner, keyFactory)
+        testScope.runPagingTest(anchorPosition, pagingConfig = PagingConfig(prefetchDistance = 50)) {
+            val flow = pager.data
 
-        val key1 = PostKey.Cursor("1", 10)
-        val key2 = PostKey.Cursor("11", 10)
-
-        val stateFlow = pager.state
-        stateFlow.test {
-            pager.load(key1)
-            val initialState = awaitItem()
-            assertEquals(0, initialState.items.size)
-
-            val state1 = awaitItem()
-            assertEquals(10, state1.items.size)
-            assertEquals("1", state1.items[0].postId)
-
-            pager.load(key2)
-
-            val state2 = awaitItem()
-            assertEquals(20, state2.items.size)
-            assertEquals("1", state2.items[0].postId)
-            assertEquals("11", state2.items[10].postId)
-
-            mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
-            advanceUntilIdle()
-
-            val state3 = awaitItem()
-            assertEquals(20, state3.items.size)
-            assertEquals("1", state3.items[0].postId)
-            assertEquals("2-modified", state3.items[1].title)
-            assertEquals("11", state3.items[10].postId)
-        }
-    }
-
-    @Test
-    fun multipleCustomKeysWithReadsAndWrites() = testScope.runTest {
-        val api = FakePostApi()
-        val db = FakePostDatabase(userId)
-        val factory = PostStoreFactory(api = api, db = db)
-        val mutableStore = factory.create()
-
-        pager = Pager.create(this, mutableStore, joiner, keyFactory)
-
-        val key1 = PostKey.Custom("1", 10)
-        val key2 = PostKey.Custom("11", 10)
-
-        val stateFlow = pager.state
-        stateFlow.test {
-            pager.load(key1)
-            val initialState = awaitItem()
-            assertEquals(0, initialState.items.size)
-
-            val state1 = awaitItem()
-            assertEquals(10, state1.items.size)
-            assertEquals("1", state1.items[0].postId)
-
-            pager.load(key2)
-
-            val state2 = awaitItem()
-            assertEquals(20, state2.items.size)
-            assertEquals("1", state2.items[0].postId)
-            assertEquals("11", state2.items[10].postId)
-
-            mutableStore.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
-            advanceUntilIdle()
-
-            val state3 = awaitItem()
-            assertEquals(20, state3.items.size)
-            assertEquals("1", state3.items[0].postId)
-            assertEquals("2-modified", state3.items[1].title)
-            assertEquals("11", state3.items[10].postId)
+            flow.test {
+                val data1 = awaitItem()
+                assertEquals(0, data1.items.size)
+                val data2 = awaitItem()
+                assertEquals(10, data2.items.size)
+                data2.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                val data3 = awaitItem()
+                data3.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                val data4 = awaitItem()
+                data4.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                val data5 = awaitItem()
+                data5.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                val data6 = awaitItem()
+                data6.items.forEachIndexed { index, value ->
+                    assertEquals("${index + 1}", value.postId)
+                }
+                expectNoEvents()
+            }
         }
     }
 }

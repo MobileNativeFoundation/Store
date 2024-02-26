@@ -18,17 +18,21 @@ interface StoreData<out Id : Any> {
     /**
      * Represents a collection of identifiable items.
      */
-    interface Collection<Id : Any, S : Single<Id>> : StoreData<Id> {
-        val items: List<S>
+    interface Collection<Id : Any, CK: StoreKey.Collection<Id>, SO : Single<Id>> : StoreData<Id> {
+        val items: List<SO>
+        val itemsBefore: Int?
+        val itemsAfter: Int?
+        val prevKey: CK
+        val nextKey: CK?
 
         /**
          * Returns a new collection with the updated items.
          */
-        fun copyWith(items: List<S>): Collection<Id, S>
+        fun copyWith(items: List<SO>): Collection<Id, *, SO>
 
         /**
          * Inserts items to the existing collection and returns the updated collection.
          */
-        fun insertItems(strategy: InsertionStrategy, items: List<S>): Collection<Id, S>
+        fun insertItems(strategy: InsertionStrategy, items: List<SO>): Collection<Id, *, SO>
     }
 }

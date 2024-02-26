@@ -14,7 +14,7 @@ import org.mobilenativefoundation.store.core5.StoreKey
  * @see [Cache].
  */
 @OptIn(ExperimentalStoreApi::class)
-class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id>, Collection : StoreData.Collection<Id, Single>, Output : StoreData<Id>>(
+class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id>, Collection : StoreData.Collection<Id, *, Single>, Output : StoreData<Id>>(
     private val keyProvider: KeyProvider<Id, Single>,
     singlesCache: Cache<StoreKey.Single<Id>, Single> = CacheBuilder<StoreKey.Single<Id>, Single>().build(),
     collectionsCache: Cache<StoreKey.Collection<Id>, Collection> = CacheBuilder<StoreKey.Collection<Id>, Collection>().build(),
