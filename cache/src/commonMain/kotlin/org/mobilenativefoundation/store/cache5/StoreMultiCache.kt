@@ -88,6 +88,16 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
         return map
     }
 
+    override fun getAllPresent(): Map<Key, Output> {
+        return accessor.getAllPresent().mapKeys { (key, _) ->
+            when (key) {
+                is StoreKey.Collection<Id> -> key.cast()
+                is StoreKey.Single<Id> -> key.cast()
+                else -> throw UnsupportedOperationException(invalidKeyErrorMessage(key))
+            }
+        } as Map<Key, Output>
+    }
+
     override fun invalidateAll(keys: List<Key>) {
         keys.forEach { key -> invalidate(key) }
     }
