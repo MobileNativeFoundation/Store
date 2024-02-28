@@ -1,11 +1,11 @@
 [versions]
 androidMinSdk = "24"
 androidCompileSdk = "33"
-androidGradlePlugin = "7.4.2"
+androidGradlePlugin = "8.2.2"
 androidTargetSdk = "33"
-atomicFu = "0.20.2"
-baseKotlin = "1.9.10"
-dokkaGradlePlugin = "1.6.0"
+atomicFu = "0.23.2"
+baseKotlin = "1.9.22"
+dokkaGradlePlugin = "1.9.10"
 ktlintGradle = "10.2.1"
 jacocoGradlePlugin = "0.8.7"
 mavenPublishPlugin = "0.22.0"
@@ -14,7 +14,7 @@ pagingCompose = "3.3.0-alpha02"
 pagingRuntime = "3.2.1"
 spotlessPluginGradle = "6.4.1"
 junit = "4.13.2"
-kotlinxCoroutines = "1.7.1"
+kotlinxCoroutines = "1.8.0"
 kotlinxSerialization = "1.5.1"
 kermit = "1.2.2"
 testCore = "1.5.0"
@@ -36,6 +36,7 @@ jacoco-gradle-plugin = { group = "org.jacoco", name = "org.jacoco.core", version
 maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "mavenPublishPlugin" }
 kover-plugin = { group = "org.jetbrains.kotlinx", name = "kover", version.ref = "kover" }
 atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
+kmmBridge-gradle-plugin =  { group = "co.touchlab.faktory.kmmbridge", name = "co.touchlab.faktory.kmmbridge.gradle.plugin", version.ref = "kmmBridge" }
 
 kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }

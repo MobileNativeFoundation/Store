@@ -28,6 +28,8 @@ dependencies {
 }
 
 android {
+    namespace = "org.mobilenativefoundation.store.rx2"
+
     compileSdk = 33
 
     defaultConfig {
@@ -46,6 +48,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+kotlin {
+    jvmToolchain(11)
 }
 
 tasks.withType<DokkaTask>().configureEach {

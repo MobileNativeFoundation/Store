@@ -8,7 +8,7 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version("0.3.2")
+    id("co.touchlab.faktory.kmmbridge")
     `maven-publish`
     kotlin("native.cocoapods")
     id("kotlinx-atomicfu")
@@ -52,9 +52,13 @@ kotlin {
             }
         }
     }
+
+    jvmToolchain(11)
 }
 
 android {
+    namespace = "org.mobilenativefoundation.store.paging5"
+
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
 
