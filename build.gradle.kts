@@ -20,6 +20,7 @@ buildscript {
         classpath(libs.maven.publish.plugin)
         classpath(libs.kover.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
+        classpath(libs.kmmBridge.gradle.plugin)
     }
 }
 
@@ -57,3 +58,6 @@ tasks {
         targetCompatibility = JavaVersion.VERSION_11.name
     }
 }
+
+// Workaround for https://youtrack.jetbrains.com/issue/KT-62040
+tasks.getByName("wrapper")

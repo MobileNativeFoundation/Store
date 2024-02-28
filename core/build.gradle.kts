@@ -1,5 +1,6 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
@@ -8,7 +9,7 @@ plugins {
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover")
-    id("co.touchlab.faktory.kmmbridge") version("0.3.2")
+    id("co.touchlab.faktory.kmmbridge")
     `maven-publish`
     kotlin("native.cocoapods")
     id("kotlinx-atomicfu")
@@ -25,6 +26,10 @@ kotlin {
         browser()
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        nodejs()
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -33,9 +38,13 @@ kotlin {
             }
         }
     }
+
+    jvmToolchain(11)
 }
 
 android {
+    namespace = "org.mobilenativefoundation.store.core5"
+
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
 
