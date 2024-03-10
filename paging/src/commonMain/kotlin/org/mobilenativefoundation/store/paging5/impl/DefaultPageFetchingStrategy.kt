@@ -10,12 +10,11 @@ import org.mobilenativefoundation.store.paging5.PagingConfig
 @ExperimentalStoreApi
 class DefaultPageFetchingStrategy<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> :
     PageFetchingStrategy<Id, CK, SO> {
-
     override fun shouldFetchNextPage(
         anchorPosition: Id?,
         prefetchPosition: Id?,
         pagingConfig: PagingConfig,
-        pagingBuffer: PagingBuffer<Id, CK, SO>
+        pagingBuffer: PagingBuffer<Id, CK, SO>,
     ): Boolean {
         if (prefetchPosition == null) return true
 

@@ -13,19 +13,18 @@ sealed class PostData : StoreData<String> {
     data class Feed(
         val posts: List<Post>,
         override val prevKey: PostKey.Cursor,
-        override val nextKey: PostKey.Cursor?
+        override val nextKey: PostKey.Cursor?,
     ) : StoreData.Collection<String, PostKey.Cursor, Post>, PostData() {
         override val items: List<Post> get() = posts
         override val itemsAfter: Int? = null
         override val itemsBefore: Int? = null
-        override fun copyWith(items: List<Post>): StoreData.Collection<String, PostKey.Cursor, Post> =
-            copy(posts = items)
+
+        override fun copyWith(items: List<Post>): StoreData.Collection<String, PostKey.Cursor, Post> = copy(posts = items)
 
         override fun insertItems(
             strategy: InsertionStrategy,
-            items: List<Post>
+            items: List<Post>,
         ): StoreData.Collection<String, PostKey.Cursor, Post> {
-
             return when (strategy) {
                 InsertionStrategy.APPEND -> {
                     val updatedItems = posts.toMutableList()

@@ -28,8 +28,15 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) =
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>, O : StoreData<Id>> MutableStore<K, O>.paged(
-    key: CK
+fun <
+    Id : Any,
+    CK : StoreKey.Collection<Id>,
+    K : StoreKey<Id>,
+    SO : StoreData.Single<Id>,
+    CO : StoreData.Collection<Id, CK, SO>,
+    O : StoreData<Id>,
+    > MutableStore<K, O>.paged(
+    key: CK,
 ): Flow<PagingResult> {
     val storeKey = key as K
     return stream<Any>(StoreReadRequest.cached(storeKey, refresh = false)).mapNotNull {
@@ -43,8 +50,15 @@ fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Si
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>, O : StoreData<Id>> Store<K, O>.paged(
-    key: CK
+fun <
+    Id : Any,
+    CK : StoreKey.Collection<Id>,
+    K : StoreKey<Id>,
+    SO : StoreData.Single<Id>,
+    CO : StoreData.Collection<Id, CK, SO>,
+    O : StoreData<Id>,
+    > Store<K, O>.paged(
+    key: CK,
 ): Flow<PagingResult> {
     val storeKey = key as K
     return stream(StoreReadRequest.cached(storeKey, refresh = false)).mapNotNull {
@@ -58,9 +72,12 @@ fun <Id : Any, CK : StoreKey.Collection<Id>, K : StoreKey<Id>, SO : StoreData.Si
 
 @ExperimentalStoreApi
 sealed class PagingResult {
-    data class Data<Id : Any, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>>(
-        val value: CO
-    ) : PagingResult()
+    data class Data<
+        Id : Any,
+        CK : StoreKey.Collection<Id>,
+        SO : StoreData.Single<Id>,
+        CO : StoreData.Collection<Id, CK, SO>,
+        >(val value: CO) : PagingResult()
 
     data class Error(val throwable: Throwable) : PagingResult()
 }
@@ -83,15 +100,16 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
 @Suppress("UNCHECKED_CAST")
 fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
     updater: Updater<Key, Output, Response>,
-    bookkeeper: Bookkeeper<Key>?
+    bookkeeper: Bookkeeper<Key>?,
 ): MutableStore<Key, Output> {
-    val delegate = this as? RealStore<Key, Network, Output, Local>
-        ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
+    val delegate =
+        this as? RealStore<Key, Network, Output, Local>
+            ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
 
     return RealMutableStore(
         delegate = delegate,
         updater = updater,
-        bookkeeper = bookkeeper
+        bookkeeper = bookkeeper,
     )
 }
 

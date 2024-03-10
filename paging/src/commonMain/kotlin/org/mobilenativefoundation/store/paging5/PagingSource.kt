@@ -11,11 +11,12 @@ interface PagingSource<Id : Any, CK : StoreKey.Collection<Id>, SO : StoreData.Si
 
     data class LoadParams<Id : Any, CK : StoreKey.Collection<Id>>(
         val key: CK,
-        val refresh: Boolean
+        val refresh: Boolean,
     )
 
     sealed class LoadResult {
         data class Error(val throwable: Throwable) : LoadResult()
+
         data class Page<Id : Any, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
             val data: List<SO>,
             val itemsAfter: Int?,

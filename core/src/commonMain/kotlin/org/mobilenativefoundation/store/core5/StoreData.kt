@@ -7,7 +7,6 @@ package org.mobilenativefoundation.store.core5
  */
 @ExperimentalStoreApi
 interface StoreData<out Id : Any> {
-
     /**
      * Represents a single identifiable item.
      */
@@ -33,6 +32,9 @@ interface StoreData<out Id : Any> {
         /**
          * Inserts items to the existing collection and returns the updated collection.
          */
-        fun insertItems(strategy: InsertionStrategy, items: List<SO>): Collection<Id, *, SO>
+        fun insertItems(
+            strategy: InsertionStrategy,
+            items: List<SO>,
+        ): Collection<Id, *, SO>
     }
 }

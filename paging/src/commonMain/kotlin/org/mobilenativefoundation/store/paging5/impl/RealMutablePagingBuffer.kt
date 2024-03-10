@@ -17,7 +17,7 @@ import org.mobilenativefoundation.store.paging5.PagingSource
  */
 @ExperimentalStoreApi
 class RealMutablePagingBuffer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
-    private val maxSize: Int
+    private val maxSize: Int,
 ) : MutablePagingBuffer<Id, CK, SO> {
     private val buffer: Array<PagingSource.LoadResult.Page<Id, CK, SO>?> = arrayOfNulls(maxSize)
     private val paramsToIndex: MutableMap<PagingSource.LoadParams<Id, CK>, Int> = mutableMapOf()
@@ -26,7 +26,10 @@ class RealMutablePagingBuffer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>,
     private var tail = 0
     private var size = 0
 
-    override fun put(params: PagingSource.LoadParams<Id, CK>, page: PagingSource.LoadResult.Page<Id, CK, SO>) {
+    override fun put(
+        params: PagingSource.LoadParams<Id, CK>,
+        page: PagingSource.LoadResult.Page<Id, CK, SO>,
+    ) {
         if (size == maxSize) {
             val oldestIndex = head
             val oldestParams = paramsToIndex.entries.first { it.value == oldestIndex }.key

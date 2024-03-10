@@ -18,9 +18,10 @@ class RetriesRepository<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : 
     }
 
     suspend fun getRetriesFor(params: PagingSource.LoadParams<Id, CK>): Int {
-        val count = mutexForRetries.withLock {
-            retries[params] ?: 0
-        }
+        val count =
+            mutexForRetries.withLock {
+                retries[params] ?: 0
+            }
 
         return count
     }

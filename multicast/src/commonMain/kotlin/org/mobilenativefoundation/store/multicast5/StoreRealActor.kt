@@ -27,30 +27,31 @@ import kotlinx.coroutines.channels.SendChannel
  */
 @Suppress("EXPERIMENTAL_API_USAGE")
 internal abstract class StoreRealActor<T>(
-    scope: CoroutineScope
+    scope: CoroutineScope,
 ) {
     private val inboundChannel: SendChannel<Any?>
     private val closeCompleted = CompletableDeferred<Unit>()
     private val didClose = atomic<Boolean>(false)
 
     init {
-        inboundChannel = scope.actor(
-            capacity = 0
-        ) {
-            try {
-                for (msg in it) {
-                    if (msg === CLOSE_TOKEN) {
-                        doClose()
-                        break
-                    } else {
-                        @Suppress("UNCHECKED_CAST")
-                        handle(msg as T)
+        inboundChannel =
+            scope.actor(
+                capacity = 0,
+            ) {
+                try {
+                    for (msg in it) {
+                        if (msg === CLOSE_TOKEN) {
+                            doClose()
+                            break
+                        } else {
+                            @Suppress("UNCHECKED_CAST")
+                            handle(msg as T)
+                        }
                     }
+                } finally {
+                    doClose()
                 }
-            } finally {
-                doClose()
             }
-        }
     }
 
     private fun doClose() {

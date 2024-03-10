@@ -17,7 +17,7 @@ class DefaultPageAggregatingStrategy<Id : Comparable<Id>, CK : StoreKey.Collecti
         anchorPosition: Id?,
         prefetchPosition: Id?,
         pagingConfig: PagingConfig,
-        pagingBuffer: PagingBuffer<Id, CK, SO>
+        pagingBuffer: PagingBuffer<Id, CK, SO>,
     ): PagingItems<Id, SO> {
         if (pagingBuffer.isEmpty()) return PagingItems(emptyList())
 

@@ -7,7 +7,7 @@ import org.mobilenativefoundation.store.paging5.PagingAction
 
 @ExperimentalStoreApi
 class RealAppDispatcher(
-    private val delegate: Dispatcher
+    private val delegate: Dispatcher,
 ) : AppDispatcher {
     override fun dispatch(action: PagingAction) {
         delegate.dispatch(action)

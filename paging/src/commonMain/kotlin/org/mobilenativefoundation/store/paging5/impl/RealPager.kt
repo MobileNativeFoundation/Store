@@ -13,7 +13,6 @@ class RealPager<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreDat
     private val appDispatcher: AppDispatcher,
     pagingStateManager: PagingStateManager<Id, CK, SO, CE>,
 ) : Pager<Id, CK, SO, CA, CE> {
-
     init {
         appDispatcher.dispatch(PagingAction.App.Start)
     }

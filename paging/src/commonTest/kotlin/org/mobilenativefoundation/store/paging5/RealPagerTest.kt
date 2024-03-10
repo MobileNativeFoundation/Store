@@ -46,69 +46,72 @@ class RealPagerTest {
 
         val initialKey = PostKey.Cursor("1", 10)
 
-        pager = PagerBuilder<String, PostKey.Cursor, PostData.Post, CustomPostAction, CustomPostError>(
-            initialKey,
-            anchorPosition = anchorPosition,
-            pagingConfig = PagingConfig(),
-            scope = testScope
-        ).dispatcher(DefaultLogger()) {
+        pager =
+            PagerBuilder<String, PostKey.Cursor, PostData.Post, CustomPostAction, CustomPostError>(
+                initialKey,
+                anchorPosition = anchorPosition,
+                pagingConfig = PagingConfig(),
+                scope = testScope,
+            ).dispatcher(DefaultLogger()) {
+                defaultReducer {
+                    errorHandlingStrategy(ErrorHandlingStrategy.PassThrough)
+                    pagingBufferMaxSize(50)
+                }
 
-            defaultReducer {
-                errorHandlingStrategy(ErrorHandlingStrategy.PassThrough)
-                pagingBufferMaxSize(50)
-            }
-
-            defaultPostReducerEffects(
-                pagingSource = DefaultPagingSource(
-                    streamProvider = store.defaultPagingStreamProvider(
-                        keyFactory = object : PagingKeyFactory<String, PostKey.Single, PostData.Post> {
-                            override fun createKeyFor(data: PostData.Post): PostKey.Single {
-                                return PostKey.Single(data.postId)
-                            }
-                        }
-                    )
-                ),
-            )
-        }.build()
+                defaultPostReducerEffects(
+                    pagingSource =
+                        DefaultPagingSource(
+                            streamProvider =
+                                store.defaultPagingStreamProvider(
+                                    keyFactory =
+                                        object : PagingKeyFactory<String, PostKey.Single, PostData.Post> {
+                                            override fun createKeyFor(data: PostData.Post): PostKey.Single {
+                                                return PostKey.Single(data.postId)
+                                            }
+                                        },
+                                ),
+                        ),
+                )
+            }.build()
     }
 
     @Test
-    fun testPrefetching() = testScope.runTest {
-        val state = pager.state
+    fun testPrefetching() =
+        testScope.runTest {
+            val state = pager.state
 
-        state.test {
+            state.test {
+                val a = awaitItem()
+                assertIs<PagingState.LoadingInitial<String, PostKey.Cursor, PostData.Post>>(a)
 
-            val a = awaitItem()
-            assertIs<PagingState.LoadingInitial<String, PostKey.Cursor, PostData.Post>>(a)
+                val c = awaitItem()
+                assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(c)
 
-            val c = awaitItem()
-            assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(c)
+                val d = awaitItem()
+                assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(d)
 
-            val d = awaitItem()
-            assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(d)
+                val e = awaitItem()
+                assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(e)
 
-            val e = awaitItem()
-            assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(e)
+                val f = awaitItem()
+                assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(f)
 
-            val f = awaitItem()
-            assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(f)
+                val g = awaitItem()
+                assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(g)
 
-            val g = awaitItem()
-            assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(g)
+                val h = awaitItem()
+                assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(h)
 
-            val h = awaitItem()
-            assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(h)
+                val i = awaitItem()
+                assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(i)
 
-            val i = awaitItem()
-            assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(i)
+                val j = awaitItem()
+                assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(j)
 
-            val j = awaitItem()
-            assertIs<PagingState.Data.LoadingMore<String, PostKey.Cursor, PostData.Post>>(j)
+                val k = awaitItem()
+                assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(k)
 
-            val k = awaitItem()
-            assertIs<PagingState.Data.Idle<String, PostKey.Cursor, PostData.Post>>(k)
-
-            expectNoEvents()
+                expectNoEvents()
+            }
         }
-    }
 }

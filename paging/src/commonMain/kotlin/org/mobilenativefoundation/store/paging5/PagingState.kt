@@ -11,12 +11,12 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
 
     data class Initial<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
         override val currentKey: CK,
-        override val prefetchPosition: Id?
+        override val prefetchPosition: Id?,
     ) : PagingState<Id, CK, SO, Nothing>()
 
     data class LoadingInitial<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
         override val currentKey: CK,
-        override val prefetchPosition: Id?
+        override val prefetchPosition: Id?,
     ) : PagingState<Id, CK, SO, Nothing>()
 
     sealed class Data<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, out SO : StoreData.Single<Id>> :
@@ -32,7 +32,7 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
             override val itemsAfter: Int?,
             override val nextKey: CK?,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Data<Id, CK, SO>()
 
         data class LoadingMore<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
@@ -41,7 +41,7 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
             override val itemsAfter: Int?,
             override val nextKey: CK?,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Data<Id, CK, SO>()
 
         data class Refreshing<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
@@ -50,7 +50,7 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
             override val itemsAfter: Int?,
             override val nextKey: CK?,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Data<Id, CK, SO>()
 
         data class ErrorLoadingMore<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CE : Any>(
@@ -60,7 +60,7 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
             override val itemsAfter: Int?,
             override val nextKey: CK?,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Data<Id, CK, SO>()
     }
 
@@ -69,19 +69,19 @@ sealed class PagingState<Id : Comparable<Id>, out CK : StoreKey.Collection<Id>, 
         data class Exception<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CE : Any>(
             val error: Throwable,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Error<Id, CK, SO, CE>()
 
         data class Message<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CE : Any>(
             val error: String,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Error<Id, CK, SO, CE>()
 
         data class Custom<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CE : Any>(
             val error: CE,
             override val currentKey: CK,
-            override val prefetchPosition: Id?
+            override val prefetchPosition: Id?,
         ) : Error<Id, CK, SO, CE>()
     }
 }

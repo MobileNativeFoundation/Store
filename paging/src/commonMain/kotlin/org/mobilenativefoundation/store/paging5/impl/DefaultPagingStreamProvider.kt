@@ -21,13 +21,19 @@ import org.mobilenativefoundation.store.store5.impl.extensions.paged
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-fun <Id : Any, K : StoreKey<Id>, O : StoreData<Id>, SK : StoreKey.Single<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> MutableStore<K, O>.defaultPagingStreamProvider(
-    keyFactory: PagingKeyFactory<Id, SK, SO>
+fun <
+    Id : Any,
+    K : StoreKey<Id>,
+    O : StoreData<Id>,
+    SK : StoreKey.Single<Id>,
+    CK : StoreKey.Collection<Id>,
+    SO : StoreData.Single<Id>,
+    > MutableStore<K, O>.defaultPagingStreamProvider(
+    keyFactory: PagingKeyFactory<Id, SK, SO>,
 ): PagingStreamProvider<Id, CK> {
     fun parentPager(key: CK) = paged(key)
 
-    fun childStreamer(key: SK): Flow<StoreReadResponse<O>> =
-        stream<Any>(StoreReadRequest.cached(key as K, refresh = false))
+    fun childStreamer(key: SK): Flow<StoreReadResponse<O>> = stream<Any>(StoreReadRequest.cached(key as K, refresh = false))
 
     val delegate = DelegatePagingStreamProvider(::parentPager, ::childStreamer, keyFactory)
     return DefaultPagingStreamProvider(delegate)
@@ -35,13 +41,19 @@ fun <Id : Any, K : StoreKey<Id>, O : StoreData<Id>, SK : StoreKey.Single<Id>, CK
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-fun <Id : Any, K : StoreKey<Id>, O : StoreData<Id>, SK : StoreKey.Single<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> Store<K, O>.defaultPagingStreamProvider(
-    keyFactory: PagingKeyFactory<Id, SK, SO>
+fun <
+    Id : Any,
+    K : StoreKey<Id>,
+    O : StoreData<Id>,
+    SK : StoreKey.Single<Id>,
+    CK : StoreKey.Collection<Id>,
+    SO : StoreData.Single<Id>,
+    > Store<K, O>.defaultPagingStreamProvider(
+    keyFactory: PagingKeyFactory<Id, SK, SO>,
 ): PagingStreamProvider<Id, CK> {
     fun parentPager(key: CK) = paged(key)
 
-    fun childStreamer(key: SK): Flow<StoreReadResponse<O>> =
-        stream(StoreReadRequest.cached(key as K, refresh = false))
+    fun childStreamer(key: SK): Flow<StoreReadResponse<O>> = stream(StoreReadRequest.cached(key as K, refresh = false))
 
     val delegate = DelegatePagingStreamProvider(::parentPager, ::childStreamer, keyFactory)
     return DefaultPagingStreamProvider(delegate)
@@ -49,53 +61,61 @@ fun <Id : Any, K : StoreKey<Id>, O : StoreData<Id>, SK : StoreKey.Single<Id>, CK
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-internal class DelegatePagingStreamProvider<Id : Any, O : StoreData<Id>, SK : StoreKey.Single<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>>(
+internal class DelegatePagingStreamProvider<
+    Id : Any,
+    O : StoreData<Id>,
+    SK : StoreKey.Single<Id>,
+    CK : StoreKey.Collection<Id>,
+    SO : StoreData.Single<Id>,
+    CO : StoreData.Collection<Id, CK, SO>,
+    >(
     private val parentPager: (key: CK) -> Flow<PagingResult>,
     private val childStreamer: (key: SK) -> Flow<StoreReadResponse<O>>,
-    private val keyFactory: PagingKeyFactory<Id, SK, SO>
+    private val keyFactory: PagingKeyFactory<Id, SK, SO>,
 ) {
-
     private val pages: MutableMap<CK, PagingSource.LoadResult.Page<Id, CK, SO>> = mutableMapOf()
     private val mutexForPages = Mutex()
 
-    fun page(params: PagingSource.LoadParams<Id, CK>) = parentPager(params.key).map { pagingResult ->
-        when (pagingResult) {
-            is PagingResult.Data<*, *, *, *> -> {
-                val co = pagingResult.value as CO
-                val items = co.items
-                val page = PagingSource.LoadResult.Page(
-                    items,
-                    co.itemsAfter,
-                    co.itemsBefore,
-                    co.nextKey,
-                    params.key
-                )
+    fun page(params: PagingSource.LoadParams<Id, CK>) =
+        parentPager(params.key).map { pagingResult ->
+            when (pagingResult) {
+                is PagingResult.Data<*, *, *, *> -> {
+                    val co = pagingResult.value as CO
+                    val items = co.items
+                    val page =
+                        PagingSource.LoadResult.Page(
+                            items,
+                            co.itemsAfter,
+                            co.itemsBefore,
+                            co.nextKey,
+                            params.key,
+                        )
 
-                mutexForPages.withLock {
-                    pages[params.key] = page
-                }
-
-                var liveData = page
-
-                pagingResult.value.items.forEach { single ->
-                    val childKey = keyFactory.createKeyFor(single as SO)
-                    initStreamAndHandleSingle(single, childKey, params.key) { updatedData ->
-                        liveData = updatedData
+                    mutexForPages.withLock {
+                        pages[params.key] = page
                     }
+
+                    var liveData = page
+
+                    pagingResult.value.items.forEach { single ->
+                        val childKey = keyFactory.createKeyFor(single as SO)
+                        initStreamAndHandleSingle(single, childKey, params.key) { updatedData ->
+                            liveData = updatedData
+                        }
+                    }
+
+                    liveData
                 }
 
-                liveData
+                is PagingResult.Error -> PagingSource.LoadResult.Error(pagingResult.throwable)
             }
-
-            is PagingResult.Error -> PagingSource.LoadResult.Error(pagingResult.throwable)
         }
-    }
 
     private fun initStreamAndHandleSingle(
         single: SO,
         childKey: SK,
         parentKey: CK,
-        emitInParentStream: (updatedData: PagingSource.LoadResult.Page<Id, CK, SO>) -> Unit
+        emitInParentStream: (updatedData: PagingSource.LoadResult.Page<Id, CK, SO>) -> Unit,
     ) {
         childStreamer(childKey).distinctUntilChanged().onEach { response ->
             if (response is StoreReadResponse.Data) {
@@ -121,8 +141,15 @@ internal class DelegatePagingStreamProvider<Id : Any, O : StoreData<Id>, SK : St
 }
 
 @ExperimentalStoreApi
-internal class DefaultPagingStreamProvider<Id : Any, CK : StoreKey.Collection<Id>, SK : StoreKey.Single<Id>, O : StoreData<Id>, SO : StoreData.Single<Id>, CO : StoreData.Collection<Id, CK, SO>>(
-    private val delegate: DelegatePagingStreamProvider<Id, O, SK, CK, SO, CO>
+internal class DefaultPagingStreamProvider<
+    Id : Any,
+    CK : StoreKey.Collection<Id>,
+    SK : StoreKey.Single<Id>,
+    O : StoreData<Id>,
+    SO : StoreData.Single<Id>,
+    CO : StoreData.Collection<Id, CK, SO>,
+    >(
+    private val delegate: DelegatePagingStreamProvider<Id, O, SK, CK, SO, CO>,
 ) : PagingStreamProvider<Id, CK> {
     override fun stream(params: PagingSource.LoadParams<Id, CK>): Flow<PagingSource.LoadResult> = delegate.page(params)
 }

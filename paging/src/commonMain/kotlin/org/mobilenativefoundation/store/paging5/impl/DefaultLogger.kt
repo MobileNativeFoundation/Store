@@ -13,12 +13,13 @@ class DefaultLogger : Logger {
             
             $message
             
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
-    private val logger = Kermit.apply {
-        setLogWriters(listOf(CommonWriter()))
-        setTag("Store")
-    }
+    private val logger =
+        Kermit.apply {
+            setLogWriters(listOf(CommonWriter()))
+            setTag("Store")
+        }
 }

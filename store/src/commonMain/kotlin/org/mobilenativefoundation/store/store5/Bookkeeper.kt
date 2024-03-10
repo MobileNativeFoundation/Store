@@ -11,8 +11,14 @@ import org.mobilenativefoundation.store.store5.impl.extensions.now
 
 interface Bookkeeper<Key : Any> {
     suspend fun getLastFailedSync(key: Key): Long?
-    suspend fun setLastFailedSync(key: Key, timestamp: Long = now()): Boolean
+
+    suspend fun setLastFailedSync(
+        key: Key,
+        timestamp: Long = now(),
+    ): Boolean
+
     suspend fun clear(key: Key): Boolean
+
     suspend fun clearAll(): Boolean
 
     companion object {
@@ -20,7 +26,7 @@ interface Bookkeeper<Key : Any> {
             getLastFailedSync: suspend (key: Key) -> Long?,
             setLastFailedSync: suspend (key: Key, timestamp: Long) -> Boolean,
             clear: suspend (key: Key) -> Boolean,
-            clearAll: suspend () -> Boolean
+            clearAll: suspend () -> Boolean,
         ): Bookkeeper<Key> = RealBookkeeper(getLastFailedSync, setLastFailedSync, clear, clearAll)
     }
 }

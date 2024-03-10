@@ -55,17 +55,17 @@ sealed class StoreReadResponse<out Output> {
     sealed class Error : StoreReadResponse<Nothing>() {
         data class Exception(
             val error: Throwable,
-            override val origin: StoreReadResponseOrigin
+            override val origin: StoreReadResponseOrigin,
         ) : Error()
 
         data class Message(
             val message: String,
-            override val origin: StoreReadResponseOrigin
+            override val origin: StoreReadResponseOrigin,
         ) : Error()
 
         data class Custom<E : Any>(
             val error: E,
-            override val origin: StoreReadResponseOrigin
+            override val origin: StoreReadResponseOrigin,
         ) : Error()
     }
 
@@ -105,10 +105,11 @@ sealed class StoreReadResponse<out Output> {
     /**
      * If there is data available, returns it; otherwise returns null.
      */
-    fun dataOrNull(): Output? = when (this) {
-        is Data -> value
-        else -> null
-    }
+    fun dataOrNull(): Output? =
+        when (this) {
+            is Data -> value
+            else -> null
+        }
 
     private fun errorOrNull(): Throwable? {
         if (this is Error.Exception) {
@@ -131,13 +132,14 @@ sealed class StoreReadResponse<out Output> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <T> swapType(): StoreReadResponse<T> = when (this) {
-        is Error -> this
-        is Loading -> this
-        is NoNewData -> this
-        is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
-        is Initial -> this
-    }
+    internal fun <T> swapType(): StoreReadResponse<T> =
+        when (this) {
+            is Error -> this
+            is Loading -> this
+            is NoNewData -> this
+            is Data -> throw RuntimeException("cannot swap type for StoreResponse.Data")
+            is Initial -> this
+        }
 }
 
 /**
@@ -163,14 +165,15 @@ sealed class StoreReadResponseOrigin {
     object Initial : StoreReadResponseOrigin()
 }
 
-fun StoreReadResponse.Error.doThrow(): Nothing = when (this) {
-    is StoreReadResponse.Error.Exception -> throw error
-    is StoreReadResponse.Error.Message -> throw RuntimeException(message)
-    is StoreReadResponse.Error.Custom<*> -> {
-        if (error is Throwable) {
-            throw error
-        } else {
-            throw RuntimeException("Non-throwable custom error: $error")
+fun StoreReadResponse.Error.doThrow(): Nothing =
+    when (this) {
+        is StoreReadResponse.Error.Exception -> throw error
+        is StoreReadResponse.Error.Message -> throw RuntimeException(message)
+        is StoreReadResponse.Error.Custom<*> -> {
+            if (error is Throwable) {
+                throw error
+            } else {
+                throw RuntimeException("Non-throwable custom error: $error")
+            }
         }
     }
-}

@@ -9,12 +9,12 @@ import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.rx2.freshSingle
 import org.mobilenativefoundation.store.rx2.getSingle
 import org.mobilenativefoundation.store.rx2.ofMaybe
 import org.mobilenativefoundation.store.rx2.ofResultSingle
 import org.mobilenativefoundation.store.rx2.withScheduler
-import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
 import org.mobilenativefoundation.store.store5.SourceOfTruth
@@ -30,21 +30,23 @@ class RxSingleStoreExtensionsTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = Fetcher.ofResultSingle {
-                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
-            },
-            sourceOfTruth = SourceOfTruth.ofMaybe(
-                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
-                writer = { key, value ->
-                    Completable.fromAction { fakeDisk[key] = value }
+            fetcher =
+                Fetcher.ofResultSingle {
+                    Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
                 },
-                delete = { key ->
-                    Completable.fromAction { fakeDisk.remove(key) }
-                },
-                deleteAll = {
-                    Completable.fromAction { fakeDisk.clear() }
-                }
-            )
+            sourceOfTruth =
+                SourceOfTruth.ofMaybe(
+                    reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+                    writer = { key, value ->
+                        Completable.fromAction { fakeDisk[key] = value }
+                    },
+                    delete = { key ->
+                        Completable.fromAction { fakeDisk.remove(key) }
+                    },
+                    deleteAll = {
+                        Completable.fromAction { fakeDisk.clear() }
+                    },
+                ),
         )
             .withScheduler(Schedulers.trampoline())
             .build()

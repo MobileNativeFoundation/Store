@@ -11,6 +11,6 @@ interface PagingCollector<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO 
         params: PagingSource.LoadParams<Id, CK>,
         loadResults: Flow<PagingSource.LoadResult>,
         state: PagingState<Id, CK, SO, CE>,
-        dispatch: (action: PagingAction) -> Unit
+        dispatch: (action: PagingAction) -> Unit,
     )
 }

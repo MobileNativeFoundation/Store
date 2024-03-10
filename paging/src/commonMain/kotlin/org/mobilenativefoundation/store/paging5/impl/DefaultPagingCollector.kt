@@ -17,7 +17,7 @@ class DefaultPagingCollector<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, 
         params: PagingSource.LoadParams<Id, CK>,
         loadResults: Flow<PagingSource.LoadResult>,
         state: PagingState<Id, CK, SO, CE>,
-        dispatch: (action: PagingAction) -> Unit
+        dispatch: (action: PagingAction) -> Unit,
     ) {
         loadResults.collect { loadResult ->
             when (loadResult) {
@@ -29,8 +29,8 @@ class DefaultPagingCollector<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, 
                     dispatch(
                         PagingAction.App.UpdateData(
                             params,
-                            loadResult as PagingSource.LoadResult.Page<Id, CK, StoreData.Single<Id>>
-                        )
+                            loadResult as PagingSource.LoadResult.Page<Id, CK, StoreData.Single<Id>>,
+                        ),
                     )
                 }
             }

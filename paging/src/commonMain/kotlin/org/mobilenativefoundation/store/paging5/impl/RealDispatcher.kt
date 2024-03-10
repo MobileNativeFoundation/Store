@@ -20,9 +20,12 @@ class RealDispatcher<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
     private val reducer: PagingReducer<Id, CK, SO, CE>,
     private val logger: Logger?,
     private val postReducerEffectHolder: PostReducerEffectHolder<Id, CK, SO, CE>,
-    private val childScope: CoroutineScope
+    private val childScope: CoroutineScope,
 ) : Dispatcher {
-    override fun <A : PagingAction> dispatch(action: A, index: Int) {
+    override fun <A : PagingAction> dispatch(
+        action: A,
+        index: Int,
+    ) {
         if (index < middlewares.size) {
             middlewares[index].apply(action) { nextAction ->
                 dispatch(nextAction, index + 1)
@@ -32,10 +35,11 @@ class RealDispatcher<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
             val nextState = reducer.reduce(prevState, action)
 
             logger?.d(
-                """Updating state:
-                    Prev state: $prevState
-                    Next state: $nextState
-                """.trimIndent()
+                """
+                Updating state:
+                Prev state: $prevState
+                Next state: $nextState
+                """.trimIndent(),
             )
 
             pagingStateManager.updateState(nextState)
@@ -45,7 +49,7 @@ class RealDispatcher<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     val reducerEffects =
                         postReducerEffectHolder.get<PagingState.Data.ErrorLoadingMore<Id, CK, SO, CE>, A>(
                             nextState::class,
-                            action::class
+                            action::class,
                         )
 
                     nextState as PagingState.Data.ErrorLoadingMore<Id, CK, SO, CE>
@@ -54,37 +58,41 @@ class RealDispatcher<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                 }
 
                 is PagingState.Data.Idle -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Data.Idle<Id, CK, SO>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Data.Idle<Id, CK, SO>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.Data.LoadingMore -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Data.LoadingMore<Id, CK, SO>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Data.LoadingMore<Id, CK, SO>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.Data.Refreshing -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Data.Refreshing<Id, CK, SO>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Data.Refreshing<Id, CK, SO>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.Error.Custom -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Error.Custom<Id, CK, SO, CE>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Error.Custom<Id, CK, SO, CE>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
@@ -93,35 +101,38 @@ class RealDispatcher<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     val reducerEffects =
                         postReducerEffectHolder.get<PagingState.Error.Exception<Id, CK, SO, CE>, A>(
                             nextState::class,
-                            action::class
+                            action::class,
                         )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.Error.Message -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Error.Message<Id, CK, SO, CE>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Error.Message<Id, CK, SO, CE>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.Initial -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.Initial<Id, CK, SO>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.Initial<Id, CK, SO>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach { it.run(nextState, action, dispatch = ::dispatch) }
                 }
 
                 is PagingState.LoadingInitial -> {
-                    val reducerEffects = postReducerEffectHolder.get<PagingState.LoadingInitial<Id, CK, SO>, A>(
-                        nextState::class,
-                        action::class
-                    )
+                    val reducerEffects =
+                        postReducerEffectHolder.get<PagingState.LoadingInitial<Id, CK, SO>, A>(
+                            nextState::class,
+                            action::class,
+                        )
 
                     reducerEffects.forEach {
                         it.run(nextState, action, dispatch = ::dispatch)

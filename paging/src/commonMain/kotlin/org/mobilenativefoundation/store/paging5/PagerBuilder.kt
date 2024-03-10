@@ -28,22 +28,27 @@ class PagerBuilder<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Store
 
     private lateinit var dispatcher: Dispatcher
 
-    private var dispatcherInjector = object : DispatcherInjector {
-        override var dispatch: (action: PagingAction) -> Unit = {}
-    }
+    private var dispatcherInjector =
+        object : DispatcherInjector {
+            override var dispatch: (action: PagingAction) -> Unit = {}
+        }
 
-    fun dispatcher(logger: Logger? = null, block: DispatcherBuilder<Id, CK, SO, CA, CE>.() -> Unit) = apply {
-        val builder = DispatcherBuilder<Id, CK, SO, CA, CE>(
-            logger = logger,
-            initialKey = initialKey,
-            childScope = childScope,
-            dispatcherInjector = dispatcherInjector,
-            anchorPosition = anchorPosition,
-            pagingConfig = pagingConfig,
-            jobCoordinator = jobCoordinator,
-            retriesRepository = retriesRepository,
-            pagingStateManager = pagingStateManager
-        )
+    fun dispatcher(
+        logger: Logger? = null,
+        block: DispatcherBuilder<Id, CK, SO, CA, CE>.() -> Unit,
+    ) = apply {
+        val builder =
+            DispatcherBuilder<Id, CK, SO, CA, CE>(
+                logger = logger,
+                initialKey = initialKey,
+                childScope = childScope,
+                dispatcherInjector = dispatcherInjector,
+                anchorPosition = anchorPosition,
+                pagingConfig = pagingConfig,
+                jobCoordinator = jobCoordinator,
+                retriesRepository = retriesRepository,
+                pagingStateManager = pagingStateManager,
+            )
 
         block(builder)
 

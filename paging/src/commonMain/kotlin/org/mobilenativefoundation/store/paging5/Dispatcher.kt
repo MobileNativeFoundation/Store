@@ -4,5 +4,8 @@ import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 
 @ExperimentalStoreApi
 interface Dispatcher {
-    fun <A : PagingAction> dispatch(action: A, index: Int = 0)
+    fun <A : PagingAction> dispatch(
+        action: A,
+        index: Int = 0,
+    )
 }

@@ -14,12 +14,15 @@ import org.mobilenativefoundation.store.paging5.impl.RealMutablePagingBuffer
 @ExperimentalStoreApi
 interface MutablePagingBuffer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> :
     PagingBuffer<Id, CK, SO> {
-    fun put(params: PagingSource.LoadParams<Id, CK>, page: PagingSource.LoadResult.Page<Id, CK, SO>)
+    fun put(
+        params: PagingSource.LoadParams<Id, CK>,
+        page: PagingSource.LoadResult.Page<Id, CK, SO>,
+    )
 }
 
 @ExperimentalStoreApi
 inline fun <Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>> mutablePagingBuffer(
-    maxSize: Int
+    maxSize: Int,
 ): MutablePagingBuffer<Id, CK, SO> {
     return RealMutablePagingBuffer(maxSize)
 }

@@ -20,7 +20,6 @@ import org.mobilenativefoundation.store.paging5.QueueManager
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalStoreApi
-
 class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>, CA : Any, CE : Any>(
     private val childScope: CoroutineScope,
     private val initialKey: CK,
@@ -34,27 +33,30 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
     private val mutablePagingBuffer: MutablePagingBuffer<Id, CK, SO>,
     private val logger: Logger?,
 ) : PagingReducer<Id, CK, SO, CE> {
-
     override fun reduce(
         state: PagingState<Id, CK, SO, CE>,
-        action: PagingAction
+        action: PagingAction,
     ): PagingState<Id, CK, SO, CE> {
         logger?.d(
-            """Reducing:
-                Action: $action
-                Previous state: $state
-            """.trimIndent()
+            """
+            Reducing:
+            Action: $action
+            Previous state: $state
+            """.trimIndent(),
         )
 
         return when (action) {
-            is PagingAction.App.UpdateData<*, *, *> -> reduceUpdateDataAction(
-                state,
-                action as PagingAction.App.UpdateData<Id, CK, SO>
-            )
+            is PagingAction.App.UpdateData<*, *, *> ->
+                reduceUpdateDataAction(
+                    state,
+                    action as PagingAction.App.UpdateData<Id, CK, SO>,
+                )
 
-            is PagingAction.App.UpdateError<*, *, *> -> reduceUpdateErrorAction(
-                state, action as PagingAction.App.UpdateError<Id, CK, CE>
-            )
+            is PagingAction.App.UpdateError<*, *, *> ->
+                reduceUpdateErrorAction(
+                    state,
+                    action as PagingAction.App.UpdateError<Id, CK, CE>,
+                )
 
             PagingAction.App.Start -> reduceStartAction()
             is PagingAction.User.Custom<*> -> reduceCustomAction(state, action as PagingAction.User.Custom<CA>)
@@ -66,14 +68,12 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
 
     private fun reduceCustomAction(
         prevState: PagingState<Id, CK, SO, CE>,
-        action: PagingAction.User.Custom<CA>
+        action: PagingAction.User.Custom<CA>,
     ): PagingState<Id, CK, SO, CE> {
         return customActionReducer?.reduce(prevState, action) ?: prevState
     }
 
-    private fun reduceRefreshAction(
-        prevState: PagingState<Id, CK, SO, CE>,
-    ): PagingState<Id, CK, SO, CE> {
+    private fun reduceRefreshAction(prevState: PagingState<Id, CK, SO, CE>): PagingState<Id, CK, SO, CE> {
         return when (prevState) {
             is PagingState.Data -> {
                 PagingState.Data.Refreshing(
@@ -82,7 +82,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     itemsAfter = prevState.itemsAfter,
                     currentKey = initialKey,
                     nextKey = prevState.nextKey,
-                    prefetchPosition = null
+                    prefetchPosition = null,
                 )
             }
 
@@ -93,7 +93,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     itemsAfter = null,
                     currentKey = initialKey,
                     nextKey = null,
-                    prefetchPosition = null
+                    prefetchPosition = null,
                 )
             }
         }
@@ -103,7 +103,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
 
     private fun reduceLoadAction(
         prevState: PagingState<Id, CK, SO, CE>,
-        key: CK
+        key: CK,
     ): PagingState<Id, CK, SO, CE> {
         return when (prevState) {
             is PagingState.Data -> {
@@ -113,7 +113,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     itemsAfter = prevState.itemsAfter,
                     currentKey = prevState.currentKey,
                     nextKey = prevState.nextKey,
-                    prefetchPosition = prevState.prefetchPosition
+                    prefetchPosition = prevState.prefetchPosition,
                 )
             }
 
@@ -124,7 +124,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                     itemsAfter = null,
                     currentKey = key,
                     nextKey = null,
-                    prefetchPosition = prevState.prefetchPosition
+                    prefetchPosition = prevState.prefetchPosition,
                 )
             }
         }
@@ -132,17 +132,17 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
 
     private fun reduceUpdateDataAction(
         prevState: PagingState<Id, CK, SO, CE>,
-        action: PagingAction.App.UpdateData<Id, CK, SO>
+        action: PagingAction.App.UpdateData<Id, CK, SO>,
     ): PagingState<Id, CK, SO, CE> {
-
         mutablePagingBuffer.put(action.params, action.page)
 
-        val nextPagingItems = aggregatingStrategy.aggregate(
-            anchorPosition = anchorPosition.value,
-            prefetchPosition = prevState.prefetchPosition,
-            pagingConfig = pagingConfig,
-            pagingBuffer = mutablePagingBuffer
-        )
+        val nextPagingItems =
+            aggregatingStrategy.aggregate(
+                anchorPosition = anchorPosition.value,
+                prefetchPosition = prevState.prefetchPosition,
+                pagingConfig = pagingConfig,
+                pagingBuffer = mutablePagingBuffer,
+            )
 
         resetRetriesFor(action.params)
 
@@ -154,13 +154,13 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
             itemsAfter = action.page.itemsAfter,
             currentKey = action.page.prevKey,
             nextKey = action.page.nextKey,
-            prefetchPosition = nextPrefetchPosition
+            prefetchPosition = nextPrefetchPosition,
         )
     }
 
     private fun reduceUpdateErrorAction(
         prevState: PagingState<Id, CK, SO, CE>,
-        action: PagingAction.App.UpdateError<Id, CK, CE>
+        action: PagingAction.App.UpdateError<Id, CK, CE>,
     ): PagingState<Id, CK, SO, CE> {
         return when (errorHandlingStrategy) {
             ErrorHandlingStrategy.Ignore -> {
@@ -171,25 +171,29 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
             ErrorHandlingStrategy.PassThrough -> {
                 // Emitting it, but not doing anything else
 
-                val errorState: PagingState.Error<Id, CK, SO, CE> = when (action) {
-                    is PagingAction.App.UpdateError.Custom -> PagingState.Error.Custom(
-                        action.error,
-                        currentKey = prevState.currentKey,
-                        prefetchPosition = prevState.prefetchPosition
-                    )
+                val errorState: PagingState.Error<Id, CK, SO, CE> =
+                    when (action) {
+                        is PagingAction.App.UpdateError.Custom ->
+                            PagingState.Error.Custom(
+                                action.error,
+                                currentKey = prevState.currentKey,
+                                prefetchPosition = prevState.prefetchPosition,
+                            )
 
-                    is PagingAction.App.UpdateError.Exception -> PagingState.Error.Exception(
-                        action.error,
-                        currentKey = prevState.currentKey,
-                        prefetchPosition = prevState.prefetchPosition
-                    )
+                        is PagingAction.App.UpdateError.Exception ->
+                            PagingState.Error.Exception(
+                                action.error,
+                                currentKey = prevState.currentKey,
+                                prefetchPosition = prevState.prefetchPosition,
+                            )
 
-                    is PagingAction.App.UpdateError.Message -> PagingState.Error.Message(
-                        action.error,
-                        currentKey = prevState.currentKey,
-                        prefetchPosition = prevState.prefetchPosition
-                    )
-                }
+                        is PagingAction.App.UpdateError.Message ->
+                            PagingState.Error.Message(
+                                action.error,
+                                currentKey = prevState.currentKey,
+                                prefetchPosition = prevState.prefetchPosition,
+                            )
+                    }
 
                 if (prevState is PagingState.Data) {
                     PagingState.Data.ErrorLoadingMore(
@@ -199,7 +203,7 @@ class DefaultReducer<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : Sto
                         itemsAfter = prevState.itemsAfter,
                         currentKey = prevState.currentKey,
                         nextKey = prevState.nextKey,
-                        prefetchPosition = prevState.prefetchPosition
+                        prefetchPosition = prevState.prefetchPosition,
                     )
                 } else {
                     errorState

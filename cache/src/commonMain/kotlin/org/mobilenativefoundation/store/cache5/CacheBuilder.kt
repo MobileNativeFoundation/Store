@@ -19,43 +19,52 @@ class CacheBuilder<Key : Any, Output : Any> {
     internal var ticker: Ticker? = null
         private set
 
-    fun concurrencyLevel(producer: () -> Int): CacheBuilder<Key, Output> = apply {
-        concurrencyLevel = producer.invoke()
-    }
-
-    fun maximumSize(maximumSize: Long): CacheBuilder<Key, Output> = apply {
-        if (maximumSize < 0) {
-            throw IllegalArgumentException("Maximum size must be non-negative.")
-        }
-        this.maximumSize = maximumSize
-    }
-
-    fun expireAfterAccess(duration: Duration): CacheBuilder<Key, Output> = apply {
-        if (duration.isNegative()) {
-            throw IllegalArgumentException("Duration must be non-negative.")
-        }
-        expireAfterAccess = duration
-    }
-
-    fun expireAfterWrite(duration: Duration): CacheBuilder<Key, Output> = apply {
-        if (duration.isNegative()) {
-            throw IllegalArgumentException("Duration must be non-negative.")
-        }
-        expireAfterWrite = duration
-    }
-
-    fun ticker(ticker: Ticker): CacheBuilder<Key, Output> = apply {
-        this.ticker = ticker
-    }
-
-    fun weigher(maximumWeight: Long, weigher: Weigher<Key, Output>): CacheBuilder<Key, Output> = apply {
-        if (maximumWeight < 0) {
-            throw IllegalArgumentException("Maximum weight must be non-negative.")
+    fun concurrencyLevel(producer: () -> Int): CacheBuilder<Key, Output> =
+        apply {
+            concurrencyLevel = producer.invoke()
         }
 
-        this.maximumWeight = maximumWeight
-        this.weigher = weigher
-    }
+    fun maximumSize(maximumSize: Long): CacheBuilder<Key, Output> =
+        apply {
+            if (maximumSize < 0) {
+                throw IllegalArgumentException("Maximum size must be non-negative.")
+            }
+            this.maximumSize = maximumSize
+        }
+
+    fun expireAfterAccess(duration: Duration): CacheBuilder<Key, Output> =
+        apply {
+            if (duration.isNegative()) {
+                throw IllegalArgumentException("Duration must be non-negative.")
+            }
+            expireAfterAccess = duration
+        }
+
+    fun expireAfterWrite(duration: Duration): CacheBuilder<Key, Output> =
+        apply {
+            if (duration.isNegative()) {
+                throw IllegalArgumentException("Duration must be non-negative.")
+            }
+            expireAfterWrite = duration
+        }
+
+    fun ticker(ticker: Ticker): CacheBuilder<Key, Output> =
+        apply {
+            this.ticker = ticker
+        }
+
+    fun weigher(
+        maximumWeight: Long,
+        weigher: Weigher<Key, Output>,
+    ): CacheBuilder<Key, Output> =
+        apply {
+            if (maximumWeight < 0) {
+                throw IllegalArgumentException("Maximum weight must be non-negative.")
+            }
+
+            this.maximumWeight = maximumWeight
+            this.weigher = weigher
+        }
 
     fun build(): Cache<Key, Output> {
         if (maximumSize != -1L && weigher != null) {

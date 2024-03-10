@@ -6,16 +6,15 @@ import org.mobilenativefoundation.store.core5.StoreKey
 
 @ExperimentalStoreApi
 sealed class PagingAction {
-
     sealed class User : PagingAction() {
         data class Load<Id : Comparable<Id>, CK : StoreKey.Collection<Id>>(
-            val key: CK
+            val key: CK,
         ) : User()
 
         object Refresh : User()
 
         data class Custom<CA : Any>(
-            val action: CA
+            val action: CA,
         ) : User()
     }
 
@@ -23,7 +22,7 @@ sealed class PagingAction {
         object Start : App()
 
         data class Load<Id : Comparable<Id>, CK : StoreKey.Collection<Id>>(
-            val key: CK
+            val key: CK,
         ) : App()
 
         data class UpdateData<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
@@ -36,17 +35,17 @@ sealed class PagingAction {
 
             data class Exception<Id : Comparable<Id>, CK : StoreKey.Collection<Id>>(
                 val error: Throwable,
-                override val params: PagingSource.LoadParams<Id, CK>
+                override val params: PagingSource.LoadParams<Id, CK>,
             ) : UpdateError<Id, CK, Nothing>()
 
             data class Message<Id : Comparable<Id>, CK : StoreKey.Collection<Id>>(
                 val error: String,
-                override val params: PagingSource.LoadParams<Id, CK>
+                override val params: PagingSource.LoadParams<Id, CK>,
             ) : UpdateError<Id, CK, Nothing>()
 
             data class Custom<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, CE : Any>(
                 val error: CE,
-                override val params: PagingSource.LoadParams<Id, CK>
+                override val params: PagingSource.LoadParams<Id, CK>,
             ) : UpdateError<Id, CK, CE>()
         }
     }

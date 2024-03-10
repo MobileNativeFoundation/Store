@@ -5,5 +5,5 @@ import org.mobilenativefoundation.store.core5.StoreData
 
 @ExperimentalStoreApi
 data class PagingItems<Id : Any, SO : StoreData.Single<Id>>(
-    val data: List<SO>
+    val data: List<SO>,
 )

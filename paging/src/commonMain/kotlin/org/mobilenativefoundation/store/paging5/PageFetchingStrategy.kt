@@ -10,6 +10,6 @@ fun interface PageFetchingStrategy<Id : Comparable<Id>, CK : StoreKey.Collection
         anchorPosition: Id?,
         prefetchPosition: Id?,
         pagingConfig: PagingConfig,
-        pagingBuffer: PagingBuffer<Id, CK, SO>
+        pagingBuffer: PagingBuffer<Id, CK, SO>,
     ): Boolean
 }

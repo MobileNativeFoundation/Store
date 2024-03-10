@@ -4,7 +4,6 @@ import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 
 @OptIn(ExperimentalStoreApi::class)
 class TestPostApi : PostApi {
-
     private val posts = mutableMapOf<String, PostData.Post>()
     private val postsList = mutableListOf<PostData.Post>()
 
@@ -37,23 +36,24 @@ class TestPostApi : PostApi {
         val firstIndexInclusive = postsList.indexOfFirst { it.postId == key.cursor }
         val lastIndexExclusive = firstIndexInclusive + key.size
 
-        val (posts, nextCursor) = if (lastIndexExclusive > postsList.lastIndex) {
-            val posts = postsList.subList(firstIndexInclusive, postsList.size)
-            val nextCursor = null
-            posts to nextCursor
-        } else {
-            val posts = postsList.subList(firstIndexInclusive, lastIndexExclusive)
-            val nextCursor = postsList[lastIndexExclusive].id
+        val (posts, nextCursor) =
+            if (lastIndexExclusive > postsList.lastIndex) {
+                val posts = postsList.subList(firstIndexInclusive, postsList.size)
+                val nextCursor = null
+                posts to nextCursor
+            } else {
+                val posts = postsList.subList(firstIndexInclusive, lastIndexExclusive)
+                val nextCursor = postsList[lastIndexExclusive].id
 
-            posts to nextCursor
-        }
+                posts to nextCursor
+            }
 
         return FeedGetRequestResult.Data(
             PostData.Feed(
                 posts = posts,
                 prevKey = key,
-                nextKey = key.copy(cursor = nextCursor)
-            )
+                nextKey = key.copy(cursor = nextCursor),
+            ),
         )
     }
 

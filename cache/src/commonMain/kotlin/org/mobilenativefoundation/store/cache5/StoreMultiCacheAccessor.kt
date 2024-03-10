@@ -36,9 +36,10 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      * @param key The key used to retrieve the collection.
      * @return The cached collection or null if it's not present.
      */
-    fun getCollection(key: StoreKey.Collection<Id>): Collection? = synchronized(this) {
-        collectionsCache.getIfPresent(key)
-    }
+    fun getCollection(key: StoreKey.Collection<Id>): Collection? =
+        synchronized(this) {
+            collectionsCache.getIfPresent(key)
+        }
 
     /**
      * Retrieves an individual item from the cache using the provided key.
@@ -48,9 +49,10 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      * @param key The key used to retrieve the single item.
      * @return The cached single item or null if it's not present.
      */
-    fun getSingle(key: StoreKey.Single<Id>): Single? = synchronized(this) {
-        singlesCache.getIfPresent(key)
-    }
+    fun getSingle(key: StoreKey.Single<Id>): Single? =
+        synchronized(this) {
+            singlesCache.getIfPresent(key)
+        }
 
     /**
      * Stores a collection of items in the cache and updates the key set.
@@ -60,7 +62,10 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      * @param key The key associated with the collection.
      * @param collection The collection to be stored in the cache.
      */
-    fun putCollection(key: StoreKey.Collection<Id>, collection: Collection) = synchronized(this) {
+    fun putCollection(
+        key: StoreKey.Collection<Id>,
+        collection: Collection,
+    ) = synchronized(this) {
         collectionsCache.put(key, collection)
         keys.add(key)
     }
@@ -73,7 +78,10 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      * @param key The key associated with the single item.
      * @param single The single item to be stored in the cache.
      */
-    fun putSingle(key: StoreKey.Single<Id>, single: Single) = synchronized(this) {
+    fun putSingle(
+        key: StoreKey.Single<Id>,
+        single: Single,
+    ) = synchronized(this) {
         singlesCache.put(key, single)
         keys.add(key)
     }
@@ -83,11 +91,12 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      *
      * This operation is thread-safe.
      */
-    fun invalidateAll() = synchronized(this) {
-        collectionsCache.invalidateAll()
-        singlesCache.invalidateAll()
-        keys.clear()
-    }
+    fun invalidateAll() =
+        synchronized(this) {
+            collectionsCache.invalidateAll()
+            singlesCache.invalidateAll()
+            keys.clear()
+        }
 
     /**
      * Removes an individual item from the cache and updates the key set.
@@ -96,10 +105,11 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      *
      * @param key The key associated with the single item to be invalidated.
      */
-    fun invalidateSingle(key: StoreKey.Single<Id>) = synchronized(this) {
-        singlesCache.invalidate(key)
-        keys.remove(key)
-    }
+    fun invalidateSingle(key: StoreKey.Single<Id>) =
+        synchronized(this) {
+            singlesCache.invalidate(key)
+            keys.remove(key)
+        }
 
     /**
      * Removes a collection of items from the cache and updates the key set.
@@ -108,10 +118,11 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      *
      * @param key The key associated with the collection to be invalidated.
      */
-    fun invalidateCollection(key: StoreKey.Collection<Id>) = synchronized(this) {
-        collectionsCache.invalidate(key)
-        keys.remove(key)
-    }
+    fun invalidateCollection(key: StoreKey.Collection<Id>) =
+        synchronized(this) {
+            collectionsCache.invalidate(key)
+            keys.remove(key)
+        }
 
     /**
      * Calculates the total count of items in the cache, including both single items and items in collections.
@@ -120,25 +131,26 @@ class StoreMultiCacheAccessor<Id : Any, Collection : StoreData.Collection<Id, *,
      *
      * @return The total count of items in the cache.
      */
-    fun size(): Long = synchronized(this) {
-        var count = 0L
-        for (key in keys) {
-            when (key) {
-                is StoreKey.Single<Id> -> {
-                    val single = singlesCache.getIfPresent(key)
-                    if (single != null) {
-                        count++
+    fun size(): Long =
+        synchronized(this) {
+            var count = 0L
+            for (key in keys) {
+                when (key) {
+                    is StoreKey.Single<Id> -> {
+                        val single = singlesCache.getIfPresent(key)
+                        if (single != null) {
+                            count++
+                        }
                     }
-                }
 
-                is StoreKey.Collection<Id> -> {
-                    val collection = collectionsCache.getIfPresent(key)
-                    if (collection != null) {
-                        count += collection.items.size
+                    is StoreKey.Collection<Id> -> {
+                        val collection = collectionsCache.getIfPresent(key)
+                        if (collection != null) {
+                            count += collection.items.size
+                        }
                     }
                 }
             }
+            count
         }
-        count
-    }
 }

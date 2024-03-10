@@ -11,7 +11,6 @@ import org.mobilenativefoundation.store.paging5.PagingStreamProvider
 class DefaultPagingSource<Id : Any, CK : StoreKey.Collection<Id>, SO : StoreData.Single<Id>>(
     private val streamProvider: PagingStreamProvider<Id, CK>,
 ) : PagingSource<Id, CK, SO> {
-
     private val streams: MutableMap<CK, Flow<PagingSource.LoadResult>> = mutableMapOf()
 
     override fun stream(params: PagingSource.LoadParams<Id, CK>): Flow<PagingSource.LoadResult> {

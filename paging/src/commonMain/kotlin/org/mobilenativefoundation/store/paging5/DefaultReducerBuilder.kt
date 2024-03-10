@@ -21,15 +21,13 @@ class DefaultReducerBuilder<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, S
     private val pagingStateManager: PagingStateManager<Id, CK, SO, CE>,
     private val logger: Logger?,
 ) {
-
     private var errorHandlingStrategy: ErrorHandlingStrategy = ErrorHandlingStrategy.PassThrough
     private var aggregatingStrategy: PageAggregatingStrategy<Id, CK, SO> = DefaultPageAggregatingStrategy()
     private var pageFetchingStrategy: PageFetchingStrategy<Id, CK, SO> = DefaultPageFetchingStrategy()
     private var customActionReducer: CustomActionReducer<Id, CK, SO, CA, CE>? = null
     private var pagingBufferMaxSize: Int = 100
 
-    fun errorHandlingStrategy(errorHandlingStrategy: ErrorHandlingStrategy) =
-        apply { this.errorHandlingStrategy = errorHandlingStrategy }
+    fun errorHandlingStrategy(errorHandlingStrategy: ErrorHandlingStrategy) = apply { this.errorHandlingStrategy = errorHandlingStrategy }
 
     fun aggregatingStrategy(aggregatingStrategy: PageAggregatingStrategy<Id, CK, SO>) =
         apply { this.aggregatingStrategy = aggregatingStrategy }
@@ -47,16 +45,17 @@ class DefaultReducerBuilder<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, S
 
         val mutablePagingBuffer: MutablePagingBuffer<Id, CK, SO> = mutablePagingBuffer(pagingBufferMaxSize)
 
-        val queueManager: QueueManager<Id, CK> = DefaultQueueManager(
-            pagingConfig,
-            anchorPosition,
-            pageFetchingStrategy,
-            dispatcherInjector = dispatcherInjector,
-            pagingStateManager,
-            mutablePagingBuffer,
-            logger,
-            childScope
-        )
+        val queueManager: QueueManager<Id, CK> =
+            DefaultQueueManager(
+                pagingConfig,
+                anchorPosition,
+                pageFetchingStrategy,
+                dispatcherInjector = dispatcherInjector,
+                pagingStateManager,
+                mutablePagingBuffer,
+                logger,
+                childScope,
+            )
 
         return DefaultReducer(
             childScope = childScope,
@@ -69,7 +68,7 @@ class DefaultReducerBuilder<Id : Comparable<Id>, CK : StoreKey.Collection<Id>, S
             queueManager = queueManager,
             retriesRepository = retriesRepository,
             mutablePagingBuffer = mutablePagingBuffer,
-            logger = logger
+            logger = logger,
         )
     }
 }

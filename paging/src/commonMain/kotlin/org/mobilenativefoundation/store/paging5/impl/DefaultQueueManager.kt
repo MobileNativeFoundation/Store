@@ -24,7 +24,7 @@ internal class DefaultQueueManager<Id : Comparable<Id>, CK : StoreKey.Collection
     private val pagingStateManager: PagingStateManager<Id, CK, SO, CE>,
     private val pagingBuffer: PagingBuffer<Id, CK, SO>,
     private val logger: Logger?,
-    private val childScope: CoroutineScope
+    private val childScope: CoroutineScope,
 ) : QueueManager<Id, CK> {
     private val queue: ArrayDeque<CK> = ArrayDeque()
 
@@ -32,18 +32,19 @@ internal class DefaultQueueManager<Id : Comparable<Id>, CK : StoreKey.Collection
         logger?.d(
             """Enqueuing:
                 Key: $key
-        """.trimMargin()
+            """.trimMargin(),
         )
         queue.addLast(key)
         processQueue()
     }
 
     private fun processQueue() {
-        while (queue.isNotEmpty() && pageFetchingStrategy.shouldFetchNextPage(
+        while (queue.isNotEmpty() &&
+            pageFetchingStrategy.shouldFetchNextPage(
                 anchorPosition = anchorPosition.value,
                 prefetchPosition = pagingStateManager.state.value.prefetchPosition,
                 pagingConfig = pagingConfig,
-                pagingBuffer = pagingBuffer
+                pagingBuffer = pagingBuffer,
             )
         ) {
             val nextKey = queue.removeFirst()
@@ -51,7 +52,7 @@ internal class DefaultQueueManager<Id : Comparable<Id>, CK : StoreKey.Collection
             logger?.d(
                 """Dequeued:
                     Key: $nextKey
-            """.trimMargin()
+                """.trimMargin(),
             )
 
             childScope.launch {
