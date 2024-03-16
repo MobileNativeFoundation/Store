@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.rx2
 
-
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -19,20 +18,20 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Local : Any, Output:Any> SourceOfTruth.Companion.ofMaybe(
+fun <Key : Any, Local : Any, Output : Any> SourceOfTruth.Companion.ofMaybe(
     reader: (Key) -> Maybe<Output>,
     writer: (Key, Local) -> Completable,
     delete: ((Key) -> Completable)? = null,
-    deleteAll: (() -> Completable)? = null
+    deleteAll: (() -> Completable)? = null,
 ): SourceOfTruth<Key, Local, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
-            if (delete != null) { key -> delete(key).await() } else null
+        if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
     return of(
-            nonFlowReader = { key -> reader.invoke(key).awaitSingleOrNull() },
-            writer = { key, output -> writer.invoke(key, output).await() },
-            delete = deleteFun,
-            deleteAll = deleteAllFun
+        nonFlowReader = { key -> reader.invoke(key).awaitSingleOrNull() },
+        writer = { key, output -> writer.invoke(key, output).await() },
+        delete = deleteFun,
+        deleteAll = deleteAllFun,
     )
 }
 
@@ -46,19 +45,19 @@ fun <Key : Any, Local : Any, Output:Any> SourceOfTruth.Companion.ofMaybe(
  * @param deleteAll function for deleting all records in the source of truth
  *
  */
-fun <Key : Any, Local : Any, Output:Any> SourceOfTruth.Companion.ofFlowable(
-        reader: (Key) -> Flowable<Output>,
-        writer: (Key, Local) -> Completable,
-        delete: ((Key) -> Completable)? = null,
-        deleteAll: (() -> Completable)? = null
+fun <Key : Any, Local : Any, Output : Any> SourceOfTruth.Companion.ofFlowable(
+    reader: (Key) -> Flowable<Output>,
+    writer: (Key, Local) -> Completable,
+    delete: ((Key) -> Completable)? = null,
+    deleteAll: (() -> Completable)? = null,
 ): SourceOfTruth<Key, Local, Output> {
     val deleteFun: (suspend (Key) -> Unit)? =
-            if (delete != null) { key -> delete(key).await() } else null
+        if (delete != null) { key -> delete(key).await() } else null
     val deleteAllFun: (suspend () -> Unit)? = deleteAll?.let { { deleteAll().await() } }
     return of(
-            reader = { key -> reader.invoke(key).asFlow() },
-            writer = { key, output -> writer.invoke(key, output).await() },
-            delete = deleteFun,
-            deleteAll = deleteAllFun
+        reader = { key -> reader.invoke(key).asFlow() },
+        writer = { key, output -> writer.invoke(key, output).await() },
+        delete = deleteFun,
+        deleteAll = deleteAllFun,
     )
 }

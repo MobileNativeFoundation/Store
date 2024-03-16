@@ -1,7 +1,6 @@
 package org.mobilenativefoundation.store.paging5.util
 
 class FakePostApi : PostApi {
-
     private val posts = mutableMapOf<String, PostData.Post>()
     private val postsList = mutableListOf<PostData.Post>()
 
@@ -22,7 +21,10 @@ class FakePostApi : PostApi {
         }
     }
 
-    override suspend fun get(cursor: String?, size: Int): FeedGetRequestResult {
+    override suspend fun get(
+        cursor: String?,
+        size: Int,
+    ): FeedGetRequestResult {
         val firstIndexInclusive = postsList.indexOfFirst { it.postId == cursor }
         val lastIndexExclusive = firstIndexInclusive + size
         val posts = postsList.subList(firstIndexInclusive, lastIndexExclusive)

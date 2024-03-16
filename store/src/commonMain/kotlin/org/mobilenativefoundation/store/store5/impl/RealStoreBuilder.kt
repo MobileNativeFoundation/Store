@@ -19,21 +19,18 @@ import org.mobilenativefoundation.store.store5.Validator
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>? = null,
-): StoreBuilder<Key, Output> =
-    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
 
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
-): StoreBuilder<Key, Output> =
-    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
 
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
     memoryCache: Cache<Key, Output>,
-): StoreBuilder<Key, Output> =
-    RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
+): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
     fetcher: Fetcher<Key, Network>,
@@ -46,7 +43,7 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
     private val fetcher: Fetcher<Key, Network>,
     private val sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
     private val memoryCache: Cache<Key, Output>? = null,
-    private val converter: Converter<Network, Local, Output>? = null
+    private val converter: Converter<Network, Local, Output>? = null,
 ) : StoreBuilder<Key, Output> {
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
@@ -72,37 +69,41 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
-    override fun build(): Store<Key, Output> = RealStore<Key, Network, Output, Local>(
-        scope = scope ?: GlobalScope,
-        sourceOfTruth = sourceOfTruth,
-        fetcher = fetcher,
-        converter = converter ?: defaultConverter(),
-        validator = validator,
-        memCache = memoryCache ?: cachePolicy?.let {
-            CacheBuilder<Key, Output>().apply {
-                if (cachePolicy!!.hasAccessPolicy) {
-                    expireAfterAccess(cachePolicy!!.expireAfterAccess)
-                }
-                if (cachePolicy!!.hasWritePolicy) {
-                    expireAfterWrite(cachePolicy!!.expireAfterWrite)
-                }
-                if (cachePolicy!!.hasMaxSize) {
-                    maximumSize(cachePolicy!!.maxSize)
-                }
+    override fun build(): Store<Key, Output> =
+        RealStore<Key, Network, Output, Local>(
+            scope = scope ?: GlobalScope,
+            sourceOfTruth = sourceOfTruth,
+            fetcher = fetcher,
+            converter = converter ?: defaultConverter(),
+            validator = validator,
+            memCache =
+                memoryCache ?: cachePolicy?.let {
+                    CacheBuilder<Key, Output>().apply {
+                        if (cachePolicy!!.hasAccessPolicy) {
+                            expireAfterAccess(cachePolicy!!.expireAfterAccess)
+                        }
+                        if (cachePolicy!!.hasWritePolicy) {
+                            expireAfterWrite(cachePolicy!!.expireAfterWrite)
+                        }
+                        if (cachePolicy!!.hasMaxSize) {
+                            maximumSize(cachePolicy!!.maxSize)
+                        }
 
-                if (cachePolicy!!.hasMaxWeight) {
-                    weigher(cachePolicy!!.maxWeight) { key, value ->
-                        cachePolicy!!.weigher.weigh(
-                            key,
-                            value
-                        )
-                    }
-                }
-            }.build()
-        }
-    )
+                        if (cachePolicy!!.hasMaxWeight) {
+                            weigher(cachePolicy!!.maxWeight) { key, value ->
+                                cachePolicy!!.weigher.weigh(
+                                    key,
+                                    value,
+                                )
+                            }
+                        }
+                    }.build()
+                },
+        )
 
-    override fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Local, Output>): MutableStoreBuilder<Key, Network, Local, Output> {
+    override fun <Network : Any, Local : Any> toMutableStoreBuilder(
+        converter: Converter<Network, Local, Output>,
+    ): MutableStoreBuilder<Key, Network, Local, Output> {
         fetcher as Fetcher<Key, Network>
         return if (sourceOfTruth == null && memoryCache == null) {
             mutableStoreBuilderFromFetcher(fetcher, converter)
@@ -110,14 +111,14 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
             mutableStoreBuilderFromFetcherAndSourceOfTruth(
                 fetcher,
                 sourceOfTruth as SourceOfTruth<Key, Local, Output>,
-                converter
+                converter,
             )
         } else {
             mutableStoreBuilderFromFetcherSourceOfTruthAndMemoryCache(
                 fetcher,
                 sourceOfTruth as SourceOfTruth<Key, Local, Output>,
                 memoryCache,
-                converter
+                converter,
             )
         }.apply {
             if (this@RealStoreBuilder.scope != null) {
@@ -134,10 +135,11 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         }
     }
 
-    private fun <Network : Any, Local : Any, Output : Any> defaultConverter() = object : Converter<Network, Local, Output> {
-        override fun fromOutputToLocal(output: Output): Local =
-            throw IllegalStateException("non mutable store never call this function")
+    private fun <Network : Any, Local : Any, Output : Any> defaultConverter() =
+        object : Converter<Network, Local, Output> {
+            override fun fromOutputToLocal(output: Output): Local =
+                throw IllegalStateException("non mutable store never call this function")
 
-        override fun fromNetworkToLocal(network: Network): Local = network as Local
-    }
+            override fun fromNetworkToLocal(network: Network): Local = network as Local
+        }
 }

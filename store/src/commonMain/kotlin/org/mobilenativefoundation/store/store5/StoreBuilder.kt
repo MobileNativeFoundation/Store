@@ -28,7 +28,9 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourc
 interface StoreBuilder<Key : Any, Output : Any> {
     fun build(): Store<Key, Output>
 
-    fun <Network : Any, Local : Any> toMutableStoreBuilder(converter: Converter<Network, Local, Output>): MutableStoreBuilder<Key, Network, Local, Output>
+    fun <Network : Any, Local : Any> toMutableStoreBuilder(
+        converter: Converter<Network, Local, Output>,
+    ): MutableStoreBuilder<Key, Network, Local, Output>
 
     /**
      * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
@@ -59,9 +61,8 @@ interface StoreBuilder<Key : Any, Output : Any> {
          *
          * @param fetcher a [Fetcher] flow of network records.
          */
-        fun <Key : Any, Input : Any> from(
-            fetcher: Fetcher<Key, Input>,
-        ): StoreBuilder<Key, Input> = storeBuilderFromFetcher(fetcher = fetcher)
+        fun <Key : Any, Input : Any> from(fetcher: Fetcher<Key, Input>): StoreBuilder<Key, Input> =
+            storeBuilderFromFetcher(fetcher = fetcher)
 
         /**
          * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
@@ -71,41 +72,43 @@ interface StoreBuilder<Key : Any, Output : Any> {
          */
         fun <Key : Any, Input : Any, Output : Any> from(
             fetcher: Fetcher<Key, Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>
-        ): StoreBuilder<Key, Output> =
-            storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
+            sourceOfTruth: SourceOfTruth<Key, Input, Output>,
+        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
 
         fun <Key : Any, Network : Any, Output : Any> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Network, Output>,
             memoryCache: Cache<Key, Output>,
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
-            fetcher,
-            sourceOfTruth,
-            memoryCache
-        )
+        ): StoreBuilder<Key, Output> =
+            storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
+                fetcher,
+                sourceOfTruth,
+                memoryCache,
+            )
 
         fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
-            converter: Converter<Network, Local, Output>
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
-            fetcher,
-            sourceOfTruth,
-            null,
-            converter
-        )
+            converter: Converter<Network, Local, Output>,
+        ): StoreBuilder<Key, Output> =
+            storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+                fetcher,
+                sourceOfTruth,
+                null,
+                converter,
+            )
 
         fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
             fetcher: Fetcher<Key, Network>,
             sourceOfTruth: SourceOfTruth<Key, Local, Output>,
             memoryCache: Cache<Key, Output>,
-            converter: Converter<Network, Local, Output>
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
-            fetcher,
-            sourceOfTruth,
-            memoryCache,
-            converter
-        )
+            converter: Converter<Network, Local, Output>,
+        ): StoreBuilder<Key, Output> =
+            storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+                fetcher,
+                sourceOfTruth,
+                memoryCache,
+                converter,
+            )
     }
 }

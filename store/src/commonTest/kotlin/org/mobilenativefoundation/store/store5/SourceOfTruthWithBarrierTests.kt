@@ -51,163 +51,174 @@ class SourceOfTruthWithBarrierTests {
             },
             realWriter = persister::write,
             realDelete = persister::deleteByKey,
-            realDeleteAll = persister::deleteAll
+            realDeleteAll = persister::deleteAll,
         )
-    private val source = SourceOfTruthWithBarrier<Int, String, String, String>(
-        delegate = delegate
-    )
+    private val source =
+        SourceOfTruthWithBarrier<Int, String, String, String>(
+            delegate = delegate,
+        )
 
     @Test
-    fun simple() = testScope.runTest {
-        val collection = mutableListOf<StoreReadResponse<String?>>()
+    fun simple() =
+        testScope.runTest {
+            val collection = mutableListOf<StoreReadResponse<String?>>()
 
-        launch {
-            source.reader(1, CompletableDeferred(Unit)).take(2).collect {
-                collection.add(it)
+            launch {
+                source.reader(1, CompletableDeferred(Unit)).take(2).collect {
+                    collection.add(it)
+                }
             }
-        }
-        delay(500)
-        source.write(1, "a")
-        advanceUntilIdle()
-        assertEquals(
-            listOf<StoreReadResponse<String?>>(
-                StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    value = null
+            delay(500)
+            source.write(1, "a")
+            advanceUntilIdle()
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "a",
+                    ),
                 ),
-                StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.Fetcher(),
-                    value = "a"
-                )
-            ),
-            collection
-        )
-        assertEquals(0, source.barrierCount())
-    }
-
-    @Test
-    fun givenASourceOfTruthWhenDeleteIsCalledThenItIsDelegatedToThePersister() = testScope.runTest {
-        persister.write(1, "a")
-        source.delete(1)
-        assertNull(persister.read(1))
-    }
-
-    @Test
-    fun givenASourceOfTruthWhenDeleteAllIsCalledThenItIsDelegatedToThePersister() = testScope.runTest {
-        persister.write(1, "a")
-        persister.write(2, "b")
-        source.deleteAll()
-        assertNull(persister.read(1))
-        assertNull(persister.read(2))
-    }
-
-    @Test
-    fun preAndPostWrites() = testScope.runTest {
-        val collection = mutableListOf<StoreReadResponse<String?>>()
-        source.write(1, "a")
-
-        launch {
-            source.reader(1, CompletableDeferred(Unit)).take(2).collect {
-                collection.add(it)
-            }
-        }
-
-        delay(200)
-
-        source.write(1, "b")
-
-        advanceUntilIdle()
-
-        assertEquals(
-            listOf<StoreReadResponse<String?>>(
-                StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    value = "a"
-                ),
-                StoreReadResponse.Data(
-                    origin = StoreReadResponseOrigin.Fetcher(),
-                    value = "b"
-                )
-            ),
-            collection
-        )
-
-        assertEquals(0, source.barrierCount())
-    }
-
-    @Test
-    fun givenSourceOfTruthWhenReadFailsThenErrorShouldPropagate() = testScope.runTest {
-        val exception = RuntimeException("read fails")
-        persister.postReadCallback = { key, value ->
-            throw exception
-        }
-        assertEmitsExactly(
-            source.reader(1, CompletableDeferred(Unit)),
-            listOf(
-                StoreReadResponse.Error.Exception(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    error = ReadException(
-                        key = 1,
-                        cause = exception
-                    )
-                )
+                collection,
             )
-        )
-    }
+            assertEquals(0, source.barrierCount())
+        }
 
     @Test
-    fun givenSourceOfTruthWhenReadFailsButThenSucceedsThenErrorShouldPropagateButAlsoTheValue() = testScope.runTest {
-        var hasThrown = false
-        val exception = RuntimeException("read fails")
-        persister.postReadCallback = { _, value ->
-            if (!hasThrown) {
-                hasThrown = true
+    fun givenASourceOfTruthWhenDeleteIsCalledThenItIsDelegatedToThePersister() =
+        testScope.runTest {
+            persister.write(1, "a")
+            source.delete(1)
+            assertNull(persister.read(1))
+        }
+
+    @Test
+    fun givenASourceOfTruthWhenDeleteAllIsCalledThenItIsDelegatedToThePersister() =
+        testScope.runTest {
+            persister.write(1, "a")
+            persister.write(2, "b")
+            source.deleteAll()
+            assertNull(persister.read(1))
+            assertNull(persister.read(2))
+        }
+
+    @Test
+    fun preAndPostWrites() =
+        testScope.runTest {
+            val collection = mutableListOf<StoreReadResponse<String?>>()
+            source.write(1, "a")
+
+            launch {
+                source.reader(1, CompletableDeferred(Unit)).take(2).collect {
+                    collection.add(it)
+                }
+            }
+
+            delay(200)
+
+            source.write(1, "b")
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = "a",
+                    ),
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "b",
+                    ),
+                ),
+                collection,
+            )
+
+            assertEquals(0, source.barrierCount())
+        }
+
+    @Test
+    fun givenSourceOfTruthWhenReadFailsThenErrorShouldPropagate() =
+        testScope.runTest {
+            val exception = RuntimeException("read fails")
+            persister.postReadCallback = { key, value ->
                 throw exception
             }
-            value
+            assertEmitsExactly(
+                source.reader(1, CompletableDeferred(Unit)),
+                listOf(
+                    StoreReadResponse.Error.Exception(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        error =
+                            ReadException(
+                                key = 1,
+                                cause = exception,
+                            ),
+                    ),
+                ),
+            )
         }
-        val reader = source.reader(1, CompletableDeferred(Unit))
-        val collected = mutableListOf<StoreReadResponse<String?>>()
-        val collection = async {
-            reader.collect {
-                collected.add(it)
+
+    @Test
+    fun givenSourceOfTruthWhenReadFailsButThenSucceedsThenErrorShouldPropagateButAlsoTheValue() =
+        testScope.runTest {
+            var hasThrown = false
+            val exception = RuntimeException("read fails")
+            persister.postReadCallback = { _, value ->
+                if (!hasThrown) {
+                    hasThrown = true
+                    throw exception
+                }
+                value
             }
-        }
-        advanceUntilIdle()
-        assertEquals(
-            StoreReadResponse.Error.Exception(
-                origin = StoreReadResponseOrigin.SourceOfTruth,
-                error = ReadException(
-                    key = 1,
-                    cause = exception
-                )
-            ),
-            collected.first()
-        )
-        // make sure it is not cancelled for the read error
-        assertEquals(true, collection.isActive)
-        // now insert another, it should trigger another read and emitted to the reader
-        source.write(1, "a")
-        advanceUntilIdle()
-        assertEquals(
-            listOf<StoreReadResponse<String?>>(
+            val reader = source.reader(1, CompletableDeferred(Unit))
+            val collected = mutableListOf<StoreReadResponse<String?>>()
+            val collection =
+                async {
+                    reader.collect {
+                        collected.add(it)
+                    }
+                }
+            advanceUntilIdle()
+            assertEquals(
                 StoreReadResponse.Error.Exception(
                     origin = StoreReadResponseOrigin.SourceOfTruth,
-                    error = ReadException(
-                        key = 1,
-                        cause = exception
-                    )
+                    error =
+                        ReadException(
+                            key = 1,
+                            cause = exception,
+                        ),
                 ),
-                StoreReadResponse.Data(
-                    // this is fetcher since we are using the write API
-                    origin = StoreReadResponseOrigin.Fetcher(),
-                    value = "a"
-                )
-            ),
-            collected
-        )
-        collection.cancelAndJoin()
-    }
+                collected.first(),
+            )
+            // make sure it is not cancelled for the read error
+            assertEquals(true, collection.isActive)
+            // now insert another, it should trigger another read and emitted to the reader
+            source.write(1, "a")
+            advanceUntilIdle()
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Error.Exception(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        error =
+                            ReadException(
+                                key = 1,
+                                cause = exception,
+                            ),
+                    ),
+                    StoreReadResponse.Data(
+                        // this is fetcher since we are using the write API
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "a",
+                    ),
+                ),
+                collected,
+            )
+            collection.cancelAndJoin()
+        }
 
     @Test
     fun givenSourceOfTruthWhenWriteFailsThenErrorShouldPropagate() {
@@ -222,34 +233,37 @@ class SourceOfTruthWithBarrierTests {
             }
             val reader = source.reader(1, CompletableDeferred(Unit))
             val collected = mutableListOf<StoreReadResponse<String?>>()
-            val collection = async {
-                reader.collect {
-                    collected.add(it)
+            val collection =
+                async {
+                    reader.collect {
+                        collected.add(it)
+                    }
                 }
-            }
             advanceUntilIdle()
             source.write(1, failValue)
             advanceUntilIdle()
             // make sure collection does not cancel for a write error
             assertEquals(true, collection.isActive)
-            val eventsUntilFailure = listOf(
-                StoreReadResponse.Data<String?>(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    value = null
-                ),
-                StoreReadResponse.Error.Exception(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    error = WriteException(
-                        key = 1,
-                        value = failValue,
-                        cause = exception
-                    )
-                ),
-                StoreReadResponse.Data<String?>(
-                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                    value = null
+            val eventsUntilFailure =
+                listOf(
+                    StoreReadResponse.Data<String?>(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                    StoreReadResponse.Error.Exception(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        error =
+                            WriteException(
+                                key = 1,
+                                value = failValue,
+                                cause = exception,
+                            ),
+                    ),
+                    StoreReadResponse.Data<String?>(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
                 )
-            )
             assertEquals(eventsUntilFailure, collected)
             advanceUntilIdle()
             assertEquals(true, collection.isActive)
@@ -257,11 +271,12 @@ class SourceOfTruthWithBarrierTests {
             source.write(1, "succeed")
             advanceUntilIdle()
             assertEquals(
-                eventsUntilFailure + StoreReadResponse.Data<String?>(
-                    origin = StoreReadResponseOrigin.Fetcher(),
-                    value = "succeed"
-                ),
-                collected
+                eventsUntilFailure +
+                    StoreReadResponse.Data<String?>(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "succeed",
+                    ),
+                collected,
             )
             collection.cancelAndJoin()
         }

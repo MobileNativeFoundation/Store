@@ -11,5 +11,5 @@ internal enum class RemovalCause(val wasEvicted: Boolean) {
     REPLACED(false),
     COLLECTED(true),
     EXPIRED(true),
-    SIZE(true);
+    SIZE(true),
 }

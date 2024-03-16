@@ -9,10 +9,10 @@ sealed class PostKey : StoreKey<String> {
         override val size: Int,
         override val sort: StoreKey.Sort? = null,
         override val filters: List<StoreKey.Filter<*>>? = null,
-        override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND
+        override val insertionStrategy: InsertionStrategy = InsertionStrategy.APPEND,
     ) : StoreKey.Collection.Cursor<String>, PostKey()
 
     data class Single(
-        override val id: String
+        override val id: String,
     ) : StoreKey.Single<String>, PostKey()
 }

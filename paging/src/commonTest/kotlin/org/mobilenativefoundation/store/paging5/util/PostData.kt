@@ -10,9 +10,13 @@ sealed class PostData : StoreData<String> {
 
     data class Feed(val posts: List<Post>) : StoreData.Collection<String, Post>, PostData() {
         override val items: List<Post> get() = posts
-        override fun copyWith(items: List<Post>): StoreData.Collection<String, Post> = copy(posts = items)
-        override fun insertItems(strategy: InsertionStrategy, items: List<Post>): StoreData.Collection<String, Post> {
 
+        override fun copyWith(items: List<Post>): StoreData.Collection<String, Post> = copy(posts = items)
+
+        override fun insertItems(
+            strategy: InsertionStrategy,
+            items: List<Post>,
+        ): StoreData.Collection<String, Post> {
             return when (strategy) {
                 InsertionStrategy.APPEND -> {
                     val updatedItems = items.toMutableList()

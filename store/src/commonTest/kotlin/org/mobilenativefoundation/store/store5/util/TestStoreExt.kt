@@ -13,7 +13,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
  */
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.getData(key: Key) =
     stream(
-        StoreReadRequest.cached(key, refresh = false)
+        StoreReadRequest.cached(key, refresh = false),
     ).filterNot {
         it is StoreReadResponse.Loading
     }.mapIndexed { index, value ->

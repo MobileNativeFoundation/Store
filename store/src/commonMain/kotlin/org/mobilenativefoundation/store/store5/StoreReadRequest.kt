@@ -28,18 +28,18 @@ data class StoreReadRequest<out Key> private constructor(
     private val skippedCaches: Int,
     val refresh: Boolean = false,
     val fallBackToSourceOfTruth: Boolean = false,
-    val fetch: Boolean = true
+    val fetch: Boolean = true,
 ) {
-
     internal fun shouldSkipCache(type: CacheType) = skippedCaches.and(type.flag) != 0
 
     /**
      * Factories for common store requests
      */
     companion object {
-        private val allCaches = CacheType.values().fold(0) { prev, next ->
-            prev.or(next.flag)
-        }
+        private val allCaches =
+            CacheType.values().fold(0) { prev, next ->
+                prev.or(next.flag)
+            }
 
         /**
          * Create a [StoreReadRequest] which will skip all caches and hit your fetcher
@@ -50,11 +50,14 @@ data class StoreReadRequest<out Key> private constructor(
          * data **even** if you explicitly requested fresh data.
          * See https://github.com/dropbox/Store/pull/194 for context.
          */
-        fun <Key> fresh(key: Key, fallBackToSourceOfTruth: Boolean = false) = StoreReadRequest(
+        fun <Key> fresh(
+            key: Key,
+            fallBackToSourceOfTruth: Boolean = false,
+        ) = StoreReadRequest(
             key = key,
             skippedCaches = allCaches,
             refresh = true,
-            fallBackToSourceOfTruth = fallBackToSourceOfTruth
+            fallBackToSourceOfTruth = fallBackToSourceOfTruth,
         )
 
         /**
@@ -62,30 +65,37 @@ data class StoreReadRequest<out Key> private constructor(
          * otherwise will hit your fetcher (filling your caches).
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
-        fun <Key> cached(key: Key, refresh: Boolean) = StoreReadRequest(
+        fun <Key> cached(
+            key: Key,
+            refresh: Boolean,
+        ) = StoreReadRequest(
             key = key,
             skippedCaches = 0,
-            refresh = refresh
+            refresh = refresh,
         )
 
         /**
          * Create a [StoreReadRequest] which will return data from memory/disk caches if present,
          * otherwise will return [StoreReadResponse.NoNewData]
          */
-        fun <Key> localOnly(key: Key) = StoreReadRequest(
-            key = key,
-            skippedCaches = 0,
-            fetch = false
-        )
+        fun <Key> localOnly(key: Key) =
+            StoreReadRequest(
+                key = key,
+                skippedCaches = 0,
+                fetch = false,
+            )
 
         /**
          * Create a [StoreReadRequest] which will return data from disk cache
          * @param refresh if true then return fetcher (new) data as well (updating your caches)
          */
-        fun <Key> skipMemory(key: Key, refresh: Boolean) = StoreReadRequest(
+        fun <Key> skipMemory(
+            key: Key,
+            refresh: Boolean,
+        ) = StoreReadRequest(
             key = key,
             skippedCaches = CacheType.MEMORY.flag,
-            refresh = refresh
+            refresh = refresh,
         )
 
         /**
@@ -97,5 +107,5 @@ data class StoreReadRequest<out Key> private constructor(
 
 internal enum class CacheType(internal val flag: Int) {
     MEMORY(0b01),
-    DISK(0b10)
+    DISK(0b10),
 }

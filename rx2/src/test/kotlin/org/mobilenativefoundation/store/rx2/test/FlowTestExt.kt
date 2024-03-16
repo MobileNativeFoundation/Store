@@ -16,8 +16,6 @@ package org.mobilenativefoundation.store.rx2.test
  * limitations under the License.
  */
 
-
-
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth
@@ -36,9 +34,9 @@ internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FlowSubject<T> constructor(
-        failureMetadata: FailureMetadata,
-        private val testCoroutineScope: TestCoroutineScope,
-        private val actual: Flow<T>
+    failureMetadata: FailureMetadata,
+    private val testCoroutineScope: TestCoroutineScope,
+    private val actual: Flow<T>,
 ) : Subject(failureMetadata, actual) {
     /**
      * Takes all items in the flow that are available by collecting on it as long as there are
@@ -49,16 +47,17 @@ internal class FlowSubject<T> constructor(
      */
     suspend fun emitsExactly(vararg expected: T) {
         val collectedSoFar = mutableListOf<T>()
-        val collectionCoroutine = testCoroutineScope.async {
-            actual.collect {
-                collectedSoFar.add(it)
-                if (collectedSoFar.size > expected.size) {
-                    assertWithMessage("Too many emissions in the flow (only first additional item is shown)")
+        val collectionCoroutine =
+            testCoroutineScope.async {
+                actual.collect {
+                    collectedSoFar.add(it)
+                    if (collectedSoFar.size > expected.size) {
+                        assertWithMessage("Too many emissions in the flow (only first additional item is shown)")
                             .that(collectedSoFar)
                             .isEqualTo(expected)
+                    }
                 }
             }
-        }
         testCoroutineScope.advanceUntilIdle()
         if (!collectionCoroutine.isActive) {
             collectionCoroutine.getCompletionExceptionOrNull()?.let {
@@ -67,18 +66,21 @@ internal class FlowSubject<T> constructor(
         }
         collectionCoroutine.cancelAndJoin()
         assertWithMessage("Flow didn't exactly emit expected items")
-                .that(collectedSoFar)
-                .isEqualTo(expected.toList())
+            .that(collectedSoFar)
+            .isEqualTo(expected.toList())
     }
 
     class Factory<T>(
-            private val testCoroutineScope: TestCoroutineScope
+        private val testCoroutineScope: TestCoroutineScope,
     ) : Subject.Factory<FlowSubject<T>, Flow<T>> {
-        override fun createSubject(metadata: FailureMetadata, actual: Flow<T>): FlowSubject<T> {
+        override fun createSubject(
+            metadata: FailureMetadata,
+            actual: Flow<T>,
+        ): FlowSubject<T> {
             return FlowSubject(
-                    failureMetadata = metadata,
-                    actual = actual,
-                    testCoroutineScope = testCoroutineScope
+                failureMetadata = metadata,
+                actual = actual,
+                testCoroutineScope = testCoroutineScope,
             )
         }
     }

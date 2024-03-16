@@ -42,126 +42,133 @@ class LaunchPagingStoreTests {
     }
 
     @Test
-    fun transitionFromInitialToData() = testScope.runTest {
-        val key = PostKey.Cursor("1", 10)
-        val keys = flowOf(key)
-        val stateFlow = store.launchPagingStore(this, keys)
+    fun transitionFromInitialToData() =
+        testScope.runTest {
+            val key = PostKey.Cursor("1", 10)
+            val keys = flowOf(key)
+            val stateFlow = store.launchPagingStore(this, keys)
 
-        stateFlow.test {
-            val state1 = awaitItem()
-            assertIs<StoreReadResponse.Initial>(state1)
-            val state2 = awaitItem()
-            assertIs<StoreReadResponse.Loading>(state2)
-            val state3 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData>>(state3)
-            expectNoEvents()
+            stateFlow.test {
+                val state1 = awaitItem()
+                assertIs<StoreReadResponse.Initial>(state1)
+                val state2 = awaitItem()
+                assertIs<StoreReadResponse.Loading>(state2)
+                val state3 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData>>(state3)
+                expectNoEvents()
+            }
         }
-    }
 
     @Test
-    fun multipleValidKeysEmittedInSuccession() = testScope.runTest {
-        val key1 = PostKey.Cursor("1", 10)
-        val key2 = PostKey.Cursor("11", 10)
-        val keys = flowOf(key1, key2)
-        val stateFlow = store.launchPagingStore(this, keys)
+    fun multipleValidKeysEmittedInSuccession() =
+        testScope.runTest {
+            val key1 = PostKey.Cursor("1", 10)
+            val key2 = PostKey.Cursor("11", 10)
+            val keys = flowOf(key1, key2)
+            val stateFlow = store.launchPagingStore(this, keys)
 
-        stateFlow.test {
-            val state1 = awaitItem()
-            assertIs<StoreReadResponse.Initial>(state1)
-            val state2 = awaitItem()
-            assertIs<StoreReadResponse.Loading>(state2)
-            val state3 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData.Feed>>(state3)
-            assertEquals("1", state3.value.posts[0].postId)
+            stateFlow.test {
+                val state1 = awaitItem()
+                assertIs<StoreReadResponse.Initial>(state1)
+                val state2 = awaitItem()
+                assertIs<StoreReadResponse.Loading>(state2)
+                val state3 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData.Feed>>(state3)
+                assertEquals("1", state3.value.posts[0].postId)
 
-            val state4 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData.Feed>>(state4)
-            assertEquals("11", state4.value.posts[0].postId)
-            assertEquals("1", state4.value.posts[10].postId)
-            val data4 = state4.value
+                val state4 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData.Feed>>(state4)
+                assertEquals("11", state4.value.posts[0].postId)
+                assertEquals("1", state4.value.posts[10].postId)
+                val data4 = state4.value
+                assertIs<PostData.Feed>(data4)
+                assertEquals(20, data4.items.size)
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun sameKeyEmittedMultipleTimes() =
+        testScope.runTest {
+            val key = PostKey.Cursor("1", 10)
+            val keys = flowOf(key, key)
+            val stateFlow = store.launchPagingStore(this, keys)
+
+            stateFlow.test {
+                val state1 = awaitItem()
+                assertIs<StoreReadResponse.Initial>(state1)
+                val state2 = awaitItem()
+                assertIs<StoreReadResponse.Loading>(state2)
+                val state3 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData>>(state3)
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun multipleKeysWithReadsAndWrites() =
+        testScope.runTest {
+            val api = FakePostApi()
+            val db = FakePostDatabase(userId)
+            val factory = PostStoreFactory(api = api, db = db)
+            val store = factory.create()
+
+            val key1 = PostKey.Cursor("1", 10)
+            val key2 = PostKey.Cursor("11", 10)
+            val keys = flowOf(key1, key2)
+
+            val stateFlow = store.launchPagingStore(this, keys)
+            stateFlow.test {
+                val initialState = awaitItem()
+                assertIs<StoreReadResponse.Initial>(initialState)
+                val loadingState = awaitItem()
+                assertIs<StoreReadResponse.Loading>(loadingState)
+                val loadedState1 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState1)
+                val data1 = loadedState1.value
+                assertEquals(10, data1.posts.size)
+                val loadedState2 = awaitItem()
+                assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
+                val data2 = loadedState2.value
+                assertEquals(20, data2.posts.size)
+            }
+
+            val cached =
+                store.stream<PostPutRequestResult>(StoreReadRequest.cached(key1, refresh = false))
+                    .first { it.dataOrNull() != null }
+            assertIs<StoreReadResponse.Data<PostData>>(cached)
+            assertEquals(StoreReadResponseOrigin.Cache, cached.origin)
+            val data = cached.requireData()
+            assertIs<PostData.Feed>(data)
+            assertEquals(10, data.posts.size)
+
+            val cached2 =
+                store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Single("2"), refresh = false))
+                    .first { it.dataOrNull() != null }
+            assertIs<StoreReadResponse.Data<PostData>>(cached2)
+            assertEquals(StoreReadResponseOrigin.Cache, cached2.origin)
+            val data2 = cached2.requireData()
+            assertIs<PostData.Post>(data2)
+            assertEquals("2", data2.title)
+
+            store.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
+
+            val cached3 =
+                store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Single("2"), refresh = false))
+                    .first { it.dataOrNull() != null }
+            assertIs<StoreReadResponse.Data<PostData>>(cached3)
+            assertEquals(StoreReadResponseOrigin.Cache, cached3.origin)
+            val data3 = cached3.requireData()
+            assertIs<PostData.Post>(data3)
+            assertEquals("2-modified", data3.title)
+
+            val cached4 =
+                store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Cursor("1", 10), refresh = false))
+                    .first { it.dataOrNull() != null }
+            assertIs<StoreReadResponse.Data<PostData>>(cached4)
+            assertEquals(StoreReadResponseOrigin.Cache, cached4.origin)
+            val data4 = cached4.requireData()
             assertIs<PostData.Feed>(data4)
-            assertEquals(20, data4.items.size)
-            expectNoEvents()
+            assertEquals("2-modified", data4.posts[1].title)
         }
-    }
-
-    @Test
-    fun sameKeyEmittedMultipleTimes() = testScope.runTest {
-        val key = PostKey.Cursor("1", 10)
-        val keys = flowOf(key, key)
-        val stateFlow = store.launchPagingStore(this, keys)
-
-        stateFlow.test {
-            val state1 = awaitItem()
-            assertIs<StoreReadResponse.Initial>(state1)
-            val state2 = awaitItem()
-            assertIs<StoreReadResponse.Loading>(state2)
-            val state3 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData>>(state3)
-            expectNoEvents()
-        }
-    }
-
-    @Test
-    fun multipleKeysWithReadsAndWrites() = testScope.runTest {
-        val api = FakePostApi()
-        val db = FakePostDatabase(userId)
-        val factory = PostStoreFactory(api = api, db = db)
-        val store = factory.create()
-
-        val key1 = PostKey.Cursor("1", 10)
-        val key2 = PostKey.Cursor("11", 10)
-        val keys = flowOf(key1, key2)
-
-        val stateFlow = store.launchPagingStore(this, keys)
-        stateFlow.test {
-            val initialState = awaitItem()
-            assertIs<StoreReadResponse.Initial>(initialState)
-            val loadingState = awaitItem()
-            assertIs<StoreReadResponse.Loading>(loadingState)
-            val loadedState1 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState1)
-            val data1 = loadedState1.value
-            assertEquals(10, data1.posts.size)
-            val loadedState2 = awaitItem()
-            assertIs<StoreReadResponse.Data<PostData.Feed>>(loadedState2)
-            val data2 = loadedState2.value
-            assertEquals(20, data2.posts.size)
-        }
-
-        val cached = store.stream<PostPutRequestResult>(StoreReadRequest.cached(key1, refresh = false))
-            .first { it.dataOrNull() != null }
-        assertIs<StoreReadResponse.Data<PostData>>(cached)
-        assertEquals(StoreReadResponseOrigin.Cache, cached.origin)
-        val data = cached.requireData()
-        assertIs<PostData.Feed>(data)
-        assertEquals(10, data.posts.size)
-
-        val cached2 = store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Single("2"), refresh = false))
-            .first { it.dataOrNull() != null }
-        assertIs<StoreReadResponse.Data<PostData>>(cached2)
-        assertEquals(StoreReadResponseOrigin.Cache, cached2.origin)
-        val data2 = cached2.requireData()
-        assertIs<PostData.Post>(data2)
-        assertEquals("2", data2.title)
-
-        store.write(StoreWriteRequest.of(PostKey.Single("2"), PostData.Post("2", "2-modified")))
-
-        val cached3 = store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Single("2"), refresh = false))
-            .first { it.dataOrNull() != null }
-        assertIs<StoreReadResponse.Data<PostData>>(cached3)
-        assertEquals(StoreReadResponseOrigin.Cache, cached3.origin)
-        val data3 = cached3.requireData()
-        assertIs<PostData.Post>(data3)
-        assertEquals("2-modified", data3.title)
-
-        val cached4 =
-            store.stream<PostPutRequestResult>(StoreReadRequest.cached(PostKey.Cursor("1", 10), refresh = false))
-                .first { it.dataOrNull() != null }
-        assertIs<StoreReadResponse.Data<PostData>>(cached4)
-        assertEquals(StoreReadResponseOrigin.Cache, cached4.origin)
-        val data4 = cached4.requireData()
-        assertIs<PostData.Feed>(data4)
-        assertEquals("2-modified", data4.posts[1].title)
-    }
 }
