@@ -35,6 +35,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.turbine)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(project(":store"))
             }
         }
     }
