@@ -50,3 +50,4 @@ captures/
 store/kover
 *.podspec
 yarn.lock
+*/kover
