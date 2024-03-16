@@ -25,7 +25,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.touchlab.kermit)
                 implementation(libs.kotlinx.coroutines.core)
-                api(libs.store)
+                api(project(":store"))
             }
         }
 
@@ -47,7 +47,7 @@ android {
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = libs.versions.androidCompileSdk.get().toInt()
 }
 
 tasks.withType<DokkaTask>().configureEach {
