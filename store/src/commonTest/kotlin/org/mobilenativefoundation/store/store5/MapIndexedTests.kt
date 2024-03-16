@@ -13,7 +13,8 @@ class MapIndexedTests {
     private val scope = TestScope()
 
     @Test
-    fun mapIndexed() = scope.runTest {
-        assertEmitsExactly(flowOf(5, 6).mapIndexed { index, value -> index to value }, listOf(0 to 5, 1 to 6))
-    }
+    fun mapIndexed() =
+        scope.runTest {
+            assertEmitsExactly(flowOf(5, 6).mapIndexed { index, value -> index to value }, listOf(0 to 5, 1 to 6))
+        }
 }

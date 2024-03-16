@@ -47,7 +47,6 @@ import kotlin.jvm.JvmName
  *
  */
 interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
-
     /**
      * Used by [Store] to read records from the source of truth.
      *
@@ -66,7 +65,10 @@ interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
      *
      * @param key The key to update for.
      */
-    suspend fun write(key: Key, value: Local)
+    suspend fun write(
+        key: Key,
+        value: Local,
+    )
 
     /**
      * Used by [Store] to delete records in the source of truth for the given key.
@@ -94,13 +96,14 @@ interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
             nonFlowReader: suspend (Key) -> Output?,
             writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
-            deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Local, Output> = PersistentNonFlowingSourceOfTruth(
-            realReader = nonFlowReader,
-            realWriter = writer,
-            realDelete = delete,
-            realDeleteAll = deleteAll
-        )
+            deleteAll: (suspend () -> Unit)? = null,
+        ): SourceOfTruth<Key, Local, Output> =
+            PersistentNonFlowingSourceOfTruth(
+                realReader = nonFlowReader,
+                realWriter = writer,
+                realDelete = delete,
+                realDeleteAll = deleteAll,
+            )
 
         /**
          * Creates a ([Flow]) source of truth that is accessed via [reader], [writer],
@@ -116,25 +119,28 @@ interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
             reader: (Key) -> Flow<Output?>,
             writer: suspend (Key, Local) -> Unit,
             delete: (suspend (Key) -> Unit)? = null,
-            deleteAll: (suspend () -> Unit)? = null
-        ): SourceOfTruth<Key, Local, Output> = PersistentSourceOfTruth(
-            realReader = reader,
-            realWriter = writer,
-            realDelete = delete,
-            realDeleteAll = deleteAll
-        )
+            deleteAll: (suspend () -> Unit)? = null,
+        ): SourceOfTruth<Key, Local, Output> =
+            PersistentSourceOfTruth(
+                realReader = reader,
+                realWriter = writer,
+                realDelete = delete,
+                realDeleteAll = deleteAll,
+            )
     }
 
     /**
      * The exception provided when a write operation fails in SourceOfTruth.
      *
-     * see [StoreReadResponse.Error.Exception]
+     * @see [StoreReadResponse.Error.Exception]
      */
     class WriteException(
         /**
          * The key for the failed write attempt
+         *
+         * TODO(yboyar): why are we not marking keys non-null ?
          */
-        val key: Any?, // TODO why are we not marking keys non-null ?
+        val key: Any?,
         /**
          * The value for the failed write attempt
          */
@@ -142,11 +148,11 @@ interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
         /**
          * The exception thrown from the [SourceOfTruth]'s [write] method.
          */
-        cause: Throwable
+        cause: Throwable,
     ) : RuntimeException(
-        "Failed to write value to Source of Truth. key: $key",
-        cause
-    ) {
+            "Failed to write value to Source of Truth. key: $key",
+            cause,
+        ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -174,13 +180,15 @@ interface SourceOfTruth<Key : Any, Local : Any, Output : Any> {
     class ReadException(
         /**
          * The key for the failed write attempt
+         *
+         * TODO(yboyar): shouldn't key be non-null?
          */
-        val key: Any?, // TODO shouldn't key be non-null?
-        cause: Throwable
+        val key: Any?,
+        cause: Throwable,
     ) : RuntimeException(
-        "Failed to read from Source of Truth. key: $key",
-        cause
-    ) {
+            "Failed to read from Source of Truth. key: $key",
+            cause,
+        ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false

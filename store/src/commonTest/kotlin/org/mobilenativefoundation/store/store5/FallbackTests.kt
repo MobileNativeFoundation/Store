@@ -35,29 +35,32 @@ class FallbackTests {
             val fail = false
 
             val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
-            val secondaryApiFetcher = Fetcher.withFallback(
-                secondaryApi.name,
-                hardcodedPagesFetcher
-            ) { key -> secondaryApi.get(key) }
+            val secondaryApiFetcher =
+                Fetcher.withFallback(
+                    secondaryApi.name,
+                    hardcodedPagesFetcher,
+                ) { key -> secondaryApi.get(key) }
 
-            val store = StoreBuilder.from(
-                fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
-                sourceOfTruth = SourceOfTruth.of(
-                    nonFlowReader = { key -> pagesDatabase.get(key) },
-                    writer = { key, page -> pagesDatabase.put(key, page) },
-                    delete = null,
-                    deleteAll = null
-                )
-            ).build()
+            val store =
+                StoreBuilder.from(
+                    fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
+                    sourceOfTruth =
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> pagesDatabase.get(key) },
+                            writer = { key, page -> pagesDatabase.put(key, page) },
+                            delete = null,
+                            deleteAll = null,
+                        ),
+                ).build()
 
             val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
 
             assertEquals(
                 listOf(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher(api.name))
+                    StoreReadResponse.Data(Page.Data("1", null), StoreReadResponseOrigin.Fetcher(api.name)),
                 ),
-                responses
+                responses,
             )
         }
 
@@ -68,20 +71,23 @@ class FallbackTests {
             val fail = true
 
             val hardcodedPagesFetcher = Fetcher.of<String, Page> { key -> hardcodedPages.get(key) }
-            val secondaryApiFetcher = Fetcher.withFallback(
-                secondaryApi.name,
-                hardcodedPagesFetcher
-            ) { key -> secondaryApi.get(key) }
+            val secondaryApiFetcher =
+                Fetcher.withFallback(
+                    secondaryApi.name,
+                    hardcodedPagesFetcher,
+                ) { key -> secondaryApi.get(key) }
 
-            val store = StoreBuilder.from(
-                fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
-                sourceOfTruth = SourceOfTruth.of(
-                    nonFlowReader = { key -> pagesDatabase.get(key) },
-                    writer = { key, page -> pagesDatabase.put(key, page) },
-                    delete = null,
-                    deleteAll = null
-                )
-            ).build()
+            val store =
+                StoreBuilder.from(
+                    fetcher = Fetcher.withFallback(api.name, secondaryApiFetcher) { key -> api.fetch(key, fail, ttl) },
+                    sourceOfTruth =
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> pagesDatabase.get(key) },
+                            writer = { key, page -> pagesDatabase.put(key, page) },
+                            delete = null,
+                            deleteAll = null,
+                        ),
+                ).build()
 
             val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
 
@@ -90,10 +96,10 @@ class FallbackTests {
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                     StoreReadResponse.Data(
                         Page.Data("1", null),
-                        StoreReadResponseOrigin.Fetcher(secondaryApiFetcher.name)
-                    )
+                        StoreReadResponseOrigin.Fetcher(secondaryApiFetcher.name),
+                    ),
                 ),
-                responses
+                responses,
             )
         }
 
@@ -108,21 +114,24 @@ class FallbackTests {
             val throwingSecondaryApiFetcher =
                 Fetcher.withFallback(secondaryApi.name, hardcodedPagesFetcher) { throw Exception() }
 
-            val store = StoreBuilder.from(
-                fetcher = Fetcher.withFallback(api.name, throwingSecondaryApiFetcher) { key ->
-                    api.fetch(
-                        key,
-                        fail,
-                        ttl
-                    )
-                },
-                sourceOfTruth = SourceOfTruth.of(
-                    nonFlowReader = { key -> pagesDatabase.get(key) },
-                    writer = { key, page -> pagesDatabase.put(key, page) },
-                    delete = null,
-                    deleteAll = null
-                )
-            ).build()
+            val store =
+                StoreBuilder.from(
+                    fetcher =
+                        Fetcher.withFallback(api.name, throwingSecondaryApiFetcher) { key ->
+                            api.fetch(
+                                key,
+                                fail,
+                                ttl,
+                            )
+                        },
+                    sourceOfTruth =
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> pagesDatabase.get(key) },
+                            writer = { key, page -> pagesDatabase.put(key, page) },
+                            delete = null,
+                            deleteAll = null,
+                        ),
+                ).build()
 
             val responses = store.stream(StoreReadRequest.fresh("1")).take(2).toList()
 
@@ -131,10 +140,10 @@ class FallbackTests {
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                     StoreReadResponse.Data(
                         Page.Data("1", null),
-                        StoreReadResponseOrigin.Fetcher(hardcodedPagesFetcher.name)
-                    )
+                        StoreReadResponseOrigin.Fetcher(hardcodedPagesFetcher.name),
+                    ),
                 ),
-                responses
+                responses,
             )
         }
 }

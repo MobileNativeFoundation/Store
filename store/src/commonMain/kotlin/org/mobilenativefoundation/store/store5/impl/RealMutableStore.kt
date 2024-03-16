@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Clear
-import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -33,7 +33,6 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
-
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
     private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
@@ -72,25 +71,26 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                     addWriteRequestToQueue(writeRequest)
                 }
                 .collect { writeRequest ->
-                    val storeWriteResponse = try {
-                        delegate.write(writeRequest.key, writeRequest.value)
-                        when (val updaterResult = tryUpdateServer(writeRequest)) {
-                            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                            is UpdaterResult.Success.Typed<*> -> {
-                                val typedValue = updaterResult.value as? Response
-                                if (typedValue == null) {
-                                    StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                } else {
-                                    StoreWriteResponse.Success.Typed(updaterResult.value)
+                    val storeWriteResponse =
+                        try {
+                            delegate.write(writeRequest.key, writeRequest.value)
+                            when (val updaterResult = tryUpdateServer(writeRequest)) {
+                                is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
+                                is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                                is UpdaterResult.Success.Typed<*> -> {
+                                    val typedValue = updaterResult.value as? Response
+                                    if (typedValue == null) {
+                                        StoreWriteResponse.Success.Untyped(updaterResult.value)
+                                    } else {
+                                        StoreWriteResponse.Success.Typed(updaterResult.value)
+                                    }
                                 }
-                            }
 
-                            is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
+                                is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
+                            }
+                        } catch (throwable: Throwable) {
+                            StoreWriteResponse.Error.Exception(throwable)
                         }
-                    } catch (throwable: Throwable) {
-                        StoreWriteResponse.Error.Exception(throwable)
-                    }
                     emit(storeWriteResponse)
                 }
         }
@@ -106,7 +106,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             updateWriteRequestQueue<Response>(
                 key = request.key,
                 created = request.created,
-                updaterResult = updaterResult
+                updaterResult = updaterResult,
             )
             bookkeeper?.clear(request.key)
         } else {
@@ -134,36 +134,42 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     }
 
     @AnyThread
-    private suspend fun <Response : Any> updateWriteRequestQueue(key: Key, created: Long, updaterResult: UpdaterResult.Success) {
-        val nextWriteRequestQueue = withWriteRequestQueueLock(key) {
-            val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, Output, *>>()
+    private suspend fun <Response : Any> updateWriteRequestQueue(
+        key: Key,
+        created: Long,
+        updaterResult: UpdaterResult.Success,
+    ) {
+        val nextWriteRequestQueue =
+            withWriteRequestQueueLock(key) {
+                val outstandingWriteRequests = ArrayDeque<StoreWriteRequest<Key, Output, *>>()
 
-            for (writeRequest in this) {
-                if (writeRequest.created <= created) {
-                    updater.onCompletion?.onSuccess?.invoke(updaterResult)
+                for (writeRequest in this) {
+                    if (writeRequest.created <= created) {
+                        updater.onCompletion?.onSuccess?.invoke(updaterResult)
 
-                    val storeWriteResponse = when (updaterResult) {
-                        is UpdaterResult.Success.Typed<*> -> {
-                            val typedValue = updaterResult.value as? Response
-                            if (typedValue == null) {
-                                StoreWriteResponse.Success.Untyped(updaterResult.value)
-                            } else {
-                                StoreWriteResponse.Success.Typed(updaterResult.value)
+                        val storeWriteResponse =
+                            when (updaterResult) {
+                                is UpdaterResult.Success.Typed<*> -> {
+                                    val typedValue = updaterResult.value as? Response
+                                    if (typedValue == null) {
+                                        StoreWriteResponse.Success.Untyped(updaterResult.value)
+                                    } else {
+                                        StoreWriteResponse.Success.Typed(updaterResult.value)
+                                    }
+                                }
+
+                                is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                             }
+
+                        writeRequest.onCompletions?.forEach { onStoreWriteCompletion ->
+                            onStoreWriteCompletion.onSuccess(storeWriteResponse)
                         }
-
-                        is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
+                    } else {
+                        outstandingWriteRequests.add(writeRequest)
                     }
-
-                    writeRequest.onCompletions?.forEach { onStoreWriteCompletion ->
-                        onStoreWriteCompletion.onSuccess(storeWriteResponse)
-                    }
-                } else {
-                    outstandingWriteRequests.add(writeRequest)
                 }
+                outstandingWriteRequests
             }
-            outstandingWriteRequests
-        }
 
         withThreadSafety(key) {
             keyToWriteRequestQueue[key] = nextWriteRequestQueue
@@ -173,7 +179,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     @AnyThread
     private suspend fun <Result : Any> withWriteRequestQueueLock(
         key: Key,
-        block: suspend WriteRequestQueue<Key, Output, *>.() -> Result
+        block: suspend WriteRequestQueue<Key, Output, *>.() -> Result,
     ): Result =
         withThreadSafety(key) {
             writeRequests.lightswitch.lock(writeRequests.mutex)
@@ -183,15 +189,19 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             output
         }
 
-    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, Output, *> = withThreadSafety(key) {
-        writeRequests.mutex.lock()
-        val output = requireNotNull(keyToWriteRequestQueue[key]?.last())
-        writeRequests.mutex.unlock()
-        output
-    }
+    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, Output, *> =
+        withThreadSafety(key) {
+            writeRequests.mutex.lock()
+            val output = requireNotNull(keyToWriteRequestQueue[key]?.last())
+            writeRequests.mutex.unlock()
+            output
+        }
 
     @AnyThread
-    private suspend fun <Output : Any?> withThreadSafety(key: Key, block: suspend ThreadSafety.() -> Output): Output {
+    private suspend fun <Output : Any?> withThreadSafety(
+        key: Key,
+        block: suspend ThreadSafety.() -> Output,
+    ): Output {
         storeLock.lock()
         val threadSafety = requireNotNull(keyToThreadSafety[key])
         val output = threadSafety.block()
@@ -219,11 +229,12 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 latest == null || bookkeeper == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts
                 else -> {
                     try {
-                        val updaterResult = updater.post(key, latest).also { updaterResult ->
-                            if (updaterResult is UpdaterResult.Success) {
-                                updateWriteRequestQueue<Response>(key = key, created = now(), updaterResult = updaterResult)
+                        val updaterResult =
+                            updater.post(key, latest).also { updaterResult ->
+                                if (updaterResult is UpdaterResult.Success) {
+                                    updateWriteRequestQueue<Response>(key = key, created = now(), updaterResult = updaterResult)
+                                }
                             }
-                        }
 
                         when (updaterResult) {
                             is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)
@@ -237,17 +248,19 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             }
         }
 
-    private suspend fun safeInitWriteRequestQueue(key: Key) = withThreadSafety(key) {
-        if (keyToWriteRequestQueue[key] == null) {
-            keyToWriteRequestQueue[key] = ArrayDeque()
+    private suspend fun safeInitWriteRequestQueue(key: Key) =
+        withThreadSafety(key) {
+            if (keyToWriteRequestQueue[key] == null) {
+                keyToWriteRequestQueue[key] = ArrayDeque()
+            }
         }
-    }
 
-    private suspend fun safeInitThreadSafety(key: Key) = storeLock.withLock {
-        if (keyToThreadSafety[key] == null) {
-            keyToThreadSafety[key] = ThreadSafety()
+    private suspend fun safeInitThreadSafety(key: Key) =
+        storeLock.withLock {
+            if (keyToThreadSafety[key] == null) {
+                keyToThreadSafety[key] = ThreadSafety()
+            }
         }
-    }
 
     private suspend fun safeInitStore(key: Key) {
         safeInitThreadSafety(key)
@@ -255,10 +268,11 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     }
 
     companion object {
-        private val logger = Logger.apply {
-            setLogWriters(listOf(CommonWriter()))
-            setTag("Store")
-        }
+        private val logger =
+            Logger.apply {
+                setLogWriters(listOf(CommonWriter()))
+                setTag("Store")
+            }
         private const val UNKNOWN_ERROR = "Unknown error occurred"
     }
 }

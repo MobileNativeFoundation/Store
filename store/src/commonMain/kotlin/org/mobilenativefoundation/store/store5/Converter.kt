@@ -11,15 +11,14 @@ package org.mobilenativefoundation.store.store5
  */
 interface Converter<Network : Any, Local : Any, Output : Any> {
     fun fromNetworkToLocal(network: Network): Local
+
     fun fromOutputToLocal(output: Output): Local
 
     class Builder<Network : Any, Local : Any, Output : Any> {
-
         lateinit var fromOutputToLocal: ((output: Output) -> Local)
         lateinit var fromNetworkToLocal: ((network: Network) -> Local)
 
-        fun build(): Converter<Network, Local, Output> =
-            RealConverter(fromOutputToLocal, fromNetworkToLocal)
+        fun build(): Converter<Network, Local, Output> = RealConverter(fromOutputToLocal, fromNetworkToLocal)
 
         fun fromOutputToLocal(converter: (output: Output) -> Local): Builder<Network, Local, Output> {
             fromOutputToLocal = converter
@@ -37,9 +36,7 @@ private class RealConverter<Network : Any, Local : Any, Output : Any>(
     private val fromOutputToLocal: ((output: Output) -> Local),
     private val fromNetworkToLocal: ((network: Network) -> Local),
 ) : Converter<Network, Local, Output> {
-    override fun fromNetworkToLocal(network: Network): Local =
-        fromNetworkToLocal.invoke(network)
+    override fun fromNetworkToLocal(network: Network): Local = fromNetworkToLocal.invoke(network)
 
-    override fun fromOutputToLocal(output: Output): Local =
-        fromOutputToLocal.invoke(output)
+    override fun fromOutputToLocal(output: Output): Local = fromOutputToLocal.invoke(output)
 }

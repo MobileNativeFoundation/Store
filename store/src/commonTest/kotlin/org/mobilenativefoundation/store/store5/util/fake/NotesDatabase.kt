@@ -5,7 +5,12 @@ import org.mobilenativefoundation.store.store5.util.model.OutputNote
 
 internal class NotesDatabase {
     private val db: MutableMap<NotesKey, OutputNote?> = mutableMapOf()
-    fun put(key: NotesKey, input: InputNote, fail: Boolean = false): Boolean {
+
+    fun put(
+        key: NotesKey,
+        input: InputNote,
+        fail: Boolean = false,
+    ): Boolean {
         if (fail) {
             throw Exception()
         }
@@ -14,7 +19,10 @@ internal class NotesDatabase {
         return true
     }
 
-    fun get(key: NotesKey, fail: Boolean = false): OutputNote? {
+    fun get(
+        key: NotesKey,
+        fail: Boolean = false,
+    ): OutputNote? {
         if (fail) {
             throw Exception()
         }
@@ -22,7 +30,10 @@ internal class NotesDatabase {
         return db[key]
     }
 
-    fun clear(key: NotesKey, fail: Boolean = false): Boolean {
+    fun clear(
+        key: NotesKey,
+        fail: Boolean = false,
+    ): Boolean {
         if (fail) {
             throw Exception()
         }

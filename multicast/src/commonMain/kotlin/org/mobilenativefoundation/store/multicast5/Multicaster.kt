@@ -50,7 +50,6 @@ class Multicaster<T>(
      * Source function to create a new flow when necessary.
      */
     private val source: Flow<T>,
-
     /**
      * If true, downstream is never closed by the multicaster unless upstream throws an error.
      * Instead, it is kept open and if a new downstream shows up that causes us to restart the flow,
@@ -67,9 +66,8 @@ class Multicaster<T>(
     /**
      * Called when upstream dispatches a value.
      */
-    private val onEach: suspend (T) -> Unit
+    private val onEach: suspend (T) -> Unit,
 ) {
-
     internal var channelManagerFactory: () -> ChannelManager<T> = {
         StoreChannelManager(
             scope = scope,
@@ -77,7 +75,7 @@ class Multicaster<T>(
             upstream = source,
             piggybackingDownstream = piggybackingDownstream,
             keepUpstreamAlive = keepUpstreamAlive,
-            onEach = onEach
+            onEach = onEach,
         )
     }
 
@@ -98,28 +96,29 @@ class Multicaster<T>(
         }
         return flow {
             val channel = Channel<ChannelManager.Message.Dispatch.Value<T>>(Channel.UNLIMITED)
-            val subFlow = channel.consumeAsFlow()
-                .onStart {
-                    try {
-                        channelManager.addDownstream(channel, piggybackOnly)
-                    } catch (closed: ClosedSendChannelException) {
-                        // before we could start, channel manager was closed.
-                        // close our downstream manually as it won't be closed by the ChannelManager
-                        channel.close()
-                    }
-                }
-                .transform<ChannelManager.Message.Dispatch.Value<T>, T> {
-                    emit(it.value)
-                    it.delivered.complete(Unit)
-                }.onCompletion {
-                    withContext(NonCancellable) {
+            val subFlow =
+                channel.consumeAsFlow()
+                    .onStart {
                         try {
-                            channelManager.removeDownstream(channel)
+                            channelManager.addDownstream(channel, piggybackOnly)
                         } catch (closed: ClosedSendChannelException) {
-                            // ignore, we might be closed because ChannelManager is closed
+                            // before we could start, channel manager was closed.
+                            // close our downstream manually as it won't be closed by the ChannelManager
+                            channel.close()
                         }
                     }
-                }
+                    .transform<ChannelManager.Message.Dispatch.Value<T>, T> {
+                        emit(it.value)
+                        it.delivered.complete(Unit)
+                    }.onCompletion {
+                        withContext(NonCancellable) {
+                            try {
+                                channelManager.removeDownstream(channel)
+                            } catch (closed: ClosedSendChannelException) {
+                                // ignore, we might be closed because ChannelManager is closed
+                            }
+                        }
+                    }
             emitAll(subFlow)
         }
     }

@@ -44,9 +44,8 @@ interface Fetcher<Key : Any, Network : Any> {
          *
          * @param flowFactory a factory for a [Flow]ing source of network records.
          */
-        fun <Key : Any, Network : Any> ofResultFlow(
-            flowFactory: (Key) -> Flow<FetcherResult<Network>>
-        ): Fetcher<Key, Network> = FactoryFetcher(factory = flowFactory)
+        fun <Key : Any, Network : Any> ofResultFlow(flowFactory: (Key) -> Flow<FetcherResult<Network>>): Fetcher<Key, Network> =
+            FactoryFetcher(factory = flowFactory)
 
         /**
          * Creates a [Fetcher] with a [fallback] from a [flowFactory].
@@ -56,7 +55,7 @@ interface Fetcher<Key : Any, Network : Any> {
         fun <Key : Any, Network : Any> ofResultFlowWithFallback(
             name: String,
             flowFactory: (Key) -> Flow<FetcherResult<Network>>,
-            fallback: Fetcher<Key, Network>
+            fallback: Fetcher<Key, Network>,
         ): Fetcher<Key, Network> = FactoryFetcherWithFallback(name = name, factory = flowFactory, fallback = fallback)
 
         /**
@@ -70,9 +69,8 @@ interface Fetcher<Key : Any, Network : Any> {
          *
          * @param fetch a source of network records.
          */
-        fun <Key : Any, Network : Any> ofResult(
-            fetch: suspend (Key) -> FetcherResult<Network>
-        ): Fetcher<Key, Network> = ofResultFlow(fetch.asFlow())
+        fun <Key : Any, Network : Any> ofResult(fetch: suspend (Key) -> FetcherResult<Network>): Fetcher<Key, Network> =
+            ofResultFlow(fetch.asFlow())
 
         /**
          * Creates a [Fetcher] with a [fallback] from a non-Flow source.
@@ -82,7 +80,7 @@ interface Fetcher<Key : Any, Network : Any> {
         fun <Key : Any, Network : Any> ofResultWithFallback(
             name: String,
             fetch: suspend (Key) -> FetcherResult<Network>,
-            fallback: Fetcher<Key, Network>
+            fallback: Fetcher<Key, Network>,
         ): Fetcher<Key, Network> = ofResultFlowWithFallback(name, fetch.asFlow(), fallback)
 
         /**
@@ -99,12 +97,13 @@ interface Fetcher<Key : Any, Network : Any> {
          */
         fun <Key : Any, Network : Any> ofFlow(
             name: String? = null,
-            flowFactory: (Key) -> Flow<Network>
-        ): Fetcher<Key, Network> = FactoryFetcher { key: Key ->
-            flowFactory(key)
-                .map<Network, FetcherResult<Network>> { FetcherResult.Data(it, name) }
-                .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
-        }
+            flowFactory: (Key) -> Flow<Network>,
+        ): Fetcher<Key, Network> =
+            FactoryFetcher { key: Key ->
+                flowFactory(key)
+                    .map<Network, FetcherResult<Network>> { FetcherResult.Data(it, name) }
+                    .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
+            }
 
         /**
          * Creates a [Fetcher] with a [fallback] from a [flowFactory].
@@ -115,13 +114,14 @@ interface Fetcher<Key : Any, Network : Any> {
             name: String,
             fallback: Fetcher<Key, Network>,
             flowFactory: (Key) -> Flow<Network>,
-        ): Fetcher<Key, Network> = FactoryFetcherWithFallback(name = name, factory = { key: Key ->
-            flowFactory(key)
-                .map<Network, FetcherResult<Network>> {
-                    FetcherResult.Data(it, name)
-                }
-                .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
-        }, fallback = fallback)
+        ): Fetcher<Key, Network> =
+            FactoryFetcherWithFallback(name = name, factory = { key: Key ->
+                flowFactory(key)
+                    .map<Network, FetcherResult<Network>> {
+                        FetcherResult.Data(it, name)
+                    }
+                    .catch { throwable: Throwable -> emit(FetcherResult.Error.Exception(throwable)) }
+            }, fallback = fallback)
 
         /**
          * "Creates" a [Fetcher] from a non-[Flow] source and translate the results to a [FetcherResult].
@@ -136,9 +136,8 @@ interface Fetcher<Key : Any, Network : Any> {
          */
         fun <Key : Any, Network : Any> of(
             name: String? = null,
-            fetch: suspend (key: Key) -> Network
-        ): Fetcher<Key, Network> =
-            ofFlow(name, fetch.asFlow())
+            fetch: suspend (key: Key) -> Network,
+        ): Fetcher<Key, Network> = ofFlow(name, fetch.asFlow())
 
         /**
          * Creates a [Fetcher] with a [fallback] from a non-Flow source.
@@ -148,45 +147,47 @@ interface Fetcher<Key : Any, Network : Any> {
         fun <Key : Any, Network : Any> withFallback(
             name: String,
             fallback: Fetcher<Key, Network>,
-            fetch: suspend (key: Key) -> Network
-        ): Fetcher<Key, Network> =
-            ofFlowWithFallback(name, fallback, fetch.asFlow())
+            fetch: suspend (key: Key) -> Network,
+        ): Fetcher<Key, Network> = ofFlowWithFallback(name, fallback, fetch.asFlow())
 
-        private fun <Key : Any, Network : Any> (suspend (key: Key) -> Network).asFlow() = { key: Key ->
-            flow {
-                emit(invoke(key))
+        private fun <Key : Any, Network : Any> (suspend (key: Key) -> Network).asFlow() =
+            { key: Key ->
+                flow {
+                    emit(invoke(key))
+                }
             }
-        }
 
         private class FactoryFetcher<Key : Any, Network : Any>(
             private val factory: (Key) -> Flow<FetcherResult<Network>>,
         ) : Fetcher<Key, Network> {
             override val name: String? = null
             override val fallback: Fetcher<Key, Network>? = null
+
             override fun invoke(key: Key): Flow<FetcherResult<Network>> = factory(key)
         }
 
         private fun <Key : Any, Network : Any> tryFetch(
             key: Key,
             factory: (Key) -> Flow<FetcherResult<Network>>,
-            fallback: Fetcher<Key, Network>?
-        ): Flow<FetcherResult<Network>> = channelFlow {
-            factory(key).collect { fetcherResult ->
-                when (fetcherResult) {
-                    is FetcherResult.Data -> {
-                        send(fetcherResult)
-                    }
-
-                    is FetcherResult.Error -> {
-                        if (fallback != null) {
-                            tryFetch(key, fallback::invoke, fallback.fallback).collect { send(it) }
-                        } else {
+            fallback: Fetcher<Key, Network>?,
+        ): Flow<FetcherResult<Network>> =
+            channelFlow {
+                factory(key).collect { fetcherResult ->
+                    when (fetcherResult) {
+                        is FetcherResult.Data -> {
                             send(fetcherResult)
+                        }
+
+                        is FetcherResult.Error -> {
+                            if (fallback != null) {
+                                tryFetch(key, fallback::invoke, fallback.fallback).collect { send(it) }
+                            } else {
+                                send(fetcherResult)
+                            }
                         }
                     }
                 }
             }
-        }
 
         private class FactoryFetcherWithFallback<Key : Any, Network : Any>(
             override val name: String,
