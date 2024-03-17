@@ -38,27 +38,28 @@ import kotlinx.coroutines.launch
 internal class SharedFlowProducer<T>(
     private val scope: CoroutineScope,
     private val src: Flow<T>,
-    private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit
+    private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit,
 ) {
-    private val collectionJob: Job = scope.launch(start = CoroutineStart.LAZY) {
-        try {
-            src.catch {
-                sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
-            }.collect {
-                val ack = CompletableDeferred<Unit>()
-                sendUpsteamMessage(
-                    ChannelManager.Message.Dispatch.Value(
-                        it,
-                        ack
+    private val collectionJob: Job =
+        scope.launch(start = CoroutineStart.LAZY) {
+            try {
+                src.catch {
+                    sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
+                }.collect {
+                    val ack = CompletableDeferred<Unit>()
+                    sendUpsteamMessage(
+                        ChannelManager.Message.Dispatch.Value(
+                            it,
+                            ack,
+                        ),
                     )
-                )
-                // suspend until at least 1 receives the new value
-                ack.await()
+                    // suspend until at least 1 receives the new value
+                    ack.await()
+                }
+            } catch (closed: ClosedSendChannelException) {
+                // ignore. if consumers are gone, it might close itself.
             }
-        } catch (closed: ClosedSendChannelException) {
-            // ignore. if consumers are gone, it might close itself.
         }
-    }
 
     /**
      * Starts the collection of the upstream flow.

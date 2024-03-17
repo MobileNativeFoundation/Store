@@ -15,8 +15,6 @@ interface Validator<Output : Any> {
     suspend fun isValid(item: Output): Boolean
 
     companion object {
-        fun <Output : Any> by(
-            validator: suspend (item: Output) -> Boolean
-        ): Validator<Output> = RealValidator(validator)
+        fun <Output : Any> by(validator: suspend (item: Output) -> Boolean): Validator<Output> = RealValidator(validator)
     }
 }

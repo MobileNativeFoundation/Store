@@ -4,7 +4,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
 internal object StoreDefaults {
-
     /**
      * Cache TTL (default is 24 hours), can be overridden
      *
@@ -19,8 +18,9 @@ internal object StoreDefaults {
      */
     val cacheSize: Long = 100
 
-    val memoryPolicy = MemoryPolicy.builder<Any, Any>()
-        .setMaxSize(cacheSize)
-        .setExpireAfterWrite(cacheTTL)
-        .build()
+    val memoryPolicy =
+        MemoryPolicy.builder<Any, Any>()
+            .setMaxSize(cacheSize)
+            .setExpireAfterWrite(cacheTTL)
+            .build()
 }

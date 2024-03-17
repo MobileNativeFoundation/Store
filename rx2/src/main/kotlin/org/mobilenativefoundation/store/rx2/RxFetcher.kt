@@ -19,7 +19,7 @@ import org.mobilenativefoundation.store.store5.Store
  * @param flowableFactory a factory for a [Flowable] source of network records.
  */
 fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
-        flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>
+    flowableFactory: (key: Key) -> Flowable<FetcherResult<Output>>,
 ): Fetcher<Key, Output> = ofResultFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
@@ -34,7 +34,7 @@ fun <Key : Any, Output : Any> Fetcher.Companion.ofResultFlowable(
  * @param singleFactory a factory for a [Single] source of network records.
  */
 fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
-        singleFactory: (key: Key) -> Single<FetcherResult<Output>>
+    singleFactory: (key: Key) -> Single<FetcherResult<Output>>,
 ): Fetcher<Key, Output> = ofResultFlowable { key: Key -> singleFactory(key).toFlowable() }
 
 /**
@@ -49,9 +49,8 @@ fun <Key : Any, Output : Any> Fetcher.Companion.ofResultSingle(
  *
  * @param flowFactory a factory for a [Flowable] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(
-        flowableFactory: (key: Key) -> Flowable<Output>
-): Fetcher<Key, Output> = ofFlow { key: Key -> flowableFactory(key).asFlow() }
+fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(flowableFactory: (key: Key) -> Flowable<Output>): Fetcher<Key, Output> =
+    ofFlow { key: Key -> flowableFactory(key).asFlow() }
 
 /**
  * Creates a new [Fetcher] from a [singleFactory] and translate the results to a [FetcherResult].
@@ -65,6 +64,5 @@ fun <Key : Any, Output : Any> Fetcher.Companion.ofFlowable(
  *
  * @param singleFactory a factory for a [Single] source of network records.
  */
-fun <Key : Any, Output : Any> Fetcher.Companion.ofSingle(
-        singleFactory: (key: Key) -> Single<Output>
-): Fetcher<Key, Output> = ofFlowable { key: Key -> singleFactory(key).toFlowable() }
+fun <Key : Any, Output : Any> Fetcher.Companion.ofSingle(singleFactory: (key: Key) -> Single<Output>): Fetcher<Key, Output> =
+    ofFlowable { key: Key -> singleFactory(key).toFlowable() }

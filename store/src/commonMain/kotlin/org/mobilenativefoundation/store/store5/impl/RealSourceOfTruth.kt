@@ -23,12 +23,14 @@ internal class PersistentSourceOfTruth<Key : Any, Local : Any, Output : Any>(
     private val realReader: (Key) -> Flow<Output?>,
     private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
-    private val realDeleteAll: (suspend () -> Unit)? = null
+    private val realDeleteAll: (suspend () -> Unit)? = null,
 ) : SourceOfTruth<Key, Local, Output> {
-
     override fun reader(key: Key): Flow<Output?> = realReader.invoke(key)
 
-    override suspend fun write(key: Key, value: Local) = realWriter(key, value)
+    override suspend fun write(
+        key: Key,
+        value: Local,
+    ) = realWriter(key, value)
 
     override suspend fun delete(key: Key) {
         realDelete?.invoke(key)
@@ -43,16 +45,18 @@ internal class PersistentNonFlowingSourceOfTruth<Key : Any, Local : Any, Output 
     private val realReader: suspend (Key) -> Output?,
     private val realWriter: suspend (Key, Local) -> Unit,
     private val realDelete: (suspend (Key) -> Unit)? = null,
-    private val realDeleteAll: (suspend () -> Unit)?
+    private val realDeleteAll: (suspend () -> Unit)?,
 ) : SourceOfTruth<Key, Local, Output> {
-
     override fun reader(key: Key): Flow<Output?> =
         flow {
             val sot = realReader(key)
             emit(sot)
         }
 
-    override suspend fun write(key: Key, value: Local) {
+    override suspend fun write(
+        key: Key,
+        value: Local,
+    ) {
         return realWriter(key, value)
     }
 

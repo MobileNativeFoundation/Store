@@ -1,6 +1,5 @@
 package org.mobilenativefoundation.store.rx2
 
-
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import kotlinx.coroutines.rx2.asFlowable
@@ -19,15 +18,14 @@ import org.mobilenativefoundation.store.store5.impl.extensions.get
  * @param request - see [StoreReadRequest] for configurations
  */
 fun <Key : Any, Output : Any> Store<Key, Output>.observe(request: StoreReadRequest<Key>): Flowable<StoreReadResponse<Output>> =
-        stream(request).asFlowable()
+    stream(request).asFlowable()
 
 /**
  * Purge a particular entry from memory and disk cache.
  * Persistent storage will only be cleared if a delete function was passed to
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable =
-        rxCompletable { clear(key) }
+fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Completable = rxCompletable { clear(key) }
 
 /**
  * Purge all entries from memory and disk cache.
@@ -35,8 +33,7 @@ fun <Key : Any, Output : Any> Store<Key, Output>.observeClear(key: Key): Complet
  * [StoreBuilder.persister] or [StoreBuilder.nonFlowingPersister] when creating the [Store].
  */
 @ExperimentalStoreApi
-fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable =
-        rxCompletable { clear() }
+fun <Key : Any, Output : Any> Store<Key, Output>.observeClearAll(): Completable = rxCompletable { clear() }
 
 /**
  * Helper factory that will return data as a [Single] for [key] if it is cached otherwise will return fresh/network data (updating your caches)

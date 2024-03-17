@@ -18,16 +18,17 @@ internal fun <E> CoroutineScope.actor(
     context: CoroutineContext = EmptyCoroutineContext,
     capacity: Int = 0,
     onCompletion: CompletionHandler? = null,
-    block: suspend CoroutineScope.(ReceiveChannel<E>) -> Unit
+    block: suspend CoroutineScope.(ReceiveChannel<E>) -> Unit,
 ): SendChannel<E> {
     val channel = Channel<E>(capacity)
-    val job = launch(context) {
-        try {
-            block(channel)
-        } finally {
-            if (isActive) channel.cancel()
+    val job =
+        launch(context) {
+            try {
+                block(channel)
+            } finally {
+                if (isActive) channel.cancel()
+            }
         }
-    }
     if (onCompletion != null) job.invokeOnCompletion(handler = onCompletion)
     return channel
 }

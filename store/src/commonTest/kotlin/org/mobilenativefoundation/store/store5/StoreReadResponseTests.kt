@@ -6,7 +6,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class StoreReadResponseTests {
-
     @Test
     fun requireData() {
         assertEquals("Foo", StoreReadResponse.Data("Foo", StoreReadResponseOrigin.Fetcher()).requireData())

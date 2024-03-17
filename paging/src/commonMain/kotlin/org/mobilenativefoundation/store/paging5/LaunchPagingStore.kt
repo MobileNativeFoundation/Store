@@ -36,7 +36,6 @@ private fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> launchPagingS
     val stateFlow = MutableStateFlow<StoreReadResponse<Output>>(StoreReadResponse.Initial)
 
     scope.launch {
-
         try {
             val firstKey = keys.first()
             if (firstKey !is StoreKey.Collection<*>) throw IllegalArgumentException("Invalid key type")
@@ -102,12 +101,13 @@ fun <Id : Any, Key : StoreKey<Id>, Output : StoreData<Id>> MutableStore<Key, Out
 private fun <Id : Any, Key : StoreKey.Collection<Id>, Output : StoreData<Id>> joinData(
     key: Key,
     prevResponse: StoreReadResponse<Output>,
-    currentResponse: StoreReadResponse.Data<Output>
+    currentResponse: StoreReadResponse.Data<Output>,
 ): StoreReadResponse.Data<Output> {
-    val lastOutput = when (prevResponse) {
-        is StoreReadResponse.Data<Output> -> prevResponse.value as? StoreData.Collection<Id, StoreData.Single<Id>>
-        else -> null
-    }
+    val lastOutput =
+        when (prevResponse) {
+            is StoreReadResponse.Data<Output> -> prevResponse.value as? StoreData.Collection<Id, StoreData.Single<Id>>
+            else -> null
+        }
 
     val currentData = currentResponse.value as StoreData.Collection<Id, StoreData.Single<Id>>
 

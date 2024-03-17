@@ -16,57 +16,60 @@ class HotFlowStoreTests {
     private val testScope = TestScope()
 
     @Test
-    fun givenAHotFetcherWhenTwoCachedAndOneFreshCallThenFetcherIsOnlyCalledTwice() = testScope.runTest {
-        val fetcher = FakeFlowFetcher(
-            3 to "three-1",
-            3 to "three-2"
-        )
-        val pipeline = StoreBuilder
-            .from(fetcher)
-            .scope(testScope)
-            .build()
+    fun givenAHotFetcherWhenTwoCachedAndOneFreshCallThenFetcherIsOnlyCalledTwice() =
+        testScope.runTest {
+            val fetcher =
+                FakeFlowFetcher(
+                    3 to "three-1",
+                    3 to "three-2",
+                )
+            val pipeline =
+                StoreBuilder
+                    .from(fetcher)
+                    .scope(testScope)
+                    .build()
 
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
+            assertEmitsExactly(
+                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-1",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
                 ),
-                StoreReadResponse.Data(
-                    value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                )
             )
-        )
-        assertEmitsExactly(
-            pipeline.stream(
-                StoreReadRequest.cached(3, refresh = false)
-            ),
-            listOf(
-                StoreReadResponse.Data(
-                    value = "three-1",
-                    origin = StoreReadResponseOrigin.Cache
-                )
+            assertEmitsExactly(
+                pipeline.stream(
+                    StoreReadRequest.cached(3, refresh = false),
+                ),
+                listOf(
+                    StoreReadResponse.Data(
+                        value = "three-1",
+                        origin = StoreReadResponseOrigin.Cache,
+                    ),
+                ),
             )
-        )
 
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.fresh(3)),
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
+            assertEmitsExactly(
+                pipeline.stream(StoreReadRequest.fresh(3)),
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
                 ),
-                StoreReadResponse.Data(
-                    value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                )
             )
-        )
-    }
+        }
 }
 
 private class FakeFlowFetcher<Key : Any, Output : Any>(
-    vararg val responses: Pair<Key, Output>
+    vararg val responses: Pair<Key, Output>,
 ) : Fetcher<Key, Output> {
     private var index = 0
     override val name: String? = null

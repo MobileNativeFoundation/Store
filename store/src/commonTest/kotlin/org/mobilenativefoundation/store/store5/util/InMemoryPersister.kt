@@ -45,5 +45,5 @@ fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asSourceOfTruth() =
         nonFlowReader = ::read,
         writer = ::write,
         delete = ::deleteByKey,
-        deleteAll = ::deleteAll
+        deleteAll = ::deleteAll,
     )

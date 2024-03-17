@@ -1,0 +1,56 @@
+---
+slug: /tutorial/2
+sidebar_position: 2
+sidebar_class_name: tutorial_2
+title: Onboarding To Our KMP Project
+---
+
+### Directory Structure
+
+```yaml
+- android/
+    - app/
+
+- ios/
+    - app/
+
+- shared/
+    - core/
+      - di/
+        - api/  # Core shared component interfaces
+        - impl/  # Core shared component implementations
+      - navigation/  # Shared navigation
+        - api/
+        - impl/
+    - feat/  # Shared feature modules
+      - homeTab/
+        - api/
+        - impl/
+    - lib/
+      - composableModel/  # Shared view model
+      - env/  # Shared environment, including secrets
+      - httpClient/  # Shared HTTP client
+      - res/  # Shared resources
+      - scoop/  # KMP SDK for Scoop API
+      - theme/  # Shared theming
+
+- tooling/
+```
+
+### Overview
+- Take a look at the `shared` module. This is where we will be writing our shared code. A few notes:
+- Take a look at the `android` module. This is where we will be writing our Android code.
+- Take a look at the `ios` module. This is where we will be writing our iOS code.
+- Take a look at the `tooling` module. This is where our tooling code is located.
+
+### Dependencies
+- Take a look at `gradle/libs.versions.toml`. These are our dependencies. A few of the core ones:
+
+```yaml
+- store  # KMP data loading and caching
+- buildkonfig  # KMP build config
+- kotlin-inject  # KMP dependency injection
+- ktor  # KMP Networking
+- voyager  # KMP Navigation
+- scoop  # KMP SDK for Scoop API
+```

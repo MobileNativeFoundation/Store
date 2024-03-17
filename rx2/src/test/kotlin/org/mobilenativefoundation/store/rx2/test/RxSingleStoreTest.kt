@@ -9,13 +9,13 @@ import kotlinx.coroutines.FlowPreview
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.rx2.observe
 import org.mobilenativefoundation.store.rx2.observeClear
 import org.mobilenativefoundation.store.rx2.observeClearAll
 import org.mobilenativefoundation.store.rx2.ofMaybe
 import org.mobilenativefoundation.store.rx2.ofResultSingle
 import org.mobilenativefoundation.store.rx2.withScheduler
-import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
 import org.mobilenativefoundation.store.store5.SourceOfTruth
@@ -34,21 +34,23 @@ class RxSingleStoreTest {
     private var fakeDisk = mutableMapOf<Int, String>()
     private val store =
         StoreBuilder.from<Int, String, String>(
-            fetcher = Fetcher.ofResultSingle {
-                Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
-            },
-            sourceOfTruth = SourceOfTruth.ofMaybe(
-                reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
-                writer = { key, value ->
-                    Completable.fromAction { fakeDisk[key] = value }
+            fetcher =
+                Fetcher.ofResultSingle {
+                    Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
                 },
-                delete = { key ->
-                    Completable.fromAction { fakeDisk.remove(key) }
-                },
-                deleteAll = {
-                    Completable.fromAction { fakeDisk.clear() }
-                }
-            )
+            sourceOfTruth =
+                SourceOfTruth.ofMaybe(
+                    reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+                    writer = { key, value ->
+                        Completable.fromAction { fakeDisk[key] = value }
+                    },
+                    delete = { key ->
+                        Completable.fromAction { fakeDisk.remove(key) }
+                    },
+                    deleteAll = {
+                        Completable.fromAction { fakeDisk.clear() }
+                    },
+                ),
         )
             .withScheduler(Schedulers.trampoline())
             .build()
@@ -60,7 +62,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher()),
             )
 
         store.observe(StoreReadRequest.cached(3, false))
@@ -68,7 +70,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Cache),
-                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.SourceOfTruth)
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.SourceOfTruth),
             )
 
         store.observe(StoreReadRequest.fresh(3))
@@ -76,7 +78,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Fetcher()),
             )
 
         store.observe(StoreReadRequest.cached(3, false))
@@ -84,7 +86,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Data("3 2", StoreReadResponseOrigin.Cache),
-                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.SourceOfTruth)
+                StoreReadResponse.Data("3 2", StoreReadResponseOrigin.SourceOfTruth),
             )
     }
 
@@ -99,7 +101,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher()),
             )
     }
 
@@ -115,7 +117,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 1", StoreReadResponseOrigin.Fetcher()),
             )
 
         store.observe(StoreReadRequest.cached(4, false))
@@ -123,7 +125,7 @@ class RxSingleStoreTest {
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("4 2", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("4 2", StoreReadResponseOrigin.Fetcher()),
             )
     }
 }

@@ -4,12 +4,13 @@ import org.mobilenativefoundation.store.store5.util.fake.NotesKey
 
 internal sealed class NoteData {
     data class Single(val item: Note) : NoteData()
+
     data class Collection(val items: List<Note>) : NoteData()
 }
 
 internal data class NotesWriteResponse(
     val key: NotesKey,
-    val ok: Boolean
+    val ok: Boolean,
 )
 
 internal data class NetworkNote(
@@ -24,11 +25,11 @@ internal data class InputNote(
 
 internal data class OutputNote(
     val data: NoteData? = null,
-    val ttl: Long
+    val ttl: Long,
 )
 
 internal data class Note(
     val id: String,
     val title: String,
-    val content: String
+    val content: String,
 )

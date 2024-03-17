@@ -19,95 +19,103 @@ class StreamWithoutSourceOfTruthTests {
     private val testScope = TestScope()
 
     @Test
-    fun streamWithoutPersisterAndCacheEnabled() = testScope.runTest {
-        val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
-        )
-        val pipeline = StoreBuilder.from(fetcher)
-            .scope(testScope)
-            .build()
-        val twoItemsNoRefresh = async {
-            pipeline.stream(
-                StoreReadRequest.cached(3, refresh = false)
-            ).take(3).toList()
-        }
-        delay(1_000) // make sure the async block starts first
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.fresh(3)),
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
-                ),
-                StoreReadResponse.Data(
-                    value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher()
+    fun streamWithoutPersisterAndCacheEnabled() =
+        testScope.runTest {
+            val fetcher =
+                FakeFetcher(
+                    3 to "three-1",
+                    3 to "three-2",
                 )
+            val pipeline =
+                StoreBuilder.from(fetcher)
+                    .scope(testScope)
+                    .build()
+            val twoItemsNoRefresh =
+                async {
+                    pipeline.stream(
+                        StoreReadRequest.cached(3, refresh = false),
+                    ).take(3).toList()
+                }
+            delay(1_000) // make sure the async block starts first
+            assertEmitsExactly(
+                pipeline.stream(StoreReadRequest.fresh(3)),
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                ),
             )
-        )
 
-        assertEquals(
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
+            assertEquals(
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-1",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
                 ),
-                StoreReadResponse.Data(
-                    value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                ),
-                StoreReadResponse.Data(
-                    value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                )
-            ),
-            twoItemsNoRefresh.await()
-        )
-    }
+                twoItemsNoRefresh.await(),
+            )
+        }
 
     @Test
-    fun streamWithoutPersisterAndCacheDisabled() = testScope.runTest {
-        val fetcher = FakeFetcher(
-            3 to "three-1",
-            3 to "three-2"
-        )
-        val pipeline = StoreBuilder.from(fetcher)
-            .scope(testScope)
-            .disableCache()
-            .build()
-        val twoItemsNoRefresh = async {
-            pipeline.stream(
-                StoreReadRequest.cached(3, refresh = false)
-            ).take(3).toList()
-        }
-        delay(1_000) // make sure the async block starts first
-        assertEmitsExactly(
-            pipeline.stream(StoreReadRequest.fresh(3)),
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
-                ),
-                StoreReadResponse.Data(
-                    value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher()
+    fun streamWithoutPersisterAndCacheDisabled() =
+        testScope.runTest {
+            val fetcher =
+                FakeFetcher(
+                    3 to "three-1",
+                    3 to "three-2",
                 )
+            val pipeline =
+                StoreBuilder.from(fetcher)
+                    .scope(testScope)
+                    .disableCache()
+                    .build()
+            val twoItemsNoRefresh =
+                async {
+                    pipeline.stream(
+                        StoreReadRequest.cached(3, refresh = false),
+                    ).take(3).toList()
+                }
+            delay(1_000) // make sure the async block starts first
+            assertEmitsExactly(
+                pipeline.stream(StoreReadRequest.fresh(3)),
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                ),
             )
-        )
 
-        assertEquals(
-            listOf(
-                StoreReadResponse.Loading(
-                    origin = StoreReadResponseOrigin.Fetcher()
+            assertEquals(
+                listOf(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-1",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
                 ),
-                StoreReadResponse.Data(
-                    value = "three-1",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                ),
-                StoreReadResponse.Data(
-                    value = "three-2",
-                    origin = StoreReadResponseOrigin.Fetcher()
-                )
-            ),
-            twoItemsNoRefresh.await()
-        )
-    }
+                twoItemsNoRefresh.await(),
+            )
+        }
 }
