@@ -1380,26 +1380,25 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         fun activeEntries(): Map<K, V> {
-            if (count.value != 0) { // read-volatile
-                reentrantLock.lock()
-                try {
-                    return buildMap {
-                        val table = table.value
-                        for (i in 0 until table.size) {
-                            var e = table[i]
-                            while (e != null) {
-                                if (e.valueReference!!.isActive) {
-                                    put(e.key, e.valueReference!!.get()!!)
-                                }
-                                e = e.next
+            // read-volatile
+            if (count.value == 0) return emptyMap()
+            reentrantLock.lock()
+            return try {
+                buildMap {
+                    val table = table.value
+                    for (i in 0 until table.size) {
+                        var e = table[i]
+                        while (e != null) {
+                            if (e.valueReference!!.isActive) {
+                                put(e.key, e.valueReference!!.get()!!)
                             }
+                            e = e.next
                         }
                     }
-                } finally {
-                    reentrantLock.unlock()
                 }
+            } finally {
+                reentrantLock.unlock()
             }
-            return emptyMap()
         }
 
         init {
