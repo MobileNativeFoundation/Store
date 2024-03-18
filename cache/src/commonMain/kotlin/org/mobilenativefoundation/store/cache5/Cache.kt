@@ -18,8 +18,14 @@ interface Cache<Key : Any, Value : Any> {
 
     /**
      * @return Map of the [Value] associated with each [Key] in [keys]. Returned map only contains entries already present in the cache.
+     * The default implementation provided here throws a [NotImplementedError] to maintain backward compatibility for existing implementations.
      */
     fun getAllPresent(keys: List<*>): Map<Key, Value>
+
+    /**
+     * @return Map of the [Value] associated with each [Key] in the cache.
+     */
+    fun getAllPresent(): Map<Key, Value> = throw NotImplementedError()
 
     /**
      * Associates [value] with [key].
