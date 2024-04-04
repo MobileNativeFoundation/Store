@@ -1384,18 +1384,18 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             if (count.value == 0) return emptyMap()
             reentrantLock.lock()
             return try {
-                buildMap {
-                    val table = table.value
-                    for (i in 0 until table.size) {
-                        var e = table[i]
-                        while (e != null) {
-                            if (e.valueReference!!.isActive) {
-                                put(e.key, e.valueReference!!.get()!!)
-                            }
-                            e = e.next
+                val activeMap = mutableMapOf<K, V>()
+                val table = table.value
+                for (i in 0 until table.size) {
+                    var e = table[i]
+                    while (e != null) {
+                        if (e.valueReference?.isActive == true) {
+                            activeMap[e.key] = e.valueReference?.get()!!
                         }
+                        e = e.next
                     }
                 }
+                activeMap.ifEmpty { emptyMap() }
             } finally {
                 reentrantLock.unlock()
             }
