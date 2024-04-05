@@ -20,12 +20,12 @@ class CacheTests {
     assertEquals("value", cache.getOrPut("key") { "value" })
   }
 
-  @Ignore // Not implemented yet
   @Test
   fun getAllPresent() {
     cache.put("key1", "value1")
     cache.put("key2", "value2")
     assertEquals(mapOf("key1" to "value1", "key2" to "value2"), cache.getAllPresent(listOf("key1", "key2")))
+    assertEquals(mapOf("key1" to "value1", "key2" to "value2"), cache.getAllPresent())
   }
 
   @Ignore // Not implemented yet

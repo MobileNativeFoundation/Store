@@ -1379,6 +1379,28 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             }*/
         }
 
+        fun activeEntries(): Map<K, V> {
+            // read-volatile
+            if (count.value == 0) return emptyMap()
+            reentrantLock.lock()
+            return try {
+                val activeMap = mutableMapOf<K, V>()
+                val table = table.value
+                for (i in 0 until table.size) {
+                    var e = table[i]
+                    while (e != null) {
+                        if (e.valueReference?.isActive == true) {
+                            activeMap[e.key] = e.valueReference?.get()!!
+                        }
+                        e = e.next
+                    }
+                }
+                activeMap.ifEmpty { emptyMap() }
+            } finally {
+                reentrantLock.unlock()
+            }
+        }
+
         init {
             threshold = initialCapacity * 3 / 4 // 0.75
             if (!map.customWeigher && threshold.toLong() == maxSegmentWeight) {
@@ -1660,6 +1682,14 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         return segmentFor(hash).remove(key, hash)
     }
 
+    fun getAllPresent(): Map<K, V> {
+        return buildMap {
+            for (segment in segments) {
+                segment?.let { putAll(it.activeEntries()) }
+            }
+        }
+    }
+
     // Serialization Support
     internal class LocalManualCache<K : Any, V : Any> private constructor(private val localCache: LocalCache<K, V>) :
         Cache<K, V> {
@@ -1683,7 +1713,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         override fun getAllPresent(keys: List<*>): Map<K, V> {
-            TODO("Not yet implemented")
+            return localCache.getAllPresent().filterKeys { it in keys }
+        }
+
+        override fun getAllPresent(): Map<K, V> {
+            return localCache.getAllPresent()
         }
 
         override fun invalidateAll(keys: List<K>) {
