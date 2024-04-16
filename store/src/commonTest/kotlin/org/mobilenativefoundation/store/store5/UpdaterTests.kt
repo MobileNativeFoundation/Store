@@ -1,6 +1,12 @@
 package org.mobilenativefoundation.store.store5
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import app.cash.turbine.test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.last
@@ -8,6 +14,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.impl.extensions.asMutableStore
 import org.mobilenativefoundation.store.store5.impl.extensions.inHours
 import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import org.mobilenativefoundation.store.store5.util.fake.Notes
@@ -23,13 +30,8 @@ import org.mobilenativefoundation.store.store5.util.model.NetworkNote
 import org.mobilenativefoundation.store.store5.util.model.NoteData
 import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
 import org.mobilenativefoundation.store.store5.util.model.OutputNote
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalStoreApi::class)
+@OptIn(ExperimentalStoreApi::class)
 class UpdaterTests {
     private val testScope = TestScope()
     private lateinit var api: NotesApi
@@ -265,5 +267,72 @@ class UpdaterTests {
             storeWriteResponse
         )
         assertEquals(NetworkNote(NoteData.Single(newNote)), api.db[NotesKey.Single(Notes.One.id)])
+    }
+
+    @Test
+    fun collectResponseAfterWriting() = testScope.runTest {
+        val ttl = inHours(1)
+
+        val store = StoreBuilder.from<NotesKey, NetworkNote>(
+            fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
+        )
+            .cachePolicy(MemoryPolicy.builder<NotesKey, NetworkNote>().setExpireAfterWrite(10.minutes).build())
+            .build().asMutableStore<NotesKey, NetworkNote, NetworkNote, NetworkNote, NetworkNote>(
+                Updater.by(
+                    { _, v -> UpdaterResult.Success.Typed(v) },
+                ),
+                null,
+            )
+
+        val readRequest = StoreReadRequest.fresh(NotesKey.Single(Notes.One.id))
+
+        store.stream<NotesWriteResponse>(readRequest).test {
+            assertEquals(StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()), awaitItem())
+            assertEquals(
+                StoreReadResponse.Data(
+                    NetworkNote(NoteData.Single(Notes.One), ttl = ttl),
+                    StoreReadResponseOrigin.Fetcher()
+                ),
+                awaitItem()
+            )
+
+            val newNote = Notes.One.copy(title = "New Title-1")
+            val writeRequest = StoreWriteRequest.of<NotesKey, NetworkNote, NotesWriteResponse>(
+                key = NotesKey.Single(Notes.One.id),
+                value = NetworkNote(NoteData.Single(newNote), 0)
+            )
+
+            val storeWriteResponse = store.write(writeRequest)
+
+            // Write is success
+            assertEquals(
+                StoreWriteResponse.Success.Typed(
+                    NetworkNote(NoteData.Single(newNote), 0)
+                ),
+                storeWriteResponse
+            )
+
+            // New data added by 'write' is collected
+
+            assertEquals(
+                NetworkNote(NoteData.Single(newNote), 0),
+                awaitItem().requireData()
+            )
+
+            // different key, not collected
+            store.write(StoreWriteRequest.of<NotesKey, NetworkNote, NotesWriteResponse>(
+                key = NotesKey.Single(Notes.Five.id),
+                value = NetworkNote(NoteData.Single(newNote), 0)
+            ))
+        }
+
+        val cachedReadRequest =
+            StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
+        val cachedStream = store.stream<NotesWriteResponse>(cachedReadRequest)
+
+        assertEquals(
+            NetworkNote(NoteData.Single(Notes.One.copy(title = "New Title-1")), 0),
+            cachedStream.first().requireData()
+        )
     }
 }

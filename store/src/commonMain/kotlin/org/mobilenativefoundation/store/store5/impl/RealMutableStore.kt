@@ -4,11 +4,17 @@ package org.mobilenativefoundation.store.store5.impl
 
 import co.touchlab.kermit.CommonWriter
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.store5.Bookkeeper
@@ -17,6 +23,7 @@ import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.Updater
@@ -37,6 +44,8 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
     private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
+
+    private val writeRequestChannel = Channel<Pair<Key, Output>>()
 
     override fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
@@ -60,7 +69,14 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 }
             }
 
-            delegate.stream(request).collect { storeReadResponse -> emit(storeReadResponse) }
+            emitAll(
+                merge(
+                    delegate.stream(request),
+                    writeRequestChannel.receiveAsFlow()
+                        .filter { it.first == request.key }
+                        .map { StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache) },
+                )
+            )
         }
 
     @ExperimentalStoreApi
@@ -74,6 +90,9 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 .collect { writeRequest ->
                     val storeWriteResponse = try {
                         delegate.write(writeRequest.key, writeRequest.value)
+                        if (!delegate.hasSourceOfTruth()) {
+                            writeRequestChannel.trySend(writeRequest.key to writeRequest.value)
+                        }
                         when (val updaterResult = tryUpdateServer(writeRequest)) {
                             is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
                             is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)

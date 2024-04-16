@@ -19,13 +19,16 @@ import co.touchlab.kermit.CommonWriter
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.transform
 import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.CacheType
@@ -73,6 +76,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         converter = converter
     )
 
+    private val localOnlyChannel = Channel<Pair<Key, Output>>()
+
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
@@ -96,7 +101,16 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 if (memCache == null) {
                     logger.w("Local-only request made with no cache or source of truth configured")
                 }
-                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                if (cachedToEmit == null) {
+                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                }
+                emitAll(
+                    localOnlyChannel.receiveAsFlow()
+                        .filter { it.first == request.key }
+                        .map {
+                            StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache)
+                        }
+                )
                 return@flow
             }
 
@@ -161,6 +175,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 it.dataOrNull()?.let { data ->
                     memCache?.put(request.key, data)
                 }
+            }
+            if (sourceOfTruth == null && request.fetch && it is StoreReadResponse.Data) {
+                localOnlyChannel.trySend(request.key to it.value)
             }
         }
 
@@ -330,6 +347,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     internal suspend fun latestOrNull(key: Key): Output? =
         fromMemCache(key) ?: fromSourceOfTruth(key)
+
+    internal fun hasSourceOfTruth() = sourceOfTruth != null
 
     private suspend fun fromSourceOfTruth(key: Key) =
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
