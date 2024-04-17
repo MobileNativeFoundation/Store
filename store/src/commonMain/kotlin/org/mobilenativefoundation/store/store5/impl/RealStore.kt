@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -76,7 +77,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         converter = converter
     )
 
-    private val localOnlyChannel = Channel<Pair<Key, Output>>()
+    private val writeRequestChannel = Channel<Pair<Key, Output>>()
+    private val localOnlyRequestChannel = Channel<Pair<Key, Output>>()
 
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
@@ -105,7 +107,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
                 }
                 emitAll(
-                    localOnlyChannel.receiveAsFlow()
+                    localOnlyRequestChannel.receiveAsFlow()
                         .filter { it.first == request.key }
                         .map {
                             StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache)
@@ -119,11 +121,18 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 val piggybackOnly = !request.refresh && cachedToEmit != null
                 @Suppress("UNCHECKED_CAST")
 
-                createNetworkFlow(
+                val networkFlow = createNetworkFlow(
                     request = request,
                     networkLock = null,
                     piggybackOnly = piggybackOnly
                 ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
+
+                merge(
+                    networkFlow,
+                    writeRequestChannel.receiveAsFlow()
+                        .filter { writeRequest -> writeRequest.first == request.key }
+                        .map { StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache) }
+                )
             } else if (request.fetch) {
                 diskNetworkCombined(request, sourceOfTruth)
             } else {
@@ -177,7 +186,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 }
             }
             if (sourceOfTruth == null && request.fetch && it is StoreReadResponse.Data) {
-                localOnlyChannel.trySend(request.key to it.value)
+                localOnlyRequestChannel.trySend(request.key to it.value)
             }
         }
 
@@ -339,7 +348,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
         memCache?.put(key, value)
-        sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
+        if (sourceOfTruth != null) {
+            sourceOfTruth.write(key, converter.fromOutputToLocal(value))
+        } else {
+            writeRequestChannel.trySend(key to value)
+        }
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
         StoreDelegateWriteResult.Error.Exception(error)
@@ -347,8 +360,6 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     internal suspend fun latestOrNull(key: Key): Output? =
         fromMemCache(key) ?: fromSourceOfTruth(key)
-
-    internal fun hasSourceOfTruth() = sourceOfTruth != null
 
     private suspend fun fromSourceOfTruth(key: Key) =
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
@@ -362,3 +373,4 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         }
     }
 }
+
