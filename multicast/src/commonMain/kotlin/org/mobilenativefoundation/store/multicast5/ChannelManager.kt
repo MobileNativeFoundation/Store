@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
 import org.mobilenativefoundation.store.multicast5.ChannelManager.Message
+import kotlin.coroutines.cancellation.CancellationException
 
 internal interface ChannelManager<T> {
 
@@ -55,7 +56,11 @@ internal interface ChannelManager<T> {
 
         suspend fun dispatchValue(value: Message.Dispatch.Value<T>) {
             _awaitsDispatch = false
-            channel.send(value)
+            try {
+                channel.send(value)
+            } catch (e: CancellationException) {
+                // ignore
+            }
         }
 
         fun dispatchError(error: Throwable) {
