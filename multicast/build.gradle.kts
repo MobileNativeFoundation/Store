@@ -53,6 +53,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.junit)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
             }
         }
 
