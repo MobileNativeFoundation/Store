@@ -47,6 +47,16 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
+            }
+        }
+
         val jvmMain by getting
         val androidMain by getting
         val nativeMain by creating {
