@@ -19,13 +19,17 @@ import co.touchlab.kermit.CommonWriter
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.transform
 import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.store5.CacheType
@@ -73,6 +77,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         converter = converter
     )
 
+    private val writeRequestChannel = Channel<Pair<Key, Output>>()
+    private val localOnlyRequestChannel = Channel<Pair<Key, Output>>()
+
     @Suppress("UNCHECKED_CAST")
     override fun stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
@@ -96,7 +103,16 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 if (memCache == null) {
                     logger.w("Local-only request made with no cache or source of truth configured")
                 }
-                emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                if (cachedToEmit == null) {
+                    emit(StoreReadResponse.NoNewData(origin = StoreReadResponseOrigin.Cache))
+                }
+                emitAll(
+                    localOnlyRequestChannel.receiveAsFlow()
+                        .filter { it.first == request.key }
+                        .map {
+                            StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache)
+                        }
+                )
                 return@flow
             }
 
@@ -105,11 +121,18 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 val piggybackOnly = !request.refresh && cachedToEmit != null
                 @Suppress("UNCHECKED_CAST")
 
-                createNetworkFlow(
+                val networkFlow = createNetworkFlow(
                     request = request,
                     networkLock = null,
                     piggybackOnly = piggybackOnly
                 ) as Flow<StoreReadResponse<Output>> // when no source of truth Input == Output
+
+                merge(
+                    networkFlow,
+                    writeRequestChannel.receiveAsFlow()
+                        .filter { writeRequest -> writeRequest.first == request.key }
+                        .map { StoreReadResponse.Data(value = it.second, origin = StoreReadResponseOrigin.Cache) }
+                )
             } else if (request.fetch) {
                 diskNetworkCombined(request, sourceOfTruth)
             } else {
@@ -161,6 +184,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 it.dataOrNull()?.let { data ->
                     memCache?.put(request.key, data)
                 }
+            }
+            if (sourceOfTruth == null && request.fetch && it is StoreReadResponse.Data) {
+                localOnlyRequestChannel.trySend(request.key to it.value)
             }
         }
 
@@ -322,7 +348,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
     internal suspend fun write(key: Key, value: Output): StoreDelegateWriteResult = try {
         memCache?.put(key, value)
-        sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
+        if (sourceOfTruth != null) {
+            sourceOfTruth.write(key, converter.fromOutputToLocal(value))
+        } else {
+            writeRequestChannel.trySend(key to value)
+        }
         StoreDelegateWriteResult.Success
     } catch (error: Throwable) {
         StoreDelegateWriteResult.Error.Exception(error)
@@ -343,3 +373,4 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
         }
     }
 }
+

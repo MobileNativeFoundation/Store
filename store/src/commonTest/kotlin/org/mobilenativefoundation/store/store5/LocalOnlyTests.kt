@@ -1,7 +1,7 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.impl.extensions.get
@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 
 class LocalOnlyTests {
     private val testScope = TestScope()
@@ -25,8 +26,9 @@ class LocalOnlyTests {
                     .build()
             )
             .build()
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), response)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), awaitItem())
+        }
     }
 
     @Test
@@ -48,9 +50,10 @@ class LocalOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals("result", response.requireData())
-        assertEquals(1, fetcherHitCounter.value)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertEquals("result", awaitItem().requireData())
+            assertEquals(1, fetcherHitCounter.value)
+        }
     }
 
     @Test
@@ -73,9 +76,11 @@ class LocalOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), response)
-        assertEquals(1, fetcherHitCounter.value)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.Cache), awaitItem())
+            assertEquals(1, fetcherHitCounter.value)
+        }
+
     }
 
     @Test
@@ -88,8 +93,9 @@ class LocalOnlyTests {
             )
             .disableCache()
             .build()
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), response)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), awaitItem())
+        }
     }
 
     @Test
@@ -109,10 +115,12 @@ class LocalOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals("result", response.requireData())
-        assertEquals(StoreReadResponseOrigin.SourceOfTruth, response.origin)
-        assertEquals(1, fetcherHitCounter.value)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            val response = awaitItem()
+            assertEquals("result", response.requireData())
+            assertEquals(StoreReadResponseOrigin.SourceOfTruth, response.origin)
+            assertEquals(1, fetcherHitCounter.value)
+        }
     }
 
     @Test
@@ -134,9 +142,10 @@ class LocalOnlyTests {
         val a = store.get(0)
         assertEquals("result", a)
         assertEquals(1, fetcherHitCounter.value)
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), response)
-        assertEquals(1, fetcherHitCounter.value)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertEquals(StoreReadResponse.NoNewData(StoreReadResponseOrigin.SourceOfTruth), awaitItem())
+            assertEquals(1, fetcherHitCounter.value)
+        }
     }
 
     @Test
@@ -145,8 +154,41 @@ class LocalOnlyTests {
             .from(Fetcher.of { _: Int -> throw RuntimeException("Fetcher shouldn't be hit") })
             .disableCache()
             .build()
-        val response = store.stream(StoreReadRequest.localOnly(0)).first()
-        assertTrue(response is StoreReadResponse.NoNewData)
-        assertEquals(StoreReadResponseOrigin.Cache, response.origin)
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            val response = awaitItem()
+            assertTrue(response is StoreReadResponse.NoNewData)
+            assertEquals(StoreReadResponseOrigin.Cache, response.origin)
+        }
+    }
+
+    @Test
+    fun collectNewDataFromFetcher() = testScope.runTest {
+        val fetcherHitCounter = atomic(0)
+        val store = StoreBuilder
+            .from(
+                Fetcher.of { _: Int ->
+                    fetcherHitCounter += 1
+                    "result $fetcherHitCounter"
+                }
+            )
+            .cachePolicy(
+                MemoryPolicy
+                    .builder<Int, String>()
+                    .build()
+            )
+            .build()
+
+        store.stream(StoreReadRequest.localOnly(0)).test {
+            assertTrue(awaitItem() is StoreReadResponse.NoNewData)
+
+            assertEquals("result 1", store.fresh(0))
+            assertEquals("result 1", awaitItem().requireData())
+
+            assertEquals("result 2", store.fresh(0))
+            assertEquals("result 2", awaitItem().requireData())
+
+            // different key, not collected
+            assertEquals("result 3", store.fresh(1))
+        }
     }
 }
