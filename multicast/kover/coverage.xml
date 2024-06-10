@@ -549,11 +549,11 @@
 <class name="org/mobilenativefoundation/store/multicast5/StoreChannelManagerTests$cancelledDownstreamChannelShouldNotCancelOtherChannels$1$channelToBeCancelled$1$1" sourcefilename="StoreChannelManagerTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="27"/>
-<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="BRANCH" missed="1" covered="1"/>
 <counter type="LINE" missed="0" covered="2"/>
 </method>
 <counter type="INSTRUCTION" missed="0" covered="27"/>
-<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="BRANCH" missed="1" covered="1"/>
 <counter type="LINE" missed="0" covered="2"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
@@ -926,7 +926,7 @@
 <line nr="44" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="45" mi="0" ci="13" mb="0" cb="0"/>
 <line nr="45" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="46" mi="0" ci="22" mb="0" cb="2"/>
+<line nr="46" mi="0" ci="22" mb="1" cb="1"/>
 <line nr="46" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="47" mi="0" ci="10" mb="0" cb="0"/>
 <line nr="50" mi="0" ci="1" mb="0" cb="0"/>
@@ -952,7 +952,7 @@
 <line nr="72" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="76" mi="0" ci="17" mb="0" cb="0"/>
 <counter type="INSTRUCTION" missed="0" covered="420"/>
-<counter type="BRANCH" missed="2" covered="8"/>
+<counter type="BRANCH" missed="3" covered="7"/>
 <counter type="LINE" missed="0" covered="52"/>
 </sourcefile>
 <sourcefile name="Actor.kt">
@@ -974,13 +974,13 @@
 <counter type="LINE" missed="3" covered="10"/>
 </sourcefile>
 <counter type="INSTRUCTION" missed="691" covered="1270"/>
-<counter type="BRANCH" missed="59" covered="39"/>
+<counter type="BRANCH" missed="60" covered="38"/>
 <counter type="LINE" missed="110" covered="196"/>
 <counter type="METHOD" missed="27" covered="51"/>
 <counter type="CLASS" missed="9" covered="32"/>
 </package>
 <counter type="INSTRUCTION" missed="691" covered="1270"/>
-<counter type="BRANCH" missed="59" covered="39"/>
+<counter type="BRANCH" missed="60" covered="38"/>
 <counter type="LINE" missed="110" covered="196"/>
 <counter type="METHOD" missed="27" covered="51"/>
 <counter type="CLASS" missed="9" covered="32"/>
