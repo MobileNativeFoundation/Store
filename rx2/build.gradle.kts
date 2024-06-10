@@ -58,7 +58,7 @@ tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(17)
     }
 }
 
