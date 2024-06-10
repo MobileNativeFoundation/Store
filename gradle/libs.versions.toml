@@ -3,10 +3,10 @@ androidMinSdk = "24"
 androidCompileSdk = "33"
 androidGradlePlugin = "8.2.2"
 androidTargetSdk = "33"
-atomicFu = "0.23.2"
-baseKotlin = "1.9.22"
+atomicFu = "0.24.0"
+baseKotlin = "2.0.0"
 dokkaGradlePlugin = "1.9.10"
-ktlintGradle = "10.2.1"
+ktlintGradle = "12.1.0"
 jacocoGradlePlugin = "0.8.7"
 mavenPublishPlugin = "0.22.0"
 moleculeGradlePlugin = "1.2.1"
@@ -55,3 +55,6 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 turbine = "app.cash.turbine:turbine:1.0.0"
+
+[plugins]
+ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}

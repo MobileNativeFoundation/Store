@@ -1,0 +1,2545 @@
+<?xml version="1.0" ?>
+<report name="Intellij Coverage Report">
+<package name="org/mobilenativefoundation/store/cache5">
+<class name="org/mobilenativefoundation/store/cache5/Cache$DefaultImpls" sourcefilename="Cache.kt">
+<method name="getAllPresent" desc="(Lorg/mobilenativefoundation/store/cache5/Cache;)Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/CacheBuilder" sourcefilename="CacheBuilder.kt">
+<method name="getTicker$cache_release" desc="()Lkotlin/jvm/functions/Function0;">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="ticker" desc="(Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="0" covered="13"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="concurrencyLevel" desc="(Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="16" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="maximumSize" desc="(J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="5" covered="17"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="1" covered="4"/>
+</method>
+<method name="weigher" desc="(JLkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="5" covered="20"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="1" covered="5"/>
+</method>
+<method name="expireAfterAccess-LRDsOJo" desc="(J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="5" covered="16"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="1" covered="4"/>
+</method>
+<method name="expireAfterWrite-LRDsOJo" desc="(J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;">
+<counter type="INSTRUCTION" missed="5" covered="16"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="1" covered="4"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="34"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="7"/>
+</method>
+<method name="getWeigher$cache_release" desc="()Lkotlin/jvm/functions/Function2;">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="build" desc="()Lorg/mobilenativefoundation/store/cache5/Cache;">
+<counter type="INSTRUCTION" missed="5" covered="13"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="1" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="41" covered="133"/>
+<counter type="BRANCH" missed="5" covered="7"/>
+<counter type="LINE" missed="8" covered="31"/>
+<counter type="METHOD" missed="1" covered="9"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/CacheBuilder$Companion" sourcefilename="CacheBuilder.kt">
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/CacheTests" sourcefilename="CacheTests.kt">
+<method name="getOrPut" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="11"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="expireAfterWrite" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="maximumWeight" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="33"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<method name="getIfPresent" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="14"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="putAll" desc="()V">
+<counter type="INSTRUCTION" missed="57" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="getAllPresent" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="71"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="4"/>
+</method>
+<method name="invalidateAll" desc="()V">
+<counter type="INSTRUCTION" missed="44" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="5" covered="0"/>
+</method>
+<method name="invalidate" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="18"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="size" desc="()V">
+<counter type="INSTRUCTION" missed="20" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="expireAfterAccess" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="maximumSize" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="31"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="121" covered="206"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="10" covered="24"/>
+<counter type="METHOD" missed="3" covered="9"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/CacheTests$expireAfterAccess$1" sourcefilename="CacheTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="67"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="67"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/CacheTests$expireAfterWrite$1" sourcefilename="CacheTests.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="67"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="67"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="8"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache" sourcefilename="LocalCache.kt">
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="9" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="getAllPresent" desc="()Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="2" covered="35"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="0" covered="4"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/cache5/CacheBuilder;)V">
+<counter type="INSTRUCTION" missed="6" covered="237"/>
+<counter type="BRANCH" missed="4" covered="34"/>
+<counter type="LINE" missed="1" covered="44"/>
+</method>
+<method name="getRecordsTime" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getExpiresAfterWrite" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="createSegment" desc="(IJ)Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getUsesAccessEntries" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="hash" desc="(Ljava/lang/Object;)I">
+<counter type="INSTRUCTION" missed="0" covered="4"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="clear" desc="()V">
+<counter type="INSTRUCTION" missed="23" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="isExpired" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;J)Z">
+<counter type="INSTRUCTION" missed="0" covered="27"/>
+<counter type="BRANCH" missed="0" covered="8"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="getIfPresent" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getOrPut" desc="(Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="11"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getUsesWriteQueue" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="cleanUp" desc="()V">
+<counter type="INSTRUCTION" missed="23" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="getExpiresAfterAccess" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="remove" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getUsesAccessQueue" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="OneWeigher$lambda$3" desc="(Ljava/lang/Object;Ljava/lang/Object;)I">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getEvictsBySize" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getUsesWriteEntries" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="put" desc="(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="12"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getCustomWeigher" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="7"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getRecordsAccess" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="newValueReference" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Ljava/lang/Object;I)Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="12" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="&lt;clinit&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="newEntry" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="25" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+</method>
+<method name="getRecordsWrite" desc="()Z">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="segmentFor" desc="(I)Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;">
+<counter type="INSTRUCTION" missed="0" covered="13"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="100" covered="451"/>
+<counter type="BRANCH" missed="15" covered="67"/>
+<counter type="LINE" missed="15" covered="76"/>
+<counter type="METHOD" missed="5" covered="23"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$1" sourcefilename="LocalCache.kt">
+<method name="invoke" desc="()Ljava/lang/Long;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$AccessQueue" sourcefilename="LocalCache.kt">
+<method name="add" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="17"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="remove" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Z">
+<counter type="INSTRUCTION" missed="1" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<method name="clear" desc="()V">
+<counter type="INSTRUCTION" missed="27" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="7" covered="0"/>
+</method>
+<method name="contains" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Z">
+<counter type="INSTRUCTION" missed="1" covered="6"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="poll" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="5" covered="0"/>
+</method>
+<method name="isEmpty" desc="()Z">
+<counter type="INSTRUCTION" missed="9" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="peek" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="11"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="iterator" desc="()Ljava/util/Iterator;">
+<counter type="INSTRUCTION" missed="0" covered="7"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getSize" desc="()I">
+<counter type="INSTRUCTION" missed="16" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="68" covered="67"/>
+<counter type="BRANCH" missed="10" covered="4"/>
+<counter type="LINE" missed="19" covered="14"/>
+<counter type="METHOD" missed="4" covered="6"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$AccessQueue$head$1" sourcefilename="LocalCache.kt">
+<method name="setAccessTime" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="46"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="getAccessTime" desc="()J">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="1" covered="46"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="3"/>
+<counter type="METHOD" missed="2" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$AccessQueue$iterator$1" sourcefilename="LocalCache.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="14" covered="28"/>
+<counter type="BRANCH" missed="3" covered="1"/>
+<counter type="LINE" missed="2" covered="4"/>
+</method>
+<counter type="INSTRUCTION" missed="14" covered="28"/>
+<counter type="BRANCH" missed="3" covered="1"/>
+<counter type="LINE" missed="2" covered="4"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$AtomicLinkedQueue" sourcefilename="LocalCache.kt">
+<method name="poll" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="1" covered="22"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="1" covered="3"/>
+</method>
+<method name="add" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="8" covered="29"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="3" covered="6"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="15"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<counter type="INSTRUCTION" missed="9" covered="66"/>
+<counter type="BRANCH" missed="3" covered="5"/>
+<counter type="LINE" missed="4" covered="12"/>
+<counter type="METHOD" missed="0" covered="3"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$AtomicLinkedQueue$Node" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="13"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="13"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Companion" sourcefilename="LocalCache.kt">
+<method name="unset" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="0" covered="4"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="nullEntry" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="5"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="connectAccessOrder" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="rehash" desc="(I)I">
+<counter type="INSTRUCTION" missed="0" covered="43"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="7"/>
+</method>
+<method name="nullifyAccessOrder" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="connectWriteOrder" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="discardingQueue" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$MutableQueue;">
+<counter type="INSTRUCTION" missed="0" covered="4"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="nullifyWriteOrder" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="86"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="20"/>
+<counter type="METHOD" missed="0" covered="8"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Companion$DISCARDING_QUEUE$1" sourcefilename="LocalCache.kt">
+<method name="poll" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="1"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="clear" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="peek" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="1"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="add" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="remove" desc="(Ljava/lang/Object;)Z">
+<counter type="INSTRUCTION" missed="0" covered="1"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="isEmpty" desc="()Z">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="iterator" desc="()Ljava/util/Iterator;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="contains" desc="(Ljava/lang/Object;)Z">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getSize" desc="()I">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="11" covered="5"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="5" covered="5"/>
+<counter type="METHOD" missed="5" covered="5"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Companion$OneWeigher$1" sourcefilename="LocalCache.kt">
+<method name="invoke" desc="(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Integer;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Companion$UNSET$1" sourcefilename="LocalCache.kt">
+<method name="copyFor" desc="(Ljava/lang/Object;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="get" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="notifyNewValue" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="isActive" desc="()Z">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getWeight" desc="()I">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getEntry" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="6" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="5" covered="2"/>
+<counter type="METHOD" missed="5" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory" sourcefilename="LocalCache.kt">
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="copyWriteEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="17" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="4" covered="0"/>
+</method>
+<method name="&lt;clinit&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="21"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="copyAccessEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="17" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="4" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="42" covered="23"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="9" covered="2"/>
+<counter type="METHOD" missed="3" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory$Companion" sourcefilename="LocalCache.kt">
+<method name="getFactory" desc="(ZZ)Lorg/mobilenativefoundation/store/cache5/LocalCache$EntryFactory;">
+<counter type="INSTRUCTION" missed="0" covered="15"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="15"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory$Strong" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="newEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="7"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory$StrongAccess" sourcefilename="LocalCache.kt">
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="10" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="newEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="7"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="10" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="2"/>
+<counter type="METHOD" missed="1" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory$StrongAccessWrite" sourcefilename="LocalCache.kt">
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="4" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="newEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="21" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="5" covered="1"/>
+<counter type="METHOD" missed="2" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$EntryFactory$StrongWrite" sourcefilename="LocalCache.kt">
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="10" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="newEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="7"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="10" covered="10"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="2"/>
+<counter type="METHOD" missed="1" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$LocalManualCache" sourcefilename="LocalCache.kt">
+<method name="putAll" desc="(Ljava/util/Map;)V">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="invalidateAll" desc="(Ljava/util/List;)V">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getAllPresent" desc="()Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/cache5/CacheBuilder;)V">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="size" desc="()J">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getIfPresent" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="4"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getAllPresent" desc="(Ljava/util/List;)Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache;)V">
+<counter type="INSTRUCTION" missed="0" covered="5"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getOrPut" desc="(Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="5"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="put" desc="(Ljava/lang/Object;Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="invalidate" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="5"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="invalidateAll" desc="()V">
+<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="45" covered="43"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="4" covered="8"/>
+<counter type="METHOD" missed="4" covered="8"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$NullEntry" sourcefilename="LocalCache.kt">
+<method name="setAccessTime" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getPreviousInWriteQueue" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getNext" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setPreviousInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getAccessTime" desc="()J">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getWriteTime" desc="()J">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getKey" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getNextInWriteQueue" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getValueReference" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setNextInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getNextInAccessQueue" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setPreviousInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getPreviousInAccessQueue" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setWriteTime" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setValueReference" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getHash" desc="()I">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setNextInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="13" covered="4"/>
+<counter type="METHOD" missed="13" covered="4"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry$DefaultImpls" sourcefilename="LocalCache.kt">
+<method name="getNext" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getNextInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getNextInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getPreviousInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getWriteTime" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)J">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getPreviousInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setNextInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setPreviousInWriteQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setNextInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setWriteTime" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;J)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getHash" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)I">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setPreviousInAccessQueue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getValueReference" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setValueReference" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="setAccessTime" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;J)V">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getKey" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getAccessTime" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)J">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="68" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="17" covered="0"/>
+<counter type="METHOD" missed="17" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Segment" sourcefilename="LocalCache.kt">
+<method name="recordRead" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;J)V">
+<counter type="INSTRUCTION" missed="0" covered="11"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="preWriteCleanup" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="copyEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="29" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="7" covered="0"/>
+</method>
+<method name="tryExpireEntries" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<method name="getEntry" desc="(Ljava/lang/Object;I)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="8" covered="19"/>
+<counter type="BRANCH" missed="2" covered="4"/>
+<counter type="LINE" missed="3" covered="7"/>
+</method>
+<method name="recordLockedRead" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;J)V">
+<counter type="INSTRUCTION" missed="11" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="removeEntryFromChain" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="24" covered="17"/>
+<counter type="BRANCH" missed="5" covered="1"/>
+<counter type="LINE" missed="6" covered="6"/>
+</method>
+<method name="drainRecencyQueue" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="20"/>
+<counter type="BRANCH" missed="1" covered="3"/>
+<counter type="LINE" missed="0" covered="4"/>
+</method>
+<method name="put" desc="(Ljava/lang/Object;ILjava/lang/Object;Z)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="109" covered="102"/>
+<counter type="BRANCH" missed="11" covered="3"/>
+<counter type="LINE" missed="34" covered="21"/>
+</method>
+<method name="enqueueNotification" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;Lorg/mobilenativefoundation/store/cache5/RemovalCause;)V">
+<counter type="INSTRUCTION" missed="2" covered="21"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="clear" desc="()V">
+<counter type="INSTRUCTION" missed="94" covered="0"/>
+<counter type="BRANCH" missed="10" covered="0"/>
+<counter type="LINE" missed="20" covered="0"/>
+</method>
+<method name="expand" desc="()V">
+<counter type="INSTRUCTION" missed="68" covered="73"/>
+<counter type="BRANCH" missed="12" covered="6"/>
+<counter type="LINE" missed="20" covered="15"/>
+</method>
+<method name="postWriteCleanup" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="expireEntries" desc="(J)V">
+<counter type="INSTRUCTION" missed="9" covered="63"/>
+<counter type="BRANCH" missed="4" covered="12"/>
+<counter type="LINE" missed="2" covered="7"/>
+</method>
+<method name="removeEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;ILorg/mobilenativefoundation/store/cache5/RemovalCause;)Z">
+<counter type="INSTRUCTION" missed="5" covered="62"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="2" covered="19"/>
+</method>
+<method name="postReadCleanup" desc="()V">
+<counter type="INSTRUCTION" missed="2" covered="6"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="1" covered="1"/>
+</method>
+<method name="setValue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Ljava/lang/Object;Ljava/lang/Object;J)V">
+<counter type="INSTRUCTION" missed="6" covered="35"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="0" covered="6"/>
+</method>
+<method name="removeValueFromChain" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;Lorg/mobilenativefoundation/store/cache5/RemovalCause;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="20"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="4"/>
+</method>
+<method name="evictEntries" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="15" covered="32"/>
+<counter type="BRANCH" missed="4" covered="6"/>
+<counter type="LINE" missed="3" covered="6"/>
+</method>
+<method name="getNextEvictable" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="4" covered="20"/>
+<counter type="BRANCH" missed="2" covered="2"/>
+<counter type="LINE" missed="1" covered="4"/>
+</method>
+<method name="cleanUp" desc="()V">
+<counter type="INSTRUCTION" missed="12" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="runUnlockedCleanup" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache;IJ)V">
+<counter type="INSTRUCTION" missed="8" covered="90"/>
+<counter type="BRANCH" missed="1" covered="9"/>
+<counter type="LINE" missed="1" covered="14"/>
+</method>
+<method name="activeEntries" desc="()Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="6" covered="88"/>
+<counter type="BRANCH" missed="5" covered="11"/>
+<counter type="LINE" missed="0" covered="14"/>
+</method>
+<method name="getFirst" desc="(I)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="13"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getLiveEntry" desc="(Ljava/lang/Object;IJ)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="19"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="7"/>
+</method>
+<method name="enqueueNotification" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Lorg/mobilenativefoundation/store/cache5/RemovalCause;)V">
+<counter type="INSTRUCTION" missed="9" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="remove" desc="(Ljava/lang/Object;I)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="14" covered="121"/>
+<counter type="BRANCH" missed="6" covered="4"/>
+<counter type="LINE" missed="6" covered="32"/>
+</method>
+<method name="getOrPut" desc="(Ljava/lang/Object;ILkotlin/jvm/functions/Function0;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="32" covered="41"/>
+<counter type="BRANCH" missed="7" covered="1"/>
+<counter type="LINE" missed="6" covered="9"/>
+</method>
+<method name="runLockedCleanup" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="22"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="6"/>
+</method>
+<method name="get" desc="(Ljava/lang/Object;I)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="2" covered="55"/>
+<counter type="BRANCH" missed="2" covered="6"/>
+<counter type="LINE" missed="0" covered="11"/>
+</method>
+<method name="newEntry" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="removeCollectedEntry" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="recordWrite" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;IJ)V">
+<counter type="INSTRUCTION" missed="0" covered="31"/>
+<counter type="BRANCH" missed="0" covered="4"/>
+<counter type="LINE" missed="0" covered="8"/>
+</method>
+<counter type="INSTRUCTION" missed="483" covered="1012"/>
+<counter type="BRANCH" missed="86" covered="86"/>
+<counter type="LINE" missed="122" covered="218"/>
+<counter type="METHOD" missed="6" covered="28"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$SegmentTable" sourcefilename="LocalCache.kt">
+<method name="set" desc="(ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="get" desc="(I)Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="6"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="&lt;init&gt;" desc="(I)V">
+<counter type="INSTRUCTION" missed="0" covered="12"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="24"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="4"/>
+<counter type="METHOD" missed="0" covered="3"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Strength" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$Strength$Strong" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="3"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="referenceValue" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$Segment;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;Ljava/lang/Object;I)Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="0" covered="15"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="18"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="6"/>
+<counter type="METHOD" missed="0" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$StrongAccessEntry" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$StrongAccessWriteEntry" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="69" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="9" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="69" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="9" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$StrongEntry" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="63"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="6"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="63"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="6"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$StrongValueReference" sourcefilename="LocalCache.kt">
+<method name="copyFor" desc="(Ljava/lang/Object;Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Lorg/mobilenativefoundation/store/cache5/LocalCache$ValueReference;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="get" desc="()Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="0" covered="2"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="notifyNewValue" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;)V">
+<counter type="INSTRUCTION" missed="0" covered="15"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="getEntry" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="2" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="17"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="4"/>
+<counter type="METHOD" missed="3" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$StrongWriteEntry" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;ILorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="37"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$WeightedStrongValueReference" sourcefilename="LocalCache.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/Object;I)V">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+<counter type="METHOD" missed="0" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$WriteQueue" sourcefilename="LocalCache.kt">
+<method name="add" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)V">
+<counter type="INSTRUCTION" missed="0" covered="17"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="remove" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Z">
+<counter type="INSTRUCTION" missed="1" covered="18"/>
+<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<method name="clear" desc="()V">
+<counter type="INSTRUCTION" missed="27" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="7" covered="0"/>
+</method>
+<method name="contains" desc="(Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;)Z">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="poll" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="5" covered="0"/>
+</method>
+<method name="isEmpty" desc="()Z">
+<counter type="INSTRUCTION" missed="9" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="peek" desc="()Lorg/mobilenativefoundation/store/cache5/LocalCache$ReferenceEntry;">
+<counter type="INSTRUCTION" missed="0" covered="11"/>
+<counter type="BRANCH" missed="0" covered="2"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="iterator" desc="()Ljava/util/Iterator;">
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="8"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="2"/>
+</method>
+<method name="getSize" desc="()I">
+<counter type="INSTRUCTION" missed="16" covered="0"/>
+<counter type="BRANCH" missed="2" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="81" covered="54"/>
+<counter type="BRANCH" missed="11" covered="3"/>
+<counter type="LINE" missed="21" covered="12"/>
+<counter type="METHOD" missed="6" covered="4"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$WriteQueue$head$1" sourcefilename="LocalCache.kt">
+<method name="setWriteTime" desc="(J)V">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="46"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="3"/>
+</method>
+<method name="getWriteTime" desc="()J">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="1" covered="46"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="3"/>
+<counter type="METHOD" missed="2" covered="1"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/LocalCache$WriteQueue$iterator$1" sourcefilename="LocalCache.kt">
+<method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
+<counter type="INSTRUCTION" missed="42" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="42" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/MonotonicTickerKt" sourcefilename="MonotonicTicker.kt">
+<method name="getMonotonicTicker" desc="()Lkotlin/jvm/functions/Function0;">
+<counter type="INSTRUCTION" missed="1" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="MonotonicTicker$lambda$1$lambda$0" desc="(J)J">
+<counter type="INSTRUCTION" missed="10" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="11" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+<counter type="METHOD" missed="2" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/MonotonicTickerKt$MonotonicTicker$1$1" sourcefilename="MonotonicTicker.kt">
+<method name="invoke" desc="()Ljava/lang/Long;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/RemovalCause" sourcefilename="RemovalCause.kt">
+<method name="&lt;init&gt;" desc="(Ljava/lang/String;IZ)V">
+<counter type="INSTRUCTION" missed="0" covered="9"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="1"/>
+</method>
+<method name="getEntries" desc="()Lkotlin/enums/EnumEntries;">
+<counter type="INSTRUCTION" missed="0" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="&lt;clinit&gt;" desc="()V">
+<counter type="INSTRUCTION" missed="0" covered="41"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="0" covered="5"/>
+</method>
+<counter type="INSTRUCTION" missed="0" covered="50"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="6"/>
+<counter type="METHOD" missed="1" covered="2"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/StoreMultiCache" sourcefilename="StoreMultiCache.kt">
+<method name="castCollection" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;)Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="putAll" desc="(Ljava/util/Map;)V">
+<counter type="INSTRUCTION" missed="18" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getAllPresent" desc="()Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="38" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="6" covered="0"/>
+</method>
+<method name="invalidateAll" desc="()V">
+<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getOrPut" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/core5/StoreData;">
+<counter type="INSTRUCTION" missed="73" covered="0"/>
+<counter type="BRANCH" missed="12" covered="0"/>
+<counter type="LINE" missed="16" covered="0"/>
+</method>
+<method name="cast" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;)Lorg/mobilenativefoundation/store/core5/StoreKey;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="castSingle" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;)Lorg/mobilenativefoundation/store/core5/StoreKey$Single;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="invalidateAll" desc="(Ljava/util/List;)V">
+<counter type="INSTRUCTION" missed="8" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="invalidate" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;)V">
+<counter type="INSTRUCTION" missed="23" covered="0"/>
+<counter type="BRANCH" missed="4" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/core5/KeyProvider;Lorg/mobilenativefoundation/store/cache5/Cache;Lorg/mobilenativefoundation/store/cache5/Cache;)V">
+<counter type="INSTRUCTION" missed="35" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="7" covered="0"/>
+</method>
+<method name="cast" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Single;)Lorg/mobilenativefoundation/store/core5/StoreKey;">
+<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getIfPresent" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;)Lorg/mobilenativefoundation/store/core5/StoreData;">
+<counter type="INSTRUCTION" missed="45" covered="0"/>
+<counter type="BRANCH" missed="8" covered="0"/>
+<counter type="LINE" missed="4" covered="0"/>
+</method>
+<method name="size" desc="()J">
+<counter type="INSTRUCTION" missed="3" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<method name="getAllPresent" desc="(Ljava/util/List;)Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="76" covered="0"/>
+<counter type="BRANCH" missed="8" covered="0"/>
+<counter type="LINE" missed="11" covered="0"/>
+</method>
+<method name="put" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey;Lorg/mobilenativefoundation/store/core5/StoreData;)V">
+<counter type="INSTRUCTION" missed="108" covered="0"/>
+<counter type="BRANCH" missed="12" covered="0"/>
+<counter type="LINE" missed="23" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="450" covered="0"/>
+<counter type="BRANCH" missed="48" covered="0"/>
+<counter type="LINE" missed="78" covered="0"/>
+<counter type="METHOD" missed="15" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/StoreMultiCache$Companion" sourcefilename="StoreMultiCache.kt">
+<method name="invalidKeyErrorMessage" desc="(Ljava/lang/Object;)Ljava/lang/String;">
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="4" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
+</class>
+<class name="org/mobilenativefoundation/store/cache5/StoreMultiCacheAccessor" sourcefilename="StoreMultiCacheAccessor.kt">
+<method name="invalidateCollection" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;)Z">
+<counter type="INSTRUCTION" missed="25" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="putSingle" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Single;Lorg/mobilenativefoundation/store/core5/StoreData$Single;)Z">
+<counter type="INSTRUCTION" missed="26" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="&lt;init&gt;" desc="(Lorg/mobilenativefoundation/store/cache5/Cache;Lorg/mobilenativefoundation/store/cache5/Cache;)V">
+<counter type="INSTRUCTION" missed="14" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="4" covered="0"/>
+</method>
+<method name="getAllPresent" desc="()Ljava/util/Map;">
+<counter type="INSTRUCTION" missed="70" covered="0"/>
+<counter type="BRANCH" missed="10" covered="0"/>
+<counter type="LINE" missed="13" covered="0"/>
+</method>
+<method name="invalidateSingle" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Single;)Z">
+<counter type="INSTRUCTION" missed="25" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<method name="size" desc="()J">
+<counter type="INSTRUCTION" missed="68" covered="0"/>
+<counter type="BRANCH" missed="10" covered="0"/>
+<counter type="LINE" missed="13" covered="0"/>
+</method>
+<method name="getCollection" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;)Lorg/mobilenativefoundation/store/core5/StoreData$Collection;">
+<counter type="INSTRUCTION" missed="22" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="invalidateAll" desc="()V">
+<counter type="INSTRUCTION" missed="27" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="5" covered="0"/>
+</method>
+<method name="getSingle" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Single;)Lorg/mobilenativefoundation/store/core5/StoreData$Single;">
+<counter type="INSTRUCTION" missed="22" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="2" covered="0"/>
+</method>
+<method name="putCollection" desc="(Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;Lorg/mobilenativefoundation/store/core5/StoreData$Collection;)Z">
+<counter type="INSTRUCTION" missed="26" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</method>
+<counter type="INSTRUCTION" missed="325" covered="0"/>
+<counter type="BRANCH" missed="20" covered="0"/>
+<counter type="LINE" missed="51" covered="0"/>
+<counter type="METHOD" missed="10" covered="0"/>
+</class>
+<sourcefile name="RemovalCause.kt">
+<line nr="9" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="10" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="11" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="12" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="13" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="14" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="15" mi="0" ci="0" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="0" covered="50"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="6"/>
+</sourcefile>
+<sourcefile name="LocalCache.kt">
+<line nr="30" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="52" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="84" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="86" mi="0" ci="7" mb="0" cb="2"/>
+<line nr="88" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="90" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="92" mi="0" ci="9" mb="0" cb="4"/>
+<line nr="94" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="96" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="98" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="100" mi="0" ci="9" mb="0" cb="4"/>
+<line nr="102" mi="0" ci="9" mb="1" cb="3"/>
+<line nr="104" mi="0" ci="9" mb="1" cb="3"/>
+<line nr="106" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="111" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="118" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="119" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="121" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="122" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="123" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="143" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="144" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="151" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="155" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="162" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="170" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="171" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="172" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="176" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="183" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="191" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="192" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="193" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="197" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="204" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="212" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="213" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="214" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="215" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="246" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="256" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="257" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="258" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="259" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="269" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="270" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="271" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="272" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="285" mi="0" ci="21" mb="0" cb="0"/>
+<line nr="291" mi="0" ci="12" mb="0" cb="4"/>
+<line nr="292" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="371" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="372" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="378" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="384" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="390" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="403" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="404" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="412" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="413" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="421" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="422" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="435" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="436" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="444" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="445" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="453" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="454" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="459" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="460" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="463" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="466" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="469" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="472" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="473" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="476" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="477" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="480" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="481" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="484" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="485" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="488" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="489" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="492" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="493" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="507" mi="0" ci="32" mb="0" cb="0"/>
+<line nr="508" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="509" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="510" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="512" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="513" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="521" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="524" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="525" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="528" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="531" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="539" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="541" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="542" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="545" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="548" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="556" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="558" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="559" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="562" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="565" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="568" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="569" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="572" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="575" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="581" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="583" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="585" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="586" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="591" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="593" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="595" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="603" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="605" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="616" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="617" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="618" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="619" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="621" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="622" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="633" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="634" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="646" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="647" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="650" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="660" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="665" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="675" mi="0" ci="11" mb="0" cb="4"/>
+<line nr="676" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="678" mi="0" ci="14" mb="0" cb="4"/>
+<line nr="683" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="684" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="686" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="692" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="699" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="700" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="702" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="736" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="741" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="778" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="796" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="806" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="807" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="808" mi="5" ci="0" mb="4" cb="0"/>
+<line nr="810" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="812" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="813" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="814" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="826" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="827" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="828" mi="5" ci="2" mb="1" cb="1"/>
+<line nr="829" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="830" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="831" mi="1" ci="6" mb="1" cb="1"/>
+<line nr="849" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="850" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="852" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="868" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="869" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="871" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="884" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="885" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="886" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="887" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="889" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="890" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="892" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="893" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="903" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="904" mi="0" ci="9" mb="0" cb="2"/>
+<line nr="909" mi="0" ci="5" mb="1" cb="1"/>
+<line nr="910" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="920" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="921" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="922" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="924" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="926" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="931" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="932" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="933" mi="1" ci="22" mb="2" cb="4"/>
+<line nr="934" mi="0" ci="7" mb="1" cb="1"/>
+<line nr="935" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="939" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="940" mi="0" ci="23" mb="0" cb="6"/>
+<line nr="941" mi="0" ci="7" mb="1" cb="1"/>
+<line nr="942" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="952" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="961" mi="2" ci="14" mb="1" cb="1"/>
+<line nr="962" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="963" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="973" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="976" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="980" mi="0" ci="10" mb="1" cb="1"/>
+<line nr="981" mi="7" ci="0" mb="2" cb="0"/>
+<line nr="982" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="985" mi="0" ci="6" mb="0" cb="2"/>
+<line nr="986" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="987" mi="0" ci="7" mb="1" cb="1"/>
+<line nr="988" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="997" mi="0" ci="11" mb="1" cb="1"/>
+<line nr="998" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="999" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1000" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1003" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1011" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1012" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="1020" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1021" mi="0" ci="2" mb="0" cb="2"/>
+<line nr="1022" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="1023" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1024" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1026" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1027" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="1028" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1030" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1032" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1040" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1041" mi="0" ci="2" mb="0" cb="2"/>
+<line nr="1042" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1043" mi="0" ci="6" mb="0" cb="2"/>
+<line nr="1044" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1045" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1047" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1059" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1060" mi="0" ci="4" mb="0" cb="2"/>
+<line nr="1061" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1062" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="1063" mi="2" ci="7" mb="1" cb="1"/>
+<line nr="1064" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1065" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1066" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1069" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1071" mi="0" ci="14" mb="0" cb="0"/>
+<line nr="1072" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1080" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1081" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1082" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="1083" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="1084" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1085" mi="11" ci="0" mb="4" cb="0"/>
+<line nr="1086" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1087" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1088" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1091" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1092" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1093" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1095" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1096" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1097" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1106" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1107" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1108" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1109" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1110" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="1111" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1113" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1114" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1115" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1118" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1119" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1120" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1121" mi="8" ci="0" mb="4" cb="0"/>
+<line nr="1123" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1124" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1125" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1126" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1127" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="1128" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1129" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="1130" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1131" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1132" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1133" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1134" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1136" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1137" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1139" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1140" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1142" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1143" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1144" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1147" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1151" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1152" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1157" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="1158" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1159" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1160" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1161" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1162" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1164" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1165" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1166" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1170" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1174" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1175" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1176" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1177" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1178" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1179" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1180" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1182" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1183" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1184" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1191" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1192" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1193" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1194" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1195" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1196" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1197" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1198" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1199" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1200" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1201" mi="0" ci="8" mb="2" cb="2"/>
+<line nr="1202" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1203" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1204" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1205" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1206" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1207" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1210" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="1211" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1216" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1219" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1220" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1221" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1222" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1223" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1224" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1225" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1226" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1227" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1229" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1230" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1231" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1232" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1234" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1236" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1238" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="1239" mi="0" ci="13" mb="0" cb="0"/>
+<line nr="1240" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1244" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1245" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1246" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1247" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1248" mi="10" ci="0" mb="2" cb="0"/>
+<line nr="1249" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1250" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1252" mi="6" ci="0" mb="2" cb="0"/>
+<line nr="1253" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1255" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1258" mi="10" ci="0" mb="2" cb="0"/>
+<line nr="1259" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1261" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1262" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1263" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1264" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="1265" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1267" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="1268" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1269" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1277" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1278" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1279" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="1292" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1293" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1294" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="1295" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1296" mi="0" ci="7" mb="0" cb="2"/>
+<line nr="1299" mi="0" ci="8" mb="0" cb="2"/>
+<line nr="1301" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1302" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1305" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1306" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1311" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1312" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1313" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1314" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1315" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1316" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="1318" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1319" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1321" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1323" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1326" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1327" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="1328" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1329" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1330" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1331" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1332" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1334" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1335" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1337" mi="8" ci="0" mb="2" cb="0"/>
+<line nr="1341" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1342" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1353" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1354" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1355" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1356" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1363" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1364" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1365" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1366" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="1367" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1368" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1369" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1371" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1372" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1374" mi="8" ci="0" mb="2" cb="0"/>
+<line nr="1376" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1377" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1381" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1382" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1383" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1391" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1392" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1393" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1394" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1396" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1397" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="1398" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1399" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1400" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1401" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1402" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1403" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1404" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1405" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1406" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1408" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1409" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1410" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1411" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1413" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1415" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1423" mi="0" ci="6" mb="1" cb="1"/>
+<line nr="1424" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1437" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1444" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1448" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="1449" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1450" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1454" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="1455" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1456" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1457" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1459" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1460" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1469" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1473" mi="0" ci="5" mb="0" cb="2"/>
+<line nr="1474" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1475" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1476" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1477" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1478" mi="0" ci="10" mb="0" cb="2"/>
+<line nr="1479" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1480" mi="0" ci="2" mb="0" cb="2"/>
+<line nr="1481" mi="4" ci="10" mb="3" cb="3"/>
+<line nr="1482" mi="2" ci="19" mb="1" cb="1"/>
+<line nr="1484" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1487" mi="0" ci="9" mb="1" cb="1"/>
+<line nr="1489" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1490" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1493" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1494" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1495" mi="0" ci="11" mb="1" cb="3"/>
+<line nr="1497" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="1499" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1500" mi="0" ci="14" mb="0" cb="2"/>
+<line nr="1501" mi="0" ci="13" mb="0" cb="2"/>
+<line nr="1502" mi="0" ci="13" mb="0" cb="2"/>
+<line nr="1503" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1527" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1528" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1529" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1531" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1532" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1536" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1537" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1538" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1539" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1540" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="1541" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1543" mi="0" ci="6" mb="1" cb="1"/>
+<line nr="1544" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1547" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1551" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1552" mi="0" ci="9" mb="0" cb="2"/>
+<line nr="1553" mi="0" ci="8" mb="1" cb="1"/>
+<line nr="1554" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1573" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1575" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1575" mi="0" ci="28" mb="0" cb="0"/>
+<line nr="1577" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1578" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1579" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1580" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1586" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1589" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1590" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1594" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1595" mi="0" ci="7" mb="0" cb="2"/>
+<line nr="1599" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1600" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1601" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1603" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1604" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1608" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1609" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1610" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1611" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1612" mi="1" ci="5" mb="1" cb="1"/>
+<line nr="1615" mi="7" ci="0" mb="2" cb="0"/>
+<line nr="1617" mi="9" ci="0" mb="2" cb="0"/>
+<line nr="1621" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1622" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1623" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1624" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1625" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1627" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1631" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1632" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1633" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1634" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1635" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1637" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1638" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1642" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="1642" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1643" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1644" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="1645" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="1646" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1647" mi="10" ci="0" mb="2" cb="0"/>
+<line nr="1667" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1669" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1669" mi="0" ci="28" mb="0" cb="0"/>
+<line nr="1671" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1672" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1673" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1674" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1680" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1683" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1684" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1688" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1689" mi="0" ci="7" mb="0" cb="2"/>
+<line nr="1693" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1694" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1695" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1697" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1698" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1702" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1703" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1704" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1705" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1706" mi="1" ci="5" mb="1" cb="1"/>
+<line nr="1709" mi="1" ci="6" mb="1" cb="1"/>
+<line nr="1711" mi="9" ci="0" mb="2" cb="0"/>
+<line nr="1715" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1716" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1717" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1718" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1719" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1721" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1725" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1726" mi="4" ci="0" mb="2" cb="0"/>
+<line nr="1727" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1728" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1729" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1731" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1732" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="1736" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1736" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1737" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1738" mi="0" ci="2" mb="1" cb="1"/>
+<line nr="1739" mi="0" ci="17" mb="0" cb="0"/>
+<line nr="1740" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="1741" mi="10" ci="0" mb="2" cb="0"/>
+<line nr="1748" mi="17" ci="0" mb="2" cb="0"/>
+<line nr="1749" mi="6" ci="0" mb="2" cb="0"/>
+<line nr="1755" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1756" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1763" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1764" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="1771" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1772" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="1776" mi="17" ci="0" mb="2" cb="0"/>
+<line nr="1777" mi="6" ci="0" mb="2" cb="0"/>
+<line nr="1782" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1783" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1787" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="1788" mi="0" ci="17" mb="0" cb="2"/>
+<line nr="1789" mi="2" ci="9" mb="1" cb="1"/>
+<line nr="1791" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1795" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1797" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1801" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1808" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1812" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1819" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1823" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="1827" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1831" mi="14" ci="0" mb="0" cb="0"/>
+<line nr="1835" mi="14" ci="0" mb="0" cb="0"/>
+<line nr="1839" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="1843" mi="14" ci="0" mb="0" cb="0"/>
+<line nr="1874" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1874" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1903" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1903" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1905" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1909" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1911" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1917" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1921" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1923" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1930" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1933" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1936" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1936" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1937" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1939" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1941" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1943" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="1945" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="1947" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1949" mi="0" ci="0" mb="0" cb="0"/>
+<line nr="1951" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="1953" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="1960" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="1974" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="1975" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="1976" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1977" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1978" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="1979" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="1980" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="1989" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1990" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1995" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1996" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="1997" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2005" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2006" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2011" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2012" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2013" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="2020" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="2021" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2022" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="2023" mi="2" ci="12" mb="2" cb="2"/>
+<line nr="2024" mi="0" ci="6" mb="0" cb="2"/>
+<line nr="2025" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2027" mi="0" ci="14" mb="0" cb="2"/>
+<line nr="2029" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2030" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="2031" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="2033" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2034" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="2035" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="2037" mi="3" ci="11" mb="1" cb="3"/>
+<line nr="2037" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="2038" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="2039" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2040" mi="0" ci="6" mb="0" cb="4"/>
+<line nr="2041" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="2043" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2049" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2050" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2051" mi="0" ci="14" mb="0" cb="6"/>
+<line nr="2052" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="2053" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2055" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2056" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2057" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="2058" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="2059" mi="0" ci="5" mb="1" cb="1"/>
+<line nr="2060" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="2062" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="2063" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="2064" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="2066" mi="0" ci="3" mb="0" cb="2"/>
+<line nr="2068" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="2069" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="2070" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="2071" mi="0" ci="5" mb="0" cb="2"/>
+<line nr="2072" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="2074" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="2077" mi="0" ci="11" mb="0" cb="2"/>
+<line nr="2078" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="2081" mi="0" ci="1" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="1103" covered="2196"/>
+<counter type="BRANCH" missed="132" covered="172"/>
+<counter type="LINE" missed="271" covered="427"/>
+</sourcefile>
+<sourcefile name="StoreMultiCacheAccessor.kt">
+<line nr="24" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="25" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="26" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="27" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="38" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="39" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="51" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="52" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="61" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="62" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="63" mi="11" ci="0" mb="2" cb="0"/>
+<line nr="64" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="65" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="66" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="67" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="68" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="72" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="73" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="74" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="75" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="80" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="94" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="95" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="96" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="110" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="111" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="112" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="121" mi="16" ci="0" mb="0" cb="0"/>
+<line nr="122" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="123" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="124" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="125" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="135" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="136" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="137" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="148" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="149" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="150" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="161" mi="17" ci="0" mb="0" cb="0"/>
+<line nr="162" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="163" mi="11" ci="0" mb="2" cb="0"/>
+<line nr="164" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="165" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="166" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="167" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="168" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="172" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="173" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="174" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="175" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="180" mi="1" ci="0" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="325" covered="0"/>
+<counter type="BRANCH" missed="20" covered="0"/>
+<counter type="LINE" missed="51" covered="0"/>
+</sourcefile>
+<sourcefile name="Cache.kt">
+<line nr="31" mi="7" ci="0" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="7" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+</sourcefile>
+<sourcefile name="CacheTests.kt">
+<line nr="9" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="10" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="14" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="15" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="20" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="25" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="26" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="27" mi="0" ci="37" mb="0" cb="0"/>
+<line nr="28" mi="0" ci="24" mb="0" cb="0"/>
+<line nr="34" mi="20" ci="0" mb="0" cb="0"/>
+<line nr="35" mi="37" ci="0" mb="0" cb="0"/>
+<line nr="40" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="41" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="42" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="48" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="49" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="50" mi="16" ci="0" mb="0" cb="0"/>
+<line nr="51" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="52" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="58" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="59" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="60" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="65" mi="0" ci="7" mb="0" cb="0"/>
+<line nr="66" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="67" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="68" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="69" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="74" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="75" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="76" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="77" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="78" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="83" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="83" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="84" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="85" mi="0" ci="16" mb="0" cb="0"/>
+<line nr="86" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="88" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="89" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="91" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="92" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="97" mi="0" ci="10" mb="0" cb="0"/>
+<line nr="97" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="98" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="99" mi="0" ci="16" mb="0" cb="0"/>
+<line nr="100" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="102" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="103" mi="0" ci="8" mb="0" cb="0"/>
+<line nr="105" mi="0" ci="11" mb="0" cb="0"/>
+<line nr="106" mi="0" ci="8" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="121" covered="340"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="10" covered="40"/>
+</sourcefile>
+<sourcefile name="MonotonicTicker.kt">
+<line nr="6" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="7" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="7" mi="5" ci="0" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="16" covered="0"/>
+<counter type="BRANCH" missed="0" covered="0"/>
+<counter type="LINE" missed="3" covered="0"/>
+</sourcefile>
+<sourcefile name="StoreMultiCache.kt">
+<line nr="15" mi="15" ci="0" mb="0" cb="0"/>
+<line nr="16" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="17" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="18" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="21" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="22" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="23" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="26" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="28" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="30" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="32" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="35" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="36" mi="18" ci="0" mb="4" cb="0"/>
+<line nr="37" mi="18" ci="0" mb="4" cb="0"/>
+<line nr="39" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="48" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="49" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="50" mi="15" ci="0" mb="2" cb="0"/>
+<line nr="51" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="52" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="55" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="56" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="60" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="61" mi="15" ci="0" mb="2" cb="0"/>
+<line nr="62" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="63" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="65" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="66" mi="4" ci="0" mb="0" cb="0"/>
+<line nr="67" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="72" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="78" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="79" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="80" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="81" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="82" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="83" mi="21" ci="0" mb="2" cb="0"/>
+<line nr="86" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="87" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="88" mi="20" ci="0" mb="2" cb="0"/>
+<line nr="91" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="93" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="97" mi="10" ci="0" mb="0" cb="0"/>
+<line nr="98" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="99" mi="8" ci="0" mb="2" cb="0"/>
+<line nr="100" mi="8" ci="0" mb="2" cb="0"/>
+<line nr="101" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="102" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="107" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="111" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="112" mi="11" ci="0" mb="2" cb="0"/>
+<line nr="113" mi="10" ci="0" mb="2" cb="0"/>
+<line nr="118" mi="18" ci="0" mb="0" cb="0"/>
+<line nr="125" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="126" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="127" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="128" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="130" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="131" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="132" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="133" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="134" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="135" mi="6" ci="0" mb="2" cb="0"/>
+<line nr="136" mi="2" ci="0" mb="0" cb="0"/>
+<line nr="138" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="139" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="141" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="142" mi="7" ci="0" mb="0" cb="0"/>
+<line nr="146" mi="3" ci="0" mb="2" cb="0"/>
+<line nr="147" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="148" mi="8" ci="0" mb="0" cb="0"/>
+<line nr="150" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="151" mi="7" ci="0" mb="2" cb="0"/>
+<line nr="152" mi="2" ci="0" mb="2" cb="0"/>
+<line nr="153" mi="12" ci="0" mb="0" cb="0"/>
+<line nr="155" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="161" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="165" mi="3" ci="0" mb="0" cb="0"/>
+<line nr="169" mi="4" ci="0" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="454" covered="0"/>
+<counter type="BRANCH" missed="48" covered="0"/>
+<counter type="LINE" missed="79" covered="0"/>
+</sourcefile>
+<sourcefile name="CacheBuilder.kt">
+<line nr="5" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="6" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="8" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="9" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="11" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="13" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="15" mi="0" ci="6" mb="0" cb="0"/>
+<line nr="17" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="19" mi="0" ci="2" mb="0" cb="0"/>
+<line nr="23" mi="9" ci="0" mb="0" cb="0"/>
+<line nr="24" mi="6" ci="0" mb="0" cb="0"/>
+<line nr="25" mi="1" ci="0" mb="0" cb="0"/>
+<line nr="28" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="29" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="30" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="32" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="33" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="36" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="37" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="38" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="40" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="41" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="44" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="45" mi="0" ci="3" mb="1" cb="1"/>
+<line nr="46" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="48" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="49" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="52" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="53" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="54" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="60" mi="0" ci="9" mb="0" cb="0"/>
+<line nr="61" mi="0" ci="4" mb="1" cb="1"/>
+<line nr="62" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="65" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="66" mi="0" ci="3" mb="0" cb="0"/>
+<line nr="67" mi="0" ci="1" mb="0" cb="0"/>
+<line nr="70" mi="0" ci="8" mb="1" cb="3"/>
+<line nr="71" mi="5" ci="0" mb="0" cb="0"/>
+<line nr="73" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="76" mi="0" ci="2" mb="0" cb="0"/>
+<counter type="INSTRUCTION" missed="41" covered="135"/>
+<counter type="BRANCH" missed="5" covered="7"/>
+<counter type="LINE" missed="8" covered="32"/>
+</sourcefile>
+<counter type="INSTRUCTION" missed="2067" covered="2721"/>
+<counter type="BRANCH" missed="205" covered="179"/>
+<counter type="LINE" missed="424" covered="505"/>
+<counter type="METHOD" missed="118" covered="140"/>
+<counter type="CLASS" missed="11" covered="34"/>
+</package>
+<counter type="INSTRUCTION" missed="2067" covered="2721"/>
+<counter type="BRANCH" missed="205" covered="179"/>
+<counter type="LINE" missed="424" covered="505"/>
+<counter type="METHOD" missed="118" covered="140"/>
+<counter type="CLASS" missed="11" covered="34"/>
+</report>
+

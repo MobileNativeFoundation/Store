@@ -15,26 +15,28 @@ class StoreWithInMemoryCacheTests {
     private val testScope = TestScope()
 
     @Test
-    fun storeRequestsCanCompleteWhenInMemoryCacheWithAccessExpiryIsAtTheMaximumSize() = testScope.runTest {
-        val store = StoreBuilder
-            .from(Fetcher.of { _: Int -> "result" })
-            .cachePolicy(
-                MemoryPolicy
-                    .builder<Any, Any>()
-                    .setExpireAfterAccess(1.hours)
-                    .setMaxSize(1)
+    fun storeRequestsCanCompleteWhenInMemoryCacheWithAccessExpiryIsAtTheMaximumSize() =
+        testScope.runTest {
+            val store =
+                StoreBuilder
+                    .from(Fetcher.of { _: Int -> "result" })
+                    .cachePolicy(
+                        MemoryPolicy
+                            .builder<Any, Any>()
+                            .setExpireAfterAccess(1.hours)
+                            .setMaxSize(1)
+                            .build(),
+                    )
                     .build()
-            )
-            .build()
 
-        val a = store.get(0)
-        val b = store.get(0)
-        val c = store.get(1)
-        val d = store.get(2)
+            val a = store.get(0)
+            val b = store.get(0)
+            val c = store.get(1)
+            val d = store.get(2)
 
-        assertEquals("result", a)
-        assertEquals("result", b)
-        assertEquals("result", c)
-        assertEquals("result", d)
-    }
+            assertEquals("result", a)
+            assertEquals("result", b)
+            assertEquals("result", c)
+            assertEquals("result", d)
+        }
 }

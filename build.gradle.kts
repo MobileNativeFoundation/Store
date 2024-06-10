@@ -1,5 +1,5 @@
 plugins {
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    alias(libs.plugins.ktlint)
     id("com.diffplug.spotless") version "6.4.1"
 }
 

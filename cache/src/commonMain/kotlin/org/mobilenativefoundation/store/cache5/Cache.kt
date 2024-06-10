@@ -14,7 +14,10 @@ interface Cache<Key : Any, Value : Any> {
      * @throws UncheckedExecutionException If an unchecked exception was thrown while loading the value.
      * @throws ExecutionError If an error was thrown while loading the value.
      */
-    fun getOrPut(key: Key, valueProducer: () -> Value): Value
+    fun getOrPut(
+        key: Key,
+        valueProducer: () -> Value,
+    ): Value
 
     /**
      * @return Map of the [Value] associated with each [Key] in [keys]. Returned map only contains entries already present in the cache.
@@ -32,7 +35,10 @@ interface Cache<Key : Any, Value : Any> {
      * If the cache previously contained a value associated with [key], the old value is replaced by [value].
      * Prefer [getOrPut] when using the conventional "If cached, then return. Otherwise create, cache, and then return" pattern.
      */
-    fun put(key: Key, value: Value)
+    fun put(
+        key: Key,
+        value: Value,
+    )
 
     /**
      * Copies all of the mappings from the specified map to the cache. The effect of this call is

@@ -10,11 +10,17 @@ fun interface Weigher<in K : Any, in V : Any> {
      *
      * @return the weight of the entry; must be non-negative
      */
-    fun weigh(key: K, value: V): Int
+    fun weigh(
+        key: K,
+        value: V,
+    ): Int
 }
 
 internal object OneWeigher : Weigher<Any, Any> {
-    override fun weigh(key: Any, value: Any): Int = 1
+    override fun weigh(
+        key: Any,
+        value: Any,
+    ): Int = 1
 }
 
 /**
@@ -27,9 +33,8 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
     val expireAfterAccess: Duration,
     val maxSize: Long,
     val maxWeight: Long,
-    val weigher: Weigher<Key, Value>
+    val weigher: Weigher<Key, Value>,
 ) {
-
     val isDefaultWritePolicy: Boolean = expireAfterWrite == DEFAULT_DURATION_POLICY
 
     val hasWritePolicy: Boolean = expireAfterWrite != DEFAULT_DURATION_POLICY
@@ -70,40 +75,42 @@ class MemoryPolicy<in Key : Any, in Value : Any> internal constructor(
          *
          *  If not set, cache size will be unlimited.
          */
-        fun setMaxSize(maxSize: Long): MemoryPolicyBuilder<Key, Value> = apply {
-            check(maxWeight == DEFAULT_SIZE_POLICY && weigher == OneWeigher) {
-                "Cannot setMaxSize when maxWeight or weigher are already set"
+        fun setMaxSize(maxSize: Long): MemoryPolicyBuilder<Key, Value> =
+            apply {
+                check(maxWeight == DEFAULT_SIZE_POLICY && weigher == OneWeigher) {
+                    "Cannot setMaxSize when maxWeight or weigher are already set"
+                }
+                check(maxSize >= 0) { "maxSize cannot be negative" }
+                this.maxSize = maxSize
             }
-            check(maxSize >= 0) { "maxSize cannot be negative" }
-            this.maxSize = maxSize
-        }
 
         fun setWeigherAndMaxWeight(
             weigher: Weigher<Key, Value>,
-            maxWeight: Long
-        ): MemoryPolicyBuilder<Key, Value> = apply {
-            check(maxSize == DEFAULT_SIZE_POLICY) {
-                "Cannot setWeigherAndMaxWeight when maxSize already set"
+            maxWeight: Long,
+        ): MemoryPolicyBuilder<Key, Value> =
+            apply {
+                check(maxSize == DEFAULT_SIZE_POLICY) {
+                    "Cannot setWeigherAndMaxWeight when maxSize already set"
+                }
+                check(maxWeight >= 0) { "maxWeight cannot be negative" }
+                this.weigher = weigher
+                this.maxWeight = maxWeight
             }
-            check(maxWeight >= 0) { "maxWeight cannot be negative" }
-            this.weigher = weigher
-            this.maxWeight = maxWeight
-        }
 
-        fun build() = MemoryPolicy<Key, Value>(
-            expireAfterWrite = expireAfterWrite,
-            expireAfterAccess = expireAfterAccess,
-            maxSize = maxSize,
-            maxWeight = maxWeight,
-            weigher = weigher
-        )
+        fun build() =
+            MemoryPolicy<Key, Value>(
+                expireAfterWrite = expireAfterWrite,
+                expireAfterAccess = expireAfterAccess,
+                maxSize = maxSize,
+                maxWeight = maxWeight,
+                weigher = weigher,
+            )
     }
 
     companion object {
         val DEFAULT_DURATION_POLICY: Duration = Duration.INFINITE
         const val DEFAULT_SIZE_POLICY: Long = -1
 
-        fun <Key : Any, Value : Any> builder(): MemoryPolicyBuilder<Key, Value> =
-            MemoryPolicyBuilder()
+        fun <Key : Any, Value : Any> builder(): MemoryPolicyBuilder<Key, Value> = MemoryPolicyBuilder()
     }
 }
