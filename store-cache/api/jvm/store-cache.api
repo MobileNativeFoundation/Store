@@ -1,0 +1,69 @@
+public abstract interface class org/mobilenativefoundation/store/cache5/Cache {
+	public abstract fun getAllPresent ()Ljava/util/Map;
+	public abstract fun getAllPresent (Ljava/util/List;)Ljava/util/Map;
+	public abstract fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun getOrPut (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public abstract fun invalidate (Ljava/lang/Object;)V
+	public abstract fun invalidateAll ()V
+	public abstract fun invalidateAll (Ljava/util/List;)V
+	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public abstract fun putAll (Ljava/util/Map;)V
+	public abstract fun size ()J
+}
+
+public final class org/mobilenativefoundation/store/cache5/Cache$DefaultImpls {
+	public static fun getAllPresent (Lorg/mobilenativefoundation/store/cache5/Cache;)Ljava/util/Map;
+}
+
+public final class org/mobilenativefoundation/store/cache5/CacheBuilder {
+	public static final field Companion Lorg/mobilenativefoundation/store/cache5/CacheBuilder$Companion;
+	public fun <init> ()V
+	public final fun build ()Lorg/mobilenativefoundation/store/cache5/Cache;
+	public final fun concurrencyLevel (Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun expireAfterAccess-LRDsOJo (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun expireAfterWrite-LRDsOJo (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun maximumSize (J)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun ticker (Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+	public final fun weigher (JLkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store/cache5/CacheBuilder;
+}
+
+public final class org/mobilenativefoundation/store/cache5/CacheBuilder$Companion {
+}
+
+public final class org/mobilenativefoundation/store/cache5/StoreMultiCache : org/mobilenativefoundation/store/cache5/Cache {
+	public static final field Companion Lorg/mobilenativefoundation/store/cache5/StoreMultiCache$Companion;
+	public fun <init> (Lorg/mobilenativefoundation/store/core5/KeyProvider;Lorg/mobilenativefoundation/store/cache5/Cache;Lorg/mobilenativefoundation/store/cache5/Cache;)V
+	public synthetic fun <init> (Lorg/mobilenativefoundation/store/core5/KeyProvider;Lorg/mobilenativefoundation/store/cache5/Cache;Lorg/mobilenativefoundation/store/cache5/Cache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getAllPresent ()Ljava/util/Map;
+	public fun getAllPresent (Ljava/util/List;)Ljava/util/Map;
+	public synthetic fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun getIfPresent (Lorg/mobilenativefoundation/store/core5/StoreKey;)Lorg/mobilenativefoundation/store/core5/StoreData;
+	public synthetic fun getOrPut (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public fun getOrPut (Lorg/mobilenativefoundation/store/core5/StoreKey;Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/core5/StoreData;
+	public synthetic fun invalidate (Ljava/lang/Object;)V
+	public fun invalidate (Lorg/mobilenativefoundation/store/core5/StoreKey;)V
+	public fun invalidateAll ()V
+	public fun invalidateAll (Ljava/util/List;)V
+	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)V
+	public fun put (Lorg/mobilenativefoundation/store/core5/StoreKey;Lorg/mobilenativefoundation/store/core5/StoreData;)V
+	public fun putAll (Ljava/util/Map;)V
+	public fun size ()J
+}
+
+public final class org/mobilenativefoundation/store/cache5/StoreMultiCache$Companion {
+	public final fun invalidKeyErrorMessage (Ljava/lang/Object;)Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store/cache5/StoreMultiCacheAccessor {
+	public fun <init> (Lorg/mobilenativefoundation/store/cache5/Cache;Lorg/mobilenativefoundation/store/cache5/Cache;)V
+	public final fun getAllPresent ()Ljava/util/Map;
+	public final fun getCollection (Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;)Lorg/mobilenativefoundation/store/core5/StoreData$Collection;
+	public final fun getSingle (Lorg/mobilenativefoundation/store/core5/StoreKey$Single;)Lorg/mobilenativefoundation/store/core5/StoreData$Single;
+	public final fun invalidateAll ()V
+	public final fun invalidateCollection (Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;)Z
+	public final fun invalidateSingle (Lorg/mobilenativefoundation/store/core5/StoreKey$Single;)Z
+	public final fun putCollection (Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;Lorg/mobilenativefoundation/store/core5/StoreData$Collection;)Z
+	public final fun putSingle (Lorg/mobilenativefoundation/store/core5/StoreKey$Single;Lorg/mobilenativefoundation/store/core5/StoreData$Single;)Z
+	public final fun size ()J
+}
+

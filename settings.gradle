@@ -1,10 +1,15 @@
+pluginManagement {
+    includeBuild("tooling")
+}
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-include ':store'
-include ':cache'
-include ':multicast'
-include ':rx2'
-include ':paging'
-include ':core'
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+include ':store-runtime'
+include ':store-cache'
+include ':store-multicast'
+include ':store-rx2'
+include ':store-core'
