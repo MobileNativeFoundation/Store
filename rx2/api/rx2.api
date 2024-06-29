@@ -1,0 +1,26 @@
+public final class org/mobilenativefoundation/store/rx2/RxFetcherKt {
+	public static final fun ofFlowable (Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public static final fun ofResultFlowable (Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public static final fun ofResultSingle (Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+	public static final fun ofSingle (Lorg/mobilenativefoundation/store/store5/Fetcher$Companion;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store/store5/Fetcher;
+}
+
+public final class org/mobilenativefoundation/store/rx2/RxSourceOfTruthKt {
+	public static final fun ofFlowable (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public static synthetic fun ofFlowable$default (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public static final fun ofMaybe (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+	public static synthetic fun ofMaybe$default (Lorg/mobilenativefoundation/store/store5/SourceOfTruth$Companion;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/SourceOfTruth;
+}
+
+public final class org/mobilenativefoundation/store/rx2/RxStoreBuilderKt {
+	public static final fun withScheduler (Lorg/mobilenativefoundation/store/store5/StoreBuilder;Lio/reactivex/Scheduler;)Lorg/mobilenativefoundation/store/store5/StoreBuilder;
+}
+
+public final class org/mobilenativefoundation/store/rx2/RxStoreKt {
+	public static final fun freshSingle (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;)Lio/reactivex/Single;
+	public static final fun getSingle (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;)Lio/reactivex/Single;
+	public static final fun observe (Lorg/mobilenativefoundation/store/store5/Store;Lorg/mobilenativefoundation/store/store5/StoreReadRequest;)Lio/reactivex/Flowable;
+	public static final fun observeClear (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;)Lio/reactivex/Completable;
+	public static final fun observeClearAll (Lorg/mobilenativefoundation/store/store5/Store;)Lio/reactivex/Completable;
+}
+

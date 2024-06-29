@@ -1,0 +1,69 @@
+public abstract interface annotation class org/mobilenativefoundation/store/core5/ExperimentalStoreApi : java/lang/annotation/Annotation {
+}
+
+public final class org/mobilenativefoundation/store/core5/InsertionStrategy : java/lang/Enum {
+	public static final field APPEND Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+	public static final field PREPEND Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+	public static final field REPLACE Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+	public static fun values ()[Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/KeyProvider {
+	public abstract fun fromCollection (Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;Lorg/mobilenativefoundation/store/core5/StoreData$Single;)Lorg/mobilenativefoundation/store/core5/StoreKey$Single;
+	public abstract fun fromSingle (Lorg/mobilenativefoundation/store/core5/StoreKey$Single;Lorg/mobilenativefoundation/store/core5/StoreData$Single;)Lorg/mobilenativefoundation/store/core5/StoreKey$Collection;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreData {
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreData$Collection : org/mobilenativefoundation/store/core5/StoreData {
+	public abstract fun copyWith (Ljava/util/List;)Lorg/mobilenativefoundation/store/core5/StoreData$Collection;
+	public abstract fun getItems ()Ljava/util/List;
+	public abstract fun insertItems (Lorg/mobilenativefoundation/store/core5/InsertionStrategy;Ljava/util/List;)Lorg/mobilenativefoundation/store/core5/StoreData$Collection;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreData$Single : org/mobilenativefoundation/store/core5/StoreData {
+	public abstract fun getId ()Ljava/lang/Object;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey {
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey$Collection : org/mobilenativefoundation/store/core5/StoreKey {
+	public abstract fun getInsertionStrategy ()Lorg/mobilenativefoundation/store/core5/InsertionStrategy;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey$Collection$Cursor : org/mobilenativefoundation/store/core5/StoreKey$Collection {
+	public abstract fun getCursor ()Ljava/lang/Object;
+	public abstract fun getFilters ()Ljava/util/List;
+	public abstract fun getSize ()I
+	public abstract fun getSort ()Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey$Collection$Page : org/mobilenativefoundation/store/core5/StoreKey$Collection {
+	public abstract fun getFilters ()Ljava/util/List;
+	public abstract fun getPage ()I
+	public abstract fun getSize ()I
+	public abstract fun getSort ()Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey$Filter {
+	public abstract fun invoke (Ljava/util/List;)Ljava/util/List;
+}
+
+public abstract interface class org/mobilenativefoundation/store/core5/StoreKey$Single : org/mobilenativefoundation/store/core5/StoreKey {
+	public abstract fun getId ()Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store/core5/StoreKey$Sort : java/lang/Enum {
+	public static final field ALPHABETICAL Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+	public static final field NEWEST Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+	public static final field OLDEST Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+	public static final field REVERSE_ALPHABETICAL Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+	public static fun values ()[Lorg/mobilenativefoundation/store/core5/StoreKey$Sort;
+}
+
