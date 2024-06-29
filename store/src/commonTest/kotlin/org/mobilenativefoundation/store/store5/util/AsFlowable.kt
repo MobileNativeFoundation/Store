@@ -15,21 +15,24 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth
 class SimplePersisterAsFlowable<Key : Any, Output : Any>(
     private val reader: suspend (Key) -> Output?,
     private val writer: suspend (Key, Output) -> Unit,
-    private val delete: (suspend (Key) -> Unit)? = null
+    private val delete: (suspend (Key) -> Unit)? = null,
 ) {
-
     val supportsDelete: Boolean
         get() = delete != null
 
     private val versionTracker = KeyTracker<Key>()
 
-    fun flowReader(key: Key): Flow<Output?> = flow {
-        versionTracker.keyFlow(key).collect {
-            emit(reader(key))
+    fun flowReader(key: Key): Flow<Output?> =
+        flow {
+            versionTracker.keyFlow(key).collect {
+                emit(reader(key))
+            }
         }
-    }
 
-    suspend fun flowWriter(key: Key, value: Output) {
+    suspend fun flowWriter(
+        key: Key,
+        value: Output,
+    ) {
         writer(key, value)
         versionTracker.invalidate(key)
     }
@@ -46,7 +49,7 @@ fun <Key : Any, Output : Any> SimplePersisterAsFlowable<Key, Output>.asSourceOfT
     SourceOfTruth.of(
         reader = ::flowReader,
         writer = ::flowWriter,
-        delete = ::flowDelete.takeIf { supportsDelete }
+        delete = ::flowDelete.takeIf { supportsDelete },
     )
 
 /**
@@ -80,18 +83,20 @@ internal class KeyTracker<Key> {
         // from). Otherwise, we might just create many of them that are never observed hence never
         // cleaned up
         return flow {
-            val keyChannel = lock.withLock {
-                channels.getOrPut(key) {
-                    KeyChannel(
-                        channel = BroadcastChannel<Unit>(Channel.CONFLATED).apply {
-                            // start w/ an initial value.
-                            trySend(Unit).isSuccess
-                        }
-                    )
-                }.also {
-                    it.acquire() // refcount
+            val keyChannel =
+                lock.withLock {
+                    channels.getOrPut(key) {
+                        KeyChannel(
+                            channel =
+                                BroadcastChannel<Unit>(Channel.CONFLATED).apply {
+                                    // start w/ an initial value.
+                                    trySend(Unit).isSuccess
+                                },
+                        )
+                    }.also {
+                        it.acquire() // refcount
+                    }
                 }
-            }
             try {
                 emitAll(keyChannel.channel.openSubscription())
             } finally {
@@ -110,7 +115,7 @@ internal class KeyTracker<Key> {
      */
     private data class KeyChannel(
         val channel: BroadcastChannel<Unit>,
-        var collectors: Int = 0
+        var collectors: Int = 0,
     ) {
         fun acquire() {
             collectors++
@@ -128,5 +133,5 @@ internal class KeyTracker<Key> {
 fun <Key : Any, Output : Any> InMemoryPersister<Key, Output>.asFlowable() =
     SimplePersisterAsFlowable(
         reader = this::read,
-        writer = this::write
+        writer = this::write,
     )

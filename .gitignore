@@ -47,6 +47,7 @@ captures/
 # Keystore files
 *.jks
 
-store/kover
+**/kover/html/
 *.podspec
+.kotlin/
 yarn.lock

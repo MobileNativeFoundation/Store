@@ -4,10 +4,10 @@ import kotlinx.coroutines.sync.Mutex
 
 internal data class ThreadSafety(
     val writeRequests: StoreThreadSafety = StoreThreadSafety(),
-    val readCompletions: StoreThreadSafety = StoreThreadSafety()
+    val readCompletions: StoreThreadSafety = StoreThreadSafety(),
 )
 
 internal data class StoreThreadSafety(
     val mutex: Mutex = Mutex(),
-    val lightswitch: Lightswitch = Lightswitch()
+    val lightswitch: Lightswitch = Lightswitch(),
 )

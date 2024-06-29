@@ -13,7 +13,11 @@ internal class NotesApi : TestApi<NotesKey, NetworkNote, InputNote, NotesWriteRe
         seed()
     }
 
-    override fun get(key: NotesKey, fail: Boolean, ttl: Long?): NetworkNote {
+    override fun get(
+        key: NotesKey,
+        fail: Boolean,
+        ttl: Long?,
+    ): NetworkNote {
         if (fail) {
             throw Exception()
         }
@@ -26,7 +30,11 @@ internal class NotesApi : TestApi<NotesKey, NetworkNote, InputNote, NotesWriteRe
         }
     }
 
-    override fun post(key: NotesKey, value: InputNote, fail: Boolean): NotesWriteResponse {
+    override fun post(
+        key: NotesKey,
+        value: InputNote,
+        fail: Boolean,
+    ): NotesWriteResponse {
         if (fail) {
             throw Exception()
         }

@@ -22,106 +22,115 @@ class KeyTrackerTests {
     private val subject = KeyTracker<Char>()
 
     @Test
-    fun dontSkipInvalidations() = scope1.runTest {
-        val collection = scope2.async {
-            subject.keyFlow('b')
-                .take(2)
-                .toList()
-        }
-        scope2.advanceUntilIdle()
-        assertEquals(1, subject.activeKeyCount())
-        scope2.advanceUntilIdle()
-        subject.invalidate('a')
-        subject.invalidate('b')
-        subject.invalidate('c')
-        scope2.advanceUntilIdle()
-        assertEquals(true, collection.isCompleted)
-        assertEquals(0, subject.activeKeyCount())
-    }
-
-    @Test
-    fun multipleScopes() = scope1.runTest {
-        val keys = 'a'..'z'
-        val collections = keys.associate { key ->
-            key to scope2.async {
-                subject.keyFlow(key)
-                    .take(2)
-                    .toList()
-            }
-        }
-        scope2.advanceUntilIdle()
-        assertEquals(26, subject.activeKeyCount())
-
-        scope2.advanceUntilIdle()
-        keys.forEach {
-            subject.invalidate(it)
-        }
-        scope2.advanceUntilIdle()
-
-        collections.forEach { (_, deferred) ->
-            assertEquals(true, deferred.isCompleted)
-        }
-        assertEquals(0, subject.activeKeyCount())
-    }
-
-    @Test
-    fun multipleObservers() = scope1.runTest {
-        val collections = (0..4).map {
-            scope2.async {
-                subject.keyFlow('b')
-                    .take(2)
-                    .toList()
-            }
-        }
-        scope2.advanceUntilIdle()
-        assertEquals(1, subject.activeKeyCount())
-        scope2.advanceUntilIdle()
-        subject.invalidate('a')
-        subject.invalidate('b')
-        subject.invalidate('c')
-        scope2.advanceUntilIdle()
-        collections.forEach { collection ->
+    fun dontSkipInvalidations() =
+        scope1.runTest {
+            val collection =
+                scope2.async {
+                    subject.keyFlow('b')
+                        .take(2)
+                        .toList()
+                }
+            scope2.advanceUntilIdle()
+            assertEquals(1, subject.activeKeyCount())
+            scope2.advanceUntilIdle()
+            subject.invalidate('a')
+            subject.invalidate('b')
+            subject.invalidate('c')
+            scope2.advanceUntilIdle()
             assertEquals(true, collection.isCompleted)
+            assertEquals(0, subject.activeKeyCount())
         }
-        assertEquals(0, subject.activeKeyCount())
-    }
 
     @Test
-    fun keyFlow_notCollected_shouldNotBeTracked() = scope1.runTest {
-        val flow = subject.keyFlow('b')
-        assertEquals(0, subject.activeKeyCount())
-        scope2.launch {
-            flow.collectIndexed { index, value ->
-                assertEquals(1, index)
-                assertEquals(Unit, value)
-                assertEquals(1, subject.activeKeyCount())
-                cancel()
+    fun multipleScopes() =
+        scope1.runTest {
+            val keys = 'a'..'z'
+            val collections =
+                keys.associate { key ->
+                    key to
+                        scope2.async {
+                            subject.keyFlow(key)
+                                .take(2)
+                                .toList()
+                        }
+                }
+            scope2.advanceUntilIdle()
+            assertEquals(26, subject.activeKeyCount())
+
+            scope2.advanceUntilIdle()
+            keys.forEach {
+                subject.invalidate(it)
             }
+            scope2.advanceUntilIdle()
+
+            collections.forEach { (_, deferred) ->
+                assertEquals(true, deferred.isCompleted)
+            }
+            assertEquals(0, subject.activeKeyCount())
         }
-        assertEquals(0, subject.activeKeyCount())
-    }
 
     @Test
-    fun keyFlow_trackerShouldRefCount() = scope1.runTest {
-        val flow = subject.keyFlow('a')
-        assertEquals(0, subject.activeKeyCount())
-        scope2.launch {
-            flow.collectIndexed { index, value ->
-                assertEquals(1, index)
-                assertEquals(Unit, value)
-                assertEquals(1, subject.activeKeyCount())
-                cancel()
+    fun multipleObservers() =
+        scope1.runTest {
+            val collections =
+                (0..4).map {
+                    scope2.async {
+                        subject.keyFlow('b')
+                            .take(2)
+                            .toList()
+                    }
+                }
+            scope2.advanceUntilIdle()
+            assertEquals(1, subject.activeKeyCount())
+            scope2.advanceUntilIdle()
+            subject.invalidate('a')
+            subject.invalidate('b')
+            subject.invalidate('c')
+            scope2.advanceUntilIdle()
+            collections.forEach { collection ->
+                assertEquals(true, collection.isCompleted)
             }
-        }
-        scope2.launch {
-            flow.collectIndexed { index, value ->
-                assertEquals(1, index)
-                assertEquals(Unit, value)
-                assertEquals(1, subject.activeKeyCount())
-                cancel()
-            }
+            assertEquals(0, subject.activeKeyCount())
         }
 
-        assertEquals(0, subject.activeKeyCount())
-    }
+    @Test
+    fun keyFlow_notCollected_shouldNotBeTracked() =
+        scope1.runTest {
+            val flow = subject.keyFlow('b')
+            assertEquals(0, subject.activeKeyCount())
+            scope2.launch {
+                flow.collectIndexed { index, value ->
+                    assertEquals(1, index)
+                    assertEquals(Unit, value)
+                    assertEquals(1, subject.activeKeyCount())
+                    cancel()
+                }
+            }
+            assertEquals(0, subject.activeKeyCount())
+        }
+
+    @Test
+    fun keyFlow_trackerShouldRefCount() =
+        scope1.runTest {
+            val flow = subject.keyFlow('a')
+            assertEquals(0, subject.activeKeyCount())
+            scope2.launch {
+                flow.collectIndexed { index, value ->
+                    assertEquals(1, index)
+                    assertEquals(Unit, value)
+                    assertEquals(1, subject.activeKeyCount())
+                    cancel()
+                }
+            }
+            scope2.launch {
+                flow.collectIndexed { index, value ->
+                    assertEquals(1, index)
+                    assertEquals(Unit, value)
+                    assertEquals(1, subject.activeKeyCount())
+                    cancel()
+                }
+            }
+
+            assertEquals(0, subject.activeKeyCount())
+        }
 }

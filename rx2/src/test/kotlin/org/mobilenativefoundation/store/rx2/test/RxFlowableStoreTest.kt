@@ -29,82 +29,90 @@ class RxFlowableStoreTest {
     private val testScheduler = TestScheduler()
     private val atomicInteger = AtomicInteger(0)
     private val fakeDisk = mutableMapOf<Int, String>()
-    private val store = StoreBuilder.from<Int, String, String>(
-        fetcher = Fetcher.ofResultFlowable<Int, String> {
-            Flowable.create(
-                { emitter ->
-                    emitter.onNext(
-                        FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
+    private val store =
+        StoreBuilder.from<Int, String, String>(
+            fetcher =
+                Fetcher.ofResultFlowable<Int, String> {
+                    Flowable.create(
+                        { emitter ->
+                            emitter.onNext(
+                                FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence"),
+                            )
+                            emitter.onNext(
+                                FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence"),
+                            )
+                            emitter.onComplete()
+                        },
+                        BackpressureStrategy.BUFFER,
                     )
-                    emitter.onNext(
-                        FetcherResult.Data("$it ${atomicInteger.incrementAndGet()} occurrence")
-                    )
-                    emitter.onComplete()
                 },
-                BackpressureStrategy.BUFFER
-            )
-        },
-        sourceOfTruth = SourceOfTruth.ofFlowable<Int, String, String>(
-            reader = {
-                if (fakeDisk[it] != null)
-                    Flowable.fromCallable { fakeDisk[it]!! }
-                else
-                    Flowable.empty<String>()
-            },
-            writer = { key, value ->
-                Completable.fromAction { fakeDisk[key] = value }
-            }
+            sourceOfTruth =
+                SourceOfTruth.ofFlowable<Int, String, String>(
+                    reader = {
+                        if (fakeDisk[it] != null) {
+                            Flowable.fromCallable { fakeDisk[it]!! }
+                        } else {
+                            Flowable.empty<String>()
+                        }
+                    },
+                    writer = { key, value ->
+                        Completable.fromAction { fakeDisk[key] = value }
+                    },
+                ),
         )
-    )
-        .withScheduler(testScheduler)
-        .build()
+            .withScheduler(testScheduler)
+            .build()
 
     @Test
     fun simpleTest() {
-        val testSubscriber1 = store.observe(StoreReadRequest.fresh(3))
-            .subscribeOn(testScheduler)
-            .test()
+        val testSubscriber1 =
+            store.observe(StoreReadRequest.fresh(3))
+                .subscribeOn(testScheduler)
+                .test()
         testScheduler.triggerActions()
         testSubscriber1
             .awaitCount(3)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                 StoreReadResponse.Data("3 1 occurrence", StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 2 occurrence", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 2 occurrence", StoreReadResponseOrigin.Fetcher()),
             )
 
-        val testSubscriber2 = store.observe(StoreReadRequest.cached(3, false))
-            .subscribeOn(testScheduler)
-            .test()
+        val testSubscriber2 =
+            store.observe(StoreReadRequest.cached(3, false))
+                .subscribeOn(testScheduler)
+                .test()
         testScheduler.triggerActions()
         testSubscriber2
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Data("3 2 occurrence", StoreReadResponseOrigin.Cache),
-                StoreReadResponse.Data("3 2 occurrence", StoreReadResponseOrigin.SourceOfTruth)
+                StoreReadResponse.Data("3 2 occurrence", StoreReadResponseOrigin.SourceOfTruth),
             )
 
-        val testSubscriber3 = store.observe(StoreReadRequest.fresh(3))
-            .subscribeOn(testScheduler)
-            .test()
+        val testSubscriber3 =
+            store.observe(StoreReadRequest.fresh(3))
+                .subscribeOn(testScheduler)
+                .test()
         testScheduler.triggerActions()
         testSubscriber3
             .awaitCount(3)
             .assertValues(
                 StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
                 StoreReadResponse.Data("3 3 occurrence", StoreReadResponseOrigin.Fetcher()),
-                StoreReadResponse.Data("3 4 occurrence", StoreReadResponseOrigin.Fetcher())
+                StoreReadResponse.Data("3 4 occurrence", StoreReadResponseOrigin.Fetcher()),
             )
 
-        val testSubscriber4 = store.observe(StoreReadRequest.cached(3, false))
-            .subscribeOn(testScheduler)
-            .test()
+        val testSubscriber4 =
+            store.observe(StoreReadRequest.cached(3, false))
+                .subscribeOn(testScheduler)
+                .test()
         testScheduler.triggerActions()
         testSubscriber4
             .awaitCount(2)
             .assertValues(
                 StoreReadResponse.Data("3 4 occurrence", StoreReadResponseOrigin.Cache),
-                StoreReadResponse.Data("3 4 occurrence", StoreReadResponseOrigin.SourceOfTruth)
+                StoreReadResponse.Data("3 4 occurrence", StoreReadResponseOrigin.SourceOfTruth),
             )
     }
 }

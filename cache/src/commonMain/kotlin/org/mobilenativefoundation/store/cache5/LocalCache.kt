@@ -28,7 +28,6 @@ import kotlin.math.min
 import kotlin.time.Duration
 
 internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
-
     /**
      * Mask value for indexing into segments. The upper bits of a key's hash code are used to choose
      * the segment.
@@ -114,12 +113,16 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
                 segment: Segment<K, V>?,
                 entry: ReferenceEntry<K, V>?,
                 value: V,
-                weight: Int
+                weight: Int,
             ): ValueReference<K, V> {
-                return if (weight == 1) StrongValueReference(value) else WeightedStrongValueReference(
-                    value,
-                    weight
-                )
+                return if (weight == 1) {
+                    StrongValueReference(value)
+                } else {
+                    WeightedStrongValueReference(
+                        value,
+                        weight,
+                    )
+                }
             }
         }
 
@@ -130,7 +133,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             segment: Segment<K, V>?,
             entry: ReferenceEntry<K, V>?,
             value: V,
-            weight: Int
+            weight: Int,
         ): ValueReference<K, V>
     }
 
@@ -143,19 +146,18 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
                 segment: Segment<K, V>?,
                 key: K,
                 hash: Int,
-                next: ReferenceEntry<K, V>?
+                next: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 return StrongEntry(key, hash, next)
             }
         }
 
         object StrongAccess : EntryFactory() {
-
             override fun <K : Any, V : Any> newEntry(
                 segment: Segment<K, V>?,
                 key: K,
                 hash: Int,
-                next: ReferenceEntry<K, V>?
+                next: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 return StrongAccessEntry(key, hash, next)
             }
@@ -163,7 +165,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             override fun <K : Any, V : Any> copyEntry(
                 segment: Segment<K, V>?,
                 original: ReferenceEntry<K, V>,
-                newNext: ReferenceEntry<K, V>?
+                newNext: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 val newEntry = super.copyEntry(segment, original, newNext)
                 copyAccessEntry(original, newEntry)
@@ -172,12 +174,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         object StrongWrite : EntryFactory() {
-
             override fun <K : Any, V : Any> newEntry(
                 segment: Segment<K, V>?,
                 key: K,
                 hash: Int,
-                next: ReferenceEntry<K, V>?
+                next: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 return StrongWriteEntry(key, hash, next)
             }
@@ -185,7 +186,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             override fun <K : Any, V : Any> copyEntry(
                 segment: Segment<K, V>?,
                 original: ReferenceEntry<K, V>,
-                newNext: ReferenceEntry<K, V>?
+                newNext: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 val newEntry = super.copyEntry(segment, original, newNext)
                 copyWriteEntry(original, newEntry)
@@ -194,12 +195,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         object StrongAccessWrite : EntryFactory() {
-
             override fun <K : Any, V : Any> newEntry(
                 segment: Segment<K, V>?,
                 key: K,
                 hash: Int,
-                next: ReferenceEntry<K, V>?
+                next: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 return StrongAccessWriteEntry(key, hash, next)
             }
@@ -207,7 +207,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             override fun <K : Any, V : Any> copyEntry(
                 segment: Segment<K, V>?,
                 original: ReferenceEntry<K, V>,
-                newNext: ReferenceEntry<K, V>?
+                newNext: ReferenceEntry<K, V>?,
             ): ReferenceEntry<K, V> {
                 val newEntry = super.copyEntry(segment, original, newNext)
                 copyAccessEntry(original, newEntry)
@@ -228,7 +228,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             segment: Segment<K, V>?,
             key: K,
             hash: Int,
-            next: ReferenceEntry<K, V>?
+            next: ReferenceEntry<K, V>?,
         ): ReferenceEntry<K, V>
 
         /**
@@ -241,7 +241,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         open fun <K : Any, V : Any> copyEntry(
             segment: Segment<K, V>?,
             original: ReferenceEntry<K, V>,
-            newNext: ReferenceEntry<K, V>?
+            newNext: ReferenceEntry<K, V>?,
         ): ReferenceEntry<K, V> {
             return newEntry(segment, original.key, original.hash, newNext)
         }
@@ -249,7 +249,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         // Guarded By Segment.this
         fun <K : Any, V : Any> copyAccessEntry(
             original: ReferenceEntry<K, V>,
-            newEntry: ReferenceEntry<K, V>
+            newEntry: ReferenceEntry<K, V>,
         ) {
             // TODO(fry): when we link values instead of entries this method can go
             // away, as can connectAccessOrder, nullifyAccessOrder.
@@ -262,7 +262,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         // Guarded By Segment.this
         fun <K : Any, V : Any> copyWriteEntry(
             original: ReferenceEntry<K, V>,
-            newEntry: ReferenceEntry<K, V>
+            newEntry: ReferenceEntry<K, V>,
         ) {
             // TODO(fry): when we link values instead of entries this method can go
             // away, as can connectWriteOrder, nullifyWriteOrder.
@@ -283,7 +283,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
              * Look-up table for factories.
              */
             private val factories = arrayOf(Strong, StrongAccess, StrongWrite, StrongAccessWrite)
-            fun getFactory(usesAccessQueue: Boolean, usesWriteQueue: Boolean): EntryFactory {
+
+            fun getFactory(
+                usesAccessQueue: Boolean,
+                usesWriteQueue: Boolean,
+            ): EntryFactory {
                 val flags = ((if (usesAccessQueue) ACCESS_MASK else 0) or if (usesWriteQueue) WRITE_MASK else 0)
                 return factories[flags]
             }
@@ -318,7 +322,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          * `value` may be null only for a loading reference.
          */
 
-        fun copyFor(value: V?, entry: ReferenceEntry<K, V>?): ValueReference<K, V>
+        fun copyFor(
+            value: V?,
+            entry: ReferenceEntry<K, V>?,
+        ): ValueReference<K, V>
 
         /**
          * Notifify pending loads that a new value was set. This is only relevant to loading
@@ -493,15 +500,15 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      * strong entries store the key reference directly while soft and weak entries delegate to their
      * respective superclasses.
      */
+
     /**
      * Used for strongly-referenced keys.
      */
     private open class StrongEntry<K : Any, V : Any>(
         override val key: K, // The code below is exactly the same for each entry type.
         override val hash: Int,
-        override val next: ReferenceEntry<K, V>?
+        override val next: ReferenceEntry<K, V>?,
     ) : ReferenceEntry<K, V> {
-
         private val _valueReference = atomic<ValueReference<K, V>?>(unset())
         override var valueReference: ValueReference<K, V>? = _valueReference.value
     }
@@ -509,7 +516,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private class StrongAccessEntry<K : Any, V : Any>(
         key: K,
         hash: Int,
-        next: ReferenceEntry<K, V>?
+        next: ReferenceEntry<K, V>?,
     ) :
         StrongEntry<K, V>(key, hash, next) {
         // The code below is exactly the same for each access entry type.
@@ -527,7 +534,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private class StrongWriteEntry<K : Any, V : Any>(
         key: K,
         hash: Int,
-        next: ReferenceEntry<K, V>?
+        next: ReferenceEntry<K, V>?,
     ) :
         StrongEntry<K, V>(key, hash, next) {
         // The code below is exactly the same for each write entry type.
@@ -544,7 +551,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private class StrongAccessWriteEntry<K : Any, V : Any>(
         key: K,
         hash: Int,
-        next: ReferenceEntry<K, V>?
+        next: ReferenceEntry<K, V>?,
     ) :
         StrongEntry<K, V>(key, hash, next) {
         // The code below is exactly the same for each access entry type.
@@ -574,10 +581,17 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private open class StrongValueReference<K : Any, V : Any>(private val referent: V) :
         ValueReference<K, V> {
         override fun get(): V = referent
+
         override val weight: Int = 1
         override val entry: ReferenceEntry<K, V>? = null
-        override fun copyFor(value: V?, entry: ReferenceEntry<K, V>?): ValueReference<K, V> = this
+
+        override fun copyFor(
+            value: V?,
+            entry: ReferenceEntry<K, V>?,
+        ): ValueReference<K, V> = this
+
         override val isActive: Boolean = true
+
         override fun notifyNewValue(newValue: V) {}
     }
 
@@ -586,7 +600,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      */
     private class WeightedStrongValueReference<K : Any, V : Any>(
         referent: V,
-        override val weight: Int
+        override val weight: Int,
     ) :
         StrongValueReference<K, V>(referent)
 
@@ -594,7 +608,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      * This method is a convenience for testing. Code should call [Segment.newEntry] directly.
      */
 
-    private fun newEntry(key: K, hash: Int, next: ReferenceEntry<K, V>?): ReferenceEntry<K, V> {
+    private fun newEntry(
+        key: K,
+        hash: Int,
+        next: ReferenceEntry<K, V>?,
+    ): ReferenceEntry<K, V> {
         val segment = segmentFor(hash)
         segment.reentrantLock.lock()
         return try {
@@ -610,7 +628,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     // Guarded By Segment.this
     private fun copyEntry(
         original: ReferenceEntry<K, V>,
-        newNext: ReferenceEntry<K, V>?
+        newNext: ReferenceEntry<K, V>?,
     ): ReferenceEntry<K, V>? {
         val hash = original.hash
         return segmentFor(hash).copyEntry(original, newNext)
@@ -623,7 +641,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private fun newValueReference(
         entry: ReferenceEntry<K, V>,
         value: V,
-        weight: Int
+        weight: Int,
     ): ValueReference<K, V> {
         val hash = entry.hash
         return valueStrength.referenceValue(segmentFor(hash), entry, value, weight)
@@ -637,16 +655,23 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      * @param hash the hash code for the key
      * @return the segment
      */
-    private fun segmentFor(hash: Int): Segment<K, V> = // TODO(fry): Lazily create segments?
+    private fun segmentFor(hash: Int): Segment<K, V> =
+        // TODO(fry): Lazily create segments?
         segments[hash ushr segmentShift and segmentMask] as Segment<K, V>
 
-    private fun createSegment(initialCapacity: Int, maxSegmentWeight: Long): Segment<K, V> =
-        Segment(this, initialCapacity, maxSegmentWeight)
+    private fun createSegment(
+        initialCapacity: Int,
+        maxSegmentWeight: Long,
+    ): Segment<K, V> = Segment(this, initialCapacity, maxSegmentWeight)
     // expiration
+
     /**
      * Returns true if the entry has expired.
      */
-    private fun isExpired(entry: ReferenceEntry<K, V>, now: Long): Boolean =
+    private fun isExpired(
+        entry: ReferenceEntry<K, V>,
+        now: Long,
+    ): Boolean =
         if (expiresAfterAccess && now - entry.accessTime >= expireAfterAccessNanos) {
             true
         } else {
@@ -657,8 +682,13 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
 
     private class SegmentTable<K : Any, V : Any>(val size: Int) {
         private val table: AtomicArray<ReferenceEntry<K, V>?> = atomicArrayOfNulls(size)
+
         operator fun get(idx: Int) = table[idx].value
-        operator fun set(idx: Int, value: ReferenceEntry<K, V>?) {
+
+        operator fun set(
+            idx: Int,
+            value: ReferenceEntry<K, V>?,
+        ) {
             table[idx].value = value
         }
     }
@@ -669,7 +699,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     private class Segment<K : Any, V : Any>(
         private val map: LocalCache<K, V>,
         initialCapacity: Int,
-        private val maxSegmentWeight: Long
+        private val maxSegmentWeight: Long,
     ) {
         /*
          * TODO(fry): Consider copying variables (like evictsBySize) from outer class into this class.
@@ -759,8 +789,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          */
         private val accessQueue: MutableQueue<ReferenceEntry<K, V>>
 
-        fun newEntry(key: K, hash: Int, next: ReferenceEntry<K, V>?): ReferenceEntry<K, V> =
-            map.entryFactory.newEntry(this, key, hash, next)
+        fun newEntry(
+            key: K,
+            hash: Int,
+            next: ReferenceEntry<K, V>?,
+        ): ReferenceEntry<K, V> = map.entryFactory.newEntry(this, key, hash, next)
 
         /**
          * Copies `original` into a new entry chained to `newNext`. Returns the new entry,
@@ -768,7 +801,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          */
         fun copyEntry(
             original: ReferenceEntry<K, V>,
-            newNext: ReferenceEntry<K, V>?
+            newNext: ReferenceEntry<K, V>?,
         ): ReferenceEntry<K, V>? {
             val valueReference = original.valueReference
             val value = valueReference!!.get()
@@ -784,7 +817,12 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         /**
          * Sets a new value of an entry. Adds newly created entries at the end of the access queue.
          */
-        fun setValue(entry: ReferenceEntry<K, V>, key: K, value: V, now: Long) {
+        fun setValue(
+            entry: ReferenceEntry<K, V>,
+            key: K,
+            value: V,
+            now: Long,
+        ) {
             val previous = entry.valueReference
             val weight = map.weigher(key, value)
             if (weight < 0) throw IllegalStateException("Weights must be non-negative")
@@ -794,6 +832,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         // recency queue, shared by expiration and eviction
+
         /**
          * Records the relative order in which this read was performed by adding `entry` to the
          * recency queue. At write-time, or when the queue is full past the threshold, the queue will
@@ -803,7 +842,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          *
          * Note: locked reads should use [.recordLockedRead].
          */
-        private fun recordRead(entry: ReferenceEntry<K, V>, now: Long) {
+        private fun recordRead(
+            entry: ReferenceEntry<K, V>,
+            now: Long,
+        ) {
             if (map.recordsAccess) {
                 entry.accessTime = now
             }
@@ -819,7 +861,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          * Note: this method should only be called under lock, as it directly manipulates the
          * eviction queues. Unlocked reads should use [.recordRead].
          */
-        private fun recordLockedRead(entry: ReferenceEntry<K, V>, now: Long) {
+        private fun recordLockedRead(
+            entry: ReferenceEntry<K, V>,
+            now: Long,
+        ) {
             if (map.recordsAccess) {
                 entry.accessTime = now
             }
@@ -830,7 +875,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          * Updates eviction metadata that `entry` was just written. This currently amounts to
          * adding `entry` to relevant eviction lists.
          */
-        private fun recordWrite(entry: ReferenceEntry<K, V>, weight: Int, now: Long) {
+        private fun recordWrite(
+            entry: ReferenceEntry<K, V>,
+            weight: Int,
+            now: Long,
+        ) {
             // we are already under lock, so drain the recency queue immediately
             drainRecencyQueue()
             totalWeight += weight.toLong()
@@ -863,6 +912,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             }
         }
         // expiration
+
         /**
          * Cleanup expired entries when the lock is available.
          */
@@ -895,7 +945,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         // eviction
-        private fun enqueueNotification(entry: ReferenceEntry<K, V>, cause: RemovalCause?) {
+        private fun enqueueNotification(
+            entry: ReferenceEntry<K, V>,
+            cause: RemovalCause?,
+        ) {
             enqueueNotification(entry.key, entry.hash, entry.valueReference, cause)
         }
 
@@ -903,7 +956,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             key: K?,
             hash: Int,
             valueReference: ValueReference<K, V>?,
-            cause: RemovalCause?
+            cause: RemovalCause?,
         ) {
             valueReference?.weight?.toLong()?.apply {
                 totalWeight -= this
@@ -960,7 +1013,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         }
 
         // Specialized implementations of map methods
-        private fun getEntry(key: K, hash: Int): ReferenceEntry<K, V>? {
+        private fun getEntry(
+            key: K,
+            hash: Int,
+        ): ReferenceEntry<K, V>? {
             var e = getFirst(hash)
             while (e != null) {
                 if (e.hash != hash) {
@@ -976,7 +1032,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             return null
         }
 
-        private fun getLiveEntry(key: K, hash: Int, now: Long): ReferenceEntry<K, V>? {
+        private fun getLiveEntry(
+            key: K,
+            hash: Int,
+            now: Long,
+        ): ReferenceEntry<K, V>? {
             val e = getEntry(key, hash)
             if (e == null) {
                 return null
@@ -992,7 +1052,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
          * loading, or expired.
          */
 
-        fun get(key: K, hash: Int): V? {
+        fun get(
+            key: K,
+            hash: Int,
+        ): V? {
             return try {
                 if (count.value != 0) { // read-volatile
                     val now = map.ticker()
@@ -1009,7 +1072,11 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             }
         }
 
-        fun getOrPut(key: K, hash: Int, defaultValue: () -> V): V {
+        fun getOrPut(
+            key: K,
+            hash: Int,
+            defaultValue: () -> V,
+        ): V {
             reentrantLock.lock()
             return try {
                 if (count.value != 0) { // read-volatile
@@ -1030,7 +1097,12 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             }
         }
 
-        fun put(key: K, hash: Int, value: V, onlyIfAbsent: Boolean): V? {
+        fun put(
+            key: K,
+            hash: Int,
+            value: V,
+            onlyIfAbsent: Boolean,
+        ): V? {
             reentrantLock.lock()
             return try {
                 val now = map.ticker()
@@ -1053,19 +1125,20 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
                         return when {
                             entryValue == null -> {
                                 ++modCount
-                                val newCount = if (valueReference.isActive) {
-                                    enqueueNotification(
-                                        key,
-                                        hash,
-                                        valueReference,
-                                        RemovalCause.COLLECTED
-                                    )
-                                    setValue(e, key, value, now)
-                                    count.value // count remains unchanged
-                                } else {
-                                    setValue(e, key, value, now)
-                                    count.value + 1
-                                }
+                                val newCount =
+                                    if (valueReference.isActive) {
+                                        enqueueNotification(
+                                            key,
+                                            hash,
+                                            valueReference,
+                                            RemovalCause.COLLECTED,
+                                        )
+                                        setValue(e, key, value, now)
+                                        count.value // count remains unchanged
+                                    } else {
+                                        setValue(e, key, value, now)
+                                        count.value + 1
+                                    }
                                 count.value = newCount // write-volatile
                                 evictEntries(e)
                                 null
@@ -1086,7 +1159,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
                                     key,
                                     hash,
                                     valueReference,
-                                    RemovalCause.REPLACED
+                                    RemovalCause.REPLACED,
                                 )
                                 setValue(e, key, value, now)
                                 evictEntries(e)
@@ -1111,7 +1184,10 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             }
         }
 
-        fun remove(key: K, hash: Int): V? {
+        fun remove(
+            key: K,
+            hash: Int,
+        ): V? {
             reentrantLock.lock()
             return try {
                 val now = map.ticker()
@@ -1125,24 +1201,31 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
                     if (e.hash == hash && key == entryKey) {
                         val valueReference = e.valueReference
                         val entryValue = valueReference!!.get()
-                        val cause: RemovalCause = when {
-                            entryValue != null -> {
-                                RemovalCause.EXPLICIT
-                            }
+                        val cause: RemovalCause =
+                            when {
+                                entryValue != null -> {
+                                    RemovalCause.EXPLICIT
+                                }
 
-                            valueReference.isActive -> {
-                                RemovalCause.COLLECTED
-                            }
+                                valueReference.isActive -> {
+                                    RemovalCause.COLLECTED
+                                }
 
-                            else -> {
-                                // currently loading
-                                return null
+                                else -> {
+                                    // currently loading
+                                    return null
+                                }
                             }
-                        }
                         ++modCount
-                        val newFirst = removeValueFromChain(
-                            first!!, e, entryKey, hash, valueReference, cause
-                        )
+                        val newFirst =
+                            removeValueFromChain(
+                                first!!,
+                                e,
+                                entryKey,
+                                hash,
+                                valueReference,
+                                cause,
+                            )
                         val newCount = count.value - 1
                         table[index] = newFirst
                         count.value = newCount // write-volatile
@@ -1265,7 +1348,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             key: K,
             hash: Int,
             valueReference: ValueReference<K, V>,
-            cause: RemovalCause?
+            cause: RemovalCause?,
         ): ReferenceEntry<K, V>? {
             enqueueNotification(key, hash, valueReference, cause)
             writeQueue.remove(entry)
@@ -1275,7 +1358,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
 
         private fun removeEntryFromChain(
             first: ReferenceEntry<K, V>,
-            entry: ReferenceEntry<K, V>
+            entry: ReferenceEntry<K, V>,
         ): ReferenceEntry<K, V>? {
             var newCount = count.value
             var newFirst = entry.next
@@ -1303,7 +1386,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         private fun removeEntry(
             entry: ReferenceEntry<K, V>,
             hash: Int,
-            cause: RemovalCause?
+            cause: RemovalCause?,
         ): Boolean {
             val table = table.value
             val index = hash and table.size - 1
@@ -1313,9 +1396,15 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             while (e != null) {
                 if (e === entry) {
                     ++modCount
-                    val newFirst = removeValueFromChain(
-                        first!!, e, e.key, hash, e.valueReference!!, cause
-                    )
+                    val newFirst =
+                        removeValueFromChain(
+                            first!!,
+                            e,
+                            e.key,
+                            hash,
+                            e.valueReference!!,
+                            cause,
+                        )
                     val newCount = count.value - 1
                     table[index] = newFirst
                     count.value = newCount // write-volatile
@@ -1417,15 +1506,21 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
 
     private interface Queue<T : Any> {
         fun poll(): T?
+
         fun add(value: T)
     }
 
     private interface MutableQueue<E : Any> : Queue<E>, Iterable<E> {
         fun peek(): E?
+
         fun isEmpty(): Boolean
+
         val size: Int
+
         fun clear()
+
         fun remove(element: E): Boolean
+
         fun contains(element: E): Boolean
     }
 
@@ -1476,13 +1571,14 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      */
 
     private class WriteQueue<K : Any, V : Any> : MutableQueue<ReferenceEntry<K, V>> {
-        private val head: ReferenceEntry<K, V> = object : ReferenceEntry<K, V> {
-            override var writeTime: Long
-                get() = Long.MAX_VALUE
-                set(_) {}
-            override var nextInWriteQueue: ReferenceEntry<K, V> = this
-            override var previousInWriteQueue: ReferenceEntry<K, V> = this
-        }
+        private val head: ReferenceEntry<K, V> =
+            object : ReferenceEntry<K, V> {
+                override var writeTime: Long
+                    get() = Long.MAX_VALUE
+                    set(_) {}
+                override var nextInWriteQueue: ReferenceEntry<K, V> = this
+                override var previousInWriteQueue: ReferenceEntry<K, V> = this
+            }
 
         // implements Queue
         override fun add(value: ReferenceEntry<K, V>) {
@@ -1516,11 +1612,9 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             return next !== NullEntry
         }
 
-        override fun contains(element: ReferenceEntry<K, V>): Boolean =
-            element.nextInWriteQueue !== NullEntry
+        override fun contains(element: ReferenceEntry<K, V>): Boolean = element.nextInWriteQueue !== NullEntry
 
-        override fun isEmpty(): Boolean =
-            head.nextInWriteQueue === head
+        override fun isEmpty(): Boolean = head.nextInWriteQueue === head
 
         override val size: Int
             get() {
@@ -1544,14 +1638,15 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             head.previousInWriteQueue = head
         }
 
-        override fun iterator(): Iterator<ReferenceEntry<K, V>> = iterator {
-            var value = peek()
-            while (value != null) {
-                yield(value)
-                val next = value.nextInWriteQueue
-                value = if (next === head) null else next
+        override fun iterator(): Iterator<ReferenceEntry<K, V>> =
+            iterator {
+                var value = peek()
+                while (value != null) {
+                    yield(value)
+                    val next = value.nextInWriteQueue
+                    value = if (next === head) null else next
+                }
             }
-        }
     }
 
     /**
@@ -1570,13 +1665,14 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      * for the current model.
      */
     private class AccessQueue<K : Any, V : Any> : MutableQueue<ReferenceEntry<K, V>> {
-        private val head: ReferenceEntry<K, V> = object : ReferenceEntry<K, V> {
-            override var accessTime: Long
-                get() = Long.MAX_VALUE
-                set(_) {}
-            override var nextInAccessQueue: ReferenceEntry<K, V> = this
-            override var previousInAccessQueue: ReferenceEntry<K, V> = this
-        }
+        private val head: ReferenceEntry<K, V> =
+            object : ReferenceEntry<K, V> {
+                override var accessTime: Long
+                    get() = Long.MAX_VALUE
+                    set(_) {}
+                override var nextInAccessQueue: ReferenceEntry<K, V> = this
+                override var previousInAccessQueue: ReferenceEntry<K, V> = this
+            }
 
         // implements Queue
         override fun add(value: ReferenceEntry<K, V>) {
@@ -1610,11 +1706,9 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             return next !== NullEntry
         }
 
-        override fun contains(element: ReferenceEntry<K, V>): Boolean =
-            element.nextInAccessQueue !== NullEntry
+        override fun contains(element: ReferenceEntry<K, V>): Boolean = element.nextInAccessQueue !== NullEntry
 
-        override fun isEmpty(): Boolean =
-            head.nextInAccessQueue === head
+        override fun isEmpty(): Boolean = head.nextInAccessQueue === head
 
         override val size: Int
             get() {
@@ -1638,14 +1732,15 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
             head.previousInAccessQueue = head
         }
 
-        override fun iterator(): Iterator<ReferenceEntry<K, V>> = iterator {
-            var value = peek()
-            while (value != null) {
-                yield(value)
-                val next = value.nextInAccessQueue
-                value = if (next === head) null else next
+        override fun iterator(): Iterator<ReferenceEntry<K, V>> =
+            iterator {
+                var value = peek()
+                while (value != null) {
+                    yield(value)
+                    val next = value.nextInAccessQueue
+                    value = if (next === head) null else next
+                }
             }
-        }
     }
 
     // Cache support
@@ -1661,12 +1756,18 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         return segmentFor(hash).get(key, hash)
     }
 
-    fun put(key: K, value: V): V? {
+    fun put(
+        key: K,
+        value: V,
+    ): V? {
         val hash = hash(key)
         return segmentFor(hash).put(key, hash, value, false)
     }
 
-    fun getOrPut(key: K, defaultValue: () -> V): V {
+    fun getOrPut(
+        key: K,
+        defaultValue: () -> V,
+    ): V {
         val hash = hash(key)
         return segmentFor(hash).getOrPut(key, hash, defaultValue)
     }
@@ -1693,49 +1794,55 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
     // Serialization Support
     internal class LocalManualCache<K : Any, V : Any> private constructor(private val localCache: LocalCache<K, V>) :
         Cache<K, V> {
-        constructor(builder: CacheBuilder<K, V>) : this(LocalCache<K, V>(builder))
+            constructor(builder: CacheBuilder<K, V>) : this(LocalCache<K, V>(builder))
 
-        // Cache methods
-        override fun getIfPresent(key: K): V? {
-            return localCache.getIfPresent(key)
-        }
+            // Cache methods
+            override fun getIfPresent(key: K): V? {
+                return localCache.getIfPresent(key)
+            }
 
-        override fun put(key: K, value: V) {
-            localCache.put(key, value)
-        }
+            override fun put(
+                key: K,
+                value: V,
+            ) {
+                localCache.put(key, value)
+            }
 
-        override fun invalidate(key: K) {
-            localCache.remove(key)
-        }
+            override fun invalidate(key: K) {
+                localCache.remove(key)
+            }
 
-        override fun getOrPut(key: K, valueProducer: () -> V): V {
-            return localCache.getOrPut(key, valueProducer)
-        }
+            override fun getOrPut(
+                key: K,
+                valueProducer: () -> V,
+            ): V {
+                return localCache.getOrPut(key, valueProducer)
+            }
 
-        override fun getAllPresent(keys: List<*>): Map<K, V> {
-            return localCache.getAllPresent().filterKeys { it in keys }
-        }
+            override fun getAllPresent(keys: List<*>): Map<K, V> {
+                return localCache.getAllPresent().filterKeys { it in keys }
+            }
 
-        override fun getAllPresent(): Map<K, V> {
-            return localCache.getAllPresent()
-        }
+            override fun getAllPresent(): Map<K, V> {
+                return localCache.getAllPresent()
+            }
 
-        override fun invalidateAll(keys: List<K>) {
-            TODO("Not yet implemented")
-        }
+            override fun invalidateAll(keys: List<K>) {
+                TODO("Not yet implemented")
+            }
 
-        override fun putAll(map: Map<K, V>) {
-            TODO("Not yet implemented")
-        }
+            override fun putAll(map: Map<K, V>) {
+                TODO("Not yet implemented")
+            }
 
-        override fun invalidateAll() {
-            localCache.clear()
-        }
+            override fun invalidateAll() {
+                localCache.clear()
+            }
 
-        override fun size(): Long {
-            TODO("Not yet implemented")
+            override fun size(): Long {
+                TODO("Not yet implemented")
+            }
         }
-    }
 
     companion object {
         /*
@@ -1792,28 +1899,29 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         /**
          * Placeholder. Indicates that the value hasn't been set yet.
          */
-        private val UNSET: ValueReference<Any, Any> = object : ValueReference<Any, Any> {
-            override fun get(): Any? {
-                return null
+        private val UNSET: ValueReference<Any, Any> =
+            object : ValueReference<Any, Any> {
+                override fun get(): Any? {
+                    return null
+                }
+
+                override val weight: Int
+                    get() = 0
+                override val entry: ReferenceEntry<Any, Any>?
+                    get() = null
+
+                override fun copyFor(
+                    value: Any?,
+                    entry: ReferenceEntry<Any, Any>?,
+                ): ValueReference<Any, Any> {
+                    return this
+                }
+
+                override val isActive: Boolean
+                    get() = false
+
+                override fun notifyNewValue(newValue: Any) {}
             }
-
-            override val weight: Int
-                get() = 0
-            override val entry: ReferenceEntry<Any, Any>?
-                get() = null
-
-            override fun copyFor(
-                value: Any?,
-                entry: ReferenceEntry<Any, Any>?
-            ): ValueReference<Any, Any> {
-                return this
-            }
-
-            override val isActive: Boolean
-                get() = false
-
-            override fun notifyNewValue(newValue: Any) {}
-        }
 
         /**
          * Singleton placeholder that indicates a value is being loaded.
@@ -1824,32 +1932,32 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         @Suppress("UNCHECKED_CAST")
         private fun <K : Any, V : Any> nullEntry() = NullEntry as ReferenceEntry<K, V>
 
-        private val DISCARDING_QUEUE: MutableQueue<Any> = object : MutableQueue<Any> {
-            override fun add(value: Any) {}
+        private val DISCARDING_QUEUE: MutableQueue<Any> =
+            object : MutableQueue<Any> {
+                override fun add(value: Any) {}
 
-            override fun peek(): Any? = null
+                override fun peek(): Any? = null
 
-            override fun poll(): Any? = null
+                override fun poll(): Any? = null
 
-            override fun iterator(): MutableIterator<Any> = HashSet<Any>().iterator()
+                override fun iterator(): MutableIterator<Any> = HashSet<Any>().iterator()
 
-            override val size: Int = 0
+                override val size: Int = 0
 
-            override fun isEmpty(): Boolean = true
+                override fun isEmpty(): Boolean = true
 
-            override fun clear() {}
+                override fun clear() {}
 
-            override fun remove(element: Any): Boolean = false
+                override fun remove(element: Any): Boolean = false
 
-            override fun contains(element: Any): Boolean = false
-        }
+                override fun contains(element: Any): Boolean = false
+            }
 
         /**
          * Queue that discards all elements.
          */
         @Suppress("UNCHECKED_CAST")
-        private fun <E : Any> discardingQueue(): MutableQueue<E> =
-            DISCARDING_QUEUE as MutableQueue<E>
+        private fun <E : Any> discardingQueue(): MutableQueue<E> = DISCARDING_QUEUE as MutableQueue<E>
 
         /**
          * Applies a supplemental hash function to a given hash code, which defends against poor quality
@@ -1876,7 +1984,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         // Guarded By Segment.this
         private fun <K : Any, V : Any> connectAccessOrder(
             previous: ReferenceEntry<K, V>,
-            next: ReferenceEntry<K, V>
+            next: ReferenceEntry<K, V>,
         ) {
             previous.nextInAccessQueue = next
             next.previousInAccessQueue = previous
@@ -1892,7 +2000,7 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
         // Guarded By Segment.this
         private fun <K : Any, V : Any> connectWriteOrder(
             previous: ReferenceEntry<K, V>,
-            next: ReferenceEntry<K, V>
+            next: ReferenceEntry<K, V>,
         ) {
             previous.nextInWriteQueue = next
             next.previousInWriteQueue = previous
@@ -1910,11 +2018,12 @@ internal class LocalCache<K : Any, V : Any>(builder: CacheBuilder<K, V>) {
      * Creates a new, empty map with the specified strategy, initial capacity and concurrency level.
      */
     init {
-        this.maxWeight = when {
-            builder.expireAfterAccess == Duration.ZERO || builder.expireAfterWrite == Duration.ZERO -> 0L
-            builder.weigher != null -> builder.maximumWeight
-            else -> builder.maximumSize
-        }
+        this.maxWeight =
+            when {
+                builder.expireAfterAccess == Duration.ZERO || builder.expireAfterWrite == Duration.ZERO -> 0L
+                builder.weigher != null -> builder.maximumWeight
+                else -> builder.maximumSize
+            }
         this.weigher = builder.weigher ?: OneWeigher as Weigher<K, V>
 
         this.expireAfterAccessNanos =
