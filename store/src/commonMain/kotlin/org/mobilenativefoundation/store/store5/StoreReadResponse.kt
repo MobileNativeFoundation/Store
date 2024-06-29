@@ -75,7 +75,7 @@ sealed class StoreReadResponse<out Output> {
     fun requireData(): Output {
         return when (this) {
             is Data -> value
-            is Error -> this.doThrow()
+            is Error -> throw this.doThrow()
             else -> throw NullPointerException("there is no data in $this")
         }
     }
@@ -86,7 +86,7 @@ sealed class StoreReadResponse<out Output> {
      */
     fun throwIfError() {
         if (this is Error) {
-            this.doThrow()
+            throw this.doThrow()
         }
     }
 
@@ -165,15 +165,16 @@ sealed class StoreReadResponseOrigin {
     object Initial : StoreReadResponseOrigin()
 }
 
-fun StoreReadResponse.Error.doThrow(): Nothing =
-    when (this) {
-        is StoreReadResponse.Error.Exception -> throw error
-        is StoreReadResponse.Error.Message -> throw RuntimeException(message)
+fun StoreReadResponse.Error.doThrow(): Throwable {
+    return when (this) {
+        is StoreReadResponse.Error.Exception -> error
+        is StoreReadResponse.Error.Message -> RuntimeException(message)
         is StoreReadResponse.Error.Custom<*> -> {
             if (error is Throwable) {
-                throw error
+                error
             } else {
-                throw RuntimeException("Non-throwable custom error: $error")
+                RuntimeException("Non-throwable custom error: $error")
             }
         }
     }
+}

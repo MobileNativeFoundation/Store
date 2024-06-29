@@ -17,7 +17,6 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -58,6 +57,11 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
             js {
                 browser()
+                nodejs()
+            }
+
+            @OptIn(ExperimentalWasmDsl::class)
+            wasmJs {
                 nodejs()
             }
 
