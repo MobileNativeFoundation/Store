@@ -483,11 +483,11 @@
 <class name="org/mobilenativefoundation/store/multicast5/StoreChannelManagerTests$cancelledDownstreamChannelShouldNotCancelOtherChannels$1" sourcefilename="StoreChannelManagerTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="163"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="29"/>
 </method>
 <counter type="INSTRUCTION" missed="0" covered="163"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="29"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
@@ -549,11 +549,11 @@
 <class name="org/mobilenativefoundation/store/multicast5/StoreChannelManagerTests$cancelledDownstreamChannelShouldNotCancelOtherChannels$1$channelToBeCancelled$1$1" sourcefilename="StoreChannelManagerTests.kt">
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="0" covered="27"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="2"/>
 </method>
 <counter type="INSTRUCTION" missed="0" covered="27"/>
-<counter type="BRANCH" missed="1" covered="1"/>
+<counter type="BRANCH" missed="0" covered="2"/>
 <counter type="LINE" missed="0" covered="2"/>
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
@@ -581,12 +581,12 @@
 </class>
 <class name="org/mobilenativefoundation/store/multicast5/StoreRealActor" sourcefilename="StoreRealActor.kt">
 <method name="doClose" desc="()V">
-<counter type="INSTRUCTION" missed="39" covered="0"/>
+<counter type="INSTRUCTION" missed="40" covered="0"/>
 <counter type="BRANCH" missed="2" covered="0"/>
 <counter type="LINE" missed="6" covered="0"/>
 </method>
 <method name="&lt;init&gt;" desc="(Lkotlinx/coroutines/CoroutineScope;)V">
-<counter type="INSTRUCTION" missed="0" covered="30"/>
+<counter type="INSTRUCTION" missed="0" covered="29"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="8"/>
 </method>
@@ -606,11 +606,11 @@
 <counter type="LINE" missed="5" covered="0"/>
 </method>
 <method name="&lt;clinit&gt;" desc="()V">
-<counter type="INSTRUCTION" missed="0" covered="4"/>
+<counter type="INSTRUCTION" missed="0" covered="9"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
 </method>
-<counter type="INSTRUCTION" missed="76" covered="44"/>
+<counter type="INSTRUCTION" missed="77" covered="48"/>
 <counter type="BRANCH" missed="2" covered="0"/>
 <counter type="LINE" missed="12" covered="10"/>
 <counter type="METHOD" missed="3" covered="3"/>
@@ -640,7 +640,7 @@
 <sourcefile name="StoreRealActor.kt">
 <line nr="29" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="33" mi="0" ci="6" mb="0" cb="0"/>
-<line nr="34" mi="0" ci="5" mb="0" cb="0"/>
+<line nr="34" mi="0" ci="4" mb="0" cb="0"/>
 <line nr="36" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="37" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="38" mi="0" ci="12" mb="0" cb="0"/>
@@ -655,7 +655,7 @@
 <line nr="52" mi="9" ci="0" mb="0" cb="0"/>
 <line nr="53" mi="1" ci="0" mb="0" cb="0"/>
 <line nr="55" mi="0" ci="1" mb="0" cb="0"/>
-<line nr="58" mi="8" ci="0" mb="2" cb="0"/>
+<line nr="58" mi="9" ci="0" mb="2" cb="0"/>
 <line nr="59" mi="1" ci="0" mb="0" cb="0"/>
 <line nr="60" mi="2" ci="0" mb="0" cb="0"/>
 <line nr="62" mi="15" ci="0" mb="0" cb="0"/>
@@ -668,9 +668,9 @@
 <line nr="79" mi="14" ci="0" mb="0" cb="0"/>
 <line nr="81" mi="16" ci="0" mb="0" cb="0"/>
 <line nr="82" mi="1" ci="0" mb="0" cb="0"/>
-<line nr="88" mi="0" ci="4" mb="0" cb="0"/>
+<line nr="88" mi="0" ci="9" mb="0" cb="0"/>
 <line nr="88" mi="0" ci="1" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="90" covered="94"/>
+<counter type="INSTRUCTION" missed="91" covered="98"/>
 <counter type="BRANCH" missed="4" covered="2"/>
 <counter type="LINE" missed="16" covered="16"/>
 </sourcefile>
@@ -926,7 +926,7 @@
 <line nr="44" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="45" mi="0" ci="13" mb="0" cb="0"/>
 <line nr="45" mi="0" ci="5" mb="0" cb="0"/>
-<line nr="46" mi="0" ci="22" mb="1" cb="1"/>
+<line nr="46" mi="0" ci="22" mb="0" cb="2"/>
 <line nr="46" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="47" mi="0" ci="10" mb="0" cb="0"/>
 <line nr="50" mi="0" ci="1" mb="0" cb="0"/>
@@ -943,7 +943,7 @@
 <line nr="62" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="63" mi="0" ci="6" mb="0" cb="0"/>
 <line nr="63" mi="0" ci="11" mb="0" cb="0"/>
-<line nr="65" mi="0" ci="25" mb="1" cb="1"/>
+<line nr="65" mi="0" ci="25" mb="0" cb="2"/>
 <line nr="65" mi="0" ci="5" mb="0" cb="0"/>
 <line nr="66" mi="0" ci="12" mb="0" cb="2"/>
 <line nr="67" mi="0" ci="19" mb="0" cb="0"/>
@@ -952,7 +952,7 @@
 <line nr="72" mi="0" ci="1" mb="0" cb="0"/>
 <line nr="76" mi="0" ci="17" mb="0" cb="0"/>
 <counter type="INSTRUCTION" missed="0" covered="420"/>
-<counter type="BRANCH" missed="3" covered="7"/>
+<counter type="BRANCH" missed="1" covered="9"/>
 <counter type="LINE" missed="0" covered="52"/>
 </sourcefile>
 <sourcefile name="Actor.kt">
@@ -973,14 +973,14 @@
 <counter type="BRANCH" missed="5" covered="1"/>
 <counter type="LINE" missed="3" covered="10"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="691" covered="1270"/>
-<counter type="BRANCH" missed="60" covered="38"/>
+<counter type="INSTRUCTION" missed="692" covered="1274"/>
+<counter type="BRANCH" missed="58" covered="40"/>
 <counter type="LINE" missed="110" covered="196"/>
 <counter type="METHOD" missed="27" covered="51"/>
 <counter type="CLASS" missed="9" covered="32"/>
 </package>
-<counter type="INSTRUCTION" missed="691" covered="1270"/>
-<counter type="BRANCH" missed="60" covered="38"/>
+<counter type="INSTRUCTION" missed="692" covered="1274"/>
+<counter type="BRANCH" missed="58" covered="40"/>
 <counter type="LINE" missed="110" covered="196"/>
 <counter type="METHOD" missed="27" covered="51"/>
 <counter type="CLASS" missed="9" covered="32"/>

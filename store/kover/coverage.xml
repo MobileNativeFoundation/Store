@@ -7418,12 +7418,12 @@
 </method>
 <method name="invokeSuspend" desc="(Ljava/lang/Object;)Ljava/lang/Object;">
 <counter type="INSTRUCTION" missed="2" covered="119"/>
-<counter type="BRANCH" missed="0" covered="10"/>
-<counter type="LINE" missed="1" covered="25"/>
+<counter type="BRANCH" missed="4" covered="6"/>
+<counter type="LINE" missed="3" covered="23"/>
 </method>
 <counter type="INSTRUCTION" missed="2" covered="119"/>
-<counter type="BRANCH" missed="0" covered="16"/>
-<counter type="LINE" missed="1" covered="37"/>
+<counter type="BRANCH" missed="4" covered="12"/>
+<counter type="LINE" missed="3" covered="35"/>
 <counter type="METHOD" missed="0" covered="2"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/impl/SourceOfTruthWithBarrier$reader$1$1$1" sourcefilename="SourceOfTruthWithBarrier.kt">
@@ -7647,12 +7647,12 @@
 <line nr="74" mi="0" ci="8" mb="0" cb="0"/>
 <line nr="75" mi="0" ci="0" mb="0" cb="2"/>
 <line nr="76" mi="0" ci="0" mb="0" cb="0"/>
-<line nr="77" mi="0" ci="0" mb="0" cb="4"/>
+<line nr="77" mi="0" ci="0" mb="1" cb="3"/>
 <line nr="78" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="80" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="82" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="83" mi="0" ci="0" mb="0" cb="0"/>
-<line nr="84" mi="0" ci="0" mb="0" cb="2"/>
+<line nr="84" mi="0" ci="0" mb="1" cb="1"/>
 <line nr="85" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="86" mi="0" ci="0" mb="0" cb="4"/>
 <line nr="87" mi="0" ci="0" mb="0" cb="0"/>
@@ -7674,7 +7674,7 @@
 <line nr="113" mi="0" ci="2" mb="0" cb="0"/>
 <line nr="114" mi="0" ci="6" mb="1" cb="1"/>
 <line nr="116" mi="0" ci="2" mb="0" cb="0"/>
-<line nr="121" mi="0" ci="0" mb="0" cb="2"/>
+<line nr="121" mi="0" ci="0" mb="2" cb="0"/>
 <line nr="122" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="125" mi="0" ci="0" mb="0" cb="0"/>
 <line nr="126" mi="0" ci="0" mb="0" cb="0"/>
@@ -7725,8 +7725,8 @@
 <line nr="211" mi="0" ci="4" mb="0" cb="0"/>
 <line nr="213" mi="0" ci="2" mb="0" cb="0"/>
 <counter type="INSTRUCTION" missed="10" covered="498"/>
-<counter type="BRANCH" missed="3" covered="23"/>
-<counter type="LINE" missed="4" covered="92"/>
+<counter type="BRANCH" missed="7" covered="19"/>
+<counter type="LINE" missed="6" covered="90"/>
 </sourcefile>
 <sourcefile name="FetcherController.kt">
 <line nr="44" mi="0" ci="12" mb="0" cb="0"/>
@@ -8131,8 +8131,8 @@
 <counter type="LINE" missed="0" covered="21"/>
 </sourcefile>
 <counter type="INSTRUCTION" missed="551" covered="3313"/>
-<counter type="BRANCH" missed="99" covered="227"/>
-<counter type="LINE" missed="86" covered="536"/>
+<counter type="BRANCH" missed="103" covered="223"/>
+<counter type="LINE" missed="88" covered="534"/>
 <counter type="METHOD" missed="15" covered="121"/>
 <counter type="CLASS" missed="1" covered="53"/>
 </package>
@@ -9302,7 +9302,7 @@
 <counter type="METHOD" missed="0" covered="1"/>
 </class>
 <class name="org/mobilenativefoundation/store/store5/util/KeyTracker" sourcefilename="AsFlowable.kt">
-<method name="activeKeyCount$store_debugUnitTest" desc="()I">
+<method name="activeKeyCount$store_releaseUnitTest" desc="()I">
 <counter type="INSTRUCTION" missed="0" covered="3"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="0" covered="1"/>
@@ -9961,8 +9961,8 @@
 <counter type="CLASS" missed="7" covered="5"/>
 </package>
 <counter type="INSTRUCTION" missed="1832" covered="19769"/>
-<counter type="BRANCH" missed="282" covered="422"/>
-<counter type="LINE" missed="266" covered="3090"/>
+<counter type="BRANCH" missed="286" covered="418"/>
+<counter type="LINE" missed="268" covered="3088"/>
 <counter type="METHOD" missed="101" covered="639"/>
 <counter type="CLASS" missed="51" covered="358"/>
 </report>
