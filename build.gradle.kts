@@ -21,6 +21,7 @@ buildscript {
         classpath(libs.kover.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
         classpath(libs.kmmBridge.gradle.plugin)
+        classpath(libs.binary.compatibility.validator)
     }
 }
 

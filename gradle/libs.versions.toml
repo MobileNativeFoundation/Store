@@ -23,6 +23,7 @@ ktlint = "0.39.0"
 kover = "0.6.0"
 store = "5.1.0-alpha02"
 truth = "1.1.3"
+binary-compatibility-validator = "0.15.0-Beta.2"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -55,6 +56,8 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 turbine = "app.cash.turbine:turbine:1.0.0"
+binary-compatibility-validator = {module = "org.jetbrains.kotlinx:binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
 
 [plugins]
 ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
+binary-compatibility-validator = {id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
