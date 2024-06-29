@@ -15,7 +15,11 @@ class PrimaryPagesApi {
         db["3"] = Page.Data("3")
     }
 
-    fun fetch(key: String, fail: Boolean, ttl: Long?): Page {
+    fun fetch(
+        key: String,
+        fail: Boolean,
+        ttl: Long?,
+    ): Page {
         if (fail) {
             throw Exception()
         }

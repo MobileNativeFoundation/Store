@@ -17,16 +17,18 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
     singlesCache: Cache<StoreKey.Single<Id>, Single> = CacheBuilder<StoreKey.Single<Id>, Single>().build(),
     collectionsCache: Cache<StoreKey.Collection<Id>, Collection> = CacheBuilder<StoreKey.Collection<Id>, Collection>().build(),
 ) : Cache<Key, Output> {
-
-    private val accessor = StoreMultiCacheAccessor(
-        singlesCache = singlesCache,
-        collectionsCache = collectionsCache,
-    )
+    private val accessor =
+        StoreMultiCacheAccessor(
+            singlesCache = singlesCache,
+            collectionsCache = collectionsCache,
+        )
 
     private fun Key.castSingle() = this as StoreKey.Single<Id>
+
     private fun Key.castCollection() = this as StoreKey.Collection<Id>
 
     private fun StoreKey.Collection<Id>.cast() = this as Key
+
     private fun StoreKey.Single<Id>.cast() = this as Key
 
     override fun getIfPresent(key: Key): Output? {
@@ -39,7 +41,10 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
         }
     }
 
-    override fun getOrPut(key: Key, valueProducer: () -> Output): Output {
+    override fun getOrPut(
+        key: Key,
+        valueProducer: () -> Output,
+    ): Output {
         return when (key) {
             is StoreKey.Single<*> -> {
                 val single = accessor.getSingle(key.castSingle()) as? Output
@@ -113,7 +118,10 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
         map.entries.forEach { (key, value) -> put(key, value) }
     }
 
-    override fun put(key: Key, value: Output) {
+    override fun put(
+        key: Key,
+        value: Output,
+    ) {
         when (key) {
             is StoreKey.Single<*> -> {
                 val single = value as Single
@@ -122,13 +130,14 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
                 val collectionKey = keyProvider.fromSingle(key.castSingle(), single)
                 val existingCollection = accessor.getCollection(collectionKey)
                 if (existingCollection != null) {
-                    val updatedItems = existingCollection.items.toMutableList().map {
-                        if (it.id == single.id) {
-                            single
-                        } else {
-                            it
+                    val updatedItems =
+                        existingCollection.items.toMutableList().map {
+                            if (it.id == single.id) {
+                                single
+                            } else {
+                                it
+                            }
                         }
-                    }
                     val updatedCollection = existingCollection.copyWith(items = updatedItems) as Collection
                     accessor.putCollection(collectionKey, updatedCollection)
                 }
@@ -157,7 +166,6 @@ class StoreMultiCache<Id : Any, Key : StoreKey<Id>, Single : StoreData.Single<Id
     }
 
     companion object {
-        fun invalidKeyErrorMessage(key: Any) =
-            "Expected StoreKey.Single or StoreKey.Collection, but received ${key::class}"
+        fun invalidKeyErrorMessage(key: Any) = "Expected StoreKey.Single or StoreKey.Collection, but received ${key::class}"
     }
 }

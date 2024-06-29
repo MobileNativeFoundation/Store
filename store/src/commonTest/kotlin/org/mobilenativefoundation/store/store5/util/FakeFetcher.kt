@@ -24,11 +24,12 @@ import org.mobilenativefoundation.store.store5.FetcherResult
 import kotlin.test.assertEquals
 
 class FakeFetcher<Key : Any, Output : Any>(
-    private vararg val responses: Pair<Key, Output>
+    private vararg val responses: Pair<Key, Output>,
 ) : Fetcher<Key, Output> {
     private var index = 0
     override val name: String? = null
     override val fallback: Fetcher<Key, Output>? = null
+
     override fun invoke(key: Key): Flow<FetcherResult<Output>> {
         if (index >= responses.size) {
             throw AssertionError("unexpected fetch request")
@@ -40,19 +41,21 @@ class FakeFetcher<Key : Any, Output : Any>(
 }
 
 class FakeFlowingFetcher<Key : Any, Output : Any>(
-    private vararg val responses: Pair<Key, Output>
+    private vararg val responses: Pair<Key, Output>,
 ) : Fetcher<Key, Output> {
     override val name: String? = null
     override val fallback: Fetcher<Key, Output>? = null
-    override fun invoke(key: Key) = flow {
-        responses.filter {
-            it.first == key
-        }.forEach {
-            // we delay here to avoid collapsing fetcher values, otherwise, there is a
-            // possibility that consumer won't be fast enough to get both values before new
-            // value overrides the previous one.
-            delay(1)
-            emit(FetcherResult.Data(it.second))
+
+    override fun invoke(key: Key) =
+        flow {
+            responses.filter {
+                it.first == key
+            }.forEach {
+                // we delay here to avoid collapsing fetcher values, otherwise, there is a
+                // possibility that consumer won't be fast enough to get both values before new
+                // value overrides the previous one.
+                delay(1)
+                emit(FetcherResult.Data(it.second))
+            }
         }
-    }
 }

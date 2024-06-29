@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseline version="1.0">
+    <file name="src/commonMain/kotlin/org/mobilenativefoundation/store/store5/SourceOfTruth.kt">
+        <error line="141" column="24" source="standard:discouraged-comment-location" />
+        <error line="142" column="9" source="standard:no-consecutive-comments" />
+        <error line="182" column="24" source="standard:discouraged-comment-location" />
+    </file>
+    <file name="src/commonMain/kotlin/org/mobilenativefoundation/store/store5/impl/FetcherController.kt">
+        <error line="109" column="21" source="standard:discouraged-comment-location" />
+    </file>
+    <file name="src/commonMain/kotlin/org/mobilenativefoundation/store/store5/impl/extensions/clock.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="src/commonMain/kotlin/org/mobilenativefoundation/store/store5/impl/extensions/store.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="src/commonTest/kotlin/org/mobilenativefoundation/store/store5/FlowStoreTests.kt">
+        <error line="794" column="1" source="standard:max-line-length" />
+        <error line="856" column="1" source="standard:max-line-length" />
+    </file>
+    <file name="src/commonTest/kotlin/org/mobilenativefoundation/store/store5/util/fake/NoteCollections.kt">
+        <error line="7" column="19" source="standard:property-naming" />
+    </file>
+</baseline>

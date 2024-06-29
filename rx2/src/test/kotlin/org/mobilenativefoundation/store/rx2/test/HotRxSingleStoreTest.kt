@@ -25,49 +25,51 @@ class HotRxSingleStoreTest {
 
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
-            testScope.runBlockingTest {
-                val fetcher: FakeRxFetcher<Int, FetcherResult<String>> = FakeRxFetcher(
-                        3 to FetcherResult.Data("three-1"),
-                        3 to FetcherResult.Data("three-2")
+        testScope.runBlockingTest {
+            val fetcher: FakeRxFetcher<Int, FetcherResult<String>> =
+                FakeRxFetcher(
+                    3 to FetcherResult.Data("three-1"),
+                    3 to FetcherResult.Data("three-2"),
                 )
-                val pipeline = StoreBuilder.from(Fetcher.ofResultSingle<Int, String> { fetcher.fetch(it) })
-                        .scope(testScope)
-                        .build()
+            val pipeline =
+                StoreBuilder.from(Fetcher.ofResultSingle<Int, String> { fetcher.fetch(it) })
+                    .scope(testScope)
+                    .build()
 
-                assertThat(pipeline.stream(StoreReadRequest.cached(3, refresh = false)))
-                        .emitsExactly(
-                                StoreReadResponse.Loading(
-                                        origin = StoreReadResponseOrigin.Fetcher()
-                                ),
-                                StoreReadResponse.Data(
-                                        value = "three-1",
-                                        origin = StoreReadResponseOrigin.Fetcher()
-                                )
-                        )
-                assertThat(
-                        pipeline.stream(StoreReadRequest.cached(3, refresh = false))
-                ).emitsExactly(
-                        StoreReadResponse.Data(
-                                value = "three-1",
-                                origin = StoreReadResponseOrigin.Cache
-                        )
+            assertThat(pipeline.stream(StoreReadRequest.cached(3, refresh = false)))
+                .emitsExactly(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-1",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
                 )
+            assertThat(
+                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
+            ).emitsExactly(
+                StoreReadResponse.Data(
+                    value = "three-1",
+                    origin = StoreReadResponseOrigin.Cache,
+                ),
+            )
 
-                assertThat(pipeline.stream(StoreReadRequest.fresh(3)))
-                        .emitsExactly(
-                                StoreReadResponse.Loading(
-                                        origin = StoreReadResponseOrigin.Fetcher()
-                                ),
-                                StoreReadResponse.Data(
-                                        value = "three-2",
-                                        origin = StoreReadResponseOrigin.Fetcher()
-                                )
-                        )
-            }
+            assertThat(pipeline.stream(StoreReadRequest.fresh(3)))
+                .emitsExactly(
+                    StoreReadResponse.Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    StoreReadResponse.Data(
+                        value = "three-2",
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                )
+        }
 }
 
 class FakeRxFetcher<Key, Output>(
-        vararg val responses: Pair<Key, Output>
+    vararg val responses: Pair<Key, Output>,
 ) {
     private var index = 0
 

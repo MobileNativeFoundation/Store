@@ -2,7 +2,12 @@ package org.mobilenativefoundation.store.store5.util.fake
 
 class NotesBookkeeping {
     private val log: MutableMap<NotesKey, Long?> = mutableMapOf()
-    fun setLastFailedSync(key: NotesKey, timestamp: Long, fail: Boolean = false): Boolean {
+
+    fun setLastFailedSync(
+        key: NotesKey,
+        timestamp: Long,
+        fail: Boolean = false,
+    ): Boolean {
         if (fail) {
             throw Exception()
         }
@@ -10,7 +15,10 @@ class NotesBookkeeping {
         return true
     }
 
-    fun getLastFailedSync(key: NotesKey, fail: Boolean = false): Long? {
+    fun getLastFailedSync(
+        key: NotesKey,
+        fail: Boolean = false,
+    ): Long? {
         if (fail) {
             throw Exception()
         }
@@ -18,7 +26,10 @@ class NotesBookkeeping {
         return log[key]
     }
 
-    fun clear(key: NotesKey, fail: Boolean = false): Boolean {
+    fun clear(
+        key: NotesKey,
+        fail: Boolean = false,
+    ): Boolean {
         if (fail) {
             throw Exception()
         }

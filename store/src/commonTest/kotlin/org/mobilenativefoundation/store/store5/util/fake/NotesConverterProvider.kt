@@ -13,7 +13,7 @@ internal class NotesConverterProvider {
             .fromNetworkToLocal { value: NetworkNote ->
                 InputNote(
                     data = value.data,
-                    ttl = value.ttl ?: inHours(12)
+                    ttl = value.ttl ?: inHours(12),
                 )
             }
             .build()

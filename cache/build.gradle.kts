@@ -3,8 +3,6 @@
 import com.vanniktech.maven.publish.SonatypeHost.S01
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 plugins {
     kotlin("multiplatform")
@@ -70,7 +68,7 @@ kotlin {
         }
     }
 
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 android {
@@ -92,8 +90,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -101,7 +99,7 @@ tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(17)
     }
 }
 
@@ -126,13 +124,4 @@ koverMerged {
     verify {
         onCheck.set(true)
     }
-}
-
-// See https://youtrack.jetbrains.com/issue/KT-63014
-rootProject.the<NodeJsRootExtension>().apply {
-    nodeVersion = "21.0.0-v8-canary20231024d0ddc81258"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
-}
-tasks.withType<KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
 }

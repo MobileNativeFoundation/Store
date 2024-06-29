@@ -2,8 +2,8 @@ package org.mobilenativefoundation.store.store5.impl.extensions
 
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
-import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
@@ -40,15 +40,16 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
 @Suppress("UNCHECKED_CAST")
 fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
     updater: Updater<Key, Output, Response>,
-    bookkeeper: Bookkeeper<Key>?
+    bookkeeper: Bookkeeper<Key>?,
 ): MutableStore<Key, Output> {
-    val delegate = this as? RealStore<Key, Network, Output, Local>
-        ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
+    val delegate =
+        this as? RealStore<Key, Network, Output, Local>
+            ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
 
     return RealMutableStore(
         delegate = delegate,
         updater = updater,
-        bookkeeper = bookkeeper
+        bookkeeper = bookkeeper,
     )
 }
 

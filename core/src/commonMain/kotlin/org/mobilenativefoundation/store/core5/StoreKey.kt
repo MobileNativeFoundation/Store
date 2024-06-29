@@ -8,7 +8,6 @@ package org.mobilenativefoundation.store.core5
  */
 @ExperimentalStoreApi
 interface StoreKey<out Id : Any> {
-
     /**
      * Represents a key for fetching an individual item.
      */
@@ -50,7 +49,7 @@ interface StoreKey<out Id : Any> {
         NEWEST,
         OLDEST,
         ALPHABETICAL,
-        REVERSE_ALPHABETICAL
+        REVERSE_ALPHABETICAL,
     }
 
     /**
