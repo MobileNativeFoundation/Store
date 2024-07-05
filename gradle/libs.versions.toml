@@ -21,7 +21,7 @@ testCore = "1.5.0"
 kmmBridge = "0.3.2"
 ktlint = "0.39.0"
 kover = "0.6.0"
-store = "5.1.0-alpha02"
+store = "5.1.0-alpha03"
 truth = "1.1.3"
 binary-compatibility-validator = "0.15.0-Beta.2"
 
