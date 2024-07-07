@@ -50,13 +50,13 @@ subprojects {
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "17"
+            jvmTarget = "11"
         }
     }
 
     withType<JavaCompile>().configureEach {
-        sourceCompatibility = JavaVersion.VERSION_17.name
-        targetCompatibility = JavaVersion.VERSION_17.name
+        sourceCompatibility = JavaVersion.VERSION_11.name
+        targetCompatibility = JavaVersion.VERSION_11.name
     }
 }
 
