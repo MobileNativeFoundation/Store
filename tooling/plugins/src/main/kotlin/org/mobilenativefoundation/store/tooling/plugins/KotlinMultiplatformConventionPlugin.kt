@@ -61,7 +61,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 nodejs()
             }
 
-            jvmToolchain(17)
+            jvmToolchain(11)
 
             targets.all {
                 compilations.all {
@@ -135,7 +135,7 @@ fun Project.configureKotlin() {
 fun Project.configureJava() {
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(11))
         }
     }
 }
@@ -156,8 +156,8 @@ fun Project.configureAndroid() {
         }
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
         }
     }
 }
@@ -218,7 +218,7 @@ fun Project.configureDokka() = tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
-        jdkVersion.set(17)
+        jdkVersion.set(11)
     }
 }
 
