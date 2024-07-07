@@ -24,11 +24,11 @@ class AndroidConventionPlugin : Plugin<Project> {
 
         extensions.configure<LibraryExtension> {
 
-            compileSdk = 33
+            compileSdk = 34
 
             defaultConfig {
-                minSdk = 24
-                targetSdk = 33
+                minSdk = 31
+                targetSdk = 34
             }
 
             lint {

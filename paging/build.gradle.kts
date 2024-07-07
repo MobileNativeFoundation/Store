@@ -60,11 +60,11 @@ android {
     namespace = "org.mobilenativefoundation.store.paging5"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
-        targetSdk = 33
+        minSdk = 31
+        targetSdk = 34
     }
 
     lint {
