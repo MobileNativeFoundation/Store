@@ -1,7 +1,7 @@
 [versions]
 androidMinSdk = "24"
 androidCompileSdk = "33"
-androidGradlePlugin = "8.2.2"
+androidGradlePlugin = "7.4.2"
 androidTargetSdk = "33"
 atomicFu = "0.24.0"
 baseKotlin = "2.0.0"
