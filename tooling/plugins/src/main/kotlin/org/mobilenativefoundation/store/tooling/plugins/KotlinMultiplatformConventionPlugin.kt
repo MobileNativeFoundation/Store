@@ -170,9 +170,9 @@ private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.co
 
 object Versions {
     const val COMPILE_SDK = 34
-    const val MIN_SDK = 31
+    const val MIN_SDK = 24
     const val TARGET_SDK = 34
-    const val STORE = "5.1.0-alpha03"
+    const val STORE = "5.1.0-alpha04"
 }
 
 
