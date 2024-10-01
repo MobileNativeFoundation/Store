@@ -1,12 +1,15 @@
 package org.mobilenativefoundation.store.store5.util
 
-import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 
 /**
@@ -71,7 +74,7 @@ internal class KeyTracker<Key> {
     suspend fun invalidate(key: Key) {
         lock.withLock {
             channels[key]
-        }?.channel?.send(Unit)
+        }?.channel?.emit(Unit)
     }
 
     /**
@@ -85,25 +88,19 @@ internal class KeyTracker<Key> {
         return flow {
             val keyChannel =
                 lock.withLock {
-                    channels.getOrPut(key) {
-                        KeyChannel(
-                            channel =
-                                BroadcastChannel<Unit>(Channel.CONFLATED).apply {
-                                    // start w/ an initial value.
-                                    trySend(Unit).isSuccess
-                                },
-                        )
-                    }.also {
-                        it.acquire() // refcount
+                    channels.getOrPut(key) { KeyChannel() }.also {
+                        it.collectors++ // refcount
                     }
                 }
+            emit(Unit)
             try {
-                emitAll(keyChannel.channel.openSubscription())
+                emitAll(keyChannel.channel)
             } finally {
-                lock.withLock {
-                    keyChannel.release()
-                    if (keyChannel.channel.isClosedForSend) {
-                        channels.remove(key)
+                withContext(NonCancellable) {
+                    lock.withLock {
+                        if (--keyChannel.collectors == 0) {
+                            channels.remove(key)
+                        }
                     }
                 }
             }
@@ -113,20 +110,12 @@ internal class KeyTracker<Key> {
     /**
      * A data structure to count how many active flows we have on this channel
      */
-    private data class KeyChannel(
-        val channel: BroadcastChannel<Unit>,
-        var collectors: Int = 0,
-    ) {
-        fun acquire() {
-            collectors++
-        }
-
-        fun release() {
-            collectors--
-            if (collectors == 0) {
-                channel.close()
-            }
-        }
+    private class KeyChannel {
+        val channel: MutableSharedFlow<Unit>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+        var collectors: Int = 0;
     }
 }
 
