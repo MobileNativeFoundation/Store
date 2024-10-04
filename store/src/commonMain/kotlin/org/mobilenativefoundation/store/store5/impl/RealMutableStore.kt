@@ -193,10 +193,13 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     @AnyThread
     private suspend fun <Output : Any?> withThreadSafety(key: Key, block: suspend ThreadSafety.() -> Output): Output {
         storeLock.lock()
-        val threadSafety = requireNotNull(keyToThreadSafety[key])
-        val output = threadSafety.block()
-        storeLock.unlock()
-        return output
+        try {
+            val threadSafety = requireNotNull(keyToThreadSafety[key])
+            val output = threadSafety.block()
+            return output
+        } finally {
+            storeLock.unlock()
+        }
     }
 
     private suspend fun conflictsMightExist(key: Key): Boolean {
