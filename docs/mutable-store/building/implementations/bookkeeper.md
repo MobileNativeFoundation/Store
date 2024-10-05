@@ -4,7 +4,7 @@
 interface Bookkeeper<Key : Any> {
     companion object {
         fun <Key : Any> by(
-            maxLastFailedSync: suspend (key: Key) -> Long?,
+            getLastFailedSync: suspend (key: Key) -> Long?,
             setLastFailedSync: suspend (key: Key, timestamp: Long) -> Boolean,
             clear: suspend (key: Key) -> Boolean,
             clearAll: suspend () -> Boolean
