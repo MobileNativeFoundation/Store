@@ -104,7 +104,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
 
             val stream: Flow<StoreReadResponse<Output>> =
                 if (sourceOfTruth == null) {
-                    // piggypack only if not specified fresh data AND we emitted a value from the cache
+                    // piggyback only if not specified fresh data AND we emitted a value from the cache
                     val piggybackOnly = !request.refresh && cachedToEmit != null
                     @Suppress("UNCHECKED_CAST")
 
