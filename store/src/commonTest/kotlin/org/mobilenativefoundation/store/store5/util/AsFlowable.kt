@@ -2,7 +2,6 @@ package org.mobilenativefoundation.store.store5.util
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emitAll
@@ -61,11 +60,11 @@ fun <Key : Any, Output : Any> SimplePersisterAsFlowable<Key, Output>.asSourceOfT
 internal class KeyTracker<Key> {
     private val lock = Mutex()
 
-    // list of open key channels
-    private val channels = mutableMapOf<Key, KeyChannel>()
+    // list of open key flows
+    private val flows = mutableMapOf<Key, KeyFlow>()
 
     // for testing
-    internal fun activeKeyCount() = channels.size
+    internal fun activeKeyCount() = flows.size
 
     /**
      * invalidates the given key. If there are flows returned from [keyFlow] for the given [key],
@@ -73,8 +72,8 @@ internal class KeyTracker<Key> {
      */
     suspend fun invalidate(key: Key) {
         lock.withLock {
-            channels[key]
-        }?.channel?.emit(Unit)
+            flows[key]
+        }?.flow?.emit(Unit)
     }
 
     /**
@@ -82,24 +81,24 @@ internal class KeyTracker<Key> {
      * [invalidate]
      */
     suspend fun keyFlow(key: Key): Flow<Unit> {
-        // it is important to allocate KeyChannel lazily (ony when the returned flow is collected
+        // it is important to allocate KeyFlow lazily (ony when the returned flow is collected
         // from). Otherwise, we might just create many of them that are never observed hence never
         // cleaned up
         return flow {
-            val keyChannel =
+            val keyFlow =
                 lock.withLock {
-                    channels.getOrPut(key) { KeyChannel() }.also {
-                        it.collectors++ // refcount
+                    flows.getOrPut(key) { KeyFlow() }.also {
+                        it.acquire()
                     }
                 }
             emit(Unit)
             try {
-                emitAll(keyChannel.channel)
+                emitAll(keyFlow.flow)
             } finally {
                 withContext(NonCancellable) {
                     lock.withLock {
-                        if (--keyChannel.collectors == 0) {
-                            channels.remove(key)
+                        if (keyFlow.release()) {
+                            flows.remove(key)
                         }
                     }
                 }
@@ -108,14 +107,21 @@ internal class KeyTracker<Key> {
     }
 
     /**
-     * A data structure to count how many active flows we have on this channel
+     * A data structure to count how many active flows we have on this flow
      */
-    private class KeyChannel {
-        val channel: MutableSharedFlow<Unit>(
+    private class KeyFlow {
+        val flow = MutableSharedFlow<Unit>(
             extraBufferCapacity = 1,
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
-        var collectors: Int = 0;
+        private var collectors: Int = 0;
+
+        fun acquire() {
+            collectors++
+        }
+
+        fun release() = (--collectors) == 0
+
     }
 }
 
