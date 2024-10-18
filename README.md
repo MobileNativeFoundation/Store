@@ -34,7 +34,7 @@
 
 #### Android
 ```kotlin
-implementation "org.mobilenativefoundation.store:store5:5.1.0-alpha04"
+implementation "org.mobilenativefoundation.store:store5:5.1.0-alpha05"
 ```
 
 #### Multiplatform (Common, JVM, Native, JS)
@@ -42,7 +42,7 @@ implementation "org.mobilenativefoundation.store:store5:5.1.0-alpha04"
 ```kotlin
 commonMain {
   dependencies {
-    implementation("org.mobilenativefoundation.store:store5:5.1.0-alpha04")
+    implementation("org.mobilenativefoundation.store:store5:5.1.0-alpha05")
   }
 }
 ```
