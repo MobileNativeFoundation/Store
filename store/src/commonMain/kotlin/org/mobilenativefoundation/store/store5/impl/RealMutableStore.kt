@@ -201,16 +201,11 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private suspend fun <Output : Any?> withThreadSafety(
         key: Key,
         block: suspend ThreadSafety.() -> Output,
-    ): Output {
-        storeLock.lock()
-        try {
+    ): Output =
+        storeLock.withLock {
             val threadSafety = requireNotNull(keyToThreadSafety[key])
-            val output = threadSafety.block()
-            return output
-        } finally {
-            storeLock.unlock()
+            threadSafety.block()
         }
-    }
 
     private suspend fun conflictsMightExist(key: Key): Boolean {
         val lastFailedSync = bookkeeper?.getLastFailedSync(key)

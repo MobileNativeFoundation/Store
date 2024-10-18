@@ -2,20 +2,15 @@
 <report name="Intellij Coverage Report">
 <package name="org/mobilenativefoundation/store/paging5">
 <class name="org/mobilenativefoundation/store/paging5/BuildConfig" sourcefilename="BuildConfig.java">
-<method name="&lt;clinit&gt;" desc="()V">
-<counter type="INSTRUCTION" missed="3" covered="0"/>
-<counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="1" covered="0"/>
-</method>
 <method name="&lt;init&gt;" desc="()V">
 <counter type="INSTRUCTION" missed="2" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
 <counter type="LINE" missed="1" covered="0"/>
 </method>
-<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="INSTRUCTION" missed="2" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="2" covered="0"/>
-<counter type="METHOD" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
+<counter type="METHOD" missed="1" covered="0"/>
 </class>
 <class name="org/mobilenativefoundation/store/paging5/LaunchPagingStoreKt" sourcefilename="LaunchPagingStore.kt">
 <method name="launchPagingStore$lambda$1" desc="(Lorg/mobilenativefoundation/store/store5/MutableStore;Lorg/mobilenativefoundation/store/core5/StoreKey;)Lkotlinx/coroutines/flow/Flow;">
@@ -278,10 +273,9 @@
 </class>
 <sourcefile name="BuildConfig.java">
 <line nr="6" mi="2" ci="0" mb="0" cb="0"/>
-<line nr="7" mi="3" ci="0" mb="0" cb="0"/>
-<counter type="INSTRUCTION" missed="5" covered="0"/>
+<counter type="INSTRUCTION" missed="2" covered="0"/>
 <counter type="BRANCH" missed="0" covered="0"/>
-<counter type="LINE" missed="2" covered="0"/>
+<counter type="LINE" missed="1" covered="0"/>
 </sourcefile>
 <sourcefile name="LaunchPagingStore.kt">
 <line nr="21" mi="0" ci="2" mb="0" cb="0"/>
@@ -449,10 +443,10 @@
 <counter type="BRANCH" missed="11" covered="11"/>
 <counter type="LINE" missed="0" covered="119"/>
 </sourcefile>
-<counter type="INSTRUCTION" missed="46" covered="1702"/>
+<counter type="INSTRUCTION" missed="43" covered="1702"/>
 <counter type="BRANCH" missed="17" covered="27"/>
-<counter type="LINE" missed="4" covered="154"/>
-<counter type="METHOD" missed="4" covered="27"/>
+<counter type="LINE" missed="3" covered="154"/>
+<counter type="METHOD" missed="3" covered="27"/>
 <counter type="CLASS" missed="1" covered="19"/>
 </package>
 <package name="org/mobilenativefoundation/store/paging5/util">
@@ -1066,10 +1060,10 @@
 <counter type="METHOD" missed="13" covered="37"/>
 <counter type="CLASS" missed="11" covered="18"/>
 </package>
-<counter type="INSTRUCTION" missed="289" covered="2284"/>
+<counter type="INSTRUCTION" missed="286" covered="2284"/>
 <counter type="BRANCH" missed="45" covered="50"/>
-<counter type="LINE" missed="41" covered="257"/>
-<counter type="METHOD" missed="17" covered="64"/>
+<counter type="LINE" missed="40" covered="257"/>
+<counter type="METHOD" missed="16" covered="64"/>
 <counter type="CLASS" missed="12" covered="37"/>
 </report>
 
