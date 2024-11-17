@@ -2,8 +2,6 @@
 
 package org.mobilenativefoundation.store.store5.impl
 
-import co.touchlab.kermit.CommonWriter
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -14,6 +12,7 @@ import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Clear
+import org.mobilenativefoundation.store.store5.Logger
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -32,6 +31,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
+    private val logger: Logger = DefaultLogger()
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
@@ -43,19 +43,19 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
 
             when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
                 is EagerConflictResolutionResult.Error.Exception -> {
-                    logger.e(eagerConflictResolutionResult.error.toString())
+                    logger.error(eagerConflictResolutionResult.error.toString())
                 }
 
                 is EagerConflictResolutionResult.Error.Message -> {
-                    logger.e(eagerConflictResolutionResult.message)
+                    logger.error(eagerConflictResolutionResult.message)
                 }
 
                 is EagerConflictResolutionResult.Success.ConflictsResolved -> {
-                    logger.d(eagerConflictResolutionResult.value.toString())
+                    logger.debug(eagerConflictResolutionResult.value.toString())
                 }
 
                 EagerConflictResolutionResult.Success.NoConflicts -> {
-                    logger.d(eagerConflictResolutionResult.toString())
+                    logger.debug(eagerConflictResolutionResult.toString())
                 }
             }
 
@@ -263,14 +263,5 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private suspend fun safeInitStore(key: Key) {
         safeInitThreadSafety(key)
         safeInitWriteRequestQueue(key)
-    }
-
-    companion object {
-        private val logger =
-            Logger.apply {
-                setLogWriters(listOf(CommonWriter()))
-                setTag("Store")
-            }
-        private const val UNKNOWN_ERROR = "Unknown error occurred"
     }
 }
