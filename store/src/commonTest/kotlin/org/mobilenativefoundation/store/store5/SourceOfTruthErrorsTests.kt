@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancelAndJoin
@@ -15,8 +16,8 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth.WriteException
 import org.mobilenativefoundation.store.store5.util.FakeFetcher
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
@@ -44,21 +45,26 @@ class SourceOfTruthErrorsTests {
                 throw TestException("i fail")
             }
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+
+                assertEquals(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                            WriteException(
-                                key = 3,
-                                value = "a",
-                                cause = TestException("i fail"),
-                            ),
+                        WriteException(
+                            key = 3,
+                            value = "a",
+                            cause = TestException("i fail"),
+                        ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     @Test
@@ -83,33 +89,41 @@ class SourceOfTruthErrorsTests {
                 throw TestException(value ?: "null")
             }
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                            ReadException(
-                                key = 3,
-                                cause = TestException("null"),
-                            ),
+                        ReadException(
+                            key = 3,
+                            cause = TestException("null"),
+                        ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    // after disk fails, we should still invoke fetcher
+                    awaitItem()
+                )
+
+                // after disk fails, we should still invoke fetcher
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    // and after fetcher writes the value, it will trigger another read which will also
-                    // fail
+                    awaitItem()
+                )
+
+                // and after fetcher writes the value, it will trigger another read which will also
+                // fail
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                            ReadException(
-                                key = 3,
-                                cause = TestException("a"),
-                            ),
+                        ReadException(
+                            key = 3,
+                            cause = TestException("a"),
+                        ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     @Test
@@ -135,46 +149,65 @@ class SourceOfTruthErrorsTests {
                 }
                 value
             }
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
-                listOf(
+            pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                            WriteException(
-                                key = 3,
-                                value = "a",
-                                cause = TestException("a"),
-                            ),
+                        WriteException(
+                            key = 3,
+                            value = "a",
+                            cause = TestException("a"),
+                        ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "b",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                            WriteException(
-                                key = 3,
-                                value = "c",
-                                cause = TestException("c"),
-                            ),
+                        WriteException(
+                            key = 3,
+                            value = "c",
+                            cause = TestException("c"),
+                        ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    // disk flow will restart after a failed write (because we stopped it before the
-                    // write attempt starts, so we will get the disk value again).
+                    awaitItem()
+                )
+
+                // disk flow will restart after a failed write (because we stopped it before the
+                // write attempt starts, so we will get the disk value again).
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "b",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "d",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
 //    @Test
@@ -279,24 +312,34 @@ class SourceOfTruthErrorsTests {
 
             // miss both failures but arrive before d is fetched
             delay(70)
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.skipMemory(3, refresh = true)),
-                listOf(
+
+            pipeline.stream(StoreReadRequest.skipMemory(3, refresh = true)).test {
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "b",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    // don't receive the write exception because technically it started before we
-                    // started reading
+                    awaitItem()
+                )
+
+                // don't receive the write exception because technically it started before we
+                // started reading
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "d",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
+
             collector.cancelAndJoin()
         }
 
@@ -366,26 +409,34 @@ class SourceOfTruthErrorsTests {
                 }
                 value
             }
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = true)),
-                listOf(
+            pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
-                            ReadException(
-                                key = 3,
-                                cause = TestException("first read"),
-                            ),
+                        ReadException(
+                            key = 3,
+                            cause = TestException("first read"),
+                        ),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "a",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
     }
 
