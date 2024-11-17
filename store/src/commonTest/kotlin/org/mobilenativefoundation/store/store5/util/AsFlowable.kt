@@ -110,18 +110,18 @@ internal class KeyTracker<Key> {
      * A data structure to count how many active flows we have on this flow
      */
     private class KeyFlow {
-        val flow = MutableSharedFlow<Unit>(
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
-        private var collectors: Int = 0;
+        val flow =
+            MutableSharedFlow<Unit>(
+                extraBufferCapacity = 1,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+        private var collectors: Int = 0
 
         fun acquire() {
             collectors++
         }
 
         fun release() = (--collectors) == 0
-
     }
 }
 
