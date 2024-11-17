@@ -1,12 +1,13 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,42 +30,55 @@ class HotFlowStoreTests {
                     .scope(testScope)
                     .build()
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
-                    StoreReadResponse.Loading(
-                        origin = StoreReadResponseOrigin.Fetcher(),
-                    ),
-                    StoreReadResponse.Data(
-                        value = "three-1",
-                        origin = StoreReadResponseOrigin.Fetcher(),
-                    ),
-                ),
-            )
-            assertEmitsExactly(
+            val job = launch {
+                pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                    assertEquals(
+                        StoreReadResponse.Loading(
+                            origin = StoreReadResponseOrigin.Fetcher(),
+                        ),
+                        awaitItem()
+                    )
+
+                    assertEquals(
+                        StoreReadResponse.Data(
+                            value = "three-1",
+                            origin = StoreReadResponseOrigin.Fetcher(),
+                        ),
+                        awaitItem()
+                    )
+                }
+
                 pipeline.stream(
                     StoreReadRequest.cached(3, refresh = false),
-                ),
-                listOf(
-                    StoreReadResponse.Data(
-                        value = "three-1",
-                        origin = StoreReadResponseOrigin.Cache,
-                    ),
-                ),
-            )
+                ).test {
+                    assertEquals(
+                        StoreReadResponse.Data(
+                            value = "three-1",
+                            origin = StoreReadResponseOrigin.Cache,
+                        ),
+                        awaitItem()
+                    )
+                }
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
-                    StoreReadResponse.Loading(
-                        origin = StoreReadResponseOrigin.Fetcher(),
-                    ),
-                    StoreReadResponse.Data(
-                        value = "three-2",
-                        origin = StoreReadResponseOrigin.Fetcher(),
-                    ),
-                ),
-            )
+                pipeline.stream(StoreReadRequest.fresh(3)).test {
+                    assertEquals(
+                        StoreReadResponse.Loading(
+                            origin = StoreReadResponseOrigin.Fetcher(),
+                        ),
+                        awaitItem()
+                    )
+
+                    assertEquals(
+                        StoreReadResponse.Data(
+                            value = "three-2",
+                            origin = StoreReadResponseOrigin.Fetcher(),
+                        ),
+                        awaitItem()
+                    )
+                }
+            }
+
+            job.cancel()
         }
 }
 
