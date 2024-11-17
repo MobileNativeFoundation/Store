@@ -15,13 +15,3 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Run check with Gradle Wrapper
         run: ./gradlew check
-
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ./kover/coverage.xml
-          name: codecov-umbrella
-          verbose: true
