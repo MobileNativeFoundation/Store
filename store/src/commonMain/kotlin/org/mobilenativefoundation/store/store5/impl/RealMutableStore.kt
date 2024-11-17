@@ -42,6 +42,11 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             safeInitStore(request.key)
 
             when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
+
+                // TODO(matt-ramotar): Many use cases will not want to pull immediately after failing
+                // to push local changes. We should enable configuration of conflict resolution strategies,
+                // such as logging, retrying, canceling.
+
                 is EagerConflictResolutionResult.Error.Exception -> {
                     logger.error(eagerConflictResolutionResult.error.toString())
                 }
