@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -9,7 +10,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.impl.extensions.inHours
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import org.mobilenativefoundation.store.store5.util.fake.Notes
 import org.mobilenativefoundation.store.store5.util.fake.NotesApi
 import org.mobilenativefoundation.store.store5.util.fake.NotesBookkeeping
@@ -63,12 +63,12 @@ class UpdaterTests {
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
                     sourceOfTruth =
-                        SourceOfTruth.of(
-                            nonFlowReader = { key -> notes.get(key) },
-                            writer = { key, sot: InputNote -> notes.put(key, sot) },
-                            delete = { key -> notes.clear(key) },
-                            deleteAll = { notes.clear() },
-                        ),
+                    SourceOfTruth.of(
+                        nonFlowReader = { key -> notes.get(key) },
+                        writer = { key, sot: InputNote -> notes.put(key, sot) },
+                        delete = { key -> notes.clear(key) },
+                        deleteAll = { notes.clear() },
+                    ),
                     converter = converter,
                 )
                     .validator(validator)
@@ -82,18 +82,20 @@ class UpdaterTests {
             val stream = store.stream<NotesWriteResponse>(readRequest)
 
             // Read is success
-            val expected =
-                listOf(
+            stream.test {
+                assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
                 )
-            assertEmitsExactly(
-                stream,
-                expected,
-            )
+            }
 
             val newNote = Notes.One.copy(title = "New Title-1")
             val writeRequest =
@@ -174,12 +176,12 @@ class UpdaterTests {
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
                     sourceOfTruth =
-                        SourceOfTruth.of(
-                            nonFlowReader = { key -> notes.get(key) },
-                            writer = { key, sot: InputNote -> notes.put(key, sot) },
-                            delete = { key -> notes.clear(key) },
-                            deleteAll = { notes.clear() },
-                        ),
+                    SourceOfTruth.of(
+                        nonFlowReader = { key -> notes.get(key) },
+                        writer = { key, sot: InputNote -> notes.put(key, sot) },
+                        delete = { key -> notes.clear(key) },
+                        deleteAll = { notes.clear() },
+                    ),
                     converter = converter,
                 )
                     .validator(validator)
@@ -193,18 +195,20 @@ class UpdaterTests {
             val stream = store.stream<NotesWriteResponse>(readRequest)
 
             // Fetch is success and validator is not used
-            val expected =
-                listOf(
+            stream.test {
+                assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
                 )
-            assertEmitsExactly(
-                stream,
-                expected,
-            )
+            }
 
             val cachedReadRequest =
                 StoreReadRequest.cached(NotesKey.Single(Notes.One.id), refresh = false)
@@ -215,16 +219,19 @@ class UpdaterTests {
             // So we do not emit value in cache or SOT
             // Instead we get latest from network even though refresh = false
 
-            assertEmitsExactly(
-                cachedStream,
-                listOf(
+            cachedStream.test {
+                assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher(name = null)),
+                    awaitItem()
+                )
+                assertEquals(
                     StoreReadResponse.Data(
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     @Test
@@ -244,17 +251,17 @@ class UpdaterTests {
             val store =
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher =
-                        Fetcher.ofFlow { key ->
-                            val network = api.get(key)
-                            flow { emit(network) }
-                        },
+                    Fetcher.ofFlow { key ->
+                        val network = api.get(key)
+                        flow { emit(network) }
+                    },
                     sourceOfTruth =
-                        SourceOfTruth.of(
-                            nonFlowReader = { key -> notes.get(key) },
-                            writer = { key, sot -> notes.put(key, sot) },
-                            delete = { key -> notes.clear(key) },
-                            deleteAll = { notes.clear() },
-                        ),
+                    SourceOfTruth.of(
+                        nonFlowReader = { key -> notes.get(key) },
+                        writer = { key, sot -> notes.put(key, sot) },
+                        delete = { key -> notes.clear(key) },
+                        deleteAll = { notes.clear() },
+                    ),
                     converter,
                 )
                     .validator(validator)
