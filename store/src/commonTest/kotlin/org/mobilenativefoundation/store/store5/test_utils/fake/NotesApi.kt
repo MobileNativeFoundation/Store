@@ -1,10 +1,10 @@
-package org.mobilenativefoundation.store.store5.util.fake
+package org.mobilenativefoundation.store.store5.test_utils.fake
 
-import org.mobilenativefoundation.store.store5.util.TestApi
-import org.mobilenativefoundation.store.store5.util.model.InputNote
-import org.mobilenativefoundation.store.store5.util.model.NetworkNote
-import org.mobilenativefoundation.store.store5.util.model.NoteData
-import org.mobilenativefoundation.store.store5.util.model.NotesWriteResponse
+import org.mobilenativefoundation.store.store5.test_utils.TestApi
+import org.mobilenativefoundation.store.store5.test_utils.model.InputNote
+import org.mobilenativefoundation.store.store5.test_utils.model.NetworkNote
+import org.mobilenativefoundation.store.store5.test_utils.model.NoteData
+import org.mobilenativefoundation.store.store5.test_utils.model.NotesWriteResponse
 
 internal class NotesApi : TestApi<NotesKey, NetworkNote, InputNote, NotesWriteResponse> {
     internal val db = mutableMapOf<NotesKey, NetworkNote>()

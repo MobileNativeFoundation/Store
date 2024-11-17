@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.util
+package org.mobilenativefoundation.store.store5.test_utils
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow

@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.util.fake
+package org.mobilenativefoundation.store.store5.test_utils.fake
 
 class NotesBookkeeping {
     private val log: MutableMap<NotesKey, Long?> = mutableMapOf()
