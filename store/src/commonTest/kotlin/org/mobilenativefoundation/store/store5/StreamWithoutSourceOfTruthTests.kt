@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.FakeFetcher
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
+import org.mobilenativefoundation.store.store5.test_utils.FakeFetcher
+import org.mobilenativefoundation.store.store5.test_utils.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

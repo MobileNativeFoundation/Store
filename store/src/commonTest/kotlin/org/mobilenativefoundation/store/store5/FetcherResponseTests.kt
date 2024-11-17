@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
+import org.mobilenativefoundation.store.store5.test_utils.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

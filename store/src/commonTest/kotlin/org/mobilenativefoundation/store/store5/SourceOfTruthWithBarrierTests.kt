@@ -31,8 +31,8 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth.ReadException
 import org.mobilenativefoundation.store.store5.SourceOfTruth.WriteException
 import org.mobilenativefoundation.store.store5.impl.PersistentSourceOfTruth
 import org.mobilenativefoundation.store.store5.impl.SourceOfTruthWithBarrier
-import org.mobilenativefoundation.store.store5.util.InMemoryPersister
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
+import org.mobilenativefoundation.store.store5.test_utils.InMemoryPersister
+import org.mobilenativefoundation.store.store5.test_utils.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

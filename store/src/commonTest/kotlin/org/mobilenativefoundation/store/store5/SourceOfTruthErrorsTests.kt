@@ -12,10 +12,10 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.SourceOfTruth.ReadException
 import org.mobilenativefoundation.store.store5.SourceOfTruth.WriteException
-import org.mobilenativefoundation.store.store5.util.FakeFetcher
-import org.mobilenativefoundation.store.store5.util.InMemoryPersister
-import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
+import org.mobilenativefoundation.store.store5.test_utils.FakeFetcher
+import org.mobilenativefoundation.store.store5.test_utils.InMemoryPersister
+import org.mobilenativefoundation.store.store5.test_utils.asSourceOfTruth
+import org.mobilenativefoundation.store.store5.test_utils.assertEmitsExactly
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
