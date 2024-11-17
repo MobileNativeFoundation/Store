@@ -42,7 +42,7 @@ import org.mobilenativefoundation.store.store5.impl.operators.Either
 import org.mobilenativefoundation.store.store5.impl.operators.merge
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
-internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
+internal open class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     scope: CoroutineScope,
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Local, Output>? = null,
@@ -327,7 +327,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             }
     }
 
-    internal suspend fun write(
+    internal open suspend fun write(
         key: Key,
         value: Output,
     ): StoreDelegateWriteResult =
@@ -339,7 +339,7 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             StoreDelegateWriteResult.Error.Exception(error)
         }
 
-    internal suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
+    internal open suspend fun latestOrNull(key: Key): Output? = fromMemCache(key) ?: fromSourceOfTruth(key)
 
     private suspend fun fromSourceOfTruth(key: Key) =
         sourceOfTruth?.reader(key, CompletableDeferred(Unit))?.map { it.dataOrNull() }?.first()
