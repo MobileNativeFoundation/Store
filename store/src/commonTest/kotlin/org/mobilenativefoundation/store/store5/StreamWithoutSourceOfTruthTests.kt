@@ -42,7 +42,7 @@ class StreamWithoutSourceOfTruthTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -50,7 +50,7 @@ class StreamWithoutSourceOfTruthTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -97,7 +97,7 @@ class StreamWithoutSourceOfTruthTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -105,7 +105,7 @@ class StreamWithoutSourceOfTruthTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 

@@ -153,12 +153,12 @@ class SourceOfTruthWithBarrierTests {
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
-                        ReadException(
-                            key = 1,
-                            cause = exception,
-                        ),
+                            ReadException(
+                                key = 1,
+                                cause = exception,
+                            ),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -188,10 +188,10 @@ class SourceOfTruthWithBarrierTests {
                 StoreReadResponse.Error.Exception(
                     origin = StoreReadResponseOrigin.SourceOfTruth,
                     error =
-                    ReadException(
-                        key = 1,
-                        cause = exception,
-                    ),
+                        ReadException(
+                            key = 1,
+                            cause = exception,
+                        ),
                 ),
                 collected.first(),
             )
@@ -205,10 +205,10 @@ class SourceOfTruthWithBarrierTests {
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
-                        ReadException(
-                            key = 1,
-                            cause = exception,
-                        ),
+                            ReadException(
+                                key = 1,
+                                cause = exception,
+                            ),
                     ),
                     StoreReadResponse.Data(
                         // this is fetcher since we are using the write API
@@ -254,11 +254,11 @@ class SourceOfTruthWithBarrierTests {
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
-                        WriteException(
-                            key = 1,
-                            value = failValue,
-                            cause = exception,
-                        ),
+                            WriteException(
+                                key = 1,
+                                value = failValue,
+                                cause = exception,
+                            ),
                     ),
                     StoreReadResponse.Data<String?>(
                         origin = StoreReadResponseOrigin.SourceOfTruth,

@@ -34,37 +34,37 @@ class FetcherResponseTests {
         }
 
     @Test
-    fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() = testScope.runTest {
-        val exception = RuntimeException("first error")
-        val store =
-            StoreBuilder.from(
-                fetcher =
-                Fetcher.ofResultFlow { key: Int ->
-                    flowOf(
-                        FetcherResult.Error.Exception(exception),
-                        FetcherResult.Data("$key"),
-                    )
-                },
-            ).buildWithTestScope()
+    fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() =
+        testScope.runTest {
+            val exception = RuntimeException("first error")
+            val store =
+                StoreBuilder.from(
+                    fetcher =
+                        Fetcher.ofResultFlow { key: Int ->
+                            flowOf(
+                                FetcherResult.Error.Exception(exception),
+                                FetcherResult.Data("$key"),
+                            )
+                        },
+                ).buildWithTestScope()
 
-        store.stream(StoreReadRequest.fresh(1)).test {
-            assertEquals(
-                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                awaitItem()
-            )
+            store.stream(StoreReadRequest.fresh(1)).test {
+                assertEquals(
+                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
 
-            assertEquals(
-                StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
-                awaitItem()
-            )
+                assertEquals(
+                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
 
-            assertEquals(
-                StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
-                awaitItem()
-            )
+                assertEquals(
+                    StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
+            }
         }
-
-    }
 
     @Test
     fun givenTransformerWhenRawValueThenUnwrappedValueReturnedAndValueIsCached() =
@@ -79,7 +79,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -87,7 +87,7 @@ class FetcherResponseTests {
                         value = 9,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -97,7 +97,7 @@ class FetcherResponseTests {
                         value = 9,
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -125,7 +125,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -133,7 +133,7 @@ class FetcherResponseTests {
                         message = "zero",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -142,7 +142,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -150,7 +150,7 @@ class FetcherResponseTests {
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -180,7 +180,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -188,7 +188,7 @@ class FetcherResponseTests {
                         error = e,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -197,7 +197,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -205,7 +205,7 @@ class FetcherResponseTests {
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -228,13 +228,12 @@ class FetcherResponseTests {
                     .from(fetcher = fetcher)
                     .buildWithTestScope()
 
-
             pipeline.stream(StoreReadRequest.fresh(3)).test {
                 assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -242,7 +241,7 @@ class FetcherResponseTests {
                         error = e,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -251,7 +250,7 @@ class FetcherResponseTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -259,7 +258,7 @@ class FetcherResponseTests {
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -274,17 +273,17 @@ class FetcherResponseTests {
             val store =
                 StoreBuilder.from(
                     fetcher =
-                    Fetcher.ofResultFlow { _: Int ->
-                        flowOf(
-                            FetcherResult.Error.Custom(customError),
-                        )
-                    },
+                        Fetcher.ofResultFlow { _: Int ->
+                            flowOf(
+                                FetcherResult.Error.Custom(customError),
+                            )
+                        },
                 ).buildWithTestScope()
 
             store.stream(StoreReadRequest.fresh(1)).test {
                 assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -292,7 +291,7 @@ class FetcherResponseTests {
                         error = customError,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }

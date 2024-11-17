@@ -129,7 +129,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -137,7 +137,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -147,7 +147,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 // note that we still get the data from persister as well as we don't listen to
@@ -159,7 +159,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -168,7 +168,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -176,7 +176,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -186,7 +186,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -194,7 +194,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -220,7 +220,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -228,7 +228,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -238,7 +238,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -246,14 +246,14 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -261,7 +261,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -283,7 +283,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -291,10 +291,9 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
-
 
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
                 assertEquals(
@@ -302,14 +301,14 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -317,7 +316,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -334,13 +333,12 @@ class FlowStoreTests {
                 StoreBuilder.from(fetcher = fetcher)
                     .buildWithTestScope()
 
-
             pipeline.stream(StoreReadRequest.skipMemory(3, refresh = false)).test {
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -348,7 +346,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -357,7 +355,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -365,7 +363,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -388,13 +386,12 @@ class FlowStoreTests {
                     .disableCache()
                     .buildWithTestScope()
 
-
             pipeline.stream(StoreReadRequest.fresh(3)).test {
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -402,7 +399,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -410,7 +407,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -420,14 +417,14 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -435,7 +432,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -443,7 +440,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -475,7 +472,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -483,7 +480,7 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -491,7 +488,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -503,14 +500,14 @@ class FlowStoreTests {
             val pipeline =
                 StoreBuilder.from(
                     fetcher =
-                    Fetcher.ofFlow {
-                        flow {
-                            delay(10)
-                            emit("three-1")
-                            delay(10)
-                            emit("three-2")
-                        }
-                    },
+                        Fetcher.ofFlow {
+                            flow {
+                                delay(10)
+                                emit("three-1")
+                                delay(10)
+                                emit("three-2")
+                            }
+                        },
                     sourceOfTruth = persister.asSourceOfTruth(),
                 )
                     .disableCache()
@@ -528,7 +525,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -536,7 +533,7 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -544,7 +541,7 @@ class FlowStoreTests {
                         value = "three-1",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -552,7 +549,7 @@ class FlowStoreTests {
                         value = "local-2",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -560,7 +557,7 @@ class FlowStoreTests {
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -590,7 +587,7 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -598,7 +595,7 @@ class FlowStoreTests {
                         error = exception,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -606,24 +603,24 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
             pipeline.stream(StoreReadRequest.cached(key = 3, refresh = true)).test {
-             assertEquals(
-                 Data(
-                     value = "local-1",
-                     origin = StoreReadResponseOrigin.SourceOfTruth,
-                 ),
-                 awaitItem()
-             )
+                assertEquals(
+                    Data(
+                        value = "local-1",
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                    ),
+                    awaitItem(),
+                )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -631,7 +628,7 @@ class FlowStoreTests {
                         error = exception,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -656,14 +653,14 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.NoNewData(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -671,7 +668,7 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -679,7 +676,7 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -699,14 +696,13 @@ class FlowStoreTests {
             val firstFetch = pipeline.fresh(3) // prime the cache
             assertEquals("local-1", firstFetch)
 
-
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
                 assertEquals(
                     Data(
                         value = "local-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -714,21 +710,21 @@ class FlowStoreTests {
                         value = "local-1",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.NoNewData(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -740,13 +736,13 @@ class FlowStoreTests {
             val pipeline =
                 StoreBuilder.from(
                     fetcher =
-                    Fetcher.ofFlow {
-                        if (createCount++ == 0) {
-                            flowOf("remote-1")
-                        } else {
-                            flowOf()
-                        }
-                    },
+                        Fetcher.ofFlow {
+                            if (createCount++ == 0) {
+                                flowOf("remote-1")
+                            } else {
+                                flowOf()
+                            }
+                        },
                 )
                     .buildWithTestScope()
 
@@ -758,14 +754,14 @@ class FlowStoreTests {
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.NoNewData(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -773,7 +769,7 @@ class FlowStoreTests {
                         value = "remote-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -785,13 +781,13 @@ class FlowStoreTests {
             val pipeline =
                 StoreBuilder.from(
                     fetcher =
-                    Fetcher.ofFlow {
-                        if (createCount++ == 0) {
-                            flowOf("remote-1")
-                        } else {
-                            flowOf()
-                        }
-                    },
+                        Fetcher.ofFlow {
+                            if (createCount++ == 0) {
+                                flowOf("remote-1")
+                            } else {
+                                flowOf()
+                            }
+                        },
                 )
                     .buildWithTestScope()
 
@@ -804,21 +800,21 @@ class FlowStoreTests {
                         value = "remote-1",
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.NoNewData(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -953,7 +949,7 @@ class FlowStoreTests {
         }
 
     @Test
-    fun givenCacheAndNoSourceOfTruthWhen3CachedStreamsWithRefreshAnd1stHasSlowCollectionThen1stStreamsGets3FetchUpdatesAndOtherStreamsGetCacheResultAndFetchResult() =
+    fun testSlowFirstCollectorGetsAllFetchUpdatesOthersGetCacheAndLatestFetchResult() =
         testScope.runTest {
             val fetcher =
                 FakeFetcher(
@@ -983,37 +979,35 @@ class FlowStoreTests {
                 fetcher1Collected,
             )
 
-
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-1"),
-                    awaitItem()
+                    awaitItem(),
                 )
                 assertEquals(
                     Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2"),
-                    awaitItem()
+                    awaitItem(),
                 )
-
             }
 
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-2"),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-3"),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -1032,7 +1026,7 @@ class FlowStoreTests {
         }
 
     @Test
-    fun givenCacheAndNoSourceOfTruthWhen2CachedStreamsWithRefreshThenFirstStreamsGets2FetchUpdatesAnd2ndStreamGetsCacheResultAndFetchResult() =
+    fun testFirstStreamGetsTwoFetchUpdatesSecondGetsCacheAndFetchResult() =
         testScope.runTest {
             val fetcher =
                 FakeFetcher(
@@ -1062,17 +1056,17 @@ class FlowStoreTests {
             pipeline.stream(StoreReadRequest.cached(3, refresh = true)).test {
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Cache, value = "three-1"),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     Data(origin = StoreReadResponseOrigin.Fetcher(), value = "three-2"),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
