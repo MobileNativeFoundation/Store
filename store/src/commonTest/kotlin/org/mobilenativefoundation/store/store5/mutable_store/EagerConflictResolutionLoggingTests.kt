@@ -9,7 +9,6 @@ import dev.mokkery.matcher.any
 import dev.mokkery.matcher.eq
 import dev.mokkery.mock
 import dev.mokkery.verify
-import dev.mokkery.verify.VerifyMode
 import dev.mokkery.verify.VerifyMode.Companion.exactly
 import dev.mokkery.verifySuspend
 import kotlinx.coroutines.flow.flowOf
@@ -28,7 +27,7 @@ import org.mobilenativefoundation.store.store5.test_utils.model.Note
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class RealMutableStoreTests {
+class EagerConflictResolutionLoggingTests {
     private val testScope = TestScope()
 
     private val delegate = mock<RealStore<String, Note, Note, Note>>(autoUnit)
@@ -85,6 +84,60 @@ class RealMutableStoreTests {
 
             verify(exactly(1)) {
                 logger.error(eq(exception.toString()))
+            }
+
+            verify(exactly(1)) {
+                delegate.stream(eq(readRequest))
+            }
+
+            assertEquals(readResponse, awaitItem())
+
+            awaitComplete()
+        }
+
+    }
+
+    @Test
+    fun stream_givenConflicts_whenErrorMessageResolvingConflicts_thenShouldLog() = testScope.runTest {
+        // Given
+        val latestNote = Note("id", "Title", "Content")
+        val readResponse = StoreReadResponse.Data(latestNote, StoreReadResponseOrigin.Cache)
+        val delegateFlow = flowOf(readResponse)
+        val errorMessage = "Error updating network."
+        val readRequest = StoreReadRequest.fresh("id")
+
+        every {
+            delegate.stream(any())
+        } returns delegateFlow
+
+        everySuspend {
+            delegate.latestOrNull(any())
+        } returns latestNote
+
+        everySuspend {
+            bookkeeper.getLastFailedSync(any())
+        } returns 1L
+
+        everySuspend {
+            updater.post(any(), any())
+        } returns UpdaterResult.Error.Message(errorMessage)
+
+
+        // When
+        val stream = mutableStore.stream<Boolean>(
+            readRequest
+        )
+
+        // Then
+
+        stream.test {
+
+            verifySuspend(exactly(1)) {
+                updater.post(eq("id"), eq(latestNote))
+            }
+
+            verify(exactly(1)) {
+                logger.error(eq(errorMessage))
             }
 
             verify(exactly(1)) {
