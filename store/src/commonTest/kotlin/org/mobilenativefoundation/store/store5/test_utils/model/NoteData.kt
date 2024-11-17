@@ -1,6 +1,6 @@
-package org.mobilenativefoundation.store.store5.util.model
+package org.mobilenativefoundation.store.store5.test_utils.model
 
-import org.mobilenativefoundation.store.store5.util.fake.NotesKey
+import org.mobilenativefoundation.store.store5.test_utils.fake.NotesKey
 
 internal sealed class NoteData {
     data class Single(val item: Note) : NoteData()

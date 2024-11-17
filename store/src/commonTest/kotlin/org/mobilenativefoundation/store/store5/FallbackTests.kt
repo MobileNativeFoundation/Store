@@ -4,11 +4,11 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.fake.fallback.HardcodedPages
-import org.mobilenativefoundation.store.store5.util.fake.fallback.Page
-import org.mobilenativefoundation.store.store5.util.fake.fallback.PagesDatabase
-import org.mobilenativefoundation.store.store5.util.fake.fallback.PrimaryPagesApi
-import org.mobilenativefoundation.store.store5.util.fake.fallback.SecondaryPagesApi
+import org.mobilenativefoundation.store.store5.test_utils.fake.fallback.HardcodedPages
+import org.mobilenativefoundation.store.store5.test_utils.fake.fallback.Page
+import org.mobilenativefoundation.store.store5.test_utils.fake.fallback.PagesDatabase
+import org.mobilenativefoundation.store.store5.test_utils.fake.fallback.PrimaryPagesApi
+import org.mobilenativefoundation.store.store5.test_utils.fake.fallback.SecondaryPagesApi
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

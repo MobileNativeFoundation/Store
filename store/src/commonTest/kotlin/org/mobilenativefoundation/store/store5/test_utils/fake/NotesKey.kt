@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.util.fake
+package org.mobilenativefoundation.store.store5.test_utils.fake
 
 sealed class NotesKey {
     data class Single(val id: String) : NotesKey()

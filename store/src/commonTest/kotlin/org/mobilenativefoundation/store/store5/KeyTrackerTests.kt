@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.KeyTracker
+import org.mobilenativefoundation.store.store5.test_utils.KeyTracker
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
