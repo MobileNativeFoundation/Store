@@ -49,18 +49,18 @@ class FetcherResponseTests {
 
         store.stream(StoreReadRequest.fresh(1)).test {
             assertEquals(
-                expected = StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                actual = awaitItem()
+                StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                awaitItem()
             )
 
             assertEquals(
-                expected = StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
-                actual = awaitItem()
+                StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
+                awaitItem()
             )
 
             assertEquals(
-                expected = StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
-                actual = awaitItem()
+                StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
+                awaitItem()
             )
         }
 
@@ -76,28 +76,28 @@ class FetcherResponseTests {
 
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
                 assertEquals(
-                    expected = StoreReadResponse.Loading(
+                    StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
 
                 assertEquals(
-                    expected = StoreReadResponse.Data(
+                    StoreReadResponse.Data(
                         value = 9,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
             }
 
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
                 assertEquals(
-                    expected = StoreReadResponse.Data(
+                    StoreReadResponse.Data(
                         value = 9,
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
             }
         }
@@ -122,35 +122,35 @@ class FetcherResponseTests {
 
             pipeline.stream(StoreReadRequest.fresh(3)).test {
                 assertEquals(
-                    expected = StoreReadResponse.Loading(
+                    StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
 
                 assertEquals(
-                    expected = StoreReadResponse.Error.Message(
+                    StoreReadResponse.Error.Message(
                         message = "zero",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
             }
 
             pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
                 assertEquals(
-                    expected = StoreReadResponse.Loading(
+                    StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
 
                 assertEquals(
-                    expected = StoreReadResponse.Data(
+                    StoreReadResponse.Data(
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    actual = awaitItem()
+                    awaitItem()
                 )
             }
         }
