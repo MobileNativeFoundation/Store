@@ -46,23 +46,22 @@ class SourceOfTruthErrorsTests {
             }
 
             pipeline.stream(StoreReadRequest.fresh(3)).test {
-
                 assertEquals(
                     StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                        WriteException(
-                            key = 3,
-                            value = "a",
-                            cause = TestException("i fail"),
-                        ),
+                            WriteException(
+                                key = 3,
+                                value = "a",
+                                cause = TestException("i fail"),
+                            ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -93,13 +92,13 @@ class SourceOfTruthErrorsTests {
                 assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                        ReadException(
-                            key = 3,
-                            cause = TestException("null"),
-                        ),
+                            ReadException(
+                                key = 3,
+                                cause = TestException("null"),
+                            ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 // after disk fails, we should still invoke fetcher
@@ -107,7 +106,7 @@ class SourceOfTruthErrorsTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 // and after fetcher writes the value, it will trigger another read which will also
@@ -115,13 +114,13 @@ class SourceOfTruthErrorsTests {
                 assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                        ReadException(
-                            key = 3,
-                            cause = TestException("a"),
-                        ),
+                            ReadException(
+                                key = 3,
+                                cause = TestException("a"),
+                            ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -154,19 +153,19 @@ class SourceOfTruthErrorsTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
                 assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                        WriteException(
-                            key = 3,
-                            value = "a",
-                            cause = TestException("a"),
-                        ),
+                            WriteException(
+                                key = 3,
+                                value = "a",
+                                cause = TestException("a"),
+                            ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -174,20 +173,20 @@ class SourceOfTruthErrorsTests {
                         value = "b",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.Error.Exception(
                         error =
-                        WriteException(
-                            key = 3,
-                            value = "c",
-                            cause = TestException("c"),
-                        ),
+                            WriteException(
+                                key = 3,
+                                value = "c",
+                                cause = TestException("c"),
+                            ),
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 // disk flow will restart after a failed write (because we stopped it before the
@@ -197,7 +196,7 @@ class SourceOfTruthErrorsTests {
                         value = "b",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -205,7 +204,7 @@ class SourceOfTruthErrorsTests {
                         value = "d",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -319,7 +318,7 @@ class SourceOfTruthErrorsTests {
                         value = "b",
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 // don't receive the write exception because technically it started before we
@@ -328,7 +327,7 @@ class SourceOfTruthErrorsTests {
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -336,7 +335,7 @@ class SourceOfTruthErrorsTests {
                         value = "d",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -414,19 +413,19 @@ class SourceOfTruthErrorsTests {
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
-                        ReadException(
-                            key = 3,
-                            cause = TestException("first read"),
-                        ),
+                            ReadException(
+                                key = 3,
+                                cause = TestException("first read"),
+                            ),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -434,7 +433,7 @@ class SourceOfTruthErrorsTests {
                         value = "a",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }

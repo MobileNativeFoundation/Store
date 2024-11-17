@@ -30,53 +30,54 @@ class HotFlowStoreTests {
                     .scope(testScope)
                     .build()
 
-            val job = launch {
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
-                    assertEquals(
-                        StoreReadResponse.Loading(
-                            origin = StoreReadResponseOrigin.Fetcher(),
-                        ),
-                        awaitItem()
-                    )
+            val job =
+                launch {
+                    pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                        assertEquals(
+                            StoreReadResponse.Loading(
+                                origin = StoreReadResponseOrigin.Fetcher(),
+                            ),
+                            awaitItem(),
+                        )
 
-                    assertEquals(
-                        StoreReadResponse.Data(
-                            value = "three-1",
-                            origin = StoreReadResponseOrigin.Fetcher(),
-                        ),
-                        awaitItem()
-                    )
+                        assertEquals(
+                            StoreReadResponse.Data(
+                                value = "three-1",
+                                origin = StoreReadResponseOrigin.Fetcher(),
+                            ),
+                            awaitItem(),
+                        )
+                    }
+
+                    pipeline.stream(
+                        StoreReadRequest.cached(3, refresh = false),
+                    ).test {
+                        assertEquals(
+                            StoreReadResponse.Data(
+                                value = "three-1",
+                                origin = StoreReadResponseOrigin.Cache,
+                            ),
+                            awaitItem(),
+                        )
+                    }
+
+                    pipeline.stream(StoreReadRequest.fresh(3)).test {
+                        assertEquals(
+                            StoreReadResponse.Loading(
+                                origin = StoreReadResponseOrigin.Fetcher(),
+                            ),
+                            awaitItem(),
+                        )
+
+                        assertEquals(
+                            StoreReadResponse.Data(
+                                value = "three-2",
+                                origin = StoreReadResponseOrigin.Fetcher(),
+                            ),
+                            awaitItem(),
+                        )
+                    }
                 }
-
-                pipeline.stream(
-                    StoreReadRequest.cached(3, refresh = false),
-                ).test {
-                    assertEquals(
-                        StoreReadResponse.Data(
-                            value = "three-1",
-                            origin = StoreReadResponseOrigin.Cache,
-                        ),
-                        awaitItem()
-                    )
-                }
-
-                pipeline.stream(StoreReadRequest.fresh(3)).test {
-                    assertEquals(
-                        StoreReadResponse.Loading(
-                            origin = StoreReadResponseOrigin.Fetcher(),
-                        ),
-                        awaitItem()
-                    )
-
-                    assertEquals(
-                        StoreReadResponse.Data(
-                            value = "three-2",
-                            origin = StoreReadResponseOrigin.Fetcher(),
-                        ),
-                        awaitItem()
-                    )
-                }
-            }
 
             job.cancel()
         }

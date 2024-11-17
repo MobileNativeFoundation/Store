@@ -63,12 +63,12 @@ class UpdaterTests {
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
                     sourceOfTruth =
-                    SourceOfTruth.of(
-                        nonFlowReader = { key -> notes.get(key) },
-                        writer = { key, sot: InputNote -> notes.put(key, sot) },
-                        delete = { key -> notes.clear(key) },
-                        deleteAll = { notes.clear() },
-                    ),
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> notes.get(key) },
+                            writer = { key, sot: InputNote -> notes.put(key, sot) },
+                            delete = { key -> notes.clear(key) },
+                            deleteAll = { notes.clear() },
+                        ),
                     converter = converter,
                 )
                     .validator(validator)
@@ -85,7 +85,7 @@ class UpdaterTests {
             stream.test {
                 assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -93,7 +93,7 @@ class UpdaterTests {
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -176,12 +176,12 @@ class UpdaterTests {
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher = Fetcher.of { key -> api.get(key, ttl = ttl) },
                     sourceOfTruth =
-                    SourceOfTruth.of(
-                        nonFlowReader = { key -> notes.get(key) },
-                        writer = { key, sot: InputNote -> notes.put(key, sot) },
-                        delete = { key -> notes.clear(key) },
-                        deleteAll = { notes.clear() },
-                    ),
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> notes.get(key) },
+                            writer = { key, sot: InputNote -> notes.put(key, sot) },
+                            delete = { key -> notes.clear(key) },
+                            deleteAll = { notes.clear() },
+                        ),
                     converter = converter,
                 )
                     .validator(validator)
@@ -198,7 +198,7 @@ class UpdaterTests {
             stream.test {
                 assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
-                    awaitItem()
+                    awaitItem(),
                 )
 
                 assertEquals(
@@ -206,7 +206,7 @@ class UpdaterTests {
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
 
@@ -222,14 +222,14 @@ class UpdaterTests {
             cachedStream.test {
                 assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher(name = null)),
-                    awaitItem()
+                    awaitItem(),
                 )
                 assertEquals(
                     StoreReadResponse.Data(
                         OutputNote(NoteData.Single(Notes.One), ttl = ttl),
                         StoreReadResponseOrigin.Fetcher(),
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
         }
@@ -251,17 +251,17 @@ class UpdaterTests {
             val store =
                 MutableStoreBuilder.from<NotesKey, NetworkNote, InputNote, OutputNote>(
                     fetcher =
-                    Fetcher.ofFlow { key ->
-                        val network = api.get(key)
-                        flow { emit(network) }
-                    },
+                        Fetcher.ofFlow { key ->
+                            val network = api.get(key)
+                            flow { emit(network) }
+                        },
                     sourceOfTruth =
-                    SourceOfTruth.of(
-                        nonFlowReader = { key -> notes.get(key) },
-                        writer = { key, sot -> notes.put(key, sot) },
-                        delete = { key -> notes.clear(key) },
-                        deleteAll = { notes.clear() },
-                    ),
+                        SourceOfTruth.of(
+                            nonFlowReader = { key -> notes.get(key) },
+                            writer = { key, sot -> notes.put(key, sot) },
+                            delete = { key -> notes.clear(key) },
+                            deleteAll = { notes.clear() },
+                        ),
                     converter,
                 )
                     .validator(validator)

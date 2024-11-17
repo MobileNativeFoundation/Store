@@ -12,11 +12,12 @@ class MapIndexedTests {
     private val scope = TestScope()
 
     @Test
-    fun mapIndexed() = scope.runTest {
-        flowOf(5, 6).mapIndexed { index, value -> index to value }.test {
-            assertEquals(0 to 5, awaitItem())
-            assertEquals(1 to 6, awaitItem())
-            awaitComplete()
+    fun mapIndexed() =
+        scope.runTest {
+            flowOf(5, 6).mapIndexed { index, value -> index to value }.test {
+                assertEquals(0 to 5, awaitItem())
+                assertEquals(1 to 6, awaitItem())
+                awaitComplete()
+            }
         }
-    }
 }
