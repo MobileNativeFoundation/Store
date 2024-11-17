@@ -6,7 +6,7 @@ import org.mobilenativefoundation.store.store5.Logger
 /**
  * Default implementation of [Logger] using the Kermit logging library.
  */
-class DefaultLogger : Logger {
+internal class DefaultLogger : Logger {
 
     private val delegate =
         co.touchlab.kermit.Logger.apply {
