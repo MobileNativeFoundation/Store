@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flowOf
@@ -7,7 +8,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -34,31 +34,36 @@ class FetcherResponseTests {
         }
 
     @Test
-    fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() {
+    fun givenAFetcherThatEmitsErrorAndDataWhenSteamingThenItCanEmitValueAfterAnError() = testScope.runTest {
         val exception = RuntimeException("first error")
-        testScope.runTest {
-            val store =
-                StoreBuilder.from(
-                    fetcher =
-                        Fetcher.ofResultFlow { key: Int ->
-                            flowOf(
-                                FetcherResult.Error.Exception(exception),
-                                FetcherResult.Data("$key"),
-                            )
-                        },
-                ).buildWithTestScope()
+        val store =
+            StoreBuilder.from(
+                fetcher =
+                Fetcher.ofResultFlow { key: Int ->
+                    flowOf(
+                        FetcherResult.Error.Exception(exception),
+                        FetcherResult.Data("$key"),
+                    )
+                },
+            ).buildWithTestScope()
 
-            assertEmitsExactly(
-                store.stream(
-                    StoreReadRequest.fresh(1),
-                ),
-                listOf(
-                    StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
-                    StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
-                ),
+        store.stream(StoreReadRequest.fresh(1)).test {
+            assertEquals(
+                expected = StoreReadResponse.Loading(StoreReadResponseOrigin.Fetcher()),
+                actual = awaitItem()
+            )
+
+            assertEquals(
+                expected = StoreReadResponse.Error.Exception(exception, StoreReadResponseOrigin.Fetcher()),
+                actual = awaitItem()
+            )
+
+            assertEquals(
+                expected = StoreReadResponse.Data("1", StoreReadResponseOrigin.Fetcher()),
+                actual = awaitItem()
             )
         }
+
     }
 
     @Test
@@ -69,27 +74,32 @@ class FetcherResponseTests {
                 StoreBuilder
                     .from(fetcher).buildWithTestScope()
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
-                    StoreReadResponse.Loading(
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
+                    expected = StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    StoreReadResponse.Data(
+                    actual = awaitItem()
+                )
+
+                assertEquals(
+                    expected = StoreReadResponse.Data(
                         value = 9,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
-                    StoreReadResponse.Data(
+                    actual = awaitItem()
+                )
+            }
+
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
+                    expected = StoreReadResponse.Data(
                         value = 9,
                         origin = StoreReadResponseOrigin.Cache,
                     ),
-                ),
-            )
+                    actual = awaitItem()
+                )
+            }
         }
 
     @Test
@@ -110,30 +120,39 @@ class FetcherResponseTests {
                 StoreBuilder.from(fetcher)
                     .buildWithTestScope()
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
-                    StoreReadResponse.Loading(
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+                assertEquals(
+                    expected = StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    StoreReadResponse.Error.Message(
+                    actual = awaitItem()
+                )
+
+                assertEquals(
+                    expected = StoreReadResponse.Error.Message(
                         message = "zero",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
-                    StoreReadResponse.Loading(
+                    actual = awaitItem()
+                )
+            }
+
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
+                    expected = StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                    StoreReadResponse.Data(
+                    actual = awaitItem()
+                )
+
+                assertEquals(
+                    expected = StoreReadResponse.Data(
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    actual = awaitItem()
+                )
+            }
         }
 
     @Test
@@ -156,30 +175,39 @@ class FetcherResponseTests {
                     .from(fetcher)
                     .buildWithTestScope()
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error = e,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
+                    awaitItem()
+                )
+            }
+
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     @Test
@@ -200,58 +228,73 @@ class FetcherResponseTests {
                     .from(fetcher = fetcher)
                     .buildWithTestScope()
 
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
+
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         error = e,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.cached(3, refresh = false)),
-                listOf(
+                    awaitItem()
+                )
+            }
+
+            pipeline.stream(StoreReadRequest.cached(3, refresh = false)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = 1,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     @Test
     fun givenAFetcherThatEmitsCustomErrorWhenStreamingThenCustomErrorShouldBeEmitted() =
         testScope.runTest {
             data class TestCustomError(val errorMessage: String)
+
             val customError = TestCustomError("Test custom error")
 
             val store =
                 StoreBuilder.from(
                     fetcher =
-                        Fetcher.ofResultFlow { _: Int ->
-                            flowOf(
-                                FetcherResult.Error.Custom(customError),
-                            )
-                        },
+                    Fetcher.ofResultFlow { _: Int ->
+                        flowOf(
+                            FetcherResult.Error.Custom(customError),
+                        )
+                    },
                 ).buildWithTestScope()
 
-            assertEmitsExactly(
-                store.stream(StoreReadRequest.fresh(1)),
-                listOf(
+            store.stream(StoreReadRequest.fresh(1)).test {
+                assertEquals(
                     StoreReadResponse.Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem()
+                )
+
+                assertEquals(
                     StoreReadResponse.Error.Custom(
                         error = customError,
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem()
+                )
+            }
         }
 
     private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() = scope(testScope).build()
