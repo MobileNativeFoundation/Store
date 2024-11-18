@@ -1,6 +1,6 @@
-package org.mobilenativefoundation.store.store5.test_utils.fake
+package org.mobilenativefoundation.store.store5.util.fake
 
-import org.mobilenativefoundation.store.store5.test_utils.model.Note
+import org.mobilenativefoundation.store.store5.util.model.Note
 
 internal object Notes {
     val One = Note("1", "Title-1", "Content-1")

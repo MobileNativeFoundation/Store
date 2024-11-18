@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.test_utils
+package org.mobilenativefoundation.store.store5.util
 
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 

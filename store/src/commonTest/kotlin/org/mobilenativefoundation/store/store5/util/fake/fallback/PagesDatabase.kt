@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.test_utils.fake.fallback
+package org.mobilenativefoundation.store.store5.util.fake.fallback
 
 class PagesDatabase {
     private val db: MutableMap<String, Page?> = mutableMapOf()

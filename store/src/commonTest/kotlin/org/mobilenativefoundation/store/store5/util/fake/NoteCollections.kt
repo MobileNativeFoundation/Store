@@ -1,6 +1,6 @@
-package org.mobilenativefoundation.store.store5.test_utils.fake
+package org.mobilenativefoundation.store.store5.util.fake
 
-import org.mobilenativefoundation.store.store5.test_utils.model.NoteData
+import org.mobilenativefoundation.store.store5.util.model.NoteData
 
 internal object NoteCollections {
     object Keys {

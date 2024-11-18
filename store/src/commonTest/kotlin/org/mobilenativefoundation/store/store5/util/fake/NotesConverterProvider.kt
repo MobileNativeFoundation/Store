@@ -1,10 +1,10 @@
-package org.mobilenativefoundation.store.store5.test_utils.fake
+package org.mobilenativefoundation.store.store5.util.fake
 
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.impl.extensions.inHours
-import org.mobilenativefoundation.store.store5.test_utils.model.InputNote
-import org.mobilenativefoundation.store.store5.test_utils.model.NetworkNote
-import org.mobilenativefoundation.store.store5.test_utils.model.OutputNote
+import org.mobilenativefoundation.store.store5.util.model.InputNote
+import org.mobilenativefoundation.store.store5.util.model.NetworkNote
+import org.mobilenativefoundation.store.store5.util.model.OutputNote
 
 internal class NotesConverterProvider {
     fun provide(): Converter<NetworkNote, InputNote, OutputNote> =
