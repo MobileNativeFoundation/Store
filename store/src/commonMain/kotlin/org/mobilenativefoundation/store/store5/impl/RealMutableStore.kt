@@ -31,7 +31,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
-    private val logger: Logger = DefaultLogger()
+    private val logger: Logger = DefaultLogger(),
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
@@ -42,7 +42,6 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             safeInitStore(request.key)
 
             when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
-
                 // TODO(matt-ramotar): Many use cases will not want to pull immediately after failing
                 // to push local changes. We should enable configuration of conflict resolution strategies,
                 // such as logging, retrying, canceling.
@@ -56,10 +55,11 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 }
 
                 is EagerConflictResolutionResult.Success.ConflictsResolved -> {
-                    val message = when (val result = eagerConflictResolutionResult.value) {
-                        is UpdaterResult.Success.Typed<*> -> result.value.toString()
-                        is UpdaterResult.Success.Untyped -> result.value.toString()
-                    }
+                    val message =
+                        when (val result = eagerConflictResolutionResult.value) {
+                            is UpdaterResult.Success.Typed<*> -> result.value.toString()
+                            is UpdaterResult.Success.Untyped -> result.value.toString()
+                        }
                     logger.debug(message)
                 }
 
@@ -230,17 +230,16 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
 
     @AnyThread
     private suspend fun <Response : Any> tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<Response> {
-
-        val (latest, conflictsExist) = withThreadSafety(key) {
-            val latest = delegate.latestOrNull(key)
-            val conflictsExist = latest != null && bookkeeper != null && conflictsMightExist(key)
-            latest to conflictsExist
-        }
+        val (latest, conflictsExist) =
+            withThreadSafety(key) {
+                val latest = delegate.latestOrNull(key)
+                val conflictsExist = latest != null && bookkeeper != null && conflictsMightExist(key)
+                latest to conflictsExist
+            }
 
         if (!conflictsExist || latest == null) {
             return EagerConflictResolutionResult.Success.NoConflicts
         }
-
 
         return try {
             val updaterResult =
@@ -266,7 +265,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             if (keyToThreadSafety[key] == null) {
                 keyToThreadSafety[key] = ThreadSafety()
             }
-            if(keyToWriteRequestQueue[key] == null) {
+            if (keyToWriteRequestQueue[key] == null) {
                 keyToWriteRequestQueue[key] = ArrayDeque()
             }
         }
