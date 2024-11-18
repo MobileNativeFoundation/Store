@@ -10,7 +10,10 @@ interface Logger {
      * @param message The error message to log.
      * @param throwable An optional [Throwable] associated with the error.
      */
-    fun error(message: String, throwable: Throwable? = null)
+    fun error(
+        message: String,
+        throwable: Throwable? = null,
+    )
 
     /**
      * Logs a debug message.
