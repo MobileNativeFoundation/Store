@@ -1,3 +1,5 @@
+import org.mobilenativefoundation.store.tooling.plugins.configureKover
+
 plugins {
     id("org.mobilenativefoundation.store.multiplatform")
     alias(libs.plugins.kover)
@@ -29,6 +31,8 @@ kotlin {
         }
     }
 }
+
+project.configureKover()
 
 android {
     namespace = "org.mobilenativefoundation.store.store5"
