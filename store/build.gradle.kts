@@ -1,9 +1,7 @@
-import org.gradle.internal.impldep.org.testng.reporters.XMLUtils.xml
-
-
 plugins {
     id("org.mobilenativefoundation.store.multiplatform")
     alias(libs.plugins.kover)
+    id("dev.mokkery") version "2.5.1"
 }
 
 kotlin {
