@@ -1,4 +1,4 @@
-package org.mobilenativefoundation.store.store5.test_utils
+package org.mobilenativefoundation.store.store5.util
 
 internal interface TestApi<Key : Any, Network : Any, Output : Any, Response : Any> {
     fun get(

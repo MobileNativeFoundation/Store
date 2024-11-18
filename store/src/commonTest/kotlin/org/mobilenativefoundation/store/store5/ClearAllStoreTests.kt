@@ -6,9 +6,9 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
-import org.mobilenativefoundation.store.store5.test_utils.InMemoryPersister
-import org.mobilenativefoundation.store.store5.test_utils.asSourceOfTruth
-import org.mobilenativefoundation.store.store5.test_utils.getData
+import org.mobilenativefoundation.store.store5.util.InMemoryPersister
+import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
+import org.mobilenativefoundation.store.store5.util.getData
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

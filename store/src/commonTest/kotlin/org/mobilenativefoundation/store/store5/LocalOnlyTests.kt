@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.impl.extensions.get
-import org.mobilenativefoundation.store.store5.test_utils.InMemoryPersister
-import org.mobilenativefoundation.store.store5.test_utils.asSourceOfTruth
+import org.mobilenativefoundation.store.store5.util.InMemoryPersister
+import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

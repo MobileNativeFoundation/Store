@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mobilenativefoundation.store.store5.test_utils
+package org.mobilenativefoundation.store.store5.util
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
