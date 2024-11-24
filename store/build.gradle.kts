@@ -35,7 +35,6 @@ android {
     namespace = "org.mobilenativefoundation.store.store5"
 }
 
-
 kover {
 
     reports {
