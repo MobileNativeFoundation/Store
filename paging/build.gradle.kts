@@ -7,7 +7,6 @@ plugins {
     id("com.android.library")
     id("com.vanniktech.maven.publish")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlinx.kover")
     id("co.touchlab.faktory.kmmbridge")
     `maven-publish`
     kotlin("native.cocoapods")
@@ -99,24 +98,6 @@ kmmbridge {
     githubReleaseVersions()
     versionPrefix.set(libs.versions.store.get())
     spm()
-}
-
-koverMerged {
-    enable()
-
-    xmlReport {
-        onCheck.set(true)
-        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
-    }
-
-    htmlReport {
-        onCheck.set(true)
-        reportDir.set(layout.projectDirectory.dir("kover/html"))
-    }
-
-    verify {
-        onCheck.set(true)
-    }
 }
 
 atomicfu {

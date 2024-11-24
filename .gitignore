@@ -51,3 +51,8 @@ captures/
 *.podspec
 .kotlin/
 yarn.lock
+
+# Ignore coverage reports
+**/*/coverage.xml
+**/*/build/kover/
+**/*/build/reports/kover/

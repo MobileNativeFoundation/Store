@@ -8,7 +8,6 @@ import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost.S01
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
-import kotlinx.kover.api.KoverMergedConfig
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -17,11 +16,9 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
@@ -33,7 +30,6 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("com.android.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
-            apply("org.jetbrains.kotlinx.kover")
             apply("co.touchlab.faktory.kmmbridge")
             apply("maven-publish")
             apply("org.jetbrains.kotlin.native.cocoapods")
@@ -188,25 +184,6 @@ fun Project.configureKmmBridge() = extensions.configure<KmmBridgeExtension> {
     versionPrefix.set(Versions.STORE)
     spm()
 }
-
-fun Project.configureKover() = extensions.configure<KoverMergedConfig> {
-    enable()
-
-    xmlReport {
-        onCheck.set(true)
-        reportFile.set(layout.projectDirectory.file("kover/coverage.xml"))
-    }
-
-    htmlReport {
-        onCheck.set(true)
-        reportDir.set(layout.projectDirectory.dir("kover/html"))
-    }
-
-    verify {
-        onCheck.set(true)
-    }
-}
-
 
 fun Project.configureAtomicFu() =
     extensions.configure<AtomicFUPluginExtension> {

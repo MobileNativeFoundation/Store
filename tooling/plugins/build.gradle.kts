@@ -19,7 +19,6 @@ dependencies {
     compileOnly(libs.dokka.gradle.plugin)
     compileOnly(libs.maven.publish.plugin)
     compileOnly(libs.kmmBridge.gradle.plugin)
-    compileOnly(libs.kover.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
 }
 

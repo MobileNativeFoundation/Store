@@ -1,5 +1,9 @@
+import org.gradle.internal.impldep.org.testng.reporters.XMLUtils.xml
+
+
 plugins {
     id("org.mobilenativefoundation.store.multiplatform")
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -29,4 +33,16 @@ kotlin {
 
 android {
     namespace = "org.mobilenativefoundation.store.store5"
+}
+
+kover {
+
+    reports {
+        total {
+            xml {
+                onCheck = true
+                xmlFile.set(file("${layout.buildDirectory}/reports/kover/coverage.xml"))
+            }
+        }
+    }
 }
