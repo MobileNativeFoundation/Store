@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.store5.util.FakeFetcher
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -37,18 +37,22 @@ class StreamWithoutSourceOfTruthTests {
                     ).take(3).toList()
                 }
             delay(1_000) // make sure the async block starts first
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem(),
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem(),
+                )
+            }
 
             assertEquals(
                 listOf(
@@ -88,18 +92,22 @@ class StreamWithoutSourceOfTruthTests {
                     ).take(3).toList()
                 }
             delay(1_000) // make sure the async block starts first
-            assertEmitsExactly(
-                pipeline.stream(StoreReadRequest.fresh(3)),
-                listOf(
+            pipeline.stream(StoreReadRequest.fresh(3)).test {
+                assertEquals(
                     StoreReadResponse.Loading(
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
+                    awaitItem(),
+                )
+
+                assertEquals(
                     StoreReadResponse.Data(
                         value = "three-2",
                         origin = StoreReadResponseOrigin.Fetcher(),
                     ),
-                ),
-            )
+                    awaitItem(),
+                )
+            }
 
             assertEquals(
                 listOf(

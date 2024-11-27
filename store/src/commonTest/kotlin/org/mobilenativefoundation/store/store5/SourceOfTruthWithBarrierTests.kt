@@ -15,6 +15,7 @@
  */
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -32,7 +33,6 @@ import org.mobilenativefoundation.store.store5.SourceOfTruth.WriteException
 import org.mobilenativefoundation.store.store5.impl.PersistentSourceOfTruth
 import org.mobilenativefoundation.store.store5.impl.SourceOfTruthWithBarrier
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -147,9 +147,9 @@ class SourceOfTruthWithBarrierTests {
             persister.postReadCallback = { key, value ->
                 throw exception
             }
-            assertEmitsExactly(
-                source.reader(1, CompletableDeferred(Unit)),
-                listOf(
+
+            source.reader(1, CompletableDeferred(Unit)).test {
+                assertEquals(
                     StoreReadResponse.Error.Exception(
                         origin = StoreReadResponseOrigin.SourceOfTruth,
                         error =
@@ -158,8 +158,9 @@ class SourceOfTruthWithBarrierTests {
                                 cause = exception,
                             ),
                     ),
-                ),
-            )
+                    awaitItem(),
+                )
+            }
         }
 
     @Test

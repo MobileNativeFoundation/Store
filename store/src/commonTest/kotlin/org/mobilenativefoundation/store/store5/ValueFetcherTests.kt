@@ -1,13 +1,14 @@
 package org.mobilenativefoundation.store.store5
 
+import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.mobilenativefoundation.store.store5.util.assertEmitsExactly
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -18,7 +19,11 @@ class ValueFetcherTests {
     fun givenValueFetcherWhenInvokeThenResultIsWrapped() =
         testScope.runTest {
             val fetcher = Fetcher.ofFlow<Int, Int> { flowOf(it * it) }
-            assertEmitsExactly(fetcher(3), listOf(FetcherResult.Data(value = 9)))
+
+            fetcher(3).test {
+                assertEquals(FetcherResult.Data(value = 9), awaitItem())
+                awaitComplete()
+            }
         }
 
     @Test
@@ -31,10 +36,10 @@ class ValueFetcherTests {
                         throw e
                     }
                 }
-            assertEmitsExactly(
-                fetcher(3),
-                listOf(FetcherResult.Error.Exception(e)),
-            )
+            fetcher(3).test {
+                assertEquals(FetcherResult.Error.Exception(e), awaitItem())
+                awaitComplete()
+            }
         }
 
     @Test
@@ -42,10 +47,10 @@ class ValueFetcherTests {
         testScope.runTest {
             val fetcher = Fetcher.of<Int, Int> { it * it }
 
-            assertEmitsExactly(
-                fetcher(3),
-                listOf(FetcherResult.Data(value = 9)),
-            )
+            fetcher(3).test {
+                assertEquals(FetcherResult.Data(value = 9), awaitItem())
+                awaitComplete()
+            }
         }
 
     @Test
@@ -56,6 +61,9 @@ class ValueFetcherTests {
                 Fetcher.of<Int, Int> {
                     throw e
                 }
-            assertEmitsExactly(fetcher(3), listOf(FetcherResult.Error.Exception(e)))
+            fetcher(3).test {
+                assertEquals(FetcherResult.Error.Exception(e), awaitItem())
+                awaitComplete()
+            }
         }
 }
