@@ -2,8 +2,6 @@
 
 package org.mobilenativefoundation.store.store5.impl
 
-import co.touchlab.kermit.CommonWriter
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -14,6 +12,7 @@ import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Clear
+import org.mobilenativefoundation.store.store5.Logger
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -27,11 +26,12 @@ import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
 import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
 
-@ExperimentalStoreApi
+@OptIn(ExperimentalStoreApi::class)
 internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     private val delegate: RealStore<Key, Network, Output, Local>,
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
+    private val logger: Logger = DefaultLogger(),
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
     private val storeLock = Mutex()
     private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
@@ -42,20 +42,29 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
             safeInitStore(request.key)
 
             when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
+                // TODO(matt-ramotar): Many use cases will not want to pull immediately after failing
+                // to push local changes. We should enable configuration of conflict resolution strategies,
+                // such as logging, retrying, canceling.
+
                 is EagerConflictResolutionResult.Error.Exception -> {
-                    logger.e(eagerConflictResolutionResult.error.toString())
+                    logger.error(eagerConflictResolutionResult.error.toString())
                 }
 
                 is EagerConflictResolutionResult.Error.Message -> {
-                    logger.e(eagerConflictResolutionResult.message)
+                    logger.error(eagerConflictResolutionResult.message)
                 }
 
                 is EagerConflictResolutionResult.Success.ConflictsResolved -> {
-                    logger.d(eagerConflictResolutionResult.value.toString())
+                    val message =
+                        when (val result = eagerConflictResolutionResult.value) {
+                            is UpdaterResult.Success.Typed<*> -> result.value.toString()
+                            is UpdaterResult.Success.Untyped -> result.value.toString()
+                        }
+                    logger.debug(message)
                 }
 
                 EagerConflictResolutionResult.Success.NoConflicts -> {
-                    logger.d(eagerConflictResolutionResult.toString())
+                    logger.debug("No conflicts.")
                 }
             }
 
@@ -220,57 +229,45 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         }
 
     @AnyThread
-    private suspend fun <Response : Any> tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<Response> =
-        withThreadSafety(key) {
-            val latest = delegate.latestOrNull(key)
-            when {
-                latest == null || bookkeeper == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts
-                else -> {
-                    try {
-                        val updaterResult =
-                            updater.post(key, latest).also { updaterResult ->
-                                if (updaterResult is UpdaterResult.Success) {
-                                    updateWriteRequestQueue<Response>(key = key, created = now(), updaterResult = updaterResult)
-                                }
-                            }
+    private suspend fun <Response : Any> tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<Response> {
+        val (latest, conflictsExist) =
+            withThreadSafety(key) {
+                val latest = delegate.latestOrNull(key)
+                val conflictsExist = latest != null && bookkeeper != null && conflictsMightExist(key)
+                latest to conflictsExist
+            }
 
-                        when (updaterResult) {
-                            is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)
-                            is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(updaterResult.message)
-                            is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)
-                        }
-                    } catch (throwable: Throwable) {
-                        EagerConflictResolutionResult.Error.Exception(throwable)
+        if (!conflictsExist || latest == null) {
+            return EagerConflictResolutionResult.Success.NoConflicts
+        }
+
+        return try {
+            val updaterResult =
+                updater.post(key, latest).also { updaterResult ->
+                    if (updaterResult is UpdaterResult.Success) {
+                        updateWriteRequestQueue<Response>(key = key, created = now(), updaterResult = updaterResult)
+                        bookkeeper?.clear(key)
                     }
                 }
-            }
-        }
 
-    private suspend fun safeInitWriteRequestQueue(key: Key) =
-        withThreadSafety(key) {
-            if (keyToWriteRequestQueue[key] == null) {
-                keyToWriteRequestQueue[key] = ArrayDeque()
+            when (updaterResult) {
+                is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)
+                is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(updaterResult.message)
+                is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)
             }
+        } catch (throwable: Throwable) {
+            EagerConflictResolutionResult.Error.Exception(throwable)
         }
+    }
 
-    private suspend fun safeInitThreadSafety(key: Key) =
+    private suspend fun safeInitStore(key: Key) {
         storeLock.withLock {
             if (keyToThreadSafety[key] == null) {
                 keyToThreadSafety[key] = ThreadSafety()
             }
-        }
-
-    private suspend fun safeInitStore(key: Key) {
-        safeInitThreadSafety(key)
-        safeInitWriteRequestQueue(key)
-    }
-
-    companion object {
-        private val logger =
-            Logger.apply {
-                setLogWriters(listOf(CommonWriter()))
-                setTag("Store")
+            if (keyToWriteRequestQueue[key] == null) {
+                keyToWriteRequestQueue[key] = ArrayDeque()
             }
-        private const val UNKNOWN_ERROR = "Unknown error occurred"
+        }
     }
 }
