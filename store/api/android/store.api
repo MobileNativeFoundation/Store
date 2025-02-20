@@ -378,7 +378,7 @@ public final class org/mobilenativefoundation/store/store5/StoreReadResponse$NoN
 }
 
 public final class org/mobilenativefoundation/store/store5/StoreReadResponseKt {
-	public static final fun doThrow (Lorg/mobilenativefoundation/store/store5/StoreReadResponse$Error;)Ljava/lang/Void;
+	public static final fun doThrow (Lorg/mobilenativefoundation/store/store5/StoreReadResponse$Error;)Ljava/lang/Throwable;
 }
 
 public abstract class org/mobilenativefoundation/store/store5/StoreReadResponseOrigin {
