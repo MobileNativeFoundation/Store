@@ -3,6 +3,7 @@
 package org.mobilenativefoundation.store.store5.impl
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import org.mobilenativefoundation.store.cache5.Cache
 import org.mobilenativefoundation.store.cache5.CacheBuilder
@@ -19,18 +20,18 @@ import org.mobilenativefoundation.store.store5.Validator
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcher(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>? = null,
-): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
 
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherAndSourceOfTruth(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
-): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth)
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth)
 
 fun <Key : Any, Network : Any, Output : Any> storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
     fetcher: Fetcher<Key, Network>,
     sourceOfTruth: SourceOfTruth<Key, Network, Output>,
     memoryCache: Cache<Key, Output>,
-): StoreBuilder<Key, Output> = RealStoreBuilder<Key, Network, Output, Network>(fetcher, sourceOfTruth, memoryCache)
+): StoreBuilder<Key, Output> = RealStoreBuilder(fetcher, sourceOfTruth, memoryCache)
 
 fun <Key : Any, Network : Any, Output : Any, Local : Any> storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
     fetcher: Fetcher<Key, Network>,
@@ -69,12 +70,13 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
         return this
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun build(): Store<Key, Output> =
-        RealStore<Key, Network, Output, Local>(
+        RealStore(
             scope = scope ?: GlobalScope,
             sourceOfTruth = sourceOfTruth,
             fetcher = fetcher,
-            converter = converter ?: defaultConverter(),
+            converter = converter ?: DefaultConverter(),
             validator = validator,
             memCache =
                 memoryCache ?: cachePolicy?.let {
@@ -134,12 +136,10 @@ internal class RealStoreBuilder<Key : Any, Network : Any, Output : Any, Local : 
             }
         }
     }
+}
 
-    private fun <Network : Any, Local : Any, Output : Any> defaultConverter() =
-        object : Converter<Network, Local, Output> {
-            override fun fromOutputToLocal(output: Output): Local =
-                throw IllegalStateException("non mutable store never call this function")
+private class DefaultConverter<Network : Any, Local : Any, Output : Any> : Converter<Network, Local, Output> {
+    override fun fromOutputToLocal(output: Output): Local = throw IllegalStateException("non mutable store never call this function")
 
-            override fun fromNetworkToLocal(network: Network): Local = network as Local
-        }
+    override fun fromNetworkToLocal(network: Network): Local = network as Local
 }
