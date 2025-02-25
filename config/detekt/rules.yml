@@ -2,3 +2,54 @@ style:
   active: true
   MaxLineLength:
     active: false
+  ReturnCount:
+    active: false
+  MagicNumber:
+    active: false
+  UnusedParameter:
+    active: false
+  UnusedPrivateMember:
+    active: false
+  UseCheckOrError:
+    active: false
+  UseRequire:
+    active: false
+  ExplicitItLambdaParameter:
+    active: false
+  UnusedPrivateProperty:
+    active: false
+  MayBeConst:
+    active: false
+
+empty-blocks:
+  active: true
+  EmptyFunctionBlock:
+    active: false
+  EmptyDefaultConstructor:
+    active: false
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: false
+  TooGenericExceptionCaught:
+    active: false
+  TooGenericExceptionThrown:
+    active: false
+  InstanceOfCheckForException:
+    active: false
+
+complexity:
+  active: true
+  LongParameterList:
+    active: false
+  LongMethod:
+    active: false
+  NestedBlockDepth:
+    active: false
+  TooManyFunctions:
+    active: false
+  CyclomaticComplexMethod:
+    active: false
+  LargeClass:
+    active: false
