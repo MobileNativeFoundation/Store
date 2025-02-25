@@ -5,6 +5,7 @@ androidGradlePlugin = "7.4.2"
 androidTargetSdk = "33"
 atomicFu = "0.24.0"
 baseKotlin = "2.0.20"
+detekt = "1.23.8"
 dokkaGradlePlugin = "1.9.20"
 ktlintGradle = "12.1.0"
 jacocoGradlePlugin = "0.8.12"
@@ -12,7 +13,6 @@ mavenPublishPlugin = "0.22.0"
 moleculeGradlePlugin = "1.2.1"
 pagingCompose = "3.3.0-alpha02"
 pagingRuntime = "3.2.1"
-spotlessPluginGradle = "6.4.1"
 junit = "4.13.2"
 kotlinxCoroutines = "1.8.1"
 kotlinxSerialization = "1.6.3"
@@ -65,4 +65,5 @@ binary-compatibility-validator = {module = "org.jetbrains.kotlinx:binary-compati
 [plugins]
 binary-compatibility-validator = {id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 kover = {id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.spotless)
+    alias(libs.plugins.detekt)
 }
 
 buildscript {
@@ -31,17 +32,18 @@ allprojects {
 
 subprojects {
     apply(plugin = "com.diffplug.spotless")
-
-    /*
-    ktlint {
-        disabledRules.add("import-ordering")
-    }*/
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 
     spotless {
         kotlin {
-            ktfmt(libs.versions.ktfmt.get())
+            ktfmt(libs.versions.ktfmt.get()).googleStyle()
             target("src/**/*.kt")
         }
+    }
+
+    detekt {
+        buildUponDefaultConfig = true
+        config.setFrom("$rootDir/config/detekt/rules.yml")
     }
 }
 
