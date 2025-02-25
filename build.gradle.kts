@@ -44,6 +44,7 @@ subprojects {
     detekt {
         buildUponDefaultConfig = true
         config.setFrom("$rootDir/config/detekt/rules.yml")
+        source.setFrom("src")
     }
 }
 
