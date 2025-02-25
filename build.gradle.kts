@@ -1,6 +1,5 @@
 plugins {
-    alias(libs.plugins.ktlint)
-    id("com.diffplug.spotless") version "6.4.1"
+    alias(libs.plugins.spotless)
 }
 
 buildscript {
@@ -15,7 +14,6 @@ buildscript {
         classpath(libs.kotlin.gradle.plugin)
         classpath(libs.kotlin.serialization.plugin)
         classpath(libs.dokka.gradle.plugin)
-        classpath(libs.ktlint.gradle.plugin)
         classpath(libs.jacoco.gradle.plugin)
         classpath(libs.maven.publish.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
@@ -32,15 +30,16 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
 
+    /*
     ktlint {
         disabledRules.add("import-ordering")
-    }
+    }*/
 
     spotless {
         kotlin {
+            ktfmt(libs.versions.ktfmt.get())
             target("src/**/*.kt")
         }
     }
