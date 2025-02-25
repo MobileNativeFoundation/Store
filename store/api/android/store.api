@@ -123,6 +123,15 @@ public final class org/mobilenativefoundation/store/store5/FetcherResult$Error$M
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class org/mobilenativefoundation/store/store5/Logger {
+	public abstract fun debug (Ljava/lang/String;)V
+	public abstract fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public final class org/mobilenativefoundation/store/store5/Logger$DefaultImpls {
+	public static synthetic fun error$default (Lorg/mobilenativefoundation/store/store5/Logger;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
+}
+
 public final class org/mobilenativefoundation/store/store5/MemoryPolicy {
 	public static final field Companion Lorg/mobilenativefoundation/store/store5/MemoryPolicy$Companion;
 	public static final field DEFAULT_SIZE_POLICY J
@@ -610,9 +619,6 @@ public final class org/mobilenativefoundation/store/store5/impl/extensions/Store
 	public static final fun fresh (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun get (Lorg/mobilenativefoundation/store/store5/MutableStore;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun get (Lorg/mobilenativefoundation/store/store5/Store;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface annotation class org/mobilenativefoundation/store/store5/internal/concurrent/AnyThread : java/lang/annotation/Annotation {
 }
 
 public abstract class org/mobilenativefoundation/store/store5/internal/result/EagerConflictResolutionResult {
