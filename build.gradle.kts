@@ -44,7 +44,7 @@ subprojects {
 
         kotlinGradle {
             ktfmt(libs.versions.ktfmt.get()).googleStyle()
-            target("src/**/*.kts")
+            target("*.kts")
             trimTrailingWhitespace()
             endWithNewline()
         }
