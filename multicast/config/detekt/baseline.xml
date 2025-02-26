@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:ChannelManager.kt$BufferImpl$10</ID>
+    <ID>MaxLineLength:ChannelManager.kt$StoreChannelManager$override suspend fun removeDownstream(channel: SendChannel&lt;Message.Dispatch.Value&lt;T>>)</ID>
+    <ID>SwallowedException:ChannelManager.kt$ChannelManager.ChannelEntry$e: CancellationException</ID>
+    <ID>SwallowedException:Multicaster.kt$Multicaster$closed: ClosedSendChannelException</ID>
+    <ID>SwallowedException:SharedFlowProducer.kt$SharedFlowProducer$closed: ClosedSendChannelException</ID>
+    <ID>SwallowedException:StoreRealActor.kt$StoreRealActor$closed: ClosedSendChannelException</ID>
+  </CurrentIssues>
+</SmellBaseline>
