@@ -4,6 +4,7 @@ import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import org.junit.Test
@@ -19,62 +20,43 @@ import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.FetcherResult
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.StoreBuilder
-import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalStoreApi
 @RunWith(JUnit4::class)
 @FlowPreview
 @ExperimentalCoroutinesApi
 class RxSingleStoreExtensionsTest {
-    private val atomicInteger = AtomicInteger(0)
-    private var fakeDisk = mutableMapOf<Int, String>()
-    private val store =
-        StoreBuilder.from<Int, String, String>(
-            fetcher =
-                Fetcher.ofResultSingle {
-                    Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
-                },
-            sourceOfTruth =
-                SourceOfTruth.ofMaybe(
-                    reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
-                    writer = { key, value ->
-                        Completable.fromAction { fakeDisk[key] = value }
-                    },
-                    delete = { key ->
-                        Completable.fromAction { fakeDisk.remove(key) }
-                    },
-                    deleteAll = {
-                        Completable.fromAction { fakeDisk.clear() }
-                    },
-                ),
-        )
-            .withScheduler(Schedulers.trampoline())
-            .build()
+  private val atomicInteger = AtomicInteger(0)
+  private var fakeDisk = mutableMapOf<Int, String>()
+  private val store =
+    StoreBuilder.from<Int, String, String>(
+        fetcher =
+          Fetcher.ofResultSingle {
+            Single.fromCallable { FetcherResult.Data("$it ${atomicInteger.incrementAndGet()}") }
+          },
+        sourceOfTruth =
+          SourceOfTruth.ofMaybe(
+            reader = { Maybe.fromCallable<String> { fakeDisk[it] } },
+            writer = { key, value -> Completable.fromAction { fakeDisk[key] = value } },
+            delete = { key -> Completable.fromAction { fakeDisk.remove(key) } },
+            deleteAll = { Completable.fromAction { fakeDisk.clear() } },
+          ),
+      )
+      .withScheduler(Schedulers.trampoline())
+      .build()
 
-    @Test
-    fun `store rx extension tests`() {
-        // Return from cache - after initial fetch
-        store.getSingle(3)
-            .test()
-            .await()
-            .assertValue("3 1")
+  @Test
+  fun `store rx extension tests`() {
+    // Return from cache - after initial fetch
+    store.getSingle(3).test().await().assertValue("3 1")
 
-        // Return from cache
-        store.getSingle(3)
-            .test()
-            .await()
-            .assertValue("3 1")
+    // Return from cache
+    store.getSingle(3).test().await().assertValue("3 1")
 
-        // Return from fresh - forcing a new fetch
-        store.freshSingle(3)
-            .test()
-            .await()
-            .assertValue("3 2")
+    // Return from fresh - forcing a new fetch
+    store.freshSingle(3).test().await().assertValue("3 2")
 
-        // Return from cache - different to initial
-        store.getSingle(3)
-            .test()
-            .await()
-            .assertValue("3 2")
-    }
+    // Return from cache - different to initial
+    store.getSingle(3).test().await().assertValue("3 2")
+  }
 }

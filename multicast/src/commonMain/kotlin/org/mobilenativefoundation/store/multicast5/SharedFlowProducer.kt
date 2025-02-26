@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 /**
- * A flow collector that works with a [ChannelManager] to collect values from an upstream flow
- * and dispatch to the [sendUpsteamMessage] which then dispatches to downstream collectors.
+ * A flow collector that works with a [ChannelManager] to collect values from an upstream flow and
+ * dispatch to the [sendUpsteamMessage] which then dispatches to downstream collectors.
  *
  * They work in sync such that this producer always expects an ack from the [ChannelManager] after
  * sending an event.
@@ -36,57 +36,52 @@ import kotlinx.coroutines.launch
  * or the [ChannelManager] (e.g. all active collectors complete).
  */
 internal class SharedFlowProducer<T>(
-    private val scope: CoroutineScope,
-    private val src: Flow<T>,
-    private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit,
+  private val scope: CoroutineScope,
+  private val src: Flow<T>,
+  private val sendUpsteamMessage: suspend (ChannelManager.Message.Dispatch<T>) -> Unit,
 ) {
-    private val collectionJob: Job =
-        scope.launch(start = CoroutineStart.LAZY) {
-            try {
-                src.catch {
-                    sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it))
-                }.collect {
-                    val ack = CompletableDeferred<Unit>()
-                    sendUpsteamMessage(
-                        ChannelManager.Message.Dispatch.Value(
-                            it,
-                            ack,
-                        ),
-                    )
-                    // suspend until at least 1 receives the new value
-                    ack.await()
-                }
-            } catch (closed: ClosedSendChannelException) {
-                // ignore. if consumers are gone, it might close itself.
-            }
+  private val collectionJob: Job =
+    scope.launch(start = CoroutineStart.LAZY) {
+      try {
+        src
+          .catch { sendUpsteamMessage(ChannelManager.Message.Dispatch.Error(it)) }
+          .collect {
+            val ack = CompletableDeferred<Unit>()
+            sendUpsteamMessage(ChannelManager.Message.Dispatch.Value(it, ack))
+            // suspend until at least 1 receives the new value
+            ack.await()
+          }
+      } catch (closed: ClosedSendChannelException) {
+        // ignore. if consumers are gone, it might close itself.
+      }
+    }
+
+  /** Starts the collection of the upstream flow. */
+  fun start() {
+    scope.launch {
+      try {
+        // trigger start of the collection and wait until collection ends, either due to an
+        // error or ordered by the channel manager
+        collectionJob.join()
+      } finally {
+        // cleanup the channel manager so that downstreams can be closed if they are not
+        // closed already and leftovers can be moved to a new producer if necessary.
+        try {
+          sendUpsteamMessage(
+            ChannelManager.Message.Dispatch.UpstreamFinished(this@SharedFlowProducer)
+          )
+        } catch (closed: ClosedSendChannelException) {
+          // it might close before us, its fine.
         }
-
-    /**
-     * Starts the collection of the upstream flow.
-     */
-    fun start() {
-        scope.launch {
-            try {
-                // trigger start of the collection and wait until collection ends, either due to an
-                // error or ordered by the channel manager
-                collectionJob.join()
-            } finally {
-                // cleanup the channel manager so that downstreams can be closed if they are not
-                // closed already and leftovers can be moved to a new producer if necessary.
-                try {
-                    sendUpsteamMessage(ChannelManager.Message.Dispatch.UpstreamFinished(this@SharedFlowProducer))
-                } catch (closed: ClosedSendChannelException) {
-                    // it might close before us, its fine.
-                }
-            }
-        }
+      }
     }
+  }
 
-    suspend fun cancelAndJoin() {
-        collectionJob.cancelAndJoin()
-    }
+  suspend fun cancelAndJoin() {
+    collectionJob.cancelAndJoin()
+  }
 
-    fun cancel() {
-        collectionJob.cancel()
-    }
+  fun cancel() {
+    collectionJob.cancel()
+  }
 }
