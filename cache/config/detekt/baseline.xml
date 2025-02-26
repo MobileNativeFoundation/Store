@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>EmptyFunctionBlock:LocalCache.kt$LocalCache.Companion.&lt;no name provided>${}</ID>
+    <ID>EmptyFunctionBlock:LocalCache.kt$LocalCache.StrongValueReference${}</ID>
+    <ID>LongMethod:LocalCache.kt$LocalCache.Segment$fun put(key: K, hash: Int, value: V, onlyIfAbsent: Boolean): V?</ID>
+    <ID>LongParameterList:LocalCache.kt$LocalCache.Segment$( first: ReferenceEntry&lt;K, V>, entry: ReferenceEntry&lt;K, V>, key: K, hash: Int, valueReference: ValueReference&lt;K, V>, cause: RemovalCause?, )</ID>
+    <ID>MagicNumber:CacheBuilder.kt$CacheBuilder$16</ID>
+    <ID>MagicNumber:CacheBuilder.kt$CacheBuilder$4</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache$20</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache$32</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$10</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$14</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$15</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$16</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$3</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Companion$6</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Segment$3</ID>
+    <ID>MagicNumber:LocalCache.kt$LocalCache.Segment$4</ID>
+    <ID>NestedBlockDepth:LocalCache.kt$LocalCache.Segment$fun activeEntries(): Map&lt;K, V></ID>
+    <ID>NestedBlockDepth:LocalCache.kt$LocalCache.Segment$fun clear()</ID>
+    <ID>NestedBlockDepth:LocalCache.kt$LocalCache.Segment$fun put(key: K, hash: Int, value: V, onlyIfAbsent: Boolean): V?</ID>
+    <ID>NestedBlockDepth:LocalCache.kt$LocalCache.Segment$fun remove(key: K, hash: Int): V?</ID>
+    <ID>NestedBlockDepth:LocalCache.kt$LocalCache.Segment$private fun expand()</ID>
+    <ID>ReturnCount:LocalCache.kt$LocalCache.Segment$fun get(key: K, hash: Int): V?</ID>
+    <ID>ReturnCount:LocalCache.kt$LocalCache.Segment$fun remove(key: K, hash: Int): V?</ID>
+    <ID>ReturnCount:LocalCache.kt$LocalCache.Segment$private fun getLiveEntry(key: K, hash: Int, now: Long): ReferenceEntry&lt;K, V>?</ID>
+    <ID>TooManyFunctions:LocalCache.kt$LocalCache$Segment&lt;K : Any, V : Any></ID>
+    <ID>TooManyFunctions:LocalCache.kt$LocalCache&lt;K : Any, V : Any></ID>
+    <ID>TooManyFunctions:StoreMultiCache.kt$StoreMultiCache&lt;Id : Any, Key : StoreKey&lt;Id>, Single : StoreData.Single&lt;Id>, Collection : StoreData.Collection&lt;Id, Single>, Output : StoreData&lt;Id>> : Cache</ID>
+    <ID>UnusedParameter:LocalCache.kt$LocalCache.Segment$cause: RemovalCause?</ID>
+    <ID>UnusedParameter:LocalCache.kt$LocalCache.Segment$hash: Int</ID>
+    <ID>UnusedParameter:LocalCache.kt$LocalCache.Segment$key: K?</ID>
+    <ID>UnusedPrivateMember:LocalCache.kt$LocalCache$private fun newValueReference( entry: ReferenceEntry&lt;K, V>, value: V, weight: Int, ): ValueReference&lt;K, V></ID>
+    <ID>UseCheckOrError:CacheBuilder.kt$CacheBuilder$throw IllegalStateException("Maximum size cannot be combined with weigher.")</ID>
+    <ID>UseCheckOrError:LocalCache.kt$LocalCache.Segment$throw IllegalStateException("Weights must be non-negative")</ID>
+    <ID>UseRequire:CacheBuilder.kt$CacheBuilder$throw IllegalArgumentException("Duration must be non-negative.")</ID>
+    <ID>UseRequire:CacheBuilder.kt$CacheBuilder$throw IllegalArgumentException("Maximum size must be non-negative.")</ID>
+    <ID>UseRequire:CacheBuilder.kt$CacheBuilder$throw IllegalArgumentException("Maximum weight must be non-negative.")</ID>
+  </CurrentIssues>
+</SmellBaseline>

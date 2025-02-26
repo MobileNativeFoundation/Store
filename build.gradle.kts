@@ -52,6 +52,7 @@ subprojects {
 
 	detekt {
 		buildUponDefaultConfig = true
+		baseline = file("${projectDir}/config/detekt/baseline.xml")
 		config.setFrom("$rootDir/config/detekt/rules.yml")
 		source.setFrom("src")
 	}
