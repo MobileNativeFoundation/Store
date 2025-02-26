@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:RealStore.kt$RealStore$@Suppress("UNCHECKED_CAST") override fun stream(request: StoreReadRequest&lt;Key>): Flow&lt;StoreReadResponse&lt;Output>></ID>
+    <ID>CyclomaticComplexMethod:RealStore.kt$RealStore$private fun diskNetworkCombined( request: StoreReadRequest&lt;Key>, sourceOfTruth: SourceOfTruthWithBarrier&lt;Key, Network, Output, Local>, ): Flow&lt;StoreReadResponse&lt;Output>></ID>
+    <ID>EmptyDefaultConstructor:SecondaryPagesApi.kt$SecondaryPagesApi$()</ID>
+    <ID>ExplicitItLambdaParameter:RealStore.kt$RealStore${ it: Output -> // if we read a value from cache, dispatch it first emit(StoreReadResponse.Data(value = it, origin = StoreReadResponseOrigin.Cache)) }</ID>
+    <ID>InstanceOfCheckForException:SourceOfTruthWithBarrier.kt$SourceOfTruthWithBarrier$throwable !is CancellationException</ID>
+    <ID>LargeClass:FlowStoreTests.kt$FlowStoreTests</ID>
+    <ID>LongMethod:ClearAllStoreTests.kt$ClearAllStoreTests$@Test fun callingClearAllOnStoreWithPersisterAndNoInMemoryCacheDeletesAllEntriesFromThePersister()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun diskChangeWhileNetworkIsFlowing_overwrite()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun errorTest()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun flowingFetcher()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun getAndFresh_withPersister()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun givenSourceOfTruthAndCacheHitWhenStreamCachedDataWithoutRefreshThenNoFetchIsTriggeredAndReceivesFollowingNetworkUpdates()</ID>
+    <ID>LongMethod:FlowStoreTests.kt$FlowStoreTests$@Test fun testSlowFirstCollectorGetsAllFetchUpdatesOthersGetCacheAndLatestFetchResult()</ID>
+    <ID>LongMethod:RealStore.kt$RealStore$@Suppress("UNCHECKED_CAST") override fun stream(request: StoreReadRequest&lt;Key>): Flow&lt;StoreReadResponse&lt;Output>></ID>
+    <ID>LongMethod:RealStore.kt$RealStore$private fun diskNetworkCombined( request: StoreReadRequest&lt;Key>, sourceOfTruth: SourceOfTruthWithBarrier&lt;Key, Network, Output, Local>, ): Flow&lt;StoreReadResponse&lt;Output>></ID>
+    <ID>LongMethod:SourceOfTruthErrorsTests.kt$SourceOfTruthErrorsTests$@Test fun givenSourceOfTruthWhenFirstWriteFailsThenItShouldKeepReadingFromFetcher()</ID>
+    <ID>LongMethod:SourceOfTruthWithBarrier.kt$SourceOfTruthWithBarrier$fun reader( key: Key, lock: CompletableDeferred&lt;Unit>, ): Flow&lt;StoreReadResponse&lt;Output?>></ID>
+    <ID>LongMethod:StoreWithInMemoryCacheTests.kt$StoreWithInMemoryCacheTests$@Test fun storeDeadlock()</ID>
+    <ID>LongMethod:UpdaterTests.kt$UpdaterTests$@Test fun givenNonEmptyMarketWhenWriteThenStoredAndAPIUpdated()</ID>
+    <ID>LongMethod:UpdaterTests.kt$UpdaterTests$@Test fun givenNonEmptyMarketWithValidatorWhenInvalidThenSuccessOriginatingFromFetcher()</ID>
+    <ID>MagicNumber:StoreDefaults.kt$StoreDefaults$100</ID>
+    <ID>MaxLineLength:Bookkeeper.kt$Bookkeeper$*</ID>
+    <ID>MaxLineLength:ClearStoreByKeyTests.kt$ClearStoreByKeyTests$fun</ID>
+    <ID>MaxLineLength:Fetcher.kt$Fetcher.Companion$fun</ID>
+    <ID>MaxLineLength:FlowStoreTests.kt$FlowStoreTests$fun</ID>
+    <ID>MaxLineLength:FlowStoreTests.kt$FlowStoreTests$suspend fun Store&lt;Int, Int>.get(request: StoreReadRequest&lt;Int>)</ID>
+    <ID>MaxLineLength:Lightswitch.kt$Lightswitch$*</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(updaterResult.error)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(updaterResult.message)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$latest == null || bookkeeper == null || conflictsMightExist(key).not() -> EagerConflictResolutionResult.Success.NoConflicts</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$override</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$private suspend</ID>
+    <ID>MaxLineLength:RealMutableStore.kt$RealMutableStore$updateWriteRequestQueue&lt;Response>(key = key, created = now(), updaterResult = updaterResult)</ID>
+    <ID>MaxLineLength:RealMutableStoreBuilder.kt$)</ID>
+    <ID>MaxLineLength:RealMutableStoreBuilder.kt$RealMutableStoreBuilder$override</ID>
+    <ID>MaxLineLength:RealStore.kt$RealStore$if</ID>
+    <ID>MaxLineLength:RealStoreBuilder.kt$DefaultConverter$override fun fromOutputToLocal(output: Output): Local</ID>
+    <ID>MaxLineLength:SourceOfTruthErrorsTests.kt$SourceOfTruthErrorsTests$// fun givenSourceOfTruthWithFailingWriteWhenAFreshValueReaderArrivesThenItShouldNotGetDiskErrorsFromAPendingWrite() = testScope.runTest {</ID>
+    <ID>MaxLineLength:SourceOfTruthErrorsTests.kt$SourceOfTruthErrorsTests$// fun givenSourceOfTruthWithFailingWriteWhenAPassiveReaderArrivesThenItShouldReceiveTheNewWriteError() = testScope.runTest {</ID>
+    <ID>MaxLineLength:Store.kt$Store$*</ID>
+    <ID>MaxLineLength:StoreBuilder.kt$StoreBuilder.Companion$)</ID>
+    <ID>MaxLineLength:StoreReadRequest.kt$StoreReadRequest.Companion$* Creates a [StoreReadRequest] skipping all caches and returning data from network on success and data from [SourceOfTruth] on failure.</ID>
+    <ID>MaxLineLength:StoreReadResponse.kt$StoreReadResponseOrigin.Fetcher$*</ID>
+    <ID>MaxLineLength:Validator.kt$Validator.Companion$fun &lt;Output : Any> by(validator: suspend (item: Output) -> Boolean): Validator&lt;Output></ID>
+    <ID>MaxLineLength:Write.kt$Write.Stream$fun</ID>
+    <ID>MayBeConst:StoreDefaults.kt$StoreDefaults$/** * Cache size (default is 100), can be overridden * * @return memory cache size */ val cacheSize: Long = 100</ID>
+    <ID>TooGenericExceptionCaught:RealMutableStore.kt$RealMutableStore$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:RealStore.kt$RealStore$error: Throwable</ID>
+    <ID>TooGenericExceptionCaught:SourceOfTruthWithBarrier.kt$SourceOfTruthWithBarrier$throwable: Throwable</ID>
+    <ID>TooGenericExceptionThrown:FallbackTests.kt$FallbackTests$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:FetcherResponseTests.kt$FetcherResponseTests$throw RuntimeException("don't catch me")</ID>
+    <ID>TooGenericExceptionThrown:HardcodedPages.kt$HardcodedPages$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:LocalOnlyTests.kt$LocalOnlyTests$throw RuntimeException("Fetcher shouldn't be hit")</ID>
+    <ID>TooGenericExceptionThrown:NotesApi.kt$NotesApi$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:NotesBookkeeping.kt$NotesBookkeeping$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:NotesDatabase.kt$NotesDatabase$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:PrimaryPagesApi.kt$PrimaryPagesApi$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:SecondaryPagesApi.kt$SecondaryPagesApi$throw Exception()</ID>
+    <ID>TooGenericExceptionThrown:StoreReadResponse.kt$StoreReadResponse$throw RuntimeException("cannot swap type for StoreResponse.Data")</ID>
+    <ID>TooGenericExceptionThrown:store.kt$throw Exception("MutableStore requires Store to be built using StoreBuilder")</ID>
+    <ID>TooManyFunctions:RealMutableStore.kt$RealMutableStore&lt;Key : Any, Network : Any, Output : Any, Local : Any> : MutableStoreKeyAll</ID>
+    <ID>UnusedParameter:PrimaryPagesApi.kt$PrimaryPagesApi$ttl: Long?</ID>
+    <ID>UnusedPrivateProperty:RealMutableStore.kt$RealMutableStore.Companion$private const val UNKNOWN_ERROR = "Unknown error occurred"</ID>
+    <ID>UnusedPrivateProperty:SourceOfTruthWithBarrier.kt$SourceOfTruthWithBarrier$private val converter: Converter&lt;Network, Local, Output>? = null</ID>
+    <ID>UseCheckOrError:ClearAllStoreTests.kt$ClearAllStoreTests$throw IllegalStateException("Unknown key")</ID>
+    <ID>UseCheckOrError:ClearStoreByKeyTests.kt$ClearStoreByKeyTests$throw IllegalStateException("Unknown key")</ID>
+    <ID>UseCheckOrError:FetcherController.kt$FetcherController.&lt;no name provided>$throw IllegalStateException("Not used")</ID>
+    <ID>UseCheckOrError:RealStoreBuilder.kt$DefaultConverter$throw IllegalStateException("non mutable store never call this function")</ID>
+    <ID>UseRequire:StoreWithInMemoryCacheTests.kt$StoreWithInMemoryCacheTests.&lt;no name provided>$throw IllegalArgumentException("$key value: $value")</ID>
+  </CurrentIssues>
+</SmellBaseline>

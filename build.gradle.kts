@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.ktlint)
-    id("com.diffplug.spotless") version "6.4.1"
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.detekt)
 }
 
 buildscript {
@@ -15,7 +15,6 @@ buildscript {
         classpath(libs.kotlin.gradle.plugin)
         classpath(libs.kotlin.serialization.plugin)
         classpath(libs.dokka.gradle.plugin)
-        classpath(libs.ktlint.gradle.plugin)
         classpath(libs.jacoco.gradle.plugin)
         classpath(libs.maven.publish.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
@@ -32,17 +31,30 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
-
-    ktlint {
-        disabledRules.add("import-ordering")
-    }
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 
     spotless {
         kotlin {
+            ktfmt(libs.versions.ktfmt.get()).googleStyle()
             target("src/**/*.kt")
+            trimTrailingWhitespace()
+            endWithNewline()
         }
+
+        kotlinGradle {
+            ktfmt(libs.versions.ktfmt.get()).googleStyle()
+            target("*.kts")
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
+
+    detekt {
+        buildUponDefaultConfig = true
+        baseline = file("${projectDir}/config/detekt/baseline.xml")
+        config.setFrom("$rootDir/config/detekt/rules.yml")
+        source.setFrom("src")
     }
 }
 

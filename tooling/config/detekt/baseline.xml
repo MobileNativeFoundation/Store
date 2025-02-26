@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:KotlinMultiplatformConventionPlugin.kt$KotlinMultiplatformConventionPlugin$override fun apply(project: Project)</ID>
+    <ID>MagicNumber:AndroidConventionPlugin.kt$AndroidConventionPlugin$24</ID>
+    <ID>MagicNumber:AndroidConventionPlugin.kt$AndroidConventionPlugin$34</ID>
+    <ID>MagicNumber:KotlinMultiplatformConventionPlugin.kt$11</ID>
+    <ID>MagicNumber:KotlinMultiplatformConventionPlugin.kt$KotlinMultiplatformConventionPlugin$11</ID>
+  </CurrentIssues>
+</SmellBaseline>

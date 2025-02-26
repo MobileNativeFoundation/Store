@@ -1,5 +1,7 @@
 plugins {
     `kotlin-dsl`
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.detekt)
 }
 
 group = "org.mobilenativefoundation.store"
@@ -11,6 +13,29 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+}
+
+spotless {
+    kotlin {
+        ktfmt(libs.versions.ktfmt.get()).googleStyle()
+        target("src/**/*.kt")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        ktfmt(libs.versions.ktfmt.get()).googleStyle()
+        target("*.kts")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    baseline = file("../config/detekt/baseline.xml")
+    config.setFrom("../../config/detekt/rules.yml")
+    source.setFrom("src")
 }
 
 dependencies {
