@@ -9,45 +9,41 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
 class AndroidConventionPlugin : Plugin<Project> {
-    override fun apply(project: Project) = with(project) {
-        with(pluginManager) {
-            apply("org.jetbrains.kotlin.android")
-            apply("com.android.library")
-            apply("com.vanniktech.maven.publish")
-            apply("org.jetbrains.dokka")
-            apply("maven-publish")
-            apply("org.jetbrains.kotlin.native.cocoapods")
-            apply("org.jetbrains.kotlinx.binary-compatibility-validator")
+  override fun apply(project: Project) =
+    with(project) {
+      with(pluginManager) {
+        apply("org.jetbrains.kotlin.android")
+        apply("com.android.library")
+        apply("com.vanniktech.maven.publish")
+        apply("org.jetbrains.dokka")
+        apply("maven-publish")
+        apply("org.jetbrains.kotlin.native.cocoapods")
+        apply("org.jetbrains.kotlinx.binary-compatibility-validator")
+      }
+
+      extensions.configure<LibraryExtension> {
+        compileSdk = 34
+
+        defaultConfig {
+          minSdk = 24
+          targetSdk = 34
         }
 
-
-        extensions.configure<LibraryExtension> {
-
-            compileSdk = 34
-
-            defaultConfig {
-                minSdk = 24
-                targetSdk = 34
-            }
-
-            lint {
-                disable += "ComposableModifierFactory"
-                disable += "ModifierFactoryExtensionFunction"
-                disable += "ModifierFactoryReturnType"
-                disable += "ModifierFactoryUnreferencedReceiver"
-            }
-
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_11
-                targetCompatibility = JavaVersion.VERSION_11
-            }
+        lint {
+          disable += "ComposableModifierFactory"
+          disable += "ModifierFactoryExtensionFunction"
+          disable += "ModifierFactoryReturnType"
+          disable += "ModifierFactoryUnreferencedReceiver"
         }
 
-        configureKotlin()
-        configureDokka()
-        configureMavenPublishing()
+        compileOptions {
+          sourceCompatibility = JavaVersion.VERSION_11
+          targetCompatibility = JavaVersion.VERSION_11
+        }
+      }
+
+      configureKotlin()
+      configureDokka()
+      configureMavenPublishing()
     }
 }
-
-
-

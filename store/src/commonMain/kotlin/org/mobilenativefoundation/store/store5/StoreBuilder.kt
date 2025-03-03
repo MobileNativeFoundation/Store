@@ -22,93 +22,86 @@ import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherAndSo
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourceOfTruthAndMemoryCache
 import org.mobilenativefoundation.store.store5.impl.storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter
 
-/**
- * Main entry point for creating a [Store].
- */
+/** Main entry point for creating a [Store]. */
 interface StoreBuilder<Key : Any, Output : Any> {
-    fun build(): Store<Key, Output>
+  fun build(): Store<Key, Output>
 
-    fun <Network : Any, Local : Any> toMutableStoreBuilder(
-        converter: Converter<Network, Local, Output>,
-    ): MutableStoreBuilder<Key, Network, Local, Output>
+  fun <Network : Any, Local : Any> toMutableStoreBuilder(
+    converter: Converter<Network, Local, Output>
+  ): MutableStoreBuilder<Key, Network, Local, Output>
 
+  /**
+   * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by
+   * default [Store] will open a global scope for management of shared responses, if instead you'd
+   * like to control the scope that sharing/multicasting happens in you can pass a @param [scope]
+   *
+   * @param scope - scope to use for sharing
+   */
+  fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
+
+  /**
+   * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure
+   * a TTL or size based eviction Example:
+   * MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
+   */
+  fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
+
+  /** by default a Store caches in memory with a default policy of max items = 100 */
+  fun disableCache(): StoreBuilder<Key, Output>
+
+  fun validator(validator: Validator<Output>): StoreBuilder<Key, Output>
+
+  companion object {
     /**
-     * A store multicasts same [Output] value to many consumers (Similar to RxJava.share()), by default
-     *  [Store] will open a global scope for management of shared responses, if instead you'd like to control
-     *  the scope that sharing/multicasting happens in you can pass a @param [scope]
+     * Creates a new [StoreBuilder] from a [Fetcher].
      *
-     *   @param scope - scope to use for sharing
+     * @param fetcher a [Fetcher] flow of network records.
      */
-    fun scope(scope: CoroutineScope): StoreBuilder<Key, Output>
+    fun <Key : Any, Input : Any> from(fetcher: Fetcher<Key, Input>): StoreBuilder<Key, Input> =
+      storeBuilderFromFetcher(fetcher = fetcher)
 
     /**
-     * controls eviction policy for a store cache, use [MemoryPolicy.MemoryPolicyBuilder] to configure a TTL
-     *  or size based eviction
-     *  Example: MemoryPolicy.builder().setExpireAfterWrite(10.seconds).build()
+     * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
+     *
+     * @param fetcher a function for fetching a flow of network records.
+     * @param sourceOfTruth a [SourceOfTruth] for the store.
      */
-    fun cachePolicy(memoryPolicy: MemoryPolicy<Key, Output>?): StoreBuilder<Key, Output>
+    fun <Key : Any, Input : Any, Output : Any> from(
+      fetcher: Fetcher<Key, Input>,
+      sourceOfTruth: SourceOfTruth<Key, Input, Output>,
+    ): StoreBuilder<Key, Output> =
+      storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
 
-    /**
-     * by default a Store caches in memory with a default policy of max items = 100
-     */
-    fun disableCache(): StoreBuilder<Key, Output>
+    fun <Key : Any, Network : Any, Output : Any> from(
+      fetcher: Fetcher<Key, Network>,
+      sourceOfTruth: SourceOfTruth<Key, Network, Output>,
+      memoryCache: Cache<Key, Output>,
+    ): StoreBuilder<Key, Output> =
+      storeBuilderFromFetcherSourceOfTruthAndMemoryCache(fetcher, sourceOfTruth, memoryCache)
 
-    fun validator(validator: Validator<Output>): StoreBuilder<Key, Output>
+    fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
+      fetcher: Fetcher<Key, Network>,
+      sourceOfTruth: SourceOfTruth<Key, Local, Output>,
+      converter: Converter<Network, Local, Output>,
+    ): StoreBuilder<Key, Output> =
+      storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+        fetcher,
+        sourceOfTruth,
+        null,
+        converter,
+      )
 
-    companion object {
-        /**
-         * Creates a new [StoreBuilder] from a [Fetcher].
-         *
-         * @param fetcher a [Fetcher] flow of network records.
-         */
-        fun <Key : Any, Input : Any> from(fetcher: Fetcher<Key, Input>): StoreBuilder<Key, Input> =
-            storeBuilderFromFetcher(fetcher = fetcher)
-
-        /**
-         * Creates a new [StoreBuilder] from a [Fetcher] and a [SourceOfTruth].
-         *
-         * @param fetcher a function for fetching a flow of network records.
-         * @param sourceOfTruth a [SourceOfTruth] for the store.
-         */
-        fun <Key : Any, Input : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Input>,
-            sourceOfTruth: SourceOfTruth<Key, Input, Output>,
-        ): StoreBuilder<Key, Output> = storeBuilderFromFetcherAndSourceOfTruth(fetcher = fetcher, sourceOfTruth = sourceOfTruth)
-
-        fun <Key : Any, Network : Any, Output : Any> from(
-            fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Network, Output>,
-            memoryCache: Cache<Key, Output>,
-        ): StoreBuilder<Key, Output> =
-            storeBuilderFromFetcherSourceOfTruthAndMemoryCache(
-                fetcher,
-                sourceOfTruth,
-                memoryCache,
-            )
-
-        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
-            fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Local, Output>,
-            converter: Converter<Network, Local, Output>,
-        ): StoreBuilder<Key, Output> =
-            storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
-                fetcher,
-                sourceOfTruth,
-                null,
-                converter,
-            )
-
-        fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
-            fetcher: Fetcher<Key, Network>,
-            sourceOfTruth: SourceOfTruth<Key, Local, Output>,
-            memoryCache: Cache<Key, Output>,
-            converter: Converter<Network, Local, Output>,
-        ): StoreBuilder<Key, Output> =
-            storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
-                fetcher,
-                sourceOfTruth,
-                memoryCache,
-                converter,
-            )
-    }
+    fun <Key : Any, Network : Any, Output : Any, Local : Any> from(
+      fetcher: Fetcher<Key, Network>,
+      sourceOfTruth: SourceOfTruth<Key, Local, Output>,
+      memoryCache: Cache<Key, Output>,
+      converter: Converter<Network, Local, Output>,
+    ): StoreBuilder<Key, Output> =
+      storeBuilderFromFetcherSourceOfTruthMemoryCacheAndConverter(
+        fetcher,
+        sourceOfTruth,
+        memoryCache,
+        converter,
+      )
+  }
 }

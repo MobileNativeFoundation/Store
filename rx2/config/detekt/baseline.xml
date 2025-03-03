@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:RxFetcher.kt$fun</ID>
+    <ID>MaxLineLength:RxSingleStoreTest.kt$RxSingleStoreTest$fun</ID>
+    <ID>MaxLineLength:RxStore.kt$* Helper factory that will return data as a [Single] for [key] if it is cached otherwise will return fresh/network data (updating your caches)</ID>
+    <ID>MaxLineLength:RxStore.kt$fun</ID>
+  </CurrentIssues>
+</SmellBaseline>

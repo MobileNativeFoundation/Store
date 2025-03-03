@@ -11,19 +11,19 @@ import org.mobilenativefoundation.store.store5.Validator
 import org.mobilenativefoundation.store.store5.impl.RealStore
 
 internal fun <Key : Any, Network : Any, Output : Any, Local : Any> testStore(
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    scope: CoroutineScope = CoroutineScope(dispatcher),
-    fetcher: Fetcher<Key, Network> = TestFetcher(),
-    sourceOfTruth: SourceOfTruth<Key, Local, Output> = TestSourceOfTruth(),
-    converter: Converter<Network, Local, Output> = TestConverter(),
-    validator: Validator<Output> = TestValidator(),
-    memoryCache: Cache<Key, Output> = TestCache(),
+  dispatcher: CoroutineDispatcher = Dispatchers.Default,
+  scope: CoroutineScope = CoroutineScope(dispatcher),
+  fetcher: Fetcher<Key, Network> = TestFetcher(),
+  sourceOfTruth: SourceOfTruth<Key, Local, Output> = TestSourceOfTruth(),
+  converter: Converter<Network, Local, Output> = TestConverter(),
+  validator: Validator<Output> = TestValidator(),
+  memoryCache: Cache<Key, Output> = TestCache(),
 ): RealStore<Key, Network, Output, Local> =
-    RealStore(
-        scope = scope,
-        fetcher = fetcher,
-        sourceOfTruth = sourceOfTruth,
-        converter = converter,
-        validator = validator,
-        memCache = memoryCache,
-    )
+  RealStore(
+    scope = scope,
+    fetcher = fetcher,
+    sourceOfTruth = sourceOfTruth,
+    converter = converter,
+    validator = validator,
+    memCache = memoryCache,
+  )

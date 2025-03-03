@@ -38,6 +38,12 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
+      - name: Check Kotlin formatting
+        run: ./gradlew spotlessCheck :tooling:plugins:spotlessCheck
+
+      - name: Run Kotlin static analysis
+        run: ./gradlew detekt :tooling:plugins:detekt
+
       - name: Build and Test with Coverage
         run: ./gradlew clean build koverXmlReport --stacktrace
 

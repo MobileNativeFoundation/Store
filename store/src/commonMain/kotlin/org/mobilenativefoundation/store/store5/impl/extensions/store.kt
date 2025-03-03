@@ -30,18 +30,17 @@ import org.mobilenativefoundation.store.store5.impl.RealStore
  * @param Output The common representation of the data.
  */
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) =
-    stream(StoreReadRequest.cached(key, refresh = false))
-        .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
-        .first()
-        .requireData()
+  stream(StoreReadRequest.cached(key, refresh = false))
+    .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
+    .first()
+    .requireData()
 
 /**
  * Helper factory that will return fresh data for [key] while updating your caches
  *
- * If the [Fetcher] does not return any data (i.e the returned
- * [kotlinx.coroutines.flow.Flow], when collected, is empty). Then store will fall back to local
- * data **even** if you explicitly requested fresh data.
- * See https://github.com/dropbox/Store/pull/194 for context
+ * If the [Fetcher] does not return any data (i.e the returned [kotlinx.coroutines.flow.Flow], when
+ * collected, is empty). Then store will fall back to local data **even** if you explicitly
+ * requested fresh data. See https://github.com/dropbox/Store/pull/194 for context
  *
  * Note: Exceptions will not be handled within this function.
  *
@@ -58,10 +57,10 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.get(key: Key) =
  * @return The fresh data associated with the key.
  */
 suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
-    stream(StoreReadRequest.fresh(key))
-        .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
-        .first()
-        .requireData()
+  stream(StoreReadRequest.fresh(key))
+    .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
+    .first()
+    .requireData()
 
 /**
  * Extension function to convert a [Store] into a [MutableStore].
@@ -85,19 +84,16 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
  */
 @OptIn(ExperimentalStoreApi::class)
 @Suppress("UNCHECKED_CAST")
-fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
-    updater: Updater<Key, Output, Response>,
-    bookkeeper: Bookkeeper<Key>?,
+fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>
+  .asMutableStore(
+  updater: Updater<Key, Output, Response>,
+  bookkeeper: Bookkeeper<Key>?,
 ): MutableStore<Key, Output> {
-    val delegate =
-        this as? RealStore<Key, Network, Output, Local>
-            ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
+  val delegate =
+    this as? RealStore<Key, Network, Output, Local>
+      ?: throw Exception("MutableStore requires Store to be built using StoreBuilder")
 
-    return RealMutableStore(
-        delegate = delegate,
-        updater = updater,
-        bookkeeper = bookkeeper,
-    )
+  return RealMutableStore(delegate = delegate, updater = updater, bookkeeper = bookkeeper)
 }
 
 /**
@@ -121,10 +117,10 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<
  */
 @OptIn(ExperimentalStoreApi::class)
 suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.get(key: Key) =
-    stream<Response>(StoreReadRequest.cached(key, refresh = false))
-        .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
-        .first()
-        .requireData()
+  stream<Response>(StoreReadRequest.cached(key, refresh = false))
+    .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
+    .first()
+    .requireData()
 
 /**
  * Helper function that returns fresh data for the given [key] while updating your caches.
@@ -150,7 +146,7 @@ suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.
  */
 @OptIn(ExperimentalStoreApi::class)
 suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.fresh(key: Key) =
-    stream<Response>(StoreReadRequest.fresh(key))
-        .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
-        .first()
-        .requireData()
+  stream<Response>(StoreReadRequest.fresh(key))
+    .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
+    .first()
+    .requireData()

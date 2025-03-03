@@ -4,48 +4,38 @@ import org.mobilenativefoundation.store.store5.util.model.InputNote
 import org.mobilenativefoundation.store.store5.util.model.OutputNote
 
 internal class NotesDatabase {
-    private val db: MutableMap<NotesKey, OutputNote?> = mutableMapOf()
+  private val db: MutableMap<NotesKey, OutputNote?> = mutableMapOf()
 
-    fun put(
-        key: NotesKey,
-        input: InputNote,
-        fail: Boolean = false,
-    ): Boolean {
-        if (fail) {
-            throw Exception()
-        }
-
-        db[key] = OutputNote(input.data, input.ttl ?: 0)
-        return true
+  fun put(key: NotesKey, input: InputNote, fail: Boolean = false): Boolean {
+    if (fail) {
+      throw Exception()
     }
 
-    fun get(
-        key: NotesKey,
-        fail: Boolean = false,
-    ): OutputNote? {
-        if (fail) {
-            throw Exception()
-        }
+    db[key] = OutputNote(input.data, input.ttl ?: 0)
+    return true
+  }
 
-        return db[key]
+  fun get(key: NotesKey, fail: Boolean = false): OutputNote? {
+    if (fail) {
+      throw Exception()
     }
 
-    fun clear(
-        key: NotesKey,
-        fail: Boolean = false,
-    ): Boolean {
-        if (fail) {
-            throw Exception()
-        }
-        db.remove(key)
-        return true
-    }
+    return db[key]
+  }
 
-    fun clear(fail: Boolean = false): Boolean {
-        if (fail) {
-            throw Exception()
-        }
-        db.clear()
-        return true
+  fun clear(key: NotesKey, fail: Boolean = false): Boolean {
+    if (fail) {
+      throw Exception()
     }
+    db.remove(key)
+    return true
+  }
+
+  fun clear(fail: Boolean = false): Boolean {
+    if (fail) {
+      throw Exception()
+    }
+    db.clear()
+    return true
+  }
 }

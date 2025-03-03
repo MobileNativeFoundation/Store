@@ -35,130 +35,114 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 /**
  * This class maintains one and only 1 fetcher for a given [Key].
  *
- * Any value emitted by the fetcher is sent into the [sourceOfTruth] before it is dispatched.
- * If [sourceOfTruth] is `null`, [enablePiggyback] is set to true by default so that previous
- * fetcher requests receives values dispatched by later requests even if they don't share the
- * request.
+ * Any value emitted by the fetcher is sent into the [sourceOfTruth] before it is dispatched. If
+ * [sourceOfTruth] is `null`, [enablePiggyback] is set to true by default so that previous fetcher
+ * requests receives values dispatched by later requests even if they don't share the request.
  */
 @Suppress("UNCHECKED_CAST")
 internal class FetcherController<Key : Any, Network : Any, Output : Any, Local : Any>(
-    /**
-     * The [CoroutineScope] to use when collecting from the fetcher
-     */
-    private val scope: CoroutineScope,
-    /**
-     * The function that provides the actualy fetcher flow when needed
-     */
-    private val realFetcher: Fetcher<Key, Network>,
-    /**
-     * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if
-     * no [SourceOfTruth] is available.
-     */
-    private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
-    private val converter: Converter<Network, Local, Output> =
-        object :
-            Converter<Network, Local, Output> {
-            override fun fromNetworkToLocal(network: Network): Local {
-                return network as Local
-            }
+  /** The [CoroutineScope] to use when collecting from the fetcher */
+  private val scope: CoroutineScope,
+  /** The function that provides the actualy fetcher flow when needed */
+  private val realFetcher: Fetcher<Key, Network>,
+  /**
+   * [SourceOfTruth] to send the data each time fetcher dispatches a value. Can be `null` if no
+   * [SourceOfTruth] is available.
+   */
+  private val sourceOfTruth: SourceOfTruthWithBarrier<Key, Network, Output, Local>?,
+  private val converter: Converter<Network, Local, Output> =
+    object : Converter<Network, Local, Output> {
+      override fun fromNetworkToLocal(network: Network): Local {
+        return network as Local
+      }
 
-            override fun fromOutputToLocal(output: Output): Local {
-                throw IllegalStateException("Not used")
-            }
-        },
+      override fun fromOutputToLocal(output: Output): Local {
+        throw IllegalStateException("Not used")
+      }
+    },
 ) {
-    @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
-    private val fetchers =
-        RefCountedResource(
-            create = { key: Key ->
-                Multicaster(
-                    scope = scope,
-                    bufferSize = 0,
-                    source =
-                        flow { emitAll(realFetcher(key)) }.map {
-                            when (it) {
-                                is FetcherResult.Data -> {
-                                    StoreReadResponse.Data(
-                                        it.value,
-                                        origin = StoreReadResponseOrigin.Fetcher(it.origin),
-                                    ) as StoreReadResponse<Network>
-                                }
+  @Suppress("USELESS_CAST", "UNCHECKED_CAST") // needed for multicaster source
+  private val fetchers =
+    RefCountedResource(
+      create = { key: Key ->
+        Multicaster(
+          scope = scope,
+          bufferSize = 0,
+          source =
+            flow { emitAll(realFetcher(key)) }
+              .map {
+                when (it) {
+                  is FetcherResult.Data -> {
+                    StoreReadResponse.Data(
+                      it.value,
+                      origin = StoreReadResponseOrigin.Fetcher(it.origin),
+                    ) as StoreReadResponse<Network>
+                  }
 
-                                is FetcherResult.Error.Message ->
-                                    StoreReadResponse.Error.Message(
-                                        it.message,
-                                        origin = StoreReadResponseOrigin.Fetcher(),
-                                    )
+                  is FetcherResult.Error.Message ->
+                    StoreReadResponse.Error.Message(
+                      it.message,
+                      origin = StoreReadResponseOrigin.Fetcher(),
+                    )
 
-                                is FetcherResult.Error.Exception ->
-                                    StoreReadResponse.Error.Exception(
-                                        it.error,
-                                        origin = StoreReadResponseOrigin.Fetcher(),
-                                    )
-                                is FetcherResult.Error.Custom<*> ->
-                                    StoreReadResponse.Error.Custom(
-                                        it.error,
-                                        StoreReadResponseOrigin.Fetcher(),
-                                    )
-                            }
-                        }.onEmpty {
-                            val origin =
-                                StoreReadResponseOrigin.Fetcher()
-                            emit(StoreReadResponse.NoNewData(origin))
-                        },
-                    /**
-                     * When enabled, downstream collectors are never closed, instead, they are kept active to
-                     * receive values dispatched by fetchers created after them. This makes [FetcherController]
-                     * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
-                     */
-                    piggybackingDownstream = true,
-                    onEach = { response ->
-                        response.dataOrNull()?.let { network: Network ->
-                            val local: Local = converter.fromNetworkToLocal(network)
-                            sourceOfTruth?.write(key, local)
-                        }
-                    },
-                )
-            },
-            onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<Network>> ->
-                multicaster.close()
-            },
-        )
-
-    fun getFetcher(
-        key: Key,
-        piggybackOnly: Boolean = false,
-    ): Flow<StoreReadResponse<Network>> {
-        return flow {
-            val fetcher = acquireFetcher(key)
-            try {
-                emitAll(fetcher.newDownstream(piggybackOnly))
-            } finally {
-                withContext(NonCancellable) {
-                    fetchers.release(key, fetcher)
+                  is FetcherResult.Error.Exception ->
+                    StoreReadResponse.Error.Exception(
+                      it.error,
+                      origin = StoreReadResponseOrigin.Fetcher(),
+                    )
+                  is FetcherResult.Error.Custom<*> ->
+                    StoreReadResponse.Error.Custom(it.error, StoreReadResponseOrigin.Fetcher())
                 }
+              }
+              .onEmpty {
+                val origin = StoreReadResponseOrigin.Fetcher()
+                emit(StoreReadResponse.NoNewData(origin))
+              },
+          /**
+           * When enabled, downstream collectors are never closed, instead, they are kept active to
+           * receive values dispatched by fetchers created after them. This makes
+           * [FetcherController] act like a [SourceOfTruth] in the lack of a [SourceOfTruth]
+           * provided by the developer.
+           */
+          piggybackingDownstream = true,
+          onEach = { response ->
+            response.dataOrNull()?.let { network: Network ->
+              val local: Local = converter.fromNetworkToLocal(network)
+              sourceOfTruth?.write(key, local)
             }
-        }
+          },
+        )
+      },
+      onRelease = { _: Key, multicaster: Multicaster<StoreReadResponse<Network>> ->
+        multicaster.close()
+      },
+    )
+
+  fun getFetcher(key: Key, piggybackOnly: Boolean = false): Flow<StoreReadResponse<Network>> {
+    return flow {
+      val fetcher = acquireFetcher(key)
+      try {
+        emitAll(fetcher.newDownstream(piggybackOnly))
+      } finally {
+        withContext(NonCancellable) { fetchers.release(key, fetcher) }
+      }
     }
+  }
 
-    /**
-     * This functions goes to great length to prevent capturing the calling context from
-     * [getFetcher]. The reason being that the [Flow] returned by [getFetcher] is collected on the
-     * user's context and [acquireFetcher] will, optionally, launch a long running coroutine on the
-     * [FetcherController]'s [scope]. In order to avoid capturing a reference to the scope we need
-     * to:
-     * 1) Not inline this function as that will cause the lambda to capture a reference to the
-     * surrounding suspend lambda which, in turn, holds a reference to the user's coroutine context.
-     * 2) Use [async]-[await] instead of
-     * [kotlinx.coroutines.withContext] as [kotlinx.coroutines.withContext] will also hold onto a
-     * reference to the caller's context (the LHS parameter of the new context which is used to run
-     * the operation).
-     */
-    private suspend fun acquireFetcher(key: Key) =
-        scope.async {
-            fetchers.acquire(key)
-        }.await()
+  /**
+   * This functions goes to great length to prevent capturing the calling context from [getFetcher].
+   * The reason being that the [Flow] returned by [getFetcher] is collected on the user's context
+   * and [acquireFetcher] will, optionally, launch a long running coroutine on the
+   * [FetcherController]'s [scope]. In order to avoid capturing a reference to the scope we need to:
+   * 1) Not inline this function as that will cause the lambda to capture a reference to the
+   *    surrounding suspend lambda which, in turn, holds a reference to the user's coroutine
+   *    context.
+   * 2) Use [async]-[await] instead of [kotlinx.coroutines.withContext] as
+   *    [kotlinx.coroutines.withContext] will also hold onto a reference to the caller's context
+   *    (the LHS parameter of the new context which is used to run the operation).
+   */
+  private suspend fun acquireFetcher(key: Key) = scope.async { fetchers.acquire(key) }.await()
 
-    // visible for testing
-    internal suspend fun fetcherSize() = fetchers.size()
+  // visible for testing
+  internal suspend fun fetcherSize() = fetchers.size()
 }
