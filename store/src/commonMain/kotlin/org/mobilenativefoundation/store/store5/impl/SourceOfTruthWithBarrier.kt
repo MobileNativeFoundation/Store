@@ -35,182 +35,164 @@ import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
 /**
  * Wraps a [SourceOfTruth] and blocks reads while a write is in progress.
  *
- * Used in the [RealStore] implementation to avoid
- * dispatching values to downstream while a write is in progress.
+ * Used in the [RealStore] implementation to avoid dispatching values to downstream while a write is
+ * in progress.
  */
 @Suppress("UNCHECKED_CAST")
 internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, Local : Any>(
-    private val delegate: SourceOfTruth<Key, Local, Output>,
-    private val converter: Converter<Network, Local, Output>? = null,
+  private val delegate: SourceOfTruth<Key, Local, Output>,
+  private val converter: Converter<Network, Local, Output>? = null,
 ) {
-    /**
-     * Each key has a barrier so that we can block reads while writing.
-     */
-    private val barriers =
-        RefCountedResource<Key, MutableStateFlow<BarrierMsg>>(
-            create = {
-                MutableStateFlow(BarrierMsg.Open.INITIAL)
+  /** Each key has a barrier so that we can block reads while writing. */
+  private val barriers =
+    RefCountedResource<Key, MutableStateFlow<BarrierMsg>>(
+      create = { MutableStateFlow(BarrierMsg.Open.INITIAL) }
+    )
+
+  /**
+   * Each message gets dispatched with a version. This ensures we won't accidentally turn on the
+   * reader flow for a new reader that happens to have arrived while a write is in progress since
+   * that write should be considered as a disk read for that flow, not fetcher.
+   */
+  private val versionCounter = atomic(0L)
+
+  fun reader(key: Key, lock: CompletableDeferred<Unit>): Flow<StoreReadResponse<Output?>> {
+    return flow {
+      val barrier = barriers.acquire(key)
+      val readerVersion: Long = versionCounter.incrementAndGet()
+      try {
+        lock.await()
+        emitAll(
+          barrier.flatMapLatest { barrierMessage ->
+            val messageArrivedAfterMe = readerVersion < barrierMessage.version
+            val writeError =
+              if (messageArrivedAfterMe && barrierMessage is BarrierMsg.Open) {
+                barrierMessage.writeError
+              } else {
+                null
+              }
+            val readFlow: Flow<StoreReadResponse<Output?>> =
+              when (barrierMessage) {
+                is BarrierMsg.Open ->
+                  delegate
+                    .reader(key)
+                    .mapIndexed { index, local: Output? ->
+                      if (index == 0 && messageArrivedAfterMe) {
+                        val firstMsgOrigin =
+                          if (writeError == null) {
+                            // restarted barrier without an error means write succeeded
+                            StoreReadResponseOrigin.Fetcher()
+                          } else {
+                            // when a write fails, we still get a new reader because
+                            // we've disabled the previous reader before starting the
+                            // write operation. But since write has failed, we should
+                            // use the SourceOfTruth as the origin
+                            StoreReadResponseOrigin.SourceOfTruth
+                          }
+                        StoreReadResponse.Data(origin = firstMsgOrigin, value = local)
+                      } else {
+                        StoreReadResponse.Data(
+                          origin = StoreReadResponseOrigin.SourceOfTruth,
+                          value = local,
+                        ) as StoreReadResponse<Output?>
+                      }
+                    }
+                    .catch { throwable ->
+                      this.emit(
+                        StoreReadResponse.Error.Exception(
+                          error =
+                            SourceOfTruth.ReadException(
+                              key = key,
+                              cause = throwable.cause ?: throwable,
+                            ),
+                          origin = StoreReadResponseOrigin.SourceOfTruth,
+                        )
+                      )
+                    }
+
+                is BarrierMsg.Blocked -> {
+                  flowOf()
+                }
+              }
+            readFlow.onStart {
+              // if we have a pending error, make sure to dispatch it first.
+              if (writeError != null) {
+                emit(
+                  StoreReadResponse.Error.Exception(
+                    origin = StoreReadResponseOrigin.SourceOfTruth,
+                    error = writeError,
+                  )
+                )
+              }
+            }
+          }
+        )
+      } finally {
+        // we are using a finally here instead of onCompletion as there might be a
+        // possibility where flow gets cancelled right before `emitAll`.
+        barriers.release(key, barrier)
+      }
+    }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  suspend fun write(key: Key, value: Local) {
+    val barrier = barriers.acquire(key)
+    try {
+      barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
+      val writeError =
+        try {
+          delegate.write(key, value)
+          null
+        } catch (throwable: Throwable) {
+          if (throwable !is CancellationException) {
+            throwable
+          } else {
+            null
+          }
+        }
+
+      barrier.emit(
+        BarrierMsg.Open(
+          version = versionCounter.incrementAndGet(),
+          writeError =
+            writeError?.let {
+              SourceOfTruth.WriteException(key = key, value = value, cause = writeError)
             },
         )
-
-    /**
-     * Each message gets dispatched with a version. This ensures we won't accidentally turn on the
-     * reader flow for a new reader that happens to have arrived while a write is in progress since
-     * that write should be considered as a disk read for that flow, not fetcher.
-     */
-    private val versionCounter = atomic(0L)
-
-    fun reader(
-        key: Key,
-        lock: CompletableDeferred<Unit>,
-    ): Flow<StoreReadResponse<Output?>> {
-        return flow {
-            val barrier = barriers.acquire(key)
-            val readerVersion: Long = versionCounter.incrementAndGet()
-            try {
-                lock.await()
-                emitAll(
-                    barrier
-                        .flatMapLatest { barrierMessage ->
-                            val messageArrivedAfterMe = readerVersion < barrierMessage.version
-                            val writeError =
-                                if (messageArrivedAfterMe && barrierMessage is BarrierMsg.Open) {
-                                    barrierMessage.writeError
-                                } else {
-                                    null
-                                }
-                            val readFlow: Flow<StoreReadResponse<Output?>> =
-                                when (barrierMessage) {
-                                    is BarrierMsg.Open ->
-                                        delegate.reader(key).mapIndexed { index, local: Output? ->
-                                            if (index == 0 && messageArrivedAfterMe) {
-                                                val firstMsgOrigin =
-                                                    if (writeError == null) {
-                                                        // restarted barrier without an error means write succeeded
-                                                        StoreReadResponseOrigin.Fetcher()
-                                                    } else {
-                                                        // when a write fails, we still get a new reader because
-                                                        // we've disabled the previous reader before starting the
-                                                        // write operation. But since write has failed, we should
-                                                        // use the SourceOfTruth as the origin
-                                                        StoreReadResponseOrigin.SourceOfTruth
-                                                    }
-                                                StoreReadResponse.Data(
-                                                    origin = firstMsgOrigin,
-                                                    value = local,
-                                                )
-                                            } else {
-                                                StoreReadResponse.Data(
-                                                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                    value = local,
-                                                ) as StoreReadResponse<Output?>
-                                            }
-                                        }.catch { throwable ->
-                                            this.emit(
-                                                StoreReadResponse.Error.Exception(
-                                                    error =
-                                                        SourceOfTruth.ReadException(
-                                                            key = key,
-                                                            cause = throwable.cause ?: throwable,
-                                                        ),
-                                                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                ),
-                                            )
-                                        }
-
-                                    is BarrierMsg.Blocked -> {
-                                        flowOf()
-                                    }
-                                }
-                            readFlow
-                                .onStart {
-                                    // if we have a pending error, make sure to dispatch it first.
-                                    if (writeError != null) {
-                                        emit(
-                                            StoreReadResponse.Error.Exception(
-                                                origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                error = writeError,
-                                            ),
-                                        )
-                                    }
-                                }
-                        },
-                )
-            } finally {
-                // we are using a finally here instead of onCompletion as there might be a
-                // possibility where flow gets cancelled right before `emitAll`.
-                barriers.release(key, barrier)
-            }
-        }
+      )
+      if (writeError is CancellationException) {
+        // only throw if it failed because of cancelation.
+        // otherwise, we take care of letting downstream know that there was a write error
+        throw writeError
+      }
+    } finally {
+      barriers.release(key, barrier)
     }
+  }
 
-    @Suppress("UNCHECKED_CAST")
-    suspend fun write(
-        key: Key,
-        value: Local,
-    ) {
-        val barrier = barriers.acquire(key)
-        try {
-            barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
-            val writeError =
-                try {
-                    delegate.write(key, value)
-                    null
-                } catch (throwable: Throwable) {
-                    if (throwable !is CancellationException) {
-                        throwable
-                    } else {
-                        null
-                    }
-                }
+  suspend fun delete(key: Key) {
+    delegate.delete(key)
+  }
 
-            barrier.emit(
-                BarrierMsg.Open(
-                    version = versionCounter.incrementAndGet(),
-                    writeError =
-                        writeError?.let {
-                            SourceOfTruth.WriteException(
-                                key = key,
-                                value = value,
-                                cause = writeError,
-                            )
-                        },
-                ),
-            )
-            if (writeError is CancellationException) {
-                // only throw if it failed because of cancelation.
-                // otherwise, we take care of letting downstream know that there was a write error
-                throw writeError
-            }
-        } finally {
-            barriers.release(key, barrier)
-        }
+  suspend fun deleteAll() {
+    delegate.deleteAll()
+  }
+
+  private sealed class BarrierMsg(val version: Long) {
+    class Blocked(version: Long) : BarrierMsg(version)
+
+    class Open(version: Long, val writeError: Throwable? = null) : BarrierMsg(version) {
+      companion object {
+        val INITIAL = Open(INITIAL_VERSION)
+      }
     }
+  }
 
-    suspend fun delete(key: Key) {
-        delegate.delete(key)
-    }
+  // visible for testing
+  internal suspend fun barrierCount() = barriers.size()
 
-    suspend fun deleteAll() {
-        delegate.deleteAll()
-    }
-
-    private sealed class BarrierMsg(
-        val version: Long,
-    ) {
-        class Blocked(version: Long) : BarrierMsg(version)
-
-        class Open(version: Long, val writeError: Throwable? = null) : BarrierMsg(version) {
-            companion object {
-                val INITIAL = Open(INITIAL_VERSION)
-            }
-        }
-    }
-
-    // visible for testing
-    internal suspend fun barrierCount() = barriers.size()
-
-    companion object {
-        private const val INITIAL_VERSION = -1L
-    }
+  companion object {
+    private const val INITIAL_VERSION = -1L
+  }
 }
