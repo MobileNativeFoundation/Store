@@ -14,7 +14,7 @@ Store5 specifically introduced the `MutableStore` API to unify local and remote 
 
 The overarching goal of this RFC is to enhance Store5’s synchronization features without introducing breaking changes. In particular:
 
-1. **Synchronization Resilience**: Automated retries and background scheduling using the `Meeseeks` library (a KMP task scheduling library influenced by [WorkManager](https://developer.android.com/reference/androidx/work/WorkManager) and [BGTaskScheduler](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler)).
+1. **Synchronization Resilience**: Automated retries and background scheduling using the [Meeseeks](https://docs.meeseeks.mattramotar.dev/) library (a KMP task scheduling library influenced by [WorkManager](https://developer.android.com/reference/androidx/work/WorkManager) and [BGTaskScheduler](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler)).
 2. **Deletion Handling**: An integrated approach that ensures consistency when items are removed, whether locally, offline, or via server-side signals.
 3. **Conflict Resolution Policies**: Extensible mechanisms to handle collisions gracefully without forcing a "one size fits" approach. This will include a default `last-write-wins` and `merge-based` approach, but will introduce hooks for users to define their own policies.
 
@@ -135,7 +135,7 @@ We have the building blocks for robust sync ([MutableStore](https://store.mobile
 
 3. **Failure Recovery Mechanism for Periodically Syncing in Background**
 
-   Instead of waiting for the user to re-fetch, we should introduce a background sync approach (see `Meeseeks` below). This will ensure items stuck in `Bookkeeper` eventually get retried.
+   Instead of waiting for the user to re-fetch, we should introduce a background sync approach (powered by [Meeseeks](https://docs.meeseeks.mattramotar.dev/) as discussed below). This will ensure items stuck in `Bookkeeper` eventually get retried.
 
 4. **Mechanism for Handling Server Push Events**
 
@@ -149,7 +149,9 @@ We have the building blocks for robust sync ([MutableStore](https://store.mobile
 
 1. **Meeseeks**
 
-   Named after the helpful beings from the [Mr. Meeseeks Box](https://rickandmorty.fandom.com/wiki/Mr._Meeseeks_Box) that exist solely to complete a single task, reliably handle it, work in parallel when needed, and disappear as soon as it is complete. `Meeseeks` is a KMP library influenced by the iOS [BGTaskScheduler](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) and Android [WorkManager](https://developer.android.com/reference/androidx/work/WorkManager). This library will be used by Store to coordinate with `Bookkeeper` to automatically retry unsynced changes. Bookkeeper's ledger will be periodically retried via `Meeseeks`. Retry strategies will be configurable. For instance, a common approach in mobile apps is “last write wins,” where the most recent change overwrites previous ones. But some apps might merge changes "field by field" or prefer the server’s version as the source of truth. This flexibility will enable our users to adapt sync behavior based on their requirements.
+   A Kotlin Multiplatform library for scheduling and managing background tasks. Backed by [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) on Android, [Quartz Job Scheduling](https://www.quartz-scheduler.org/) on JVM, [BGTaskScheduler](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) on native (iOS), and [Background Synchronization API](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API) on JS (Web). `Store` will connect Meeseeks with `Bookkeeper` to automatically retry unsynced changes. Bookkeeper's ledger will be periodically retried via `Meeseeks`. Retry strategies will be configurable for Store consumers. For instance, a common approach in mobile apps is “last write wins,” where the most recent change overwrites previous ones. But some apps might merge changes "field by field" or prefer the server’s version as the source of truth. This flexibility will enable our users to adapt sync behavior based on their requirements. 
+
+   Meeseeks will definitely be separate from Store, but it’s not obvious to me yet where it should live. I could see it living under StoreX for practical reasons, but in principle it is not specific to Store and could be its own library (where exactly I’m not sure, potentially MNF). For now, I'm developing Meeseeks under my personal GitHub ([repo](https://github.com/matt-ramotar/meeseeks), [docs](https://docs.meeseeks.mattramotar.dev/)).
 
 2. **Tombstone Handling**
 
@@ -159,7 +161,7 @@ We have the building blocks for robust sync ([MutableStore](https://store.mobile
 
 These solutions are designed to work together. They reinforce each other to create a more robust synchronization flow, which is the backbone of a reliable data layer. It ensures consistency between local and remote data sources while handling the unpredictable nature of network conditions, conflicts, and deletions.
 
-- **Resilience Through Automated Sync Retries**: At the core of this improved synchronization model is resilience, powered by `Meeseeks`. Sync failures, whether due to transient network issues or server unavailability, will no longer be dead ends. Instead, Store will intelligently schedule and retry failed sync operations in the background, ensuring eventual consistency without requiring explicit user intervention. By leveraging a task-scheduling library designed for KMP, this approach will enable Store5 to support automatic retries across mobile, web, desktop, and server environments.
+- **Resilience Through Automated Sync Retries**: At the core of this improved synchronization model is resilience, powered by [Meeseeks](https://docs.meeseeks.mattramotar.dev/). Sync failures, whether due to transient network issues or server unavailability, will no longer be dead ends. Instead, Store will intelligently schedule and retry failed sync operations in the background, ensuring eventual consistency without requiring explicit user intervention. By leveraging a task-scheduling library designed for KMP, this approach will enable Store5 to support automatic retries across mobile, web, desktop, and server environments.
 
 - **Comprehensive Deletion Handling**: Robust deletion handling ensures Store5 always reflects the latest state of the data by propagating removals consistently across memory caches, local databases, and remote sources. Prior to this RFC, deletions could introduce inconsistencies, leading to stale or misleading data in offline scenarios. Our sync mechanism will have a structured approach to deletions. `Store` will be updated to interpret specialized `FetcherResult.Deleted` as deletion signals. The responsibility of mapping network responses remains deferred to the developer.
 
