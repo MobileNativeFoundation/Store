@@ -14,13 +14,6 @@ public final class org/mobilenativefoundation/store/store5/Bookkeeper$DefaultImp
 	public static synthetic fun setLastFailedSync$default (Lorg/mobilenativefoundation/store/store5/Bookkeeper;Ljava/lang/Object;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class org/mobilenativefoundation/store/store5/BuildConfig {
-	public static final field BUILD_TYPE Ljava/lang/String;
-	public static final field DEBUG Z
-	public static final field LIBRARY_PACKAGE_NAME Ljava/lang/String;
-	public fun <init> ()V
-}
-
 public abstract interface class org/mobilenativefoundation/store/store5/Clear {
 }
 
