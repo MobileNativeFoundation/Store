@@ -63,7 +63,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 nodejs()
             }
 
-            jvmToolchain(11)
+            jvmToolchain(17)
 
             targets.all {
                 compilations.all {
@@ -137,7 +137,7 @@ fun Project.configureKotlin() {
 fun Project.configureJava() {
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(11))
+            languageVersion.set(JavaLanguageVersion.of(17))
         }
     }
 }
@@ -158,8 +158,8 @@ fun Project.configureAndroid() {
         }
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
         }
     }
 }
@@ -171,7 +171,7 @@ private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.co
 
 
 object Versions {
-    const val COMPILE_SDK = 34
+    const val COMPILE_SDK = 35
     const val MIN_SDK = 24
     const val TARGET_SDK = 34
     const val STORE = "5.1.0-alpha06"
