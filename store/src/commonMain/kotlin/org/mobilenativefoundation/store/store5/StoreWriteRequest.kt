@@ -1,8 +1,8 @@
 package org.mobilenativefoundation.store.store5
 
-import kotlinx.datetime.Clock
 import org.mobilenativefoundation.store.store5.impl.OnStoreWriteCompletion
 import org.mobilenativefoundation.store.store5.impl.RealStoreWriteRequest
+import org.mobilenativefoundation.store.store5.impl.extensions.currentTimeMillis
 
 interface StoreWriteRequest<Key : Any, Output : Any, Response : Any> {
     val key: Key
@@ -15,7 +15,7 @@ interface StoreWriteRequest<Key : Any, Output : Any, Response : Any> {
             key: Key,
             value: Output,
             onCompletions: List<OnStoreWriteCompletion>? = null,
-            created: Long = Clock.System.now().toEpochMilliseconds(),
+            created: Long = currentTimeMillis(),
         ): StoreWriteRequest<Key, Output, Response> = RealStoreWriteRequest(key, value, created, onCompletions)
     }
 }

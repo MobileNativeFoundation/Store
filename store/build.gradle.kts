@@ -13,7 +13,6 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.core)
-                implementation(libs.kotlinx.datetime)
                 api(libs.kotlinx.atomic.fu)
                 implementation(libs.touchlab.kermit)
                 implementation(projects.multicast)
