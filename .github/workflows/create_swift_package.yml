@@ -1,7 +1,0 @@
-name: Create Swift Package
-
-on:
-  workflow_dispatch:
-jobs:
-  publish:
-    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildbranches.yml@v0.6

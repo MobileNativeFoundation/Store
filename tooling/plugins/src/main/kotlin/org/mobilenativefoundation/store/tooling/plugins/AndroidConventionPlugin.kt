@@ -16,7 +16,6 @@ class AndroidConventionPlugin : Plugin<Project> {
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
             apply("maven-publish")
-            apply("org.jetbrains.kotlin.native.cocoapods")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
         }
 
@@ -38,8 +37,8 @@ class AndroidConventionPlugin : Plugin<Project> {
             }
 
             compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_11
-                targetCompatibility = JavaVersion.VERSION_11
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
             }
         }
 
