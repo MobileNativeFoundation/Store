@@ -18,7 +18,6 @@ dependencies {
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.dokka.gradle.plugin)
     compileOnly(libs.maven.publish.plugin)
-    compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
 }
 

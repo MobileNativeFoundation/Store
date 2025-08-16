@@ -19,7 +19,6 @@ buildscript {
         classpath(libs.jacoco.gradle.plugin)
         classpath(libs.maven.publish.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
-        classpath(libs.kmmBridge.gradle.plugin)
         classpath(libs.binary.compatibility.validator)
     }
 }

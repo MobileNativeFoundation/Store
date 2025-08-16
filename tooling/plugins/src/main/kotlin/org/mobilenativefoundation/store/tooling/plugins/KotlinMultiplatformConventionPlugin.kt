@@ -2,8 +2,6 @@
 
 package org.mobilenativefoundation.store.tooling.plugins
 
-import addGithubPackagesRepository
-import co.touchlab.faktory.KmmBridgeExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
@@ -30,9 +28,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("com.android.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
-            apply("co.touchlab.faktory.kmmbridge")
             apply("maven-publish")
-            apply("org.jetbrains.kotlin.native.cocoapods")
             apply("kotlinx-atomicfu")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
         }
@@ -40,9 +36,8 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
         extensions.configure<KotlinMultiplatformExtension> {
 
-            applyDefaultHierarchyTemplate()
-
             androidTarget()
+            applyDefaultHierarchyTemplate()
 
             jvm()
 
@@ -122,8 +117,6 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         configureAndroid()
         configureDokka()
         configureMavenPublishing()
-        addGithubPackagesRepository()
-        configureKmmBridge()
         configureAtomicFu()
     }
 }
@@ -143,6 +136,7 @@ fun Project.configureJava() {
 
 fun Project.configureAndroid() {
     android {
+        namespace = "org.mobilenativefoundation.store.$name"
         sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
         compileSdk = Versions.COMPILE_SDK
         defaultConfig {
@@ -183,13 +177,6 @@ fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseEx
 }
 
 
-fun Project.configureKmmBridge() = extensions.configure<KmmBridgeExtension> {
-    githubReleaseArtifacts()
-    githubReleaseVersions()
-    versionPrefix.set(Versions.STORE)
-    spm()
-}
-
 fun Project.configureAtomicFu() =
     extensions.configure<AtomicFUPluginExtension> {
         transformJvm = false
@@ -201,11 +188,5 @@ fun Project.configureDokka() = tasks.withType<DokkaTask>().configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
         jdkVersion.set(11)
-    }
-}
-
-fun Project.android(name: String) {
-    android {
-        namespace = "org.mobilenativefoundation.store.$name"
     }
 }
