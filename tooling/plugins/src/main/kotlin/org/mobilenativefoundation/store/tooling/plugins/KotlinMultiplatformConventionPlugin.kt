@@ -6,6 +6,7 @@ import addGithubPackagesRepository
 import co.touchlab.faktory.KmmBridgeExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost.S01
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -178,7 +179,7 @@ object Versions {
 
 
 fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseExtension> {
-    publishToMavenCentral(automaticRelease = true)
+    publishToMavenCentral(S01)
     signAllPublications()
 }
 
