@@ -6,11 +6,11 @@ import addGithubPackagesRepository
 import co.touchlab.faktory.KmmBridgeExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import com.vanniktech.maven.publish.SonatypeHost.S01
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
@@ -19,6 +19,7 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
@@ -116,7 +117,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 dependsOn(sourceSets.getByName("commonMain"))
             }
 
-
+            configureCocoapods()
         }
 
         configureKotlin()
@@ -179,7 +180,7 @@ object Versions {
 
 
 fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseExtension> {
-    publishToMavenCentral(S01)
+    publishToMavenCentral()
     signAllPublications()
 }
 
@@ -208,5 +209,11 @@ fun Project.configureDokka() = tasks.withType<DokkaTask>().configureEach {
 fun Project.android(name: String) {
     android {
         namespace = "org.mobilenativefoundation.store.$name"
+    }
+}
+
+fun KotlinMultiplatformExtension.configureCocoapods(){
+    (this as ExtensionAware).extensions.configure(CocoapodsExtension::class.java) {
+        version = Versions.STORE
     }
 }
