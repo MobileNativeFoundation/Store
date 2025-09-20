@@ -1,3 +1,6 @@
+import org.gradle.internal.impldep.org.testng.reporters.XMLUtils.xml
+
+
 plugins {
     id("org.mobilenativefoundation.store.multiplatform")
     alias(libs.plugins.kover)

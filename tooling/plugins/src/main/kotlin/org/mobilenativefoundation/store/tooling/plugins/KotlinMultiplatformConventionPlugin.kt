@@ -2,6 +2,8 @@
 
 package org.mobilenativefoundation.store.tooling.plugins
 
+import addGithubPackagesRepository
+import co.touchlab.faktory.KmmBridgeExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
@@ -28,7 +30,9 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("com.android.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
+            apply("co.touchlab.faktory.kmmbridge")
             apply("maven-publish")
+            apply("org.jetbrains.kotlin.native.cocoapods")
             apply("kotlinx-atomicfu")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
         }
@@ -36,8 +40,9 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
         extensions.configure<KotlinMultiplatformExtension> {
 
-            androidTarget()
             applyDefaultHierarchyTemplate()
+
+            androidTarget()
 
             jvm()
 
@@ -57,7 +62,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 nodejs()
             }
 
-            jvmToolchain(17)
+            jvmToolchain(11)
 
             targets.all {
                 compilations.all {
@@ -117,6 +122,8 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         configureAndroid()
         configureDokka()
         configureMavenPublishing()
+        addGithubPackagesRepository()
+        configureKmmBridge()
         configureAtomicFu()
     }
 }
@@ -129,14 +136,13 @@ fun Project.configureKotlin() {
 fun Project.configureJava() {
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(11))
         }
     }
 }
 
 fun Project.configureAndroid() {
     android {
-        namespace = "org.mobilenativefoundation.store.$name"
         sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
         compileSdk = Versions.COMPILE_SDK
         defaultConfig {
@@ -151,8 +157,8 @@ fun Project.configureAndroid() {
         }
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
         }
     }
 }
@@ -177,6 +183,13 @@ fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseEx
 }
 
 
+fun Project.configureKmmBridge() = extensions.configure<KmmBridgeExtension> {
+    githubReleaseArtifacts()
+    githubReleaseVersions()
+    versionPrefix.set(Versions.STORE)
+    spm()
+}
+
 fun Project.configureAtomicFu() =
     extensions.configure<AtomicFUPluginExtension> {
         transformJvm = false
@@ -187,6 +200,12 @@ fun Project.configureDokka() = tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
         reportUndocumented.set(false)
         skipDeprecated.set(true)
-        jdkVersion.set(17)
+        jdkVersion.set(11)
+    }
+}
+
+fun Project.android(name: String) {
+    android {
+        namespace = "org.mobilenativefoundation.store.$name"
     }
 }

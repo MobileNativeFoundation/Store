@@ -5,11 +5,11 @@ plugins {
 group = "org.mobilenativefoundation.store"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
 
@@ -18,6 +18,7 @@ dependencies {
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.dokka.gradle.plugin)
     compileOnly(libs.maven.publish.plugin)
+    compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
 }
 
