@@ -35,7 +35,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace
+        run: ./gradlew clean ktfmtCheck detekt build koverXmlReport --stacktrace
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
