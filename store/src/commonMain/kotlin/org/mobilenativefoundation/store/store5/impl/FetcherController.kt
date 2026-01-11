@@ -15,6 +15,7 @@
  */
 package org.mobilenativefoundation.store.store5.impl
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
@@ -86,6 +87,8 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                                             network,
                                             origin = StoreReadResponseOrigin.Fetcher(it.origin),
                                         ) as StoreReadResponse<Network>
+                                    } catch (exception: CancellationException) {
+                                        throw exception
                                     } catch (exception: Throwable) {
                                         StoreReadResponse.Error.Exception(
                                             exception,

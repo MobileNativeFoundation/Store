@@ -223,6 +223,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
             }
 
         val requestKeyToFetcherName: MutableMap<Key, String?> = mutableMapOf()
+        // Track if network errored AND this is a fresh request where fallback behavior matters
+        var networkErrorWithNoFallback = false
         // we use a merge implementation that gives the source of the flow so that we can decide
         // based on that.
         return networkFlow.merge(diskFlow).transform {
@@ -232,6 +234,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // left, that is data from network
                     val responseOrigin = it.value.origin as StoreReadResponseOrigin.Fetcher
                     requestKeyToFetcherName[request.key] = responseOrigin.name
+
+                    // Track if network errored and fallback to disk is disabled for fresh requests
+                    if (it.value is StoreReadResponse.Error && skipDiskCache && !request.fallBackToSourceOfTruth) {
+                        networkErrorWithNoFallback = true
+                    }
 
                     if (it.value is StoreReadResponse.Data ||
                         it.value is StoreReadResponse.NoNewData ||
@@ -254,6 +261,11 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // right, that is data from disk
                     when (val diskData = it.value) {
                         is StoreReadResponse.Data -> {
+                            // Skip disk data if this was a fresh request that errored with fallback disabled
+                            if (networkErrorWithNoFallback) {
+                                return@transform
+                            }
+
                             val responseOriginWithFetcherName =
                                 diskData.origin.let { origin ->
                                     if (origin is StoreReadResponseOrigin.Fetcher) {

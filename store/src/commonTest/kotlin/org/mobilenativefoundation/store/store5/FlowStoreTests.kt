@@ -1207,4 +1207,82 @@ class FlowStoreTests {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    @Test
+    fun stream_givenConverterThrowsWithFallbackDisabled_thenDiskDataNotEmitted() =
+        testScope.runTest {
+            // Given: Pre-populate disk with data, then request fresh with fallBackToSourceOfTruth=false
+            val exception = IllegalStateException("Converter failed")
+            val persister = InMemoryPersister<Int, String>()
+            persister.write(1, "cached value")
+
+            val pipeline =
+                StoreBuilder.from(
+                    fetcher = Fetcher.of { _: Int -> "network" },
+                    sourceOfTruth = persister.asSourceOfTruth(),
+                    converter =
+                        object : Converter<String, String, String> {
+                            override fun fromNetworkToLocal(network: String): String {
+                                throw exception
+                            }
+
+                            override fun fromOutputToLocal(output: String): String = output
+                        },
+                ).buildWithTestScope()
+
+            // When: Request with fallBackToSourceOfTruth=false
+            pipeline.stream(StoreReadRequest.fresh(1, fallBackToSourceOfTruth = false)).test {
+                assertEquals(
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
+
+                // Then: Only error is emitted, no disk data (since fallback is disabled)
+                val errorResponse = awaitItem()
+                assertIs<StoreReadResponse.Error.Exception>(errorResponse)
+                assertEquals(exception.message, errorResponse.error.message)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun stream_givenConverterThrowsWithFallbackEnabled_thenDiskDataEmitted() =
+        testScope.runTest {
+            // Given: Pre-populate disk with data, then request with fallBackToSourceOfTruth=true
+            val exception = IllegalStateException("Converter failed")
+            val persister = InMemoryPersister<Int, String>()
+            persister.write(1, "cached value")
+
+            val pipeline =
+                StoreBuilder.from(
+                    fetcher = Fetcher.of { _: Int -> "network" },
+                    sourceOfTruth = persister.asSourceOfTruth(),
+                    converter =
+                        object : Converter<String, String, String> {
+                            override fun fromNetworkToLocal(network: String): String {
+                                throw exception
+                            }
+
+                            override fun fromOutputToLocal(output: String): String = output
+                        },
+                ).buildWithTestScope()
+
+            // When: Request with fallBackToSourceOfTruth=true
+            pipeline.stream(StoreReadRequest.fresh(1, fallBackToSourceOfTruth = true)).test {
+                assertEquals(
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
+
+                // Then: Error is emitted
+                val errorResponse = awaitItem()
+                assertIs<StoreReadResponse.Error.Exception>(errorResponse)
+
+                // And: Disk data is also emitted (since fallback is enabled)
+                val diskData = awaitItem()
+                assertIs<StoreReadResponse.Data<String>>(diskData)
+                assertEquals("cached value", diskData.value)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }
