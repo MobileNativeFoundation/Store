@@ -144,11 +144,18 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
         }
     }
 
+    /**
+     * Writes a value to the underlying [SourceOfTruth] and returns any error that occurred.
+     *
+     * @return The [SourceOfTruth.WriteException] if the write failed, or null if successful.
+     *         Callers like [RealStore.write] can check this to determine if the write succeeded.
+     *         The barrier mechanism also notifies readers of the error via [BarrierMsg.Open.writeError].
+     */
     @Suppress("UNCHECKED_CAST")
     suspend fun write(
         key: Key,
         value: Local,
-    ) {
+    ): SourceOfTruth.WriteException? {
         val barrier = barriers.acquire(key)
         try {
             barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
@@ -164,24 +171,26 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                     }
                 }
 
+            // Avoid double-wrapping if the error is already a WriteException.
+            val writeException = writeError?.let {
+                writeError as? SourceOfTruth.WriteException
+                    ?: SourceOfTruth.WriteException(
+                        key = key,
+                        value = value,
+                        cause = writeError,
+                    )
+            }
+
             barrier.emit(
                 BarrierMsg.Open(
                     version = versionCounter.incrementAndGet(),
-                    writeError =
-                        writeError?.let {
-                            SourceOfTruth.WriteException(
-                                key = key,
-                                value = value,
-                                cause = writeError,
-                            )
-                        },
+                    writeError = writeException,
                 ),
             )
-            if (writeError is CancellationException) {
-                // only throw if it failed because of cancelation.
-                // otherwise, we take care of letting downstream know that there was a write error
-                throw writeError
-            }
+
+            // Return the error so callers know the operation failed.
+            // The barrier message above notifies readers of the error.
+            return writeException
         } finally {
             barriers.release(key, barrier)
         }

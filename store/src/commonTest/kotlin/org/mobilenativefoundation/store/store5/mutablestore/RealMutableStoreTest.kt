@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.FetcherResult
+import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
@@ -295,6 +296,33 @@ class RealMutableStoreTest {
             assertIs<StoreWriteResponse.Error.Exception>(response)
             assertEquals("contentException", delegateStore.latestOrNull("exceptionKey")?.content)
             assertNotNull(testBookkeeper.getLastFailedSync("exceptionKey"))
+        }
+
+    @Test
+    fun write_givenSourceOfTruthFailure_whenCalled_thenSurfacesWriteError() =
+        runTest {
+            // Given
+            val key = "key"
+            val errorMessage = "write error"
+            testSourceOfTruth.throwOnWrite(key) {
+                IllegalStateException(errorMessage)
+            }
+            val request =
+                StoreWriteRequest.of<String, Note, Unit>(
+                    key = key,
+                    value = Note(key, "content"),
+                    created = 3333L,
+                    onCompletions = null,
+                )
+
+            // When
+            val response = mutableStore.write(request)
+
+            // Then
+            val errorResponse = assertIs<StoreWriteResponse.Error.Exception>(response)
+            val writeException = assertIs<SourceOfTruth.WriteException>(errorResponse.error)
+            val cause = assertIs<IllegalStateException>(writeException.cause)
+            assertEquals(errorMessage, cause.message)
         }
 
     @Test

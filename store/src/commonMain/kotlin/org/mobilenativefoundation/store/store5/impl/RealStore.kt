@@ -333,8 +333,12 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     ): StoreDelegateWriteResult =
         try {
             memCache?.put(key, value)
-            sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
-            StoreDelegateWriteResult.Success
+            val writeException = sourceOfTruth?.write(key, converter.fromOutputToLocal(value))
+            if (writeException != null) {
+                StoreDelegateWriteResult.Error.Exception(writeException)
+            } else {
+                StoreDelegateWriteResult.Success
+            }
         } catch (error: Throwable) {
             StoreDelegateWriteResult.Error.Exception(error)
         }

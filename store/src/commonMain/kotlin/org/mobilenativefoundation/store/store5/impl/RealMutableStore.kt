@@ -24,6 +24,7 @@ import org.mobilenativefoundation.store.store5.impl.extensions.now
 import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
 import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
+import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
 @OptIn(ExperimentalStoreApi::class)
 internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : Any>(
@@ -85,25 +86,30 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                     val storeWriteResponse =
                         try {
                             // Always write to local first.
-                            delegate.write(writeRequest.key, writeRequest.value)
-
-                            // Try to sync to network.
-                            val updaterResult = tryUpdateServer(writeRequest)
-
-                            // Convert UpdaterResult -> StoreWriteResponse.
-                            when (updaterResult) {
-                                is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                                is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                                is UpdaterResult.Success.Typed<*> -> {
-                                    val typedValue = updaterResult.value as? Response
-                                    if (typedValue == null) {
-                                        StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                    } else {
-                                        StoreWriteResponse.Success.Typed(updaterResult.value)
+                            // Only proceed to network if local write succeeded.
+                            when (val delegateWriteResult = delegate.write(writeRequest.key, writeRequest.value)) {
+                                is StoreDelegateWriteResult.Error.Exception -> {
+                                    StoreWriteResponse.Error.Exception(delegateWriteResult.error)
+                                }
+                                is StoreDelegateWriteResult.Error.Message -> {
+                                    StoreWriteResponse.Error.Message(delegateWriteResult.error)
+                                }
+                                is StoreDelegateWriteResult.Success -> {
+                                    // Try to sync to network.
+                                    when (val updaterResult = tryUpdateServer(writeRequest)) {
+                                        is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
+                                        is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
+                                        is UpdaterResult.Success.Typed<*> -> {
+                                            val typedValue = updaterResult.value as? Response
+                                            if (typedValue == null) {
+                                                StoreWriteResponse.Success.Untyped(updaterResult.value)
+                                            } else {
+                                                StoreWriteResponse.Success.Typed(updaterResult.value)
+                                            }
+                                        }
+                                        is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                                     }
                                 }
-
-                                is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
                             }
                         } catch (throwable: Throwable) {
                             StoreWriteResponse.Error.Exception(throwable)
