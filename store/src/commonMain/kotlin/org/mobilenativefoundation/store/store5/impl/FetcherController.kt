@@ -89,7 +89,7 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                                     } catch (exception: Throwable) {
                                         StoreReadResponse.Error.Exception(
                                             exception,
-                                            origin = StoreReadResponseOrigin.Fetcher(),
+                                            origin = StoreReadResponseOrigin.Fetcher(it.origin),
                                         )
                                     }
                                 }

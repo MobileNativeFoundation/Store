@@ -233,13 +233,13 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     val responseOrigin = it.value.origin as StoreReadResponseOrigin.Fetcher
                     requestKeyToFetcherName[request.key] = responseOrigin.name
 
-                    val fallBackToSourceOfTruth =
-                        it.value is StoreReadResponse.Error && request.fallBackToSourceOfTruth
-
-                    if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData || fallBackToSourceOfTruth) {
-                        // Unlocking disk only if network sent data or reported no new data
+                    if (it.value is StoreReadResponse.Data ||
+                        it.value is StoreReadResponse.NoNewData ||
+                        it.value is StoreReadResponse.Error
+                    ) {
+                        // Unlocking disk only if network sent data, reported no new data, or returned an error
                         // so that fresh data request never receives new fetcher data after
-                        // cached disk data.
+                        // cached disk data, and so that the flow can properly complete on errors.
                         // This means that if the user asked for fresh data but the network returned
                         // no new data we will still unblock disk.
                         diskLock.complete(Unit)
