@@ -8,11 +8,13 @@ class TestUpdater<Key : Any, Output : Any, Response : Any> : Updater<Key, Output
     var exception: Throwable? = null
     var errorMessage: String? = null
     var successValue: Response? = null
+    var postCallCount: Int = 0
 
     override suspend fun post(
         key: Key,
         value: Output,
     ): UpdaterResult {
+        postCallCount++
         exception?.let { return UpdaterResult.Error.Exception(it) }
         errorMessage?.let { return UpdaterResult.Error.Message(it) }
         successValue?.let { return UpdaterResult.Success.Typed(it) }

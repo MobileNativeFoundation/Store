@@ -14,7 +14,7 @@ internal fun <Key : Any, Network : Any, Output : Any, Local : Any> testStore(
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
     scope: CoroutineScope = CoroutineScope(dispatcher),
     fetcher: Fetcher<Key, Network> = TestFetcher(),
-    sourceOfTruth: SourceOfTruth<Key, Local, Output> = TestSourceOfTruth(),
+    sourceOfTruth: SourceOfTruth<Key, Local, Output>? = TestSourceOfTruth(),
     converter: Converter<Network, Local, Output> = TestConverter(),
     validator: Validator<Output> = TestValidator(),
     memoryCache: Cache<Key, Output> = TestCache(),

@@ -326,6 +326,65 @@ class RealMutableStoreTest {
         }
 
     @Test
+    fun write_givenSourceOfTruthFailure_whenCalled_thenNetworkSyncNotAttempted() =
+        runTest {
+            // Given
+            val key = "key"
+            testUpdater.postCallCount = 0
+            testSourceOfTruth.throwOnWrite(key) { IllegalStateException("SOT failure") }
+
+            val request =
+                StoreWriteRequest.of<String, Note, Unit>(
+                    key = key,
+                    value = Note(key, "content"),
+                    created = 4444L,
+                    onCompletions = null,
+                )
+
+            // When
+            val response = mutableStore.write(request)
+
+            // Then
+            assertIs<StoreWriteResponse.Error.Exception>(response)
+            assertEquals(0, testUpdater.postCallCount, "Network updater should not be called when SOT write fails")
+        }
+
+    @Test
+    fun write_givenNoSourceOfTruth_whenCalled_thenSucceeds() =
+        runTest {
+            // Given
+            val storeWithoutSot =
+                testStore(
+                    fetcher = testFetcher,
+                    sourceOfTruth = null,
+                    converter = testConverter,
+                    validator = testValidator,
+                    memoryCache = testCache,
+                )
+            val mutableStoreWithoutSot =
+                RealMutableStore(
+                    delegate = storeWithoutSot,
+                    updater = testUpdater,
+                    bookkeeper = testBookkeeper,
+                    logger = testLogger,
+                )
+
+            val request =
+                StoreWriteRequest.of<String, Note, Unit>(
+                    key = "noSotKey",
+                    value = Note("id", "content"),
+                    created = 5555L,
+                    onCompletions = null,
+                )
+
+            // When
+            val response = mutableStoreWithoutSot.write(request)
+
+            // Then
+            assertIs<StoreWriteResponse.Success>(response)
+        }
+
+    @Test
     fun clearAll_givenSomeKeys_whenCalled_thenDelegateIsCleared() =
         runTest {
             // Given
