@@ -78,10 +78,20 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                         flow { emitAll(realFetcher(key)) }.map {
                             when (it) {
                                 is FetcherResult.Data -> {
-                                    StoreReadResponse.Data(
-                                        it.value,
-                                        origin = StoreReadResponseOrigin.Fetcher(it.origin),
-                                    ) as StoreReadResponse<Network>
+                                    try {
+                                        val network = it.value
+                                        val local = converter.fromNetworkToLocal(network)
+                                        sourceOfTruth?.write(key, local)
+                                        StoreReadResponse.Data(
+                                            network,
+                                            origin = StoreReadResponseOrigin.Fetcher(it.origin),
+                                        ) as StoreReadResponse<Network>
+                                    } catch (exception: Throwable) {
+                                        StoreReadResponse.Error.Exception(
+                                            exception,
+                                            origin = StoreReadResponseOrigin.Fetcher(),
+                                        )
+                                    }
                                 }
 
                                 is FetcherResult.Error.Message ->
@@ -106,17 +116,15 @@ internal class FetcherController<Key : Any, Network : Any, Output : Any, Local :
                                 StoreReadResponseOrigin.Fetcher()
                             emit(StoreReadResponse.NoNewData(origin))
                         },
-                    /**
-                     * When enabled, downstream collectors are never closed, instead, they are kept active to
-                     * receive values dispatched by fetchers created after them. This makes [FetcherController]
-                     * act like a [SourceOfTruth] in the lack of a [SourceOfTruth] provided by the developer.
-                     */
+                    // When enabled, downstream collectors are never closed.
+                    // Instead, they are kept active to receive values dispatched by fetchers created after them.
+                    // This makes FetcherController act like a SourceOfTruth in the lack of a SourceOfTruth provided by the developer.
                     piggybackingDownstream = true,
-                    onEach = { response ->
-                        response.dataOrNull()?.let { network: Network ->
-                            val local: Local = converter.fromNetworkToLocal(network)
-                            sourceOfTruth?.write(key, local)
-                        }
+                    onEach = { _ ->
+                        // Exceptions thrown here propagate to the actor and close downstream channels silently.
+                        // This caused store.stream() and store.get() to hang indefinitely (see #660).
+                        // Consequently, we are intentionally performing no work here.
+                        // Conversion and SOT writes now happen in the source flow above.
                     },
                 )
             },

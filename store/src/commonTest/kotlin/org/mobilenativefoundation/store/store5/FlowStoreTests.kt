@@ -43,6 +43,7 @@ import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -1094,4 +1095,40 @@ class FlowStoreTests {
         )
 
     private fun <Key : Any, Output : Any> StoreBuilder<Key, Output>.buildWithTestScope() = scope(testScope).build()
+
+    @Test
+    fun stream_givenConverterThrows_thenEmitsError() =
+        testScope.runTest {
+            // Given
+            val exception = IllegalStateException("Converter failed")
+            val persister = InMemoryPersister<Int, String>()
+
+            val pipeline =
+                StoreBuilder.from(
+                    fetcher = Fetcher.of { _: Int -> "network" },
+                    sourceOfTruth = persister.asSourceOfTruth(),
+                    converter =
+                        object : Converter<String, String, String> {
+                            override fun fromNetworkToLocal(network: String): String {
+                                throw exception
+                            }
+
+                            override fun fromOutputToLocal(output: String): String = output
+                        },
+                ).buildWithTestScope()
+
+            // When + Then
+            pipeline.stream(StoreReadRequest.fresh(1)).test {
+                assertEquals(
+                    Loading(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                    ),
+                    awaitItem(),
+                )
+
+                val errorResponse = awaitItem()
+                assertIs<StoreReadResponse.Error.Exception>(errorResponse)
+                assertEquals(exception.message, errorResponse.error.message)
+            }
+        }
 }
