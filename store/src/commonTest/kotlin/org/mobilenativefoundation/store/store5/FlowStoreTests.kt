@@ -1285,4 +1285,57 @@ class FlowStoreTests {
                 cancelAndIgnoreRemainingEvents()
             }
         }
+
+    @Test
+    fun stream_givenConverterFailsThenSucceeds_thenSecondRequestEmitsData() =
+        testScope.runTest {
+            // Given: Converter that fails on first attempt and succeeds on second
+            var attempts = 0
+            val exception = IllegalStateException("Converter failed")
+            val persister = InMemoryPersister<Int, String>()
+
+            val pipeline =
+                StoreBuilder.from(
+                    fetcher = Fetcher.of { _: Int -> "network value" },
+                    sourceOfTruth = persister.asSourceOfTruth(),
+                    converter =
+                        object : Converter<String, String, String> {
+                            override fun fromNetworkToLocal(network: String): String {
+                                attempts++
+                                if (attempts == 1) {
+                                    throw exception
+                                }
+                                return network
+                            }
+
+                            override fun fromOutputToLocal(output: String): String = output
+                        },
+                ).buildWithTestScope()
+
+            // First request: fresh with fallback disabled (should error)
+            pipeline.stream(StoreReadRequest.fresh(1, fallBackToSourceOfTruth = false)).test {
+                assertEquals(
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
+                val errorResponse = awaitItem()
+                assertIs<StoreReadResponse.Error.Exception>(errorResponse)
+                assertEquals(exception.message, errorResponse.error.message)
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            // Second request: fresh again (should succeed and emit data)
+            pipeline.stream(StoreReadRequest.fresh(1, fallBackToSourceOfTruth = false)).test {
+                assertEquals(
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    awaitItem(),
+                )
+
+                // Should receive data (Fetcher origin from SOT), not be skipped
+                val dataResponse = awaitItem()
+                assertIs<StoreReadResponse.Data<String>>(dataResponse)
+                assertEquals("network value", dataResponse.value)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
 }

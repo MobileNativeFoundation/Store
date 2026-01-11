@@ -238,6 +238,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // Track if network errored and fallback to disk is disabled for fresh requests
                     if (it.value is StoreReadResponse.Error && skipDiskCache && !request.fallBackToSourceOfTruth) {
                         networkErrorWithNoFallback = true
+                    } else if (it.value is StoreReadResponse.Data || it.value is StoreReadResponse.NoNewData) {
+                        // Reset on success so subsequent SOT emissions aren't incorrectly filtered
+                        networkErrorWithNoFallback = false
                     }
 
                     if (it.value is StoreReadResponse.Data ||
@@ -261,8 +264,9 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                     // right, that is data from disk
                     when (val diskData = it.value) {
                         is StoreReadResponse.Data -> {
-                            // Skip disk data if this was a fresh request that errored with fallback disabled
-                            if (networkErrorWithNoFallback) {
+                            // Skip disk data (SOT origin) if this was a fresh request that errored with fallback disabled.
+                            // But always emit fresh network data (Fetcher origin) even after prior errors.
+                            if (networkErrorWithNoFallback && diskData.origin !is StoreReadResponseOrigin.Fetcher) {
                                 return@transform
                             }
 
