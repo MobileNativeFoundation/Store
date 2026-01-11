@@ -350,6 +350,29 @@ class RealMutableStoreTest {
         }
 
     @Test
+    fun write_givenSourceOfTruthFailure_whenCalled_thenMemCacheNotUpdated() =
+        runTest {
+            // Given
+            val key = "key"
+            testSourceOfTruth.throwOnWrite(key) { IllegalStateException("SOT failure") }
+
+            val request =
+                StoreWriteRequest.of<String, Note, Unit>(
+                    key = key,
+                    value = Note(key, "content"),
+                    created = 6666L,
+                    onCompletions = null,
+                )
+
+            // When
+            val response = mutableStore.write(request)
+
+            // Then
+            assertIs<StoreWriteResponse.Error.Exception>(response)
+            assertNull(delegateStore.latestOrNull(key), "Value should not be in cache after SOT write failure")
+        }
+
+    @Test
     fun write_givenNoSourceOfTruth_whenCalled_thenSucceeds() =
         runTest {
             // Given
