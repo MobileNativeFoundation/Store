@@ -2,6 +2,94 @@
 
 ### Thank you to all our wonderful contributors and users
 
+## [5.1.0-alpha08] (2026-01-11)
+
+**Bug Fixes**
+
+* Propagate converter exceptions instead of hanging indefinitely [#728](https://github.com/MobileNativeFoundation/Store/pull/728)
+* Fix MutableStore.write() ignoring SourceOfTruth write failures [#727](https://github.com/MobileNativeFoundation/Store/pull/727)
+
+## [5.1.0-alpha07] (2025-09-20)
+
+* Remove Kotlinx Datetime dependency [#706](https://github.com/MobileNativeFoundation/Store/pull/706)
+
+## [5.1.0-alpha06] (2025-02-27)
+
+**New Features**
+
+* Add WasmJS targeting capability [#646](https://github.com/MobileNativeFoundation/Store/pull/646)
+
+**Bug Fixes**
+
+* Fix eager conflict resolution deadlock in mutable Store operations [#679](https://github.com/MobileNativeFoundation/Store/pull/679)
+
+**Improvements**
+
+* Migrate test suite to Turbine testing library [#672](https://github.com/MobileNativeFoundation/Store/pull/672)
+* Remove deprecated BroadcastChannel usage [#659](https://github.com/MobileNativeFoundation/Store/pull/659)
+* Document extension functions in store.kt [#669](https://github.com/MobileNativeFoundation/Store/pull/669)
+* Update README with links to store.mobilenativefoundation.org [#670](https://github.com/MobileNativeFoundation/Store/pull/670)
+* Remove first paging iteration [#671](https://github.com/MobileNativeFoundation/Store/pull/671)
+* Update Kover to 0.9.0-RC and consolidate CI workflows [#673](https://github.com/MobileNativeFoundation/Store/pull/673)
+
+**Dependencies**
+
+* Update Kermit to 2.0.5 [#683](https://github.com/MobileNativeFoundation/Store/pull/683)
+* Update JaCoCo to 0.8.12 [#684](https://github.com/MobileNativeFoundation/Store/pull/684)
+* Update Dokka to 1.9.20 [#687](https://github.com/MobileNativeFoundation/Store/pull/687)
+* Update kotlinx-datetime to 0.6.2 [#688](https://github.com/MobileNativeFoundation/Store/pull/688)
+* Configure Renovate for automated dependency management [#676](https://github.com/MobileNativeFoundation/Store/pull/676)
+
+## [5.1.0-alpha05] (2025-10-18)
+
+**Bug Fixes**
+
+* Fix potential deadlock in RealMutableStore [#658](https://github.com/MobileNativeFoundation/Store/pull/658)
+* Fix failing Node.js tests [#665](https://github.com/MobileNativeFoundation/Store/pull/665)
+* Fix typo in RealStore.kt [#662](https://github.com/MobileNativeFoundation/Store/pull/662)
+
+**Dependencies**
+
+* Update Kermit to 2.0.4 [#655](https://github.com/MobileNativeFoundation/Store/pull/655)
+
+## [5.1.0-alpha04] (2025-07-07)
+
+**Important:** This release corrects the unintentional minimum SDK increase from alpha03.
+
+**New Features**
+
+* Add wasmJS target to Cache module [#605](https://github.com/MobileNativeFoundation/Store/pull/605)
+* Add Cache.getAllPresent() [#609](https://github.com/MobileNativeFoundation/Store/pull/609)
+
+**Improvements**
+
+* Add binary compatibility validator and convention plugins [#645](https://github.com/MobileNativeFoundation/Store/pull/645)
+* Lower JVM target to Java 11 [#648](https://github.com/MobileNativeFoundation/Store/pull/648)
+* Use Java 11 everywhere [#649](https://github.com/MobileNativeFoundation/Store/pull/649)
+
+**Bug Fixes**
+
+* Fix failing CI tests [#641](https://github.com/MobileNativeFoundation/Store/pull/641)
+* Update ChannelManager.kt [#637](https://github.com/MobileNativeFoundation/Store/pull/637)
+
+## [5.1.0-alpha02] (2025-01-28)
+
+* Release paging and core modules [#600](https://github.com/MobileNativeFoundation/Store/pull/600)
+
+## [5.1.0-alpha01] (2025-01-26)
+
+**New Features**
+
+* Support Paging [#550](https://github.com/MobileNativeFoundation/Store/pull/550)
+* Support custom error types [#583](https://github.com/MobileNativeFoundation/Store/pull/583)
+* Add cacheOnly option to StoreReadRequest [#586](https://github.com/MobileNativeFoundation/Store/pull/586)
+* Expose converter via StoreBuilder.from() function [#594](https://github.com/MobileNativeFoundation/Store/pull/594)
+
+**Documentation**
+
+* Update CONTRIBUTING.md [#589](https://github.com/MobileNativeFoundation/Store/pull/589)
+* Update pull_request_template.md [#590](https://github.com/MobileNativeFoundation/Store/pull/590)
+
 ## [5.0.0] (2023-09-14 ) 
 ### Stable release of Store 5, major additions since Store 4 (no breaking changes)
 * MutableStore
@@ -281,7 +369,21 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/v5.0.0-beta02...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha08...HEAD
+
+[5.1.0-alpha08]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha08
+
+[5.1.0-alpha07]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha07
+
+[5.1.0-alpha06]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha06
+
+[5.1.0-alpha05]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha05
+
+[5.1.0-alpha04]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha04
+
+[5.1.0-alpha02]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha02
+
+[5.1.0-alpha01]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha01
 
 [5.0.0-beta02]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.0.0-beta02
 
