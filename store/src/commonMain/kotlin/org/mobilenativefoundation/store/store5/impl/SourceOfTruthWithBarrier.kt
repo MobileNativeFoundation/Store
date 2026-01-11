@@ -172,14 +172,15 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                 }
 
             // Avoid double-wrapping if the error is already a WriteException.
-            val writeException = writeError?.let {
-                writeError as? SourceOfTruth.WriteException
-                    ?: SourceOfTruth.WriteException(
-                        key = key,
-                        value = value,
-                        cause = writeError,
-                    )
-            }
+            val writeException =
+                writeError?.let {
+                    writeError as? SourceOfTruth.WriteException
+                        ?: SourceOfTruth.WriteException(
+                            key = key,
+                            value = value,
+                            cause = writeError,
+                        )
+                }
 
             barrier.emit(
                 BarrierMsg.Open(
