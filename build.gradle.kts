@@ -59,3 +59,9 @@ tasks {
 
 // Workaround for https://youtrack.jetbrains.com/issue/KT-62040
 tasks.getByName("wrapper")
+
+tasks.named<UpdateDaemonJvm>("updateDaemonJvm") {
+    // JDK 17 is the minumun version supported by the org.gradle.toolchains.foojay-resolver-convention plugin
+    languageVersion = JavaLanguageVersion.of(17)
+    vendor.set(JvmVendorSpec.AZUL)
+}
