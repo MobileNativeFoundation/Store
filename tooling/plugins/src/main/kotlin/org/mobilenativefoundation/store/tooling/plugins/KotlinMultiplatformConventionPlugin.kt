@@ -10,6 +10,7 @@ import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -61,6 +62,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
             @OptIn(ExperimentalWasmDsl::class)
             wasmJs {
+                browser()
                 nodejs()
             }
 
@@ -68,27 +70,31 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
             targets.all {
                 compilations.all {
-                    compilerOptions.configure {
-                        freeCompilerArgs.add("-Xexpect-actual-classes")
+                    compileTaskProvider.configure {
+                        compilerOptions {
+                            freeCompilerArgs.add("-Xexpect-actual-classes")
+                        }
                     }
                 }
             }
 
             targets.withType<KotlinNativeTarget>().configureEach {
                 compilations.configureEach {
-                    compilerOptions.configure {
-                        freeCompilerArgs.add("-Xallocator=custom")
-                        freeCompilerArgs.add("-XXLanguage:+ImplicitSignedToUnsignedIntegerConversion")
-                        freeCompilerArgs.add("-Xadd-light-debug=enable")
+                    compileTaskProvider.configure {
+                        compilerOptions {
+                            freeCompilerArgs.add("-Xallocator=custom")
+                            freeCompilerArgs.add("-XXLanguage:+ImplicitSignedToUnsignedIntegerConversion")
+                            freeCompilerArgs.add("-Xadd-light-debug=enable")
 
-                        freeCompilerArgs.addAll(
-                            "-opt-in=kotlin.RequiresOptIn",
-                            "-opt-in=kotlin.time.ExperimentalTime",
-                            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                            "-opt-in=kotlinx.coroutines.FlowPreview",
-                            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
-                            "-opt-in=kotlinx.cinterop.BetaInteropApi",
-                        )
+                            freeCompilerArgs.addAll(
+                                "-opt-in=kotlin.RequiresOptIn",
+                                "-opt-in=kotlin.time.ExperimentalTime",
+                                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                                "-opt-in=kotlinx.coroutines.FlowPreview",
+                                "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+                                "-opt-in=kotlinx.cinterop.BetaInteropApi",
+                            )
+                        }
                     }
                 }
             }
@@ -110,6 +116,24 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             sourceSets.getByName("jvmTest") {
                 dependencies {
                     implementation(kotlin("test-junit"))
+                }
+            }
+
+            val versionCatalog = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+            val atomicFuDep = versionCatalog.findLibrary("kotlinx-atomic-fu").get().get()
+            sourceSets.getByName("nativeMain"){
+                dependencies {
+                    api(atomicFuDep)
+                }
+            }
+            sourceSets.getByName("jsMain"){
+                dependencies {
+                    api(atomicFuDep)
+                }
+            }
+            sourceSets.getByName("wasmJsMain"){
+                dependencies {
+                    api(atomicFuDep)
                 }
             }
 
@@ -208,7 +232,7 @@ fun Project.android(name: String) {
     }
 }
 
-fun KotlinMultiplatformExtension.configureCocoapods(){
+fun KotlinMultiplatformExtension.configureCocoapods() {
     (this as ExtensionAware).extensions.configure(CocoapodsExtension::class.java) {
         version = Versions.STORE
     }
