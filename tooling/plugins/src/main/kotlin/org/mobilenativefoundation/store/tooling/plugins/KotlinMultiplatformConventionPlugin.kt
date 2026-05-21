@@ -113,10 +113,6 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 }
             }
 
-            sourceSets.getByName("nativeMain") {
-                dependsOn(sourceSets.getByName("commonMain"))
-            }
-
             configureCocoapods()
         }
 
