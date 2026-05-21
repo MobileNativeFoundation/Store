@@ -35,10 +35,6 @@ subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
 
-    ktlint {
-        disabledRules.add("import-ordering")
-    }
-
     spotless {
         kotlin {
             target("src/**/*.kt")
