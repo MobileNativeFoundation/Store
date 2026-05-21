@@ -16,7 +16,7 @@ jobs:
         api-level: [ 29 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # PR builds (including forks) check out the PR head from its source repo;
           # push builds fall back to the pushed ref on this repo. Without the
@@ -31,13 +31,13 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
@@ -50,7 +50,7 @@ jobs:
         # upload would fail under fail_ci_if_error. Skip it for forks; coverage is
         # still uploaded and enforced for same-repo PRs and pushes to main.
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/reports/kover/coverage.xml
@@ -65,16 +65,16 @@ jobs:
     needs: build-and-test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
