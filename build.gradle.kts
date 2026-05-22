@@ -18,11 +18,10 @@ buildscript {
         classpath(libs.kotlin.gradle.plugin)
         classpath(libs.kotlin.serialization.plugin)
         classpath(libs.dokka.gradle.plugin)
-        classpath(libs.ktlint.gradle.plugin)
         classpath(libs.jacoco.gradle.plugin)
         classpath(libs.maven.publish.plugin)
         classpath(libs.atomic.fu.gradle.plugin)
-        classpath(libs.kmmBridge.gradle.plugin)
+//        classpath(libs.kmmBridge.gradle.plugin)
         classpath(libs.binary.compatibility.validator)
     }
 }
@@ -34,6 +33,7 @@ allprojects {
     }
 }
 
+val ktLintVersion = libs.versions.ktlint.get()
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
@@ -42,6 +42,18 @@ subprojects {
         kotlin {
             target("src/**/*.kt")
         }
+    }
+    ktlint {
+        version = ktLintVersion
+        additionalEditorconfig.put("ktlint_standard_function-expression-body", "disabled")
+        additionalEditorconfig.put("ktlint_standard_class-signature", "disabled")
+        additionalEditorconfig.put("ktlint_standard_spacing-between-declarations-with-comments", "disabled")
+        additionalEditorconfig.put("ktlint_standard_when-entry-bracing", "disabled")
+        additionalEditorconfig.put("ktlint_standard_blank-line-between-when-conditions", "disabled")
+        additionalEditorconfig.put("ktlint_standard_kdoc", "disabled")
+        additionalEditorconfig.put("ktlint_standard_max-line-length", "disabled")
+        additionalEditorconfig.put("ktlint_standard_chain-method-continuation", "disabled")
+        additionalEditorconfig.put("ktlint_standard_function-signature", "disabled")
     }
 }
 

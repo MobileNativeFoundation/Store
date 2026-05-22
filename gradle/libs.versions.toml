@@ -3,31 +3,32 @@
 androidMinSdk = "24"
 #noinspection UnusedVersionCatalogEntry
 androidCompileSdk = "34"
-androidGradlePlugin = "8.2.2"
+androidGradlePlugin = "9.2.1"
 #noinspection UnusedVersionCatalogEntry
 androidTargetSdk = "34"
-atomicFu = "0.26.1"
-baseKotlin = "2.0.20"
+atomicFu = "0.32.1"
+baseKotlin = "2.3.21"
 dokkaGradlePlugin = "2.2.0"
-ktlintGradle = "12.3.0"
+ktlintGradle = "14.2.0"
 jacocoGradlePlugin = "0.8.14"
-mavenPublishPlugin = "0.35.0"
+mavenPublishPlugin = "0.36.0"
 spotlessPluginGradle = "8.5.1"
 junit = "4.13.2"
 #noinspection UnusedVersionCatalogEntry
 jvmToolchain = "17"
 #noinspection UnusedVersionCatalogEntry
 jvmCompat = "11"
-kotlinxCoroutines = "1.8.1"
-kotlinxSerialization = "1.6.3"
-kermit = "2.0.5"
+kotlinxCoroutines = "1.11.0"
+kotlinxSerialization = "1.11.0"
+kermit = "2.1.0"
 testCore = "1.7.0"
 kmmBridge = "0.3.2"
+ktlint = "1.8.0"
 kover = "0.9.8"
 #noinspection UnusedVersionCatalogEntry
 store = "5.1.0-alpha08"
 truth = "1.4.5"
-turbine = "1.2.0"
+turbine = "1.2.1"
 binary-compatibility-validator = "0.18.1"
 
 [libraries]

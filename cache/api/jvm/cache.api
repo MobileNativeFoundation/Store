@@ -1,5 +1,5 @@
 public abstract interface class org/mobilenativefoundation/store/cache5/Cache {
-	public abstract fun getAllPresent ()Ljava/util/Map;
+	public fun getAllPresent ()Ljava/util/Map;
 	public abstract fun getAllPresent (Ljava/util/List;)Ljava/util/Map;
 	public abstract fun getIfPresent (Ljava/lang/Object;)Ljava/lang/Object;
 	public abstract fun getOrPut (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;

@@ -2,11 +2,12 @@
 
 package org.mobilenativefoundation.store.tooling.plugins
 
-import addGithubPackagesRepository
-import co.touchlab.faktory.KmmBridgeExtension
-import com.android.build.api.dsl.LibraryExtension
+// import addGithubPackagesRepository
+// import co.touchlab.faktory.KmmBridgeExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -15,12 +16,12 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -33,10 +34,10 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
             apply("org.jetbrains.kotlin.plugin.serialization")
-            apply("com.android.library")
+            apply("com.android.kotlin.multiplatform.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
-            apply("co.touchlab.faktory.kmmbridge")
+//            apply("co.touchlab.faktory.kmmbridge")
             apply("maven-publish")
             apply("org.jetbrains.kotlin.native.cocoapods")
             apply("org.jetbrains.kotlinx.atomicfu")
@@ -46,7 +47,9 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         extensions.configure<KotlinMultiplatformExtension> {
             applyDefaultHierarchyTemplate()
 
-            androidTarget()
+            context(this, this@with) {
+                configureAndroid()
+            }
 
             jvm()
 
@@ -82,7 +85,6 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                     compileTaskProvider.configure {
                         compilerOptions {
                             freeCompilerArgs.add("-Xallocator=custom")
-                            freeCompilerArgs.add("-XXLanguage:+ImplicitSignedToUnsignedIntegerConversion")
                             freeCompilerArgs.add("-Xadd-light-debug=enable")
 
                             freeCompilerArgs.addAll(
@@ -119,11 +121,10 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         }
 
         configureMultiplatformKotlin()
-        configureAndroid()
         configureDokka()
         configureMavenPublishing()
-        addGithubPackagesRepository()
-        configureKmmBridge()
+//        addGithubPackagesRepository()
+//        configureKmmBridge()
         configureAtomicFu()
     }
 }
@@ -135,7 +136,7 @@ fun Project.configureMultiplatformKotlin() {
             compilations.configureEach {
                 compileTaskProvider.configure {
                     compilerOptions {
-                        if (this is org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions) {
+                        if (this is KotlinJvmCompilerOptions) {
                             jvmTarget.set(JvmTarget.fromTarget(jvmCompatVersion))
                         }
                     }
@@ -155,12 +156,14 @@ fun Project.configureJava() {
     }
 }
 
-fun Project.configureAndroid() {
-    android {
-        sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-        compileSdk = versionCatalog.androidCompileSdk.toInt()
-        defaultConfig { minSdk = versionCatalog.androidMinSdk.toInt() }
-        val targetSdkVersion = versionCatalog.androidTargetSdk.toInt()
+context(ext: KotlinMultiplatformExtension, project: Project)
+fun configureAndroid() {
+    ext.android {
+        namespace = "org.mobilenativefoundation.store.${project.name}"
+
+        compileSdk = project.versionCatalog.androidCompileSdk.toInt()
+        minSdk = project.versionCatalog.androidMinSdk.toInt()
+        val targetSdkVersion = project.versionCatalog.androidTargetSdk.toInt()
         lint {
             disable += "ComposableModifierFactory"
             disable += "ModifierFactoryExtensionFunction"
@@ -168,16 +171,24 @@ fun Project.configureAndroid() {
             disable += "ModifierFactoryUnreferencedReceiver"
             targetSdk = targetSdkVersion
         }
-        testOptions { targetSdk = targetSdkVersion }
-        val jvmCompatVersion = JavaVersion.toVersion(versionCatalog.jvmCompatVersion)
-        compileOptions {
-            sourceCompatibility = jvmCompatVersion
-            targetCompatibility = jvmCompatVersion
+        withHostTest {
+            targetSdk {
+                version = release(targetSdkVersion)
+            }
+        }
+        withDeviceTest {
+            targetSdk {
+                version = release(targetSdkVersion)
+            }
+        }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(project.versionCatalog.jvmCompatVersion))
         }
     }
 }
 
-fun Project.android(action: LibraryExtension.() -> Unit) = extensions.configure<LibraryExtension>(action)
+fun KotlinMultiplatformExtension.android(configure: Action<KotlinMultiplatformAndroidLibraryTarget>): Unit =
+    (this as ExtensionAware).extensions.configure("android", configure)
 
 private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.configure<JavaPluginExtension>(action)
 
@@ -187,13 +198,13 @@ fun Project.configureMavenPublishing() =
         signAllPublications()
     }
 
-fun Project.configureKmmBridge() =
-    extensions.configure<KmmBridgeExtension> {
-        githubReleaseArtifacts()
-        githubReleaseVersions()
-        versionPrefix.set(versionCatalog.store)
-        spm()
-    }
+// fun Project.configureKmmBridge() =
+//    extensions.configure<KmmBridgeExtension> {
+//        githubReleaseArtifacts()
+//        githubReleaseVersions()
+//        versionPrefix.set(versionCatalog.store)
+//        spm()
+//    }
 
 fun Project.configureAtomicFu() = extensions.configure<AtomicFUPluginExtension> { transformJvm = false }
 
@@ -205,10 +216,6 @@ fun Project.configureDokka() {
             jdkVersion.set(versionCatalog.jvmCompatVersion.toInt())
         }
     }
-}
-
-fun Project.android(name: String) {
-    android { namespace = "org.mobilenativefoundation.store.$name" }
 }
 
 fun KotlinMultiplatformExtension.configureCocoapods(storeVersion: String) {

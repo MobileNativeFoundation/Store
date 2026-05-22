@@ -8,7 +8,7 @@ plugins {
 group = "org.mobilenativefoundation.store"
 
 java {
-    val compatVersion = JavaVersion.toVersion(libs.versions.jvmCompat.get())
+    val compatVersion = JavaVersion.toVersion(libs.versions.jvmToolchain.get())
     sourceCompatibility = compatVersion
     targetCompatibility = compatVersion
 
@@ -19,7 +19,8 @@ java {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.fromTarget(libs.versions.jvmCompat.get())
+        jvmTarget = JvmTarget.fromTarget(libs.versions.jvmToolchain.get())
+        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
 
@@ -28,7 +29,7 @@ dependencies {
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.dokka.gradle.plugin)
     compileOnly(libs.maven.publish.plugin)
-    compileOnly(libs.kmmBridge.gradle.plugin)
+//    compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
 }
 
@@ -47,6 +48,7 @@ gradlePlugin {
 }
 
 ktlint {
+    version = libs.versions.ktlint.get()
     additionalEditorconfig.put("ktlint_standard_function-expression-body", "disabled")
     additionalEditorconfig.put("ktlint_standard_function-signature", "disabled")
     additionalEditorconfig.put("ktlint_standard_multiline-expression-wrapping", "disabled")

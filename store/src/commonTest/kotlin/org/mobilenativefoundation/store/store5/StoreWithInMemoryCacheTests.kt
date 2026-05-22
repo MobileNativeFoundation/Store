@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.impl.extensions.get
@@ -19,11 +18,9 @@ import kotlin.time.Duration.Companion.hours
 @FlowPreview
 @ExperimentalCoroutinesApi
 class StoreWithInMemoryCacheTests {
-    private val testScope = TestScope()
-
     @Test
     fun storeRequestsCanCompleteWhenInMemoryCacheWithAccessExpiryIsAtTheMaximumSize() =
-        testScope.runTest {
+        runTest {
             val store =
                 StoreBuilder
                     .from(Fetcher.of { _: Int -> "result" })
