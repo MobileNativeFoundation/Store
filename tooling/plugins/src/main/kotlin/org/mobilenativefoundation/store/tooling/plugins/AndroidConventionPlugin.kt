@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 class AndroidConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
         with(pluginManager) {
-            apply("org.jetbrains.kotlin.android")
             apply("com.android.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")

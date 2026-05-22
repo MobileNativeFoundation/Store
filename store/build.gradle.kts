@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.coroutines.core)
@@ -18,7 +18,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(libs.junit)
                 implementation(libs.kotlinx.coroutines.test)
@@ -28,8 +28,10 @@ kotlin {
     }
 }
 
-android {
-    namespace = "org.mobilenativefoundation.store.store5"
+kotlin {
+    android {
+        namespace = "org.mobilenativefoundation.store.store5"
+    }
 }
 
 kover {

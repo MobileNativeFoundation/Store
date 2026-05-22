@@ -24,18 +24,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal fun <T> TestCoroutineScope.assertThat(flow: Flow<T>): FlowSubject<T> {
+internal fun <T> TestScope.assertThat(flow: Flow<T>): FlowSubject<T> {
     return Truth.assertAbout(FlowSubject.Factory<T>(this)).that(flow)
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class FlowSubject<T> constructor(
     failureMetadata: FailureMetadata,
-    private val testCoroutineScope: TestCoroutineScope,
+    private val testCoroutineScope: TestScope,
     private val actual: Flow<T>,
 ) : Subject(failureMetadata, actual) {
     /**
@@ -71,15 +72,15 @@ internal class FlowSubject<T> constructor(
     }
 
     class Factory<T>(
-        private val testCoroutineScope: TestCoroutineScope,
+        private val testCoroutineScope: TestScope,
     ) : Subject.Factory<FlowSubject<T>, Flow<T>> {
         override fun createSubject(
             metadata: FailureMetadata,
-            actual: Flow<T>,
+            actual: Flow<T>?,
         ): FlowSubject<T> {
             return FlowSubject(
                 failureMetadata = metadata,
-                actual = actual,
+                actual = actual ?: emptyFlow(),
                 testCoroutineScope = testCoroutineScope,
             )
         }

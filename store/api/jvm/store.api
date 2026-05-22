@@ -4,6 +4,7 @@ public abstract interface class org/mobilenativefoundation/store/store5/Bookkeep
 	public abstract fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getLastFailedSync (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun setLastFailedSync (Ljava/lang/Object;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun setLastFailedSync$default (Lorg/mobilenativefoundation/store/store5/Bookkeeper;Ljava/lang/Object;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class org/mobilenativefoundation/store/store5/Bookkeeper$Companion {
@@ -119,6 +120,7 @@ public final class org/mobilenativefoundation/store/store5/FetcherResult$Error$M
 public abstract interface class org/mobilenativefoundation/store/store5/Logger {
 	public abstract fun debug (Ljava/lang/String;)V
 	public abstract fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public static synthetic fun error$default (Lorg/mobilenativefoundation/store/store5/Logger;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
 }
 
 public final class org/mobilenativefoundation/store/store5/Logger$DefaultImpls {
@@ -160,6 +162,7 @@ public abstract interface class org/mobilenativefoundation/store/store5/MutableS
 public abstract interface class org/mobilenativefoundation/store/store5/MutableStoreBuilder {
 	public static final field Companion Lorg/mobilenativefoundation/store/store5/MutableStoreBuilder$Companion;
 	public abstract fun build (Lorg/mobilenativefoundation/store/store5/Updater;Lorg/mobilenativefoundation/store/store5/Bookkeeper;)Lorg/mobilenativefoundation/store/store5/MutableStore;
+	public static synthetic fun build$default (Lorg/mobilenativefoundation/store/store5/MutableStoreBuilder;Lorg/mobilenativefoundation/store/store5/Updater;Lorg/mobilenativefoundation/store/store5/Bookkeeper;ILjava/lang/Object;)Lorg/mobilenativefoundation/store/store5/MutableStore;
 	public abstract fun cachePolicy (Lorg/mobilenativefoundation/store/store5/MemoryPolicy;)Lorg/mobilenativefoundation/store/store5/MutableStoreBuilder;
 	public abstract fun disableCache ()Lorg/mobilenativefoundation/store/store5/MutableStoreBuilder;
 	public abstract fun scope (Lkotlinx/coroutines/CoroutineScope;)Lorg/mobilenativefoundation/store/store5/MutableStoreBuilder;
