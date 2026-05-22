@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.ktlint)
-    id("com.diffplug.spotless") version "6.4.1"
+    alias(libs.plugins.spotless)
 }
 
 buildscript {
@@ -45,15 +46,15 @@ subprojects {
 }
 
 tasks {
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    withType<KotlinCompile> {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            jvmTarget = JvmTarget.fromTarget(libs.versions.jvmCompat.get())
         }
     }
 
     withType<JavaCompile>().configureEach {
-        sourceCompatibility = JavaVersion.VERSION_11.name
-        targetCompatibility = JavaVersion.VERSION_11.name
+        sourceCompatibility = libs.versions.jvmCompat.get()
+        targetCompatibility = libs.versions.jvmCompat.get()
     }
 }
 

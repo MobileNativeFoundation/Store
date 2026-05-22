@@ -16,16 +16,19 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
-
+        val versionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+        val jvmToolchainVersion = versionCatalog.jvmToolchainVersion
 
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
@@ -36,13 +39,11 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("co.touchlab.faktory.kmmbridge")
             apply("maven-publish")
             apply("org.jetbrains.kotlin.native.cocoapods")
-            apply("kotlinx-atomicfu")
+            apply("org.jetbrains.kotlinx.atomicfu")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
         }
 
-
         extensions.configure<KotlinMultiplatformExtension> {
-
             applyDefaultHierarchyTemplate()
 
             androidTarget()
@@ -66,14 +67,12 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 nodejs()
             }
 
-            jvmToolchain(11)
+            jvmToolchain(jvmToolchainVersion.toInt())
 
             targets.all {
                 compilations.all {
                     compileTaskProvider.configure {
-                        compilerOptions {
-                            freeCompilerArgs.add("-Xexpect-actual-classes")
-                        }
+                        compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
                     }
                 }
             }
@@ -107,40 +106,19 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 }
             }
 
-            sourceSets.getByName("commonTest") {
-                dependencies {
-                    implementation(kotlin("test"))
-                }
-            }
+            sourceSets.getByName("commonTest") { dependencies { implementation(kotlin("test")) } }
 
-            sourceSets.getByName("jvmTest") {
-                dependencies {
-                    implementation(kotlin("test-junit"))
-                }
-            }
+            sourceSets.getByName("jvmTest") { dependencies { implementation(kotlin("test-junit")) } }
 
-            val versionCatalog = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
             val atomicFuDep = versionCatalog.findLibrary("kotlinx-atomic-fu").get().get()
-            sourceSets.getByName("nativeMain"){
-                dependencies {
-                    api(atomicFuDep)
-                }
-            }
-            sourceSets.getByName("jsMain"){
-                dependencies {
-                    api(atomicFuDep)
-                }
-            }
-            sourceSets.getByName("wasmJsMain"){
-                dependencies {
-                    api(atomicFuDep)
-                }
-            }
+            sourceSets.getByName("nativeMain") { dependencies { api(atomicFuDep) } }
+            sourceSets.getByName("jsMain") { dependencies { api(atomicFuDep) } }
+            sourceSets.getByName("wasmJsMain") { dependencies { api(atomicFuDep) } }
 
-            configureCocoapods()
+            configureCocoapods(project.versionCatalog.store)
         }
 
-        configureKotlin()
+        configureMultiplatformKotlin()
         configureAndroid()
         configureDokka()
         configureMavenPublishing()
@@ -150,90 +128,91 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
     }
 }
 
-
-fun Project.configureKotlin() {
+fun Project.configureMultiplatformKotlin() {
+    val jvmCompatVersion = versionCatalog.jvmCompatVersion
+    extensions.configure<KotlinMultiplatformExtension> {
+        targets.configureEach {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        if (this is org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions) {
+                            jvmTarget.set(JvmTarget.fromTarget(jvmCompatVersion))
+                        }
+                    }
+                }
+            }
+        }
+    }
     configureJava()
 }
 
 fun Project.configureJava() {
     java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(11))
-        }
+        toolchain { languageVersion.set(JavaLanguageVersion.of(versionCatalog.jvmToolchainVersion)) }
+        val jvmCompatVersion = JavaVersion.toVersion(versionCatalog.jvmCompatVersion)
+        sourceCompatibility = jvmCompatVersion
+        targetCompatibility = jvmCompatVersion
     }
 }
 
 fun Project.configureAndroid() {
     android {
         sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-        compileSdk = Versions.COMPILE_SDK
-        defaultConfig {
-            minSdk = Versions.MIN_SDK
-            targetSdk = Versions.TARGET_SDK
-        }
+        compileSdk = versionCatalog.androidCompileSdk.toInt()
+        defaultConfig { minSdk = versionCatalog.androidMinSdk.toInt() }
+        val targetSdkVersion = versionCatalog.androidTargetSdk.toInt()
         lint {
             disable += "ComposableModifierFactory"
             disable += "ModifierFactoryExtensionFunction"
             disable += "ModifierFactoryReturnType"
             disable += "ModifierFactoryUnreferencedReceiver"
+            targetSdk = targetSdkVersion
         }
-
+        testOptions { targetSdk = targetSdkVersion }
+        val jvmCompatVersion = JavaVersion.toVersion(versionCatalog.jvmCompatVersion)
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
+            sourceCompatibility = jvmCompatVersion
+            targetCompatibility = jvmCompatVersion
         }
     }
 }
-
 
 fun Project.android(action: LibraryExtension.() -> Unit) = extensions.configure<LibraryExtension>(action)
 
 private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.configure<JavaPluginExtension>(action)
 
-
-object Versions {
-    const val COMPILE_SDK = 34
-    const val MIN_SDK = 24
-    const val TARGET_SDK = 34
-    const val STORE = "5.1.0-alpha08"
-}
-
-
-fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseExtension> {
-    publishToMavenCentral(automaticRelease = true)
-    signAllPublications()
-}
-
-
-fun Project.configureKmmBridge() = extensions.configure<KmmBridgeExtension> {
-    githubReleaseArtifacts()
-    githubReleaseVersions()
-    versionPrefix.set(Versions.STORE)
-    spm()
-}
-
-fun Project.configureAtomicFu() =
-    extensions.configure<AtomicFUPluginExtension> {
-        transformJvm = false
-        transformJs = false
+fun Project.configureMavenPublishing() =
+    extensions.configure<MavenPublishBaseExtension> {
+        publishToMavenCentral(automaticRelease = true)
+        signAllPublications()
     }
 
-fun Project.configureDokka() = tasks.withType<DokkaTask>().configureEach {
-    dokkaSourceSets.configureEach {
-        reportUndocumented.set(false)
-        skipDeprecated.set(true)
-        jdkVersion.set(11)
+fun Project.configureKmmBridge() =
+    extensions.configure<KmmBridgeExtension> {
+        githubReleaseArtifacts()
+        githubReleaseVersions()
+        versionPrefix.set(versionCatalog.store)
+        spm()
+    }
+
+fun Project.configureAtomicFu() = extensions.configure<AtomicFUPluginExtension> { transformJvm = false }
+
+fun Project.configureDokka() {
+    extensions.configure<DokkaExtension> {
+        dokkaSourceSets.configureEach {
+            reportUndocumented.set(false)
+            skipDeprecated.set(true)
+            jdkVersion.set(versionCatalog.jvmCompatVersion.toInt())
+        }
     }
 }
 
 fun Project.android(name: String) {
-    android {
-        namespace = "org.mobilenativefoundation.store.$name"
-    }
+    android { namespace = "org.mobilenativefoundation.store.$name" }
 }
 
-fun KotlinMultiplatformExtension.configureCocoapods() {
+fun KotlinMultiplatformExtension.configureCocoapods(storeVersion: String) {
     (this as ExtensionAware).extensions.configure(CocoapodsExtension::class.java) {
-        version = Versions.STORE
+        version = storeVersion
     }
 }
