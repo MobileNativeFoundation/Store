@@ -22,11 +22,11 @@ kotlinxCoroutines = "1.11.0"
 kotlinxSerialization = "1.11.0"
 kermit = "2.1.0"
 testCore = "1.7.0"
-kmmBridge = "0.3.2"
+kmmBridge = "1.2.1"
 ktlint = "1.8.0"
 kover = "0.9.8"
 #noinspection UnusedVersionCatalogEntry
-store = "5.1.0-alpha08"
+store = "5.1.0-SNAPSHOT"
 truth = "1.4.5"
 turbine = "1.2.1"
 binary-compatibility-validator = "0.18.1"
@@ -42,7 +42,7 @@ maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-
 kover-gradle-plugin = {group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover"}
 
 atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
-kmmBridge-gradle-plugin =  { group = "co.touchlab.faktory.kmmbridge", name = "co.touchlab.faktory.kmmbridge.gradle.plugin", version.ref = "kmmBridge" }
+kmmBridge-gradle-plugin = { group = "co.touchlab.kmmbridge.github", name = "co.touchlab.kmmbridge.github.gradle.plugin", version.ref = "kmmBridge" }
 
 kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }
@@ -65,3 +65,4 @@ ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
 binary-compatibility-validator = {id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
 kover = {id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}
 spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPluginGradle"}
+kmmbridge-github = { id = "co.touchlab.kmmbridge.github", version.ref = "kmmBridge" }

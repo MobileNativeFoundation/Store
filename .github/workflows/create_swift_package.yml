@@ -1,7 +1,68 @@
-name: Create Swift Package
+# Based on: https://github.com/touchlab/KMMBridgeSPMQuickStart/blob/main/.github/workflows/Base-Publish.yml
+name: Base-Publish
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      build-debug:
+        description: If set to true, the Xcode framework is debuggable. For release builds, setting to false produces more optimized binaries.
+        required: true
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+
 jobs:
-  publish:
-    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildbranches.yml@v0.6
+  kmmbridgepublish:
+    concurrency: "kmmbridgepublish-${{ github.repository }}"
+    runs-on: macos-latest
+    steps:
+      - name: Checkout the repo with tags
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Retrieve Version
+        id: versionPropertyValue
+        run: |
+          VERSION=$(grep -w 'VERSION_NAME' gradle.properties | cut -d'=' -f2)
+          echo "propVal=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Create or Find Artifact Release
+        id: devrelease
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: "${{ steps.versionPropertyValue.outputs.propVal }}"
+
+      - name: Build and Publish
+        run: |
+          ./gradlew kmmBridgePublish \
+            -PNATIVE_BUILD_TYPE=${{ inputs.build-debug && 'DEBUG' || 'RELEASE' }} \
+            -PGITHUB_ARTIFACT_RELEASE_ID=${{ steps.devrelease.outputs.id }} \
+            -PGITHUB_PUBLISH_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -PGITHUB_REPO=${{ github.repository }} \
+            --no-daemon --info --stacktrace
+        env:
+          GRADLE_OPTS: -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
+
+      - uses: touchlab/ga-update-release-tag@v1
+        id: update-release-tag
+        with:
+          commitMessage: "KMP SPM package release for ${{ steps.versionPropertyValue.outputs.propVal }}"
+          tagMessage: "KMP release version ${{ steps.versionPropertyValue.outputs.propVal }}"
+          tagVersion: ${{ steps.versionPropertyValue.outputs.propVal }}
