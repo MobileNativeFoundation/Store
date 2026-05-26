@@ -1,0 +1,10 @@
+# Publish a build for release.
+name: KMMBridge-Release
+on:
+  workflow_dispatch:
+
+jobs:
+  call-publish:
+    uses: ./.github/workflows/create_swift_package.yml
+    with:
+      build-debug: false

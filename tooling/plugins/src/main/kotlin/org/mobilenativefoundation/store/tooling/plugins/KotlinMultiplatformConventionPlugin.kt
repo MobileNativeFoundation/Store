@@ -2,8 +2,7 @@
 
 package org.mobilenativefoundation.store.tooling.plugins
 
-// import addGithubPackagesRepository
-// import co.touchlab.faktory.KmmBridgeExtension
+import co.touchlab.kmmbridge.KmmBridgeExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
@@ -37,7 +36,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("com.android.kotlin.multiplatform.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
-//            apply("co.touchlab.faktory.kmmbridge")
+            apply("co.touchlab.kmmbridge.github")
             apply("maven-publish")
             apply("org.jetbrains.kotlin.native.cocoapods")
             apply("org.jetbrains.kotlinx.atomicfu")
@@ -123,8 +122,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         configureMultiplatformKotlin()
         configureDokka()
         configureMavenPublishing()
-//        addGithubPackagesRepository()
-//        configureKmmBridge()
+        configureKmmBridge()
         configureAtomicFu()
     }
 }
@@ -198,13 +196,10 @@ fun Project.configureMavenPublishing() =
         signAllPublications()
     }
 
-// fun Project.configureKmmBridge() =
-//    extensions.configure<KmmBridgeExtension> {
-//        githubReleaseArtifacts()
-//        githubReleaseVersions()
-//        versionPrefix.set(versionCatalog.store)
-//        spm()
-//    }
+fun Project.configureKmmBridge() =
+    extensions.configure<KmmBridgeExtension> {
+        spm()
+    }
 
 fun Project.configureAtomicFu() = extensions.configure<AtomicFUPluginExtension> { transformJvm = false }
 
