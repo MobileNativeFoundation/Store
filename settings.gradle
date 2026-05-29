@@ -1,5 +1,10 @@
 pluginManagement {
     includeBuild("tooling")
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        google()
+    }
 }
 
 plugins {
@@ -7,6 +12,13 @@ plugins {
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        google()
+    }
+}
 
 rootProject.name = "Store5"
 

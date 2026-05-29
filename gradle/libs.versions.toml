@@ -10,9 +10,8 @@ atomicFu = "0.32.1"
 baseKotlin = "2.3.21"
 dokkaGradlePlugin = "2.2.0"
 ktlintGradle = "14.2.0"
-jacocoGradlePlugin = "0.8.14"
 mavenPublishPlugin = "0.36.0"
-spotlessPluginGradle = "8.5.1"
+spotlessPluginGradle = "8.6.0"
 junit = "4.13.2"
 #noinspection UnusedVersionCatalogEntry
 jvmToolchain = "17"
@@ -23,6 +22,7 @@ kotlinxSerialization = "1.11.0"
 kermit = "2.1.0"
 testCore = "1.7.0"
 kmmBridge = "1.2.1"
+#noinspection UnusedVersionCatalogEntry
 ktlint = "1.8.0"
 kover = "0.9.8"
 #noinspection UnusedVersionCatalogEntry
@@ -34,12 +34,8 @@ binary-compatibility-validator = "0.18.1"
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "baseKotlin" }
-kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "baseKotlin" }
 dokka-gradle-plugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokkaGradlePlugin" }
-ktlint-gradle-plugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlintGradle" }
-jacoco-gradle-plugin = { group = "org.jacoco", name = "org.jacoco.core", version.ref = "jacocoGradlePlugin" }
 maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "mavenPublishPlugin" }
-kover-gradle-plugin = {group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover"}
 
 atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
 kmmBridge-gradle-plugin = { group = "co.touchlab.kmmbridge.github", name = "co.touchlab.kmmbridge.github.gradle.plugin", version.ref = "kmmBridge" }
@@ -47,7 +43,6 @@ kmmBridge-gradle-plugin = { group = "co.touchlab.kmmbridge.github", name = "co.t
 kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "kotlinxCoroutines" }
@@ -58,11 +53,18 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
-binary-compatibility-validator = {module = "org.jetbrains.kotlinx:binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
 
 [plugins]
-ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
-binary-compatibility-validator = {id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
-kover = {id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}
-spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPluginGradle"}
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+android-kotlin-multiplatform = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin"}
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPluginGradle" }
 kmmbridge-github = { id = "co.touchlab.kmmbridge.github", version.ref = "kmmBridge" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref="baseKotlin"}
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublishPlugin"}
+dokka = { id = "org.jetbrains.dokka" , version.ref = "dokkaGradlePlugin"}
+atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicFu"}
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "baseKotlin"}
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "baseKotlin"}
