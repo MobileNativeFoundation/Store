@@ -5,6 +5,7 @@ package org.mobilenativefoundation.store.tooling.plugins
 import co.touchlab.kmmbridge.KmmBridgeExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import gitHubReleaseArtifacts
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
 import org.gradle.api.Action
 import org.gradle.api.JavaVersion
@@ -214,6 +215,7 @@ fun Project.configureMavenPublishing() =
 
 fun Project.configureKmmBridge() =
     extensions.configure<KmmBridgeExtension> {
+        gitHubReleaseArtifacts()
         spm()
     }
 
