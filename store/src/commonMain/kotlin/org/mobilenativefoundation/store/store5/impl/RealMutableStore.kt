@@ -222,13 +222,14 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         // Acquire the ThreadSafety object for this key without holding storeLock.
         val threadSafety = getThreadSafety(key)
 
-        // Now safely lock the queue's own mutex.
-        threadSafety.writeRequests.lightswitch.lock(threadSafety.writeRequests.mutex)
-        return try {
-            val queue = getQueue((key))
+        // Exclusively lock the queue's own mutex. The block both reads and structurally mutates the
+        // per-key ArrayDeque (add / iterate-and-rebuild), so callers must mutually exclude each other.
+        // A shared lock here (e.g. Lightswitch) would allow a concurrent add() during iteration,
+        // corrupting the deque's backing array — a ConcurrentModificationException on the JVM and an
+        // EXC_BAD_ACCESS on Kotlin/Native.
+        return threadSafety.writeRequests.mutex.withLock {
+            val queue = getQueue(key)
             queue.block()
-        } finally {
-            threadSafety.writeRequests.lightswitch.unlock(threadSafety.writeRequests.mutex)
         }
     }
 
