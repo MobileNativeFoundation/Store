@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -43,7 +47,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace
+        run: ./gradlew clean build koverXmlReport --stacktrace --continue
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
 
       - name: Upload Coverage to Codecov
         # Secrets (including CODECOV_TOKEN) are not exposed to fork PRs, so the
