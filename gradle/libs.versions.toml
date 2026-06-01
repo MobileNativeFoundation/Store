@@ -6,7 +6,7 @@ androidCompileSdk = "34"
 androidGradlePlugin = "9.2.1"
 #noinspection UnusedVersionCatalogEntry
 androidTargetSdk = "34"
-atomicFu = "0.32.1"
+atomicFu = "0.33.0"
 baseKotlin = "2.3.21"
 dokkaGradlePlugin = "2.2.0"
 ktlintGradle = "14.2.0"
