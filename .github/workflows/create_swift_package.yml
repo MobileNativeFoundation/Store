@@ -56,6 +56,7 @@ jobs:
             -PGITHUB_ARTIFACT_RELEASE_ID=${{ steps.devrelease.outputs.id }} \
             -PGITHUB_PUBLISH_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             -PGITHUB_REPO=${{ github.repository }} \
+            -PENABLE_PUBLISHING=true \
             --no-daemon --info --stacktrace
         env:
           GRADLE_OPTS: -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
