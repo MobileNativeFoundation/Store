@@ -59,8 +59,24 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             linuxX64()
 
             js {
-                browser()
-                nodejs()
+                browser {
+                    testTask {
+                        useKarma {
+                            useChromeHeadless()
+                        }
+                        // Karma uses Mocha under the hood for the test framework
+                        useMocha {
+                            timeout = "5s"
+                        }
+                    }
+                }
+                nodejs {
+                    testTask {
+                        useMocha {
+                            timeout = "5s"
+                        }
+                    }
+                }
             }
 
             @OptIn(ExperimentalWasmDsl::class)
