@@ -28,8 +28,8 @@ import kotlin.test.assertTrue
  * Regression test for a data race in [RealMutableStore]'s per-key write-request queue.
  *
  * The queue is a non-thread-safe `ArrayDeque`. Mutating access goes through
- * `withWriteRequestQueueLock`, which guards it with a `Lightswitch` (a shared/reader lock that lets
- * multiple holders run concurrently). As a result two operations on the same key can run at once:
+ * `withWriteRequestQueueLock`, which historically guarded it with a shared/reader lock that lets
+ * multiple holders run concurrently. As a result two operations on the same key could run at once:
  * `addWriteRequestToQueue` doing `add(...)` while `updateWriteRequestQueue` iterates the same deque
  * (`for (writeRequest in this)`). A structural `add` during iteration corrupts the backing array.
  *

@@ -9,5 +9,4 @@ internal data class ThreadSafety(
 
 internal data class StoreThreadSafety(
     val mutex: Mutex = Mutex(),
-    val lightswitch: Lightswitch = Lightswitch(),
 )
