@@ -1,5 +1,5 @@
-# Publish a build for release.
-name: KMMBridge-Release
+# Publish both the debug and release XCFrameworks to a single GitHub Release.
+name: KMMBridge-Publish
 on:
   workflow_dispatch:
 
@@ -9,5 +9,3 @@ jobs:
       contents: write
       packages: write
     uses: ./.github/workflows/create_swift_package.yml
-    with:
-      build-debug: false
