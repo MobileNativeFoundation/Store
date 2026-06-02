@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -16,29 +20,30 @@ jobs:
         api-level: [ 29 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
       - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace
+        run: ./gradlew clean build koverXmlReport --stacktrace --continue
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        if: github.repository == 'MobileNativeFoundation/Store'
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/reports/kover/coverage.xml
@@ -53,16 +58,16 @@ jobs:
     needs: build-and-test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew

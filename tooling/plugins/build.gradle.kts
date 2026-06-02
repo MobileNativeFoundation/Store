@@ -1,15 +1,26 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     `kotlin-dsl`
+    alias(libs.plugins.ktlint)
 }
 
 group = "org.mobilenativefoundation.store"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    val compatVersion = JavaVersion.toVersion(libs.versions.jvmToolchain.get())
+    sourceCompatibility = compatVersion
+    targetCompatibility = compatVersion
 
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jvmToolchain.get()))
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget(libs.versions.jvmToolchain.get())
+        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
 
@@ -34,4 +45,12 @@ gradlePlugin {
             implementationClass = "org.mobilenativefoundation.store.tooling.plugins.AndroidConventionPlugin"
         }
     }
+}
+
+ktlint {
+    version = libs.versions.ktlint.get()
+    additionalEditorconfig.put("ktlint_standard_function-expression-body", "disabled")
+    additionalEditorconfig.put("ktlint_standard_function-signature", "disabled")
+    additionalEditorconfig.put("ktlint_standard_multiline-expression-wrapping", "disabled")
+    additionalEditorconfig.put("ktlint_standard_string-template-indent", "disabled")
 }

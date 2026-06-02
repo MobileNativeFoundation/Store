@@ -5,22 +5,18 @@ plugins {
 kotlin {
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api(libs.kotlinx.atomic.fu)
                 api(projects.core)
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(libs.junit)
                 implementation(libs.kotlinx.coroutines.test)
             }
         }
     }
-}
-
-android {
-    namespace = "org.mobilenativefoundation.store.cache"
 }

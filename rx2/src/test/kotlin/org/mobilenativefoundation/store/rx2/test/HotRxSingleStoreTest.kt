@@ -4,8 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.reactivex.Single
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -21,11 +20,9 @@ import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 @FlowPreview
 @ExperimentalCoroutinesApi
 class HotRxSingleStoreTest {
-    private val testScope = TestCoroutineScope()
-
     @Test
     fun `GIVEN a hot fetcher WHEN two cached and one fresh call THEN fetcher is only called twice`() =
-        testScope.runBlockingTest {
+        runTest {
             val fetcher: FakeRxFetcher<Int, FetcherResult<String>> =
                 FakeRxFetcher(
                     3 to FetcherResult.Data("three-1"),
@@ -33,7 +30,7 @@ class HotRxSingleStoreTest {
                 )
             val pipeline =
                 StoreBuilder.from(Fetcher.ofResultSingle<Int, String> { fetcher.fetch(it) })
-                    .scope(testScope)
+                    .scope(this)
                     .build()
 
             assertThat(pipeline.stream(StoreReadRequest.cached(3, refresh = false)))
