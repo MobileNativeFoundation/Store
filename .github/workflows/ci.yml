@@ -41,12 +41,6 @@ jobs:
       - name: Build and Test with Coverage
         run: ./gradlew clean build koverXmlReport --stacktrace --continue
 
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v5
-        if: always()
-        with:
-          report_paths: '**/build/test-results/**/*.xml'
-
       - name: Upload Coverage to Codecov
         if: github.repository == 'MobileNativeFoundation/Store'
         uses: codecov/codecov-action@v6
