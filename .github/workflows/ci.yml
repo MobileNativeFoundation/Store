@@ -18,7 +18,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          # PR builds (including forks) check out the PR head from its source repo;
+          # push builds fall back to the pushed ref on this repo. Without the
+          # repository override, fork-PR checkouts look for the head branch in the
+          # base repo and fail with "a branch or tag ... could not be found".
+          # Use the branch name (not the head SHA) so HEAD stays attached to a
+          # branch — the KMMBridge plugin runs `git pull --tags`, which fails on a
+          # detached HEAD with "you are not currently on a branch".
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -38,6 +46,10 @@ jobs:
         run: ./gradlew clean build koverXmlReport --stacktrace
 
       - name: Upload Coverage to Codecov
+        # Secrets (including CODECOV_TOKEN) are not exposed to fork PRs, so the
+        # upload would fail under fail_ci_if_error. Skip it for forks; coverage is
+        # still uploaded and enforced for same-repo PRs and pushes to main.
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
