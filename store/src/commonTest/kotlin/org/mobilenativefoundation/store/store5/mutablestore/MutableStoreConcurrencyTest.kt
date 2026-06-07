@@ -43,7 +43,6 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalStoreApi::class)
 class MutableStoreConcurrencyTest {
-
     private fun newMutableStore(): RealMutableStore<String, Int, Int, Int> {
         val delegate: RealStore<String, Int, Int, Int> =
             testStore(
