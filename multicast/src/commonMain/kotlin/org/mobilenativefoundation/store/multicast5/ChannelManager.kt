@@ -321,6 +321,12 @@ internal class StoreChannelManager<T>(
                 channels.removeAt(index)
                 if (!keepUpstreamAlive && channels.isEmpty()) {
                     producer?.cancelAndJoin()
+                    // Clear the dead producer reference right away instead of waiting for its
+                    // UpstreamFinished message. Otherwise a downstream added before that message
+                    // arrives would not restart the upstream and would never receive a value.
+                    // The stale UpstreamFinished is ignored by the identity check in
+                    // doHandleUpstreamClose.
+                    producer = null
                 }
             }
         }
