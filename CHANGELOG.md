@@ -2,6 +2,12 @@
 
 ### Thank you to all our wonderful contributors and users
 
+## [5.1.0-alpha10] (2026-07-13)
+
+**Bug Fixes**
+
+* Fix multicaster race that leaves a new downstream without a producer [#740](https://github.com/MobileNativeFoundation/Store/pull/740)
+
 ## [5.1.0-alpha09] (2026-06-10)
 
 **Bug Fixes**
@@ -379,7 +385,9 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha09...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha10...HEAD
+
+[5.1.0-alpha10]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha10
 
 [5.1.0-alpha09]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha09
 
