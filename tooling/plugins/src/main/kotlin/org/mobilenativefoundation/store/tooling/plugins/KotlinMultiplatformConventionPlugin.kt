@@ -128,11 +128,6 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
 
             sourceSets.getByName("jvmTest") { dependencies { implementation(kotlin("test-junit")) } }
 
-            val atomicFuDep = versionCatalog.findLibrary("kotlinx-atomic-fu").get().get()
-            sourceSets.getByName("nativeMain") { dependencies { api(atomicFuDep) } }
-            sourceSets.getByName("jsMain") { dependencies { api(atomicFuDep) } }
-            sourceSets.getByName("wasmJsMain") { dependencies { api(atomicFuDep) } }
-
             configureCocoapods(project.versionCatalog.store)
         }
 
