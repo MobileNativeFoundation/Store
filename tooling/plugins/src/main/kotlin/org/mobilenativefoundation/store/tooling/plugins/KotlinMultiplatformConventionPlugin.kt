@@ -31,6 +31,10 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
         val versionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
         val jvmToolchainVersion = versionCatalog.jvmToolchainVersion
 
+        // Single source of truth for the published version: gradle/libs.versions.toml (store).
+        // vanniktech maven-publish falls back to project.version when VERSION_NAME is absent.
+        version = versionCatalog.store
+
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
             apply("org.jetbrains.kotlin.plugin.serialization")

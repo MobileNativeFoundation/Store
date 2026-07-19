@@ -25,7 +25,7 @@ jobs:
       - name: Retrieve Version
         id: versionPropertyValue
         run: |
-          VERSION=$(grep -w 'VERSION_NAME' gradle.properties | cut -d'=' -f2)
+          VERSION=$(grep -E '^store[[:space:]]*=' gradle/libs.versions.toml | head -1 | cut -d'"' -f2)
           echo "propVal=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17

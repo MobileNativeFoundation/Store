@@ -81,7 +81,7 @@ jobs:
 
       - name: Retrieve Version
         run: |
-          echo "VERSION_NAME=$(grep -w 'VERSION_NAME' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
+          echo "VERSION_NAME=$(grep -E '^store[[:space:]]*=' gradle/libs.versions.toml | head -1 | cut -d'"' -f2)" >> $GITHUB_ENV
 
       - name: Publish to Maven Central (Central Portal)
         env:
