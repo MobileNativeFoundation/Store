@@ -1,6 +1,7 @@
 # Based on: https://github.com/touchlab/KMMBridgeSPMQuickStart/blob/main/.github/workflows/Base-Publish.yml
-# Publishes the release XCFramework (store.xcframework.zip) to a GitHub Release.
-# For debugging Kotlin from Xcode, use KMMBridge local/dev publishing instead.
+# Publishes the release XCFrameworks to a GitHub Release.
+# For debugging Kotlin from Xcode, build a debug XCFramework locally with
+# `./gradlew <module>:spmDevBuild` instead.
 name: Base-Publish
 
 on:

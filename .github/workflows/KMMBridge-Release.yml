@@ -1,4 +1,5 @@
-# Publish both the debug and release XCFrameworks to a single GitHub Release.
+# Publish the release XCFramework to a GitHub Release.
+# Debug XCFrameworks are built locally on demand via `./gradlew <module>:spmDevBuild`.
 name: KMMBridge-Publish
 on:
   workflow_dispatch:
