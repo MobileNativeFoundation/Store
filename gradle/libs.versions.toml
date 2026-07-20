@@ -39,6 +39,8 @@ maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-
 
 atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
 kmmBridge-gradle-plugin = { group = "co.touchlab.kmmbridge.github", name = "co.touchlab.kmmbridge.github.gradle.plugin", version.ref = "kmmBridge" }
+ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle.ktlint:org.jlleitschuh.gradle.ktlint.gradle.plugin", version.ref = "ktlintGradle" }
+spotless-gradle-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotlessPluginGradle" }
 
 kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }

@@ -31,6 +31,8 @@ dependencies {
     compileOnly(libs.maven.publish.plugin)
     compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
+    compileOnly(libs.ktlint.gradle.plugin)
+    compileOnly(libs.spotless.gradle.plugin)
 }
 
 gradlePlugin {
@@ -43,6 +45,11 @@ gradlePlugin {
         register("androidConventionPlugin") {
             id = "org.mobilenativefoundation.store.android"
             implementationClass = "org.mobilenativefoundation.store.tooling.plugins.AndroidConventionPlugin"
+        }
+
+        register("formattingConventionPlugin") {
+            id = "org.mobilenativefoundation.store.formatting"
+            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.FormattingConventionPlugin"
         }
     }
 }

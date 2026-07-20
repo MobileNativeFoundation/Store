@@ -46,6 +46,7 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             apply("org.jetbrains.kotlin.native.cocoapods")
             apply("org.jetbrains.kotlinx.atomicfu")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
+            apply("org.mobilenativefoundation.store.formatting")
         }
 
         extensions.configure<KotlinMultiplatformExtension> {

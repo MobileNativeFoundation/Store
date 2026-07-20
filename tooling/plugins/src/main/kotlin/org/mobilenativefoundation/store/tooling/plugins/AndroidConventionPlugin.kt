@@ -18,6 +18,7 @@ class AndroidConventionPlugin : Plugin<Project> {
             apply("org.jetbrains.dokka")
             apply("maven-publish")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
+            apply("org.mobilenativefoundation.store.formatting")
         }
 
         extensions.configure<LibraryExtension> {

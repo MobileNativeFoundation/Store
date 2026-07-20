@@ -16,30 +16,6 @@ plugins {
     alias(libs.plugins.kmmbridge.github) apply false
 }
 
-val ktLintVersion = libs.versions.ktlint.get()
-subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-    apply(plugin = "com.diffplug.spotless")
-
-    spotless {
-        kotlin {
-            target("src/**/*.kt")
-        }
-    }
-    ktlint {
-        version = ktLintVersion
-        additionalEditorconfig.put("ktlint_standard_function-expression-body", "disabled")
-        additionalEditorconfig.put("ktlint_standard_class-signature", "disabled")
-        additionalEditorconfig.put("ktlint_standard_spacing-between-declarations-with-comments", "disabled")
-        additionalEditorconfig.put("ktlint_standard_when-entry-bracing", "disabled")
-        additionalEditorconfig.put("ktlint_standard_blank-line-between-when-conditions", "disabled")
-        additionalEditorconfig.put("ktlint_standard_kdoc", "disabled")
-        additionalEditorconfig.put("ktlint_standard_max-line-length", "disabled")
-        additionalEditorconfig.put("ktlint_standard_chain-method-continuation", "disabled")
-        additionalEditorconfig.put("ktlint_standard_function-signature", "disabled")
-    }
-}
-
 tasks {
     withType<KotlinCompile> {
         compilerOptions {
