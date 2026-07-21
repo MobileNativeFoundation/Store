@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.ktlint)
-    id("com.diffplug.spotless") version "6.4.1"
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 buildscript {
