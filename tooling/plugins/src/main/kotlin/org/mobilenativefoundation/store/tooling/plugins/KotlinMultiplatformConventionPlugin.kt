@@ -18,9 +18,12 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
@@ -65,6 +68,18 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             }
 
             jvmToolchain(11)
+
+            targets.withType<KotlinJvmTarget>().configureEach {
+                compilerOptions {
+                    jvmDefault.set(JvmDefaultMode.DISABLE)
+                }
+            }
+
+            targets.withType<KotlinAndroidTarget>().configureEach {
+                compilerOptions {
+                    jvmDefault.set(JvmDefaultMode.DISABLE)
+                }
+            }
 
             targets.all {
                 compilations.all {

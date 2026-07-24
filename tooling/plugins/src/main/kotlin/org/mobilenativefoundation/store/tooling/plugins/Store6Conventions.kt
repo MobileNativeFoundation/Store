@@ -13,8 +13,11 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTests
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 /**
  * Conventions shared by every store6 library module (full and subset variants):
@@ -49,6 +52,18 @@ internal fun Project.configureStore6Module() {
         explicitApi()
         applyDefaultHierarchyTemplate()
         jvmToolchain(11)
+
+        targets.withType<KotlinJvmTarget>().configureEach {
+            compilerOptions {
+                jvmDefault.set(JvmDefaultMode.DISABLE)
+            }
+        }
+
+        targets.withType<KotlinAndroidTarget>().configureEach {
+            compilerOptions {
+                jvmDefault.set(JvmDefaultMode.DISABLE)
+            }
+        }
 
         providers.gradleProperty("store6.iosSimulatorDevice").orNull?.let { device ->
             targets.withType<KotlinNativeTargetWithSimulatorTests>().configureEach {

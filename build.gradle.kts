@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+
 plugins {
     alias(libs.plugins.ktlint)
     id("com.diffplug.spotless") version "6.4.1"
@@ -39,6 +41,21 @@ allprojects {
 }
 
 subprojects {
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+        compilerOptions.jvmDefault.set(org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode.DISABLE)
+    }
+
+    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+        extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension> {
+            targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
+                binaries.withType<org.jetbrains.kotlin.gradle.plugin.mpp.Framework>().configureEach {
+                    // Kotlin 2.2.20+ exports KDoc by default; preserve the frozen Swift dumps.
+                    exportKdoc.set(false)
+                }
+            }
+        }
+    }
+
     if (name.startsWith("store6")) return@subprojects
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -56,10 +73,8 @@ subprojects {
 }
 
 tasks {
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "11"
-        }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile> {
+        compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 
     withType<JavaCompile>().configureEach {
