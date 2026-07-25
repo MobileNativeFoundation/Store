@@ -33,3 +33,6 @@ include ':store6-sqldelight-sample'
 project(':store6-sqldelight-sample').projectDir = file('store6-sqldelight/sample')
 include ':store6-compose'
 include ':store6-compose-demo'
+include ':store6-room'
+include ':store6-room-sample'
+project(':store6-room-sample').projectDir = file('store6-room/sample')

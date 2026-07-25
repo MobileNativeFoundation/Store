@@ -127,12 +127,22 @@ jobs:
             }
           '
 
+      - name: Build Store6 Room adapter
+        run: >
+          ./gradlew :store6-room:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 Room sample
+        run: ./gradlew :store6-room-sample:run --stacktrace
+
       - name: Reject core-internal access from extension modules
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo; do
+          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room; do
             source_dir="${module}/src"
             if [[ ! -d "${source_dir}" ]]; then
               echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2
@@ -183,7 +193,7 @@ jobs:
           status=0
           banned_regex='(^|[^[:alnum:]_])(runBlocking|GlobalScope|atomicfu|Channel|actor)([^[:alnum:]_]|$)|kotlinx[.]coroutines[.]channels[.][*]'
           shopt -s nullglob
-          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main)
+          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main store6-room/src/*Main)
           for source_dir in "${production_source_dirs[@]}"; do
             [[ -d "${source_dir}" ]] || continue
             if grep -rnE --include='*.kt' "${banned_regex}" "${source_dir}"; then
@@ -382,6 +392,8 @@ jobs:
             :store6-sqldelight:macosArm64Test \
             :store6-compose:iosSimulatorArm64Test \
             :store6-compose:macosArm64Test \
+            :store6-room:iosSimulatorArm64Test \
+            :store6-room:macosArm64Test \
             "-Pstore6.iosSimulatorDevice=${STORE6_IOS_SIMULATOR_DEVICE}" \
             --stacktrace
 
@@ -472,7 +484,7 @@ jobs:
 
       - name: Publish Store6 core to Maven local without signing
         run: >
-          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal
+          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal :store6-room:publishToMavenLocal
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
@@ -484,7 +496,7 @@ jobs:
           version="6.0.0-SNAPSHOT"
           repository="${HOME}/.m2/repository/org/mobilenativefoundation/store"
 
-          modules=(store6-core store6-testing store6-sqldelight store6-compose)
+          modules=(store6-core store6-testing store6-sqldelight store6-compose store6-room)
           suffixes=(
             ""
             -android
@@ -504,6 +516,13 @@ jobs:
           failed=0
           for module in "${modules[@]}"; do
             for suffix in "${suffixes[@]}"; do
+              case "${module}:${suffix}" in
+                store6-room:-js|store6-room:-wasm-js|store6-room:-mingwx64|store6-room:-iosx64)
+                  # store6-room ships Room 3's target subset; room3 publishes no iosX64 and no
+                  # web/mingw klibs for this module's scope.
+                  continue
+                  ;;
+              esac
               artifact_id="${module}${suffix}"
               artifact_dir="${repository}/${artifact_id}/${version}"
               case "${suffix}" in
