@@ -63,12 +63,76 @@ jobs:
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
+      - name: Build Store6 compose and demo
+        run: >
+          ./gradlew :store6-compose:build :store6-compose-demo:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Verify Compose stability of core public types
+        shell: bash
+        run: |
+          set -euo pipefail
+          reports_dir=store6-compose-demo/build/compose-reports
+          # Force a complete, non-incremental report. Kotlin incremental compilation rewrites the
+          # stability report with ONLY the recompiled subset, and the report is an undeclared task
+          # output, so neither deleting it nor editing a source guarantees a whole-module snapshot.
+          # Discarding the module's build directory makes the next compile a full one. The demo
+          # module's compilations are also opted out of the build cache (see its build.gradle.kts)
+          # so this cannot be served from cache without running the compiler.
+          rm -rf store6-compose-demo/build
+          ./gradlew :store6-compose-demo:compileKotlin --stacktrace
+          if [[ "$(find "${reports_dir}" -name '*-composables.txt' 2>/dev/null | wc -l | tr -d ' ')" -eq 0 ]]; then
+            echo "ERROR: no composables report under ${reports_dir}" >&2
+            echo "The compose metrics wiring in store6-compose-demo/build.gradle.kts was removed or renamed." >&2
+            exit 1
+          fi
+          # All reports are concatenated (deterministic; probes exist only in the main compilation,
+          # so tier counts stay exact regardless of how many reports the plugin writes — the test
+          # compilation writes a separate, empty *_test-composables.txt and never clobbers it).
+          #
+          # Every probe parameter must be rendered EXPLICITLY `stable`. Asserting the mere absence
+          # of `unstable` would pass silently on the compiler's third rendering — a bare, unprefixed
+          # `value: X` line, which it emits for unknown/runtime stability.
+          #
+          # iface_strict=1 is the calibration ruling for this branch: the shipped conf renders every
+          # probe parameter stable, including the interface-typed and generic ones. Set it to 0 only
+          # if a toolchain bump makes interface-typed parameters unprovable, which downgrades the
+          # iface tier to skippable-only and reports the residual instead of failing.
+          find "${reports_dir}" -name '*-composables.txt' | sort | xargs cat | awk -v iface_strict=1 '
+            /fun / {
+              tier = 0
+              if ($0 ~ /ProbeStrict/) { tier = 1; strict += 1 }
+              else if ($0 ~ /ProbeIface/) { tier = 2; iface += 1 }
+              if (tier > 0 && $0 !~ /skippable/) { print "NOT SKIPPABLE: " $0; bad = 1 }
+              next
+            }
+            /^\)/ { tier = 0; next }
+            tier > 0 {
+              if ($1 != "stable") {
+                label = (tier == 1) ? "strict" : "iface"
+                if (tier == 1 || iface_strict) {
+                  print "PARAM NOT STABLE (" label " tier): " $0
+                  bad = 1
+                } else {
+                  print "INFO: non-stable iface-tier param (allowed under Ruling B): " $0
+                }
+              }
+            }
+            END {
+              if (strict != 8) { print "Expected 8 ProbeStrict composables, found " strict + 0; exit 1 }
+              if (iface != 5) { print "Expected 5 ProbeIface composables, found " iface + 0; exit 1 }
+              exit bad + 0
+            }
+          '
+
       - name: Reject core-internal access from extension modules
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          for module in store6-extension-probe store6-testing store6-sqldelight; do
+          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo; do
             source_dir="${module}/src"
             if [[ ! -d "${source_dir}" ]]; then
               echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2
@@ -119,7 +183,7 @@ jobs:
           status=0
           banned_regex='(^|[^[:alnum:]_])(runBlocking|GlobalScope|atomicfu|Channel|actor)([^[:alnum:]_]|$)|kotlinx[.]coroutines[.]channels[.][*]'
           shopt -s nullglob
-          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main)
+          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main)
           for source_dir in "${production_source_dirs[@]}"; do
             [[ -d "${source_dir}" ]] || continue
             if grep -rnE --include='*.kt' "${banned_regex}" "${source_dir}"; then
@@ -316,6 +380,8 @@ jobs:
             :store6-testing:macosArm64Test \
             :store6-sqldelight:iosSimulatorArm64Test \
             :store6-sqldelight:macosArm64Test \
+            :store6-compose:iosSimulatorArm64Test \
+            :store6-compose:macosArm64Test \
             "-Pstore6.iosSimulatorDevice=${STORE6_IOS_SIMULATOR_DEVICE}" \
             --stacktrace
 
@@ -406,7 +472,7 @@ jobs:
 
       - name: Publish Store6 core to Maven local without signing
         run: >
-          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal
+          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
@@ -418,7 +484,7 @@ jobs:
           version="6.0.0-SNAPSHOT"
           repository="${HOME}/.m2/repository/org/mobilenativefoundation/store"
 
-          modules=(store6-core store6-testing store6-sqldelight)
+          modules=(store6-core store6-testing store6-sqldelight store6-compose)
           suffixes=(
             ""
             -android

@@ -31,3 +31,5 @@ include ':store6-testing'
 include ':store6-sqldelight'
 include ':store6-sqldelight-sample'
 project(':store6-sqldelight-sample').projectDir = file('store6-sqldelight/sample')
+include ':store6-compose'
+include ':store6-compose-demo'
