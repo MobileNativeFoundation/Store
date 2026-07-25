@@ -60,6 +60,8 @@ internal sealed interface RawReaderEvent<out V : Any> {
         val activeWriteAttributionAtObservation: AttributionTag?,
         /** True when this nonmatching event followed a matching row from that active write. */
         val followedMatchingActiveWriteRow: Boolean,
+        /** True while a pre-return notification is fenced behind its committed writer-current. */
+        val pendingCommitFenceAtObservation: Boolean,
     ) : RawReaderEvent<V>
 
     class Failure(

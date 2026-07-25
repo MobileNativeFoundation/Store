@@ -173,6 +173,9 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 successfulSequence = 0L,
                 latestRawSequence = 0L,
                 activeRawPhase = ActiveRawPhase.Unobserved,
+                readerSession = 0L,
+                readerSessionActive = false,
+                pendingWriteAttribution = null,
             ),
         )
 
@@ -195,7 +198,14 @@ internal class KeyEngine<K : StoreKey, V : Any>(
             .distinctUntilChanged()
             .flatMapLatest { readerGen ->
                 var failureReportedForEpisode = false
-                flow { emitAll(sot.reader(key)) }
+                flow {
+                    val readerSession = beginRawReaderSession(readerGen)
+                    try {
+                        emitAll(sot.reader(key))
+                    } finally {
+                        endRawReaderSession(readerGen, readerSession)
+                    }
+                }
                     .map<V?, RawReaderEvent<V>> { value ->
                         failureReportedForEpisode = false
                         try {
@@ -233,6 +243,13 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             }
                             is RawReaderEvent.Failure ->
                                 readerFailureRecord(readerGen, event.exception)
+                        }
+                    }
+                    .retryWhen { failure, _ ->
+                        if (failure is RestartRawReaderSession) {
+                            true
+                        } else {
+                            throw failure
                         }
                     }
             }
@@ -346,6 +363,41 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         }
     }
 
+    /** Opens one upstream reader session and retires any fence from a cancelled predecessor. */
+    private fun beginRawReaderSession(readerGen: Long): Long {
+        val opened =
+            updateWriteObservationBoundary { current ->
+                if (current.readerGen != readerGen) {
+                    current
+                } else {
+                    val nextSession = current.readerSession + 1L
+                    current.copy(
+                        readerSession = nextSession,
+                        readerSessionActive = true,
+                        pendingWriteAttribution = null,
+                    )
+                }
+            }
+        return opened.readerSession
+    }
+
+    /** Retires only the matching session; a newer reader must keep its own boundary state. */
+    private fun endRawReaderSession(
+        readerGen: Long,
+        readerSession: Long,
+    ) {
+        updateWriteObservationBoundary { current ->
+            if (current.readerGen == readerGen && current.readerSession == readerSession) {
+                current.copy(
+                    readerSessionActive = false,
+                    pendingWriteAttribution = null,
+                )
+            } else {
+                current
+            }
+        }
+    }
+
     /** Captures source order and active-write provenance under [stateLock] before conflation. */
     private suspend fun rawReaderRow(
         readerGen: Long,
@@ -369,54 +421,90 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     successfulWriteSequenceAtObservation = current.successfulSequence,
                     activeWriteAttributionAtObservation = current.activeAttribution,
                     followedMatchingActiveWriteRow = false,
+                    pendingCommitFenceAtObservation = false,
                 )
             }
 
             val nextSequence = current.latestRawSequence + 1L
+            // A live reader can have pre-return notifications queued upstream. The exact
+            // writer-current closes that fence; observations after it are later authority.
+            val pendingWriteAttribution = current.pendingWriteAttribution
+            val activeWriteAttribution = current.activeAttribution
+            val activeAttributionAtObservation =
+                when {
+                    pendingWriteAttribution == null -> activeWriteAttribution
+                    value != null && pendingWriteAttribution.value == value ->
+                        pendingWriteAttribution
+                    value != null && activeWriteAttribution?.value == value ->
+                        activeWriteAttribution
+                    else -> pendingWriteAttribution
+                }
             val observation =
                 RawWriteObservation(
                     readerGen = readerGen,
                     rawSequence = nextSequence,
                     value = value,
                     attributionAtObservation = current.observedAttribution,
-                    activeWriteAttributionAtObservation = current.activeAttribution,
+                    activeWriteAttributionAtObservation = activeAttributionAtObservation,
                     successfulWriteSequenceAtObservation = current.successfulSequence,
                 )
-            val matchingAttribution = observation.matchingWriterAttribution()
+            val activeObservation =
+                if (activeAttributionAtObservation === activeWriteAttribution) {
+                    observation
+                } else {
+                    observation.copy(
+                        activeWriteAttributionAtObservation = activeWriteAttribution,
+                    )
+                }
+            val matchingActiveAttribution = activeObservation.matchingWriterAttribution()
             val followedMatchingActiveWriteRow =
-                current.activeAttribution != null &&
-                    matchingAttribution == null &&
+                activeWriteAttribution != null &&
+                    matchingActiveAttribution == null &&
                     (current.activeRawPhase is ActiveRawPhase.Matching ||
                         current.activeRawPhase is ActiveRawPhase.OtherAfterMatching)
             val nextPhase =
-                if (current.activeAttribution == null) {
+                if (activeWriteAttribution == null) {
                     current.activeRawPhase
-                } else if (matchingAttribution != null) {
-                    ActiveRawPhase.Matching(observation, matchingAttribution)
+                } else if (matchingActiveAttribution != null) {
+                    ActiveRawPhase.Matching(activeObservation, matchingActiveAttribution)
                 } else {
                     when (current.activeRawPhase) {
                         is ActiveRawPhase.Matching ->
                             ActiveRawPhase.OtherAfterMatching(
                                 matchingObservation = current.activeRawPhase.observation,
-                                observation = observation,
+                                observation = activeObservation,
                             )
 
                         is ActiveRawPhase.OtherAfterMatching ->
                             ActiveRawPhase.OtherAfterMatching(
                                 matchingObservation =
                                     current.activeRawPhase.matchingObservation,
-                                observation = observation,
+                                observation = activeObservation,
                             )
 
                         ActiveRawPhase.Unobserved,
                         is ActiveRawPhase.OtherBeforeMatching,
-                        -> ActiveRawPhase.OtherBeforeMatching(observation)
+                        -> ActiveRawPhase.OtherBeforeMatching(activeObservation)
                     }
                 }
+            val activeExactSupersedesPending =
+                value != null &&
+                    activeWriteAttribution != null &&
+                    activeWriteAttribution.value == value
             val updated =
                 current.copy(
                     latestRawSequence = nextSequence,
                     activeRawPhase = nextPhase,
+                    pendingWriteAttribution =
+                        if (
+                            value != null &&
+                            (pendingWriteAttribution?.value == value ||
+                                activeExactSupersedesPending)
+                        ) {
+                            null
+                        } else {
+                            pendingWriteAttribution
+                        },
                 )
             if (writeObservationBoundary.compareAndSet(current, updated)) {
                 return RawReaderEvent.Row(
@@ -429,6 +517,9 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     activeWriteAttributionAtObservation =
                         observation.activeWriteAttributionAtObservation,
                     followedMatchingActiveWriteRow = followedMatchingActiveWriteRow,
+                    pendingCommitFenceAtObservation =
+                        pendingWriteAttribution != null &&
+                            activeAttributionAtObservation === pendingWriteAttribution,
                 )
             }
         }
@@ -449,6 +540,8 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     observedAttribution = state.attribution,
                     activeAttribution = null,
                     activeRawPhase = ActiveRawPhase.Unobserved,
+                    readerSessionActive = false,
+                    pendingWriteAttribution = null,
                 )
             }
         }
@@ -505,6 +598,62 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             null
                         }
                     }
+                // A fenced mismatch is ambiguous with a notification queued before the
+                // writer-current. It cannot map directly; a committed owner replaces the reader
+                // so that only the new session's current row can establish later authority.
+                if (event.pendingCommitFenceAtObservation) {
+                    val ownerAttribution =
+                        checkNotNull(event.activeWriteAttributionAtObservation)
+                    val matchingAttribution =
+                        ownerAttribution.takeIf {
+                            event.value != null && it.value == event.value
+                        }
+                    when (val disposition = ownerAttribution.owner.disposition.value) {
+                        is FetchDisposition.Committed -> {
+                            decided = true
+                            return@withLock if (
+                                matchingAttribution != null &&
+                                disposition.attribution === ownerAttribution
+                            ) {
+                                recordForExactWriterEnvelopeLocked(
+                                    event = event,
+                                    attribution = ownerAttribution,
+                                    consumedAttribution = null,
+                                ) ?: recordForCurrentSameValueEnvelopeLocked(
+                                    event = event,
+                                    consumedAttribution = null,
+                                )
+                            } else {
+                                if (
+                                    matchingAttribution == null &&
+                                    disposition.attribution === ownerAttribution &&
+                                    pendingFenceStillActiveLocked(event, ownerAttribution)
+                                ) {
+                                    throw RestartRawReaderSession()
+                                }
+                                null
+                            }
+                        }
+
+                        FetchDisposition.InFlight,
+                        is FetchDisposition.Committing,
+                        -> {
+                            prepared =
+                                PreparedReaderRow(
+                                    consumedAttribution = null,
+                                    ownerAttribution = ownerAttribution,
+                                    matchingAttribution = matchingAttribution,
+                                    dropNonmatchingOnCommit = true,
+                                )
+                            return@withLock null
+                        }
+
+                        else -> {
+                            decided = true
+                            return@withLock null
+                        }
+                    }
+                }
 
                 val consumed =
                     transition(
@@ -540,6 +689,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             consumedAttribution = tag,
                             ownerAttribution = checkNotNull(activeAttribution),
                             matchingAttribution = null,
+                            dropNonmatchingOnCommit = false,
                         )
                     null
                 } else if (matchingAttribution == null) {
@@ -573,6 +723,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                                     consumedAttribution = tag,
                                     ownerAttribution = matchingAttribution,
                                     matchingAttribution = matchingAttribution,
+                                    dropNonmatchingOnCommit = false,
                                 )
                             null
                         }
@@ -606,10 +757,18 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         if (committed != null && committed.attribution !== ownerAttribution) {
             return null
         }
+        val restartFencedMismatch =
+            committed != null &&
+                provisionalRow.dropNonmatchingOnCommit &&
+                matchingAttribution == null
         val writeDidNotCommit =
             disposition === FetchDisposition.Failed ||
                 disposition === FetchDisposition.Cancelled
         if (committed == null && (!writeDidNotCommit || matchingAttribution != null)) return null
+        // A terminal failed owner cannot lend its consumed tag to the resumed row. With no tag,
+        // an equal live predecessor envelope stays unchanged while different content remains SOT.
+        val retainedConsumedAttribution =
+            provisionalRow.consumedAttribution.takeUnless { writeDidNotCommit }
 
         return stateLock.withLock {
             if (mutableState.value.readerGen != readerGen) return@withLock null
@@ -627,27 +786,51 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             event = event,
                             resolution = resolution,
                             consumedAttributionOverride =
-                                provisionalRow.consumedAttribution,
+                                retainedConsumedAttribution,
                         )
                     } else {
                         null
                     }
                 }
+            if (restartFencedMismatch) {
+                if (pendingFenceStillActiveLocked(event, ownerAttribution)) {
+                    throw RestartRawReaderSession()
+                }
+                return@withLock null
+            }
             if (matchingAttribution != null) {
                 recordForExactWriterEnvelopeLocked(
                     event = event,
                     attribution = matchingAttribution,
-                    consumedAttribution = provisionalRow.consumedAttribution,
-                )
+                    consumedAttribution = retainedConsumedAttribution,
+                ) ?: if (provisionalRow.dropNonmatchingOnCommit) {
+                    recordForCurrentSameValueEnvelopeLocked(
+                        event = event,
+                        consumedAttribution = retainedConsumedAttribution,
+                    )
+                } else {
+                    null
+                }
             } else {
                 mapReaderRowLocked(
                     readerGen = readerGen,
                     event = event,
-                    tag = provisionalRow.consumedAttribution,
+                    tag = retainedConsumedAttribution,
                     matchingAttribution = null,
                 )
             }
         }
+    }
+
+    /** True only while this event still belongs to the unresolved live-session fence. */
+    private fun pendingFenceStillActiveLocked(
+        event: RawReaderEvent.Row<V>,
+        attribution: AttributionTag,
+    ): Boolean {
+        val boundary = writeObservationBoundary.value
+        return boundary.readerGen == event.readerGen &&
+            boundary.readerSessionActive &&
+            boundary.pendingWriteAttribution === attribution
     }
 
     /** True when conflate has already observed a newer row/absence in this reader generation. */
@@ -706,6 +889,26 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val value = event.value ?: return null
         val envelope = residence.value ?: return null
         if (!envelope.matchesWriterAttribution(value, attribution)) return null
+        return ReaderRecord.Row(
+            envelope = envelope,
+            readerGen = event.readerGen,
+            residenceRevision = residenceRevision,
+            successfulWriteSequenceAtObservation =
+                event.successfulWriteSequenceAtObservation,
+            consumedAttribution = consumedAttribution,
+            activeWriteAttributionAtObservation = event.activeWriteAttributionAtObservation,
+            rawObservationSequence = event.rawObservationSequence,
+        )
+    }
+
+    /** Reuses the live same-value envelope for a fenced exact row after residence advancement. */
+    private fun recordForCurrentSameValueEnvelopeLocked(
+        event: RawReaderEvent.Row<V>,
+        consumedAttribution: AttributionTag?,
+    ): ReaderRecord.Row<V>? {
+        val value = event.value ?: return null
+        val envelope = residence.value ?: return null
+        if (envelope.value != value) return null
         return ReaderRecord.Row(
             envelope = envelope,
             readerGen = event.readerGen,
@@ -1417,15 +1620,25 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         )
     }
 
-    /** Atomically claims the mutation-era raw phase at normal persistence return. */
+    /** Atomically closes the raw phase and fences queued pre-return notifications. */
     private fun closeSuccessfulWriteBoundary(): ClosedWriteBoundary {
         while (true) {
             val current = writeObservationBoundary.value
             val nextSequence = current.successfulSequence + 1L
+            val pendingWriteAttribution =
+                if (
+                    current.readerSessionActive &&
+                    current.activeRawPhase !is ActiveRawPhase.Matching
+                ) {
+                    current.activeAttribution ?: current.pendingWriteAttribution
+                } else {
+                    current.pendingWriteAttribution
+                }
             val updated =
                 current.copy(
                     successfulSequence = nextSequence,
                     activeRawPhase = ActiveRawPhase.Unobserved,
+                    pendingWriteAttribution = pendingWriteAttribution,
                 )
             if (writeObservationBoundary.compareAndSet(current, updated)) {
                 return ClosedWriteBoundary(
@@ -4523,6 +4736,9 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val engineFailure: Throwable,
     ) : RuntimeException(engineFailure)
 
+    /** Restarts the sole reader after discarding one unresolved committed-fence mismatch. */
+    private class RestartRawReaderSession : RuntimeException()
+
     /** Converts self-originated flow cancellation into a terminal no-failure-contract breach. */
     private class ProjectionChangesFailure(
         val projectionCause: CancellationException,
@@ -4585,6 +4801,9 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val successfulSequence: Long,
         val latestRawSequence: Long,
         val activeRawPhase: ActiveRawPhase,
+        val readerSession: Long,
+        val readerSessionActive: Boolean,
+        val pendingWriteAttribution: AttributionTag?,
     )
 
     private data class ClosedWriteBoundary(
@@ -4614,6 +4833,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val consumedAttribution: AttributionTag?,
         val ownerAttribution: AttributionTag,
         val matchingAttribution: AttributionTag?,
+        val dropNonmatchingOnCommit: Boolean,
     )
 
     private data class ReaderResolution<V : Any>(

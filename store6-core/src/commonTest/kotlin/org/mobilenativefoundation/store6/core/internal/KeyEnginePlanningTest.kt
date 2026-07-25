@@ -6,12 +6,18 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
@@ -32,6 +38,7 @@ import org.mobilenativefoundation.store6.core.seam.FetcherResult
 import org.mobilenativefoundation.store6.core.seam.FreshnessContext
 import org.mobilenativefoundation.store6.core.seam.FreshnessValidator
 import org.mobilenativefoundation.store6.core.seam.KeyStatus
+import org.mobilenativefoundation.store6.core.seam.Overlay
 import org.mobilenativefoundation.store6.core.SingleRowTestSourceOfTruth
 import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
 import kotlin.test.Test
@@ -44,7 +51,11 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+
+private val COLD_OBSERVATION_HOLD = 60.milliseconds
+private val WRITER_CURRENT_DELIVERY_GAP = 1.milliseconds
 
 @OptIn(DelicateStoreApi::class, ExperimentalStoreApi::class, ExperimentalCoroutinesApi::class)
 class KeyEnginePlanningTest {
@@ -2689,6 +2700,460 @@ class KeyEnginePlanningTest {
     }
 
     @Test
+    fun coldPreWriteAbsent_cannotBecomePostCutoffAuthority() = runTest {
+        val key = TestKey("cold-pre-write-absent")
+        val sourceOfTruth = HeldColdObservationSourceOfTruth()
+        val fetchStarted = CompletableDeferred<Unit>()
+        val releaseFirstFetch = CompletableDeferred<Unit>()
+        val releaseUnexpectedFetch = CompletableDeferred<Unit>()
+        val outcomeDeliveryGate = InitialDeliveryGate().also { it.arm() }
+        val planningContexts = mutableListOf<FreshnessContext>()
+        var calls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    when (++calls) {
+                        1 -> {
+                            fetchStarted.complete(Unit)
+                            releaseFirstFetch.await()
+                            FetcherResult.Success("fresh")
+                        }
+
+                        2 -> {
+                            releaseUnexpectedFetch.await()
+                            FetcherResult.Success("unexpected")
+                        }
+
+                        else -> error("unexpected fetch call $calls")
+                    }
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator =
+                    object : FreshnessValidator {
+                        override fun plan(context: FreshnessContext): FetchPlan {
+                            planningContexts += context
+                            return DefaultFreshnessValidator.plan(context)
+                        }
+                    },
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeTicketOutcomeDeliveryTestGate = outcomeDeliveryGate::awaitIfArmed,
+            )
+
+        app.cash.turbine.turbineScope {
+            val collector = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            assertIs<StoreResult.Loading>(collector.awaitItem())
+            sourceOfTruth.coldObservationHeld.await()
+            fetchStarted.await()
+            val ticket = assertIs<FetchSlot.InFlight>(engine.state.value.fetch).ticket
+
+            releaseFirstFetch.complete(Unit)
+            assertIs<FetchOutcome.Committed>(ticket.outcome.await())
+            outcomeDeliveryGate.entered.await()
+            testScheduler.advanceTimeBy(
+                (COLD_OBSERVATION_HOLD + WRITER_CURRENT_DELIVERY_GAP).inWholeMilliseconds,
+            )
+            testScheduler.runCurrent()
+
+            val data = assertIs<StoreResult.Data<String>>(collector.awaitItem())
+            val committedContext = planningContexts.last { it.hasResidentValue }
+            assertEquals(
+                ColdPathContractObservation(
+                    origin = Origin.FETCHER,
+                    isStale = false,
+                    refreshing = false,
+                    hasMeta = true,
+                    fetchCalls = 1,
+                ),
+                ColdPathContractObservation(
+                    origin = data.origin,
+                    isStale = data.isStale,
+                    refreshing = data.refreshing,
+                    hasMeta = committedContext.meta != null,
+                    fetchCalls = calls,
+                ),
+            )
+
+            collector.cancelAndIgnoreRemainingEvents()
+            outcomeDeliveryGate.release()
+            releaseUnexpectedFetch.complete(Unit)
+        }
+    }
+
+    @Test
+    fun coldPreWriteAbsent_twoCollectorsCannotLaunchMirrorFetch() = runTest {
+        val key = TestKey("cold-pre-write-absent-two-collectors")
+        val sourceOfTruth = HeldColdObservationSourceOfTruth(immediateReaderCalls = 2)
+        val fetchStarted = CompletableDeferred<Unit>()
+        val releaseFirstFetch = CompletableDeferred<Unit>()
+        val releaseUnexpectedFetch = CompletableDeferred<Unit>()
+        val initialDeliveryGate = SequencedGate()
+        val collectorAInitial = initialDeliveryGate.gateNext()
+        val collectorBInitial = initialDeliveryGate.gateNext()
+        val outcomeDeliveryGate = SequencedGate()
+        val collectorAOutcome = outcomeDeliveryGate.gateNext()
+        val collectorBOutcome = outcomeDeliveryGate.gateNext()
+        val planningContexts = mutableListOf<FreshnessContext>()
+        var calls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    when (++calls) {
+                        1 -> {
+                            fetchStarted.complete(Unit)
+                            releaseFirstFetch.await()
+                            FetcherResult.Success("fresh")
+                        }
+
+                        2 -> {
+                            releaseUnexpectedFetch.await()
+                            FetcherResult.Success("unexpected")
+                        }
+
+                        else -> error("unexpected fetch call $calls")
+                    }
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator =
+                    object : FreshnessValidator {
+                        override fun plan(context: FreshnessContext): FetchPlan {
+                            planningContexts += context
+                            return DefaultFreshnessValidator.plan(context)
+                        }
+                },
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeInitialDeliveryTestGate = initialDeliveryGate::awaitIfQueued,
+                beforeTicketOutcomeDeliveryTestGate = outcomeDeliveryGate::awaitIfQueued,
+            )
+
+        app.cash.turbine.turbineScope {
+            val collectorA = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            val collectorB = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            collectorAInitial.entered.await()
+            collectorBInitial.entered.await()
+            fetchStarted.await()
+            val ticket = assertIs<FetchSlot.InFlight>(engine.state.value.fetch).ticket
+            assertEquals(1, calls)
+            assertFalse(sourceOfTruth.coldObservationHeld.isCompleted)
+            collectorAInitial.release.complete(Unit)
+            collectorBInitial.release.complete(Unit)
+            assertIs<StoreResult.Loading>(collectorA.awaitItem())
+            assertIs<StoreResult.Loading>(collectorB.awaitItem())
+            sourceOfTruth.coldObservationHeld.await()
+
+            releaseFirstFetch.complete(Unit)
+            assertIs<FetchOutcome.Committed>(ticket.outcome.await())
+            collectorAOutcome.entered.await()
+            collectorBOutcome.entered.await()
+            testScheduler.advanceTimeBy(
+                (COLD_OBSERVATION_HOLD + WRITER_CURRENT_DELIVERY_GAP).inWholeMilliseconds,
+            )
+            testScheduler.runCurrent()
+
+            val data =
+                listOf(
+                    assertIs<StoreResult.Data<String>>(collectorA.awaitItem()),
+                    assertIs<StoreResult.Data<String>>(collectorB.awaitItem()),
+                )
+            val committedContext = planningContexts.last { it.hasResidentValue }
+            data.forEach { result ->
+                assertEquals(
+                    ColdPathContractObservation(
+                        origin = Origin.FETCHER,
+                        isStale = false,
+                        refreshing = false,
+                        hasMeta = true,
+                        fetchCalls = 1,
+                    ),
+                    ColdPathContractObservation(
+                        origin = result.origin,
+                        isStale = result.isStale,
+                        refreshing = result.refreshing,
+                        hasMeta = committedContext.meta != null,
+                        fetchCalls = calls,
+                    ),
+                )
+            }
+
+            collectorA.cancelAndIgnoreRemainingEvents()
+            collectorB.cancelAndIgnoreRemainingEvents()
+            collectorAOutcome.release.complete(Unit)
+            collectorBOutcome.release.complete(Unit)
+            releaseUnexpectedFetch.complete(Unit)
+        }
+    }
+
+    @Test
+    fun successorWrite_cannotRetireQueuedPredecessorEchoFence() = runTest {
+        val key = TestKey("successor-write-predecessor-echo")
+        val sourceOfTruth = ConsecutiveWriteEchoSourceOfTruth()
+        val fetchStarted = CompletableDeferred<Unit>()
+        val releaseFirstFetch = CompletableDeferred<Unit>()
+        val outcomeDeliveryGate = InitialDeliveryGate().also { it.arm() }
+        val planningContexts = mutableListOf<FreshnessContext>()
+        val unexpectedFetchStarted = CompletableDeferred<Unit>()
+        val releaseUnexpectedFetch = CompletableDeferred<Unit>()
+        var calls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    when (++calls) {
+                        1 -> {
+                            fetchStarted.complete(Unit)
+                            releaseFirstFetch.await()
+                            FetcherResult.Success("first")
+                        }
+
+                        2 -> {
+                            unexpectedFetchStarted.complete(Unit)
+                            releaseUnexpectedFetch.await()
+                            FetcherResult.Success("unexpected")
+                        }
+
+                        else -> error("unexpected fetch call $calls")
+                    }
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator =
+                    object : FreshnessValidator {
+                        override fun plan(context: FreshnessContext): FetchPlan {
+                            planningContexts += context
+                            return DefaultFreshnessValidator.plan(context)
+                        }
+                    },
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeTicketOutcomeDeliveryTestGate = outcomeDeliveryGate::awaitIfArmed,
+            )
+
+        app.cash.turbine.turbineScope {
+            val collector = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            assertIs<StoreResult.Loading>(collector.awaitItem())
+            fetchStarted.await()
+            sourceOfTruth.liveReaderStarted.await()
+            val ticket = assertIs<FetchSlot.InFlight>(engine.state.value.fetch).ticket
+            releaseFirstFetch.complete(Unit)
+            sourceOfTruth.firstEchoHeld.await()
+            assertIs<FetchOutcome.Committed>(ticket.outcome.await())
+            outcomeDeliveryGate.entered.await()
+
+            val successor = backgroundScope.async { engine.applyWrite("second") }
+            try {
+                sourceOfTruth.secondWriteStarted.await()
+                sourceOfTruth.releaseFirstEcho.complete(Unit)
+                testScheduler.runCurrent()
+
+                val first = assertIs<StoreResult.Data<String>>(collector.awaitItem())
+                val committedContext = planningContexts.last { it.hasResidentValue }
+                assertEquals(
+                    ColdPathContractObservation(
+                        origin = Origin.FETCHER,
+                        isStale = false,
+                        refreshing = false,
+                        hasMeta = true,
+                        fetchCalls = 1,
+                    ),
+                    ColdPathContractObservation(
+                        origin = first.origin,
+                        isStale = first.isStale,
+                        refreshing = first.refreshing,
+                        hasMeta = committedContext.meta != null,
+                        fetchCalls = calls,
+                    ),
+                )
+                assertFalse(unexpectedFetchStarted.isCompleted)
+            } finally {
+                sourceOfTruth.releaseFirstEcho.complete(Unit)
+                sourceOfTruth.releaseSecondWriteReturn.complete(Unit)
+                sourceOfTruth.releaseSecondEcho.complete(Unit)
+                outcomeDeliveryGate.release()
+                releaseUnexpectedFetch.complete(Unit)
+            }
+            successor.await()
+            collector.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun failedSuccessorWrite_cannotStripCommittedPredecessorEnvelope() = runTest {
+        val key = TestKey("failed-successor-preserves-predecessor")
+        val sourceOfTruth = FailingSuccessorSourceOfTruth()
+        val mappingGate = SequencedGate()
+        val firstFetchStarted = CompletableDeferred<Unit>()
+        val releaseFirstFetch = CompletableDeferred<Unit>()
+        val unexpectedFetchStarted = CompletableDeferred<Unit>()
+        val releaseUnexpectedFetch = CompletableDeferred<Unit>()
+        val planningContexts = mutableListOf<FreshnessContext>()
+        var calls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    when (++calls) {
+                        1 -> {
+                            firstFetchStarted.complete(Unit)
+                            releaseFirstFetch.await()
+                            FetcherResult.Success("first")
+                        }
+
+                        2 -> {
+                            unexpectedFetchStarted.complete(Unit)
+                            releaseUnexpectedFetch.await()
+                            FetcherResult.Success("unexpected")
+                        }
+
+                        else -> error("unexpected fetch call $calls")
+                    }
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator =
+                    object : FreshnessValidator {
+                        override fun plan(context: FreshnessContext): FetchPlan {
+                            planningContexts += context
+                            return DefaultFreshnessValidator.plan(context)
+                        }
+                    },
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = mappingGate::awaitIfQueued,
+            )
+
+        app.cash.turbine.turbineScope {
+            val owner = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            try {
+                assertIs<StoreResult.Loading>(owner.awaitItem())
+                firstFetchStarted.await()
+                sourceOfTruth.liveReaderStarted.await()
+                testScheduler.runCurrent()
+                val firstTicket = assertIs<FetchSlot.InFlight>(engine.state.value.fetch).ticket
+                releaseFirstFetch.complete(Unit)
+                withTimeout(3_000L) { sourceOfTruth.firstNotificationQueued.await() }
+                assertIs<FetchOutcome.Committed>(
+                    withTimeout(3_000L) { firstTicket.outcome.await() },
+                )
+
+                val successorExact = mappingGate.gateNext()
+                val rollback = mappingGate.gateNext()
+                try {
+                    val successor =
+                        backgroundScope.async {
+                            runCatching { engine.applyWrite("second") }
+                        }
+                    withTimeout(3_000L) { successorExact.entered.await() }
+                    sourceOfTruth.releaseRollback.complete(Unit)
+                    withTimeout(3_000L) { sourceOfTruth.rollbackRawCaptured.await() }
+
+                    successorExact.release.complete(Unit)
+                    withTimeout(3_000L) { rollback.entered.await() }
+                    rollback.release.complete(Unit)
+                    testScheduler.runCurrent()
+                    sourceOfTruth.releaseFailure.complete(Unit)
+                    assertTrue(withTimeout(3_000L) { successor.await() }.isFailure)
+                    testScheduler.runCurrent()
+
+                    val retained = assertIs<StoreResult.Data<String>>(owner.awaitItem())
+                    val retainedContext = planningContexts.last { it.hasResidentValue }
+                    assertEquals(
+                        ColdPathContractObservation(
+                            origin = Origin.FETCHER,
+                            isStale = false,
+                            refreshing = false,
+                            hasMeta = true,
+                            fetchCalls = 1,
+                        ),
+                        ColdPathContractObservation(
+                            origin = retained.origin,
+                            isStale = retained.isStale,
+                            refreshing = retained.refreshing,
+                            hasMeta = retainedContext.meta != null,
+                            fetchCalls = calls,
+                        ),
+                    )
+                    assertFalse(unexpectedFetchStarted.isCompleted)
+                } finally {
+                    successorExact.release.complete(Unit)
+                    rollback.release.complete(Unit)
+                    sourceOfTruth.releaseRollback.complete(Unit)
+                    sourceOfTruth.releaseFailure.complete(Unit)
+                    releaseUnexpectedFetch.complete(Unit)
+                }
+            } finally {
+                sourceOfTruth.releaseFirstNotification.complete(Unit)
+                sourceOfTruth.releaseRollback.complete(Unit)
+                releaseFirstFetch.complete(Unit)
+                releaseUnexpectedFetch.complete(Unit)
+                owner.cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+
+    @Test
+    fun replacementReaderSession_retiresUnresolvedPredecessorFence() = runTest {
+        val key = TestKey("replacement-retires-predecessor-fence")
+        val sourceOfTruth = ConsecutiveWriteEchoSourceOfTruth()
+        val fetchStarted = CompletableDeferred<Unit>()
+        val releaseFetch = CompletableDeferred<Unit>()
+        var calls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    calls += 1
+                    fetchStarted.complete(Unit)
+                    releaseFetch.await()
+                    FetcherResult.Success("first")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+            )
+
+        app.cash.turbine.turbineScope {
+            val owner = engine.stream(Freshness.CachedOrFetch).testIn(backgroundScope)
+            assertIs<StoreResult.Loading>(owner.awaitItem())
+            fetchStarted.await()
+            sourceOfTruth.liveReaderStarted.await()
+            val ticket = assertIs<FetchSlot.InFlight>(engine.state.value.fetch).ticket
+            releaseFetch.complete(Unit)
+            sourceOfTruth.firstEchoHeld.await()
+            assertIs<FetchOutcome.Committed>(ticket.outcome.await())
+
+            owner.cancelAndIgnoreRemainingEvents()
+            testScheduler.advanceTimeBy(READER_PIPELINE_GRACE_MILLIS + 1L)
+            testScheduler.runCurrent()
+
+            val replacement = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            sourceOfTruth.replacementReaderStarted.await()
+            sourceOfTruth.publishExternal("external")
+            var external: StoreResult.Data<String>? = null
+            while (external == null) {
+                val item = replacement.awaitItem()
+                if (item is StoreResult.Data && item.value == "external") external = item
+            }
+            assertEquals(Origin.SOT, checkNotNull(external).origin)
+            assertEquals(1, calls)
+
+            replacement.cancelAndIgnoreRemainingEvents()
+            sourceOfTruth.releaseFirstEcho.complete(Unit)
+        }
+    }
+
+    @Test
     fun olderPreStampRow_cannotOverwriteANewerWriterObservation() = runTest {
         val key = TestKey("older-pre-stamp-row")
         val sourceOfTruth = ReplayEveryRowSourceOfTruth()
@@ -2796,6 +3261,125 @@ class KeyEnginePlanningTest {
             testScheduler.runCurrent()
             assertEquals("fresh", engine.get(Freshness.MaxAge(notOlderThan = 5.minutes)))
             assertEquals(2, calls, "delayed exact row must not restore the older metadata revision")
+            observer.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun delayedExactWriterRow_afterConfirmFresh_reusesCurrentEnvelopeForProjection() = runTest {
+        val key = TestKey("delayed-exact-after-confirm-fresh")
+        val sourceOfTruth = DelayedWriterEchoSourceOfTruth()
+        val exactRowMapped = CompletableDeferred<Unit>()
+        var observeExactRow = false
+        var fetchCalls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    fetchCalls += 1
+                    FetcherResult.Success("unexpected")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = {
+                    if (observeExactRow) exactRowMapped.complete(Unit)
+                },
+                overlay = PassThroughOverlay,
+            )
+
+        assertEquals("seed", engine.get(Freshness.LocalOnly))
+        app.cash.turbine.turbineScope {
+            val observer = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            assertEquals("seed", assertIs<StoreResult.Data<String>>(observer.awaitItem()).value)
+            sourceOfTruth.liveReaderStarted.await()
+            testScheduler.runCurrent()
+
+            engine.applyWrite("echo")
+            engine.confirmFresh(etag = "confirmed")
+            sourceOfTruth.writerEchoHeld.await()
+
+            val delayed =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    observer.awaitItem()
+                }
+            observeExactRow = true
+            sourceOfTruth.releaseWriterEcho.complete(Unit)
+            exactRowMapped.await()
+            testScheduler.runCurrent()
+
+            assertTrue(
+                delayed.isCompleted,
+                "the delayed exact row must authorize the metadata-refreshed projection",
+            )
+            val echo = assertIs<StoreResult.Data<String>>(delayed.await())
+            assertEquals("echo", echo.value)
+            assertEquals(Origin.SOT, echo.origin)
+            assertEquals("echo", engine.get(Freshness.MaxAge(notOlderThan = 5.minutes)))
+            assertEquals(0, fetchCalls)
+            observer.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun committedFence_withoutWriterEcho_restartsReaderForCurrentAuthority() = runTest {
+        val key = TestKey("committed-fence-without-writer-echo")
+        val sourceOfTruth = ConflatedWriterEchoSourceOfTruth()
+        val fencedRowMapped = CompletableDeferred<Unit>()
+        var observeFencedRow = false
+        var fetchCalls = 0
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    fetchCalls += 1
+                    FetcherResult.Success("unexpected")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = {
+                    if (observeFencedRow) fencedRowMapped.complete(Unit)
+                },
+            )
+
+        assertEquals("seed", engine.get(Freshness.LocalOnly))
+        app.cash.turbine.turbineScope {
+            val observer = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            assertEquals("seed", assertIs<StoreResult.Data<String>>(observer.awaitItem()).value)
+            sourceOfTruth.liveReaderHeld.await()
+            testScheduler.runCurrent()
+            val readerCallsBeforeRecovery = sourceOfTruth.readerCalls
+
+            engine.applyWrite("candidate")
+            sourceOfTruth.publishExternal("external")
+            val delayed =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    observer.awaitItem()
+                }
+            observeFencedRow = true
+            sourceOfTruth.releaseLiveReader.complete(Unit)
+            fencedRowMapped.await()
+            testScheduler.runCurrent()
+
+            assertTrue(
+                sourceOfTruth.readerCalls > readerCallsBeforeRecovery,
+                "a fenced mismatch must replace the reader before accepting current authority",
+            )
+            assertTrue(
+                delayed.isCompleted,
+                "the replacement reader must deliver its causally post-return current row",
+            )
+            val external = assertIs<StoreResult.Data<String>>(delayed.await())
+            assertEquals("external", external.value)
+            assertEquals(Origin.SOT, external.origin)
+            assertEquals(0, fetchCalls)
             observer.cancelAndIgnoreRemainingEvents()
         }
     }
@@ -3345,6 +3929,169 @@ class KeyEnginePlanningTest {
         }
     }
 
+    private data class ColdPathContractObservation(
+        val origin: Origin,
+        val isStale: Boolean,
+        val refreshing: Boolean,
+        val hasMeta: Boolean,
+        val fetchCalls: Int,
+    )
+
+    private class HeldColdObservationSourceOfTruth(
+        private val immediateReaderCalls: Int = 1,
+    ) : SingleRowTestSourceOfTruth<String> {
+        private val rows = MutableStateFlow<String?>(null)
+        private var readerCalls = 0
+        val coldObservationHeld = CompletableDeferred<Unit>()
+
+        override fun reader(key: TestKey): Flow<String?> {
+            readerCalls += 1
+            if (readerCalls <= immediateReaderCalls) return rows
+            return flow {
+                var first = true
+                var heldColdObservation = false
+                rows.collect { value ->
+                    if (first && value == null) {
+                        first = false
+                        heldColdObservation = true
+                        coldObservationHeld.complete(Unit)
+                        delay(COLD_OBSERVATION_HOLD)
+                    } else if (heldColdObservation) {
+                        heldColdObservation = false
+                        delay(WRITER_CURRENT_DELIVERY_GAP)
+                    }
+                    emit(value)
+                }
+            }
+        }
+
+        override suspend fun write(
+            key: TestKey,
+            value: String,
+        ) {
+            rows.value = value
+        }
+
+        override suspend fun delete(key: TestKey) {
+            rows.value = null
+        }
+    }
+
+    private class ConsecutiveWriteEchoSourceOfTruth : SingleRowTestSourceOfTruth<String> {
+        private val liveRows = MutableSharedFlow<String?>(extraBufferCapacity = 2)
+        private var readerCalls = 0
+        private var current: String? = null
+        val liveReaderStarted = CompletableDeferred<Unit>()
+        val replacementReaderStarted = CompletableDeferred<Unit>()
+        val firstEchoHeld = CompletableDeferred<Unit>()
+        val releaseFirstEcho = CompletableDeferred<Unit>()
+        val secondWriteStarted = CompletableDeferred<Unit>()
+        val releaseSecondWriteReturn = CompletableDeferred<Unit>()
+        val releaseSecondEcho = CompletableDeferred<Unit>()
+
+        override fun reader(key: TestKey): Flow<String?> {
+            val readerCall = ++readerCalls
+            val isLiveReader = readerCall >= 2
+            return flow {
+                emit(current)
+                if (!isLiveReader) return@flow
+                liveReaderStarted.complete(Unit)
+                if (readerCall >= 3) replacementReaderStarted.complete(Unit)
+                liveRows.collect { value ->
+                    when (value) {
+                        "first" -> {
+                            firstEchoHeld.complete(Unit)
+                            releaseFirstEcho.await()
+                        }
+
+                        "second" -> releaseSecondEcho.await()
+                    }
+                    emit(value)
+                }
+            }
+        }
+
+        override suspend fun write(
+            key: TestKey,
+            value: String,
+        ) {
+            current = value
+            check(liveRows.tryEmit(value))
+            if (value == "second") {
+                secondWriteStarted.complete(Unit)
+                releaseSecondWriteReturn.await()
+            }
+        }
+
+        override suspend fun delete(key: TestKey) {
+            current = null
+            check(liveRows.tryEmit(null))
+        }
+
+        fun publishExternal(value: String) {
+            current = value
+            check(liveRows.tryEmit(value))
+        }
+    }
+
+    private class FailingSuccessorSourceOfTruth : SingleRowTestSourceOfTruth<String> {
+        private val rows = MutableStateFlow<String?>(null)
+        private var readerCalls = 0
+        val liveReaderStarted = CompletableDeferred<Unit>()
+        val firstNotificationQueued = CompletableDeferred<Unit>()
+        val releaseFirstNotification = CompletableDeferred<Unit>()
+        val secondRawCaptured = CompletableDeferred<Unit>()
+        val releaseRollback = CompletableDeferred<Unit>()
+        val rollbackRawCaptured = CompletableDeferred<Unit>()
+        val releaseFailure = CompletableDeferred<Unit>()
+
+        override fun reader(key: TestKey): Flow<String?> {
+            val readerCall = ++readerCalls
+            if (readerCall == 1) return flow { emit(rows.value) }
+            return flow {
+                emit(rows.value)
+                liveReaderStarted.complete(Unit)
+                emitAll(
+                    rows.drop(1).transformLatest { value ->
+                        if (value == "first" && !firstNotificationQueued.isCompleted) {
+                            firstNotificationQueued.complete(Unit)
+                            releaseFirstNotification.await()
+                        } else {
+                            emit(value)
+                            when (value) {
+                                "second" -> secondRawCaptured.complete(Unit)
+                                "first" -> rollbackRawCaptured.complete(Unit)
+                            }
+                        }
+                    },
+                )
+            }
+        }
+
+        override suspend fun write(
+            key: TestKey,
+            value: String,
+        ) {
+            rows.value = value
+            if (value == "first") {
+                firstNotificationQueued.await()
+                return
+            }
+
+            check(value == "second")
+            secondRawCaptured.await()
+            releaseRollback.await()
+            rows.value = "first"
+            rollbackRawCaptured.await()
+            releaseFailure.await()
+            throw IllegalStateException("successor write failed")
+        }
+
+        override suspend fun delete(key: TestKey) {
+            rows.value = null
+        }
+    }
+
     private class ReplayEveryRowSourceOfTruth : SingleRowTestSourceOfTruth<String> {
         private val rows = MutableSharedFlow<String?>(replay = 1)
         private var readerCalls = 0
@@ -3451,6 +4198,95 @@ class KeyEnginePlanningTest {
             current = value
             liveRows.emit(value)
         }
+    }
+
+    private class DelayedWriterEchoSourceOfTruth : SingleRowTestSourceOfTruth<String> {
+        private val rows =
+            MutableSharedFlow<String?>(
+                replay = 1,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            ).also { check(it.tryEmit("seed")) }
+        var readerCalls: Int = 0
+            private set
+        val liveReaderStarted = CompletableDeferred<Unit>()
+        val writerEchoHeld = CompletableDeferred<Unit>()
+        val releaseWriterEcho = CompletableDeferred<Unit>()
+
+        override fun reader(key: TestKey): Flow<String?> {
+            readerCalls += 1
+            val isLiveReader = readerCalls >= 2
+            return flow {
+                rows.collect { value ->
+                    if (isLiveReader && value == "echo" && !writerEchoHeld.isCompleted) {
+                        writerEchoHeld.complete(Unit)
+                        releaseWriterEcho.await()
+                    }
+                    emit(value)
+                    if (isLiveReader) liveReaderStarted.complete(Unit)
+                }
+            }
+        }
+
+        override suspend fun write(
+            key: TestKey,
+            value: String,
+        ) {
+            rows.emit(value)
+        }
+
+        override suspend fun delete(key: TestKey) {
+            rows.emit(null)
+        }
+    }
+
+    private class ConflatedWriterEchoSourceOfTruth : SingleRowTestSourceOfTruth<String> {
+        private val rows =
+            MutableSharedFlow<String?>(
+                replay = 1,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            ).also { check(it.tryEmit("seed")) }
+        var readerCalls: Int = 0
+            private set
+        val liveReaderHeld = CompletableDeferred<Unit>()
+        val releaseLiveReader = CompletableDeferred<Unit>()
+
+        override fun reader(key: TestKey): Flow<String?> {
+            readerCalls += 1
+            val isLiveReader = readerCalls >= 2
+            return flow {
+                rows.collect { value ->
+                    emit(value)
+                    if (isLiveReader && !liveReaderHeld.isCompleted) {
+                        liveReaderHeld.complete(Unit)
+                        releaseLiveReader.await()
+                    }
+                }
+            }
+        }
+
+        override suspend fun write(
+            key: TestKey,
+            value: String,
+        ) {
+            rows.emit(value)
+        }
+
+        override suspend fun delete(key: TestKey) {
+            rows.emit(null)
+        }
+
+        suspend fun publishExternal(value: String) {
+            rows.emit(value)
+        }
+    }
+
+    private object PassThroughOverlay : Overlay<TestKey, String> {
+        override fun apply(
+            key: TestKey,
+            base: String?,
+        ): String? = base
+
+        override val changes: Flow<StoreKey> = emptyFlow()
     }
 
     private class CancellingWriterSourceOfTruth : SingleRowTestSourceOfTruth<String> {
