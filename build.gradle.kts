@@ -7,7 +7,7 @@ plugins {
     // plugin classloader + version; module branches only `alias(...)` without versions.
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.sqldelight) apply false
-    alias(libs.plugins.room) apply false
+    alias(libs.plugins.room3) apply false
     alias(libs.plugins.kotlin.compose.compiler) apply false
     alias(libs.plugins.jetbrains.compose) apply false
 }

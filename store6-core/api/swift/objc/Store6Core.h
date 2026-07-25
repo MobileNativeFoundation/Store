@@ -236,6 +236,11 @@ __attribute__((swift_name("Origin")))
 @property (class, readonly) NSArray<Store6CoreOrigin *> *entries __attribute__((swift_name("entries")));
 @end
 
+
+/**
+ * @note annotations
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
+*/
 __attribute__((swift_name("Store")))
 @protocol Store6CoreStore
 @required
@@ -487,6 +492,7 @@ __attribute__((swift_name("StoreResultRevalidated")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("Bookkeeper")))
 @protocol Store6CoreBookkeeper
@@ -588,6 +594,7 @@ __attribute__((swift_name("FetchPlanSkip")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("Fetcher")))
 @protocol Store6CoreFetcher
@@ -660,6 +667,7 @@ __attribute__((swift_name("FreshnessContext")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("FreshnessValidator")))
 @protocol Store6CoreFreshnessValidator
@@ -716,6 +724,7 @@ __attribute__((swift_name("KeyStatus")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("Overlay")))
 @protocol Store6CoreOverlay
@@ -728,6 +737,7 @@ __attribute__((swift_name("Overlay")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("SourceOfTruth")))
 @protocol Store6CoreSourceOfTruth
@@ -788,6 +798,7 @@ __attribute__((swift_name("StoreResults")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("StoreRuntime")))
 @protocol Store6CoreStoreRuntime
@@ -801,6 +812,7 @@ __attribute__((swift_name("StoreRuntime")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("StoreTelemetry")))
 @protocol Store6CoreStoreTelemetry
@@ -817,6 +829,7 @@ __attribute__((swift_name("StoreTelemetry")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("StoreWriteHandle")))
 @protocol Store6CoreStoreWriteHandle
@@ -845,6 +858,7 @@ __attribute__((swift_name("StoreWriteHandle")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("TransactionalSourceOfTruth")))
 @protocol Store6CoreTransactionalSourceOfTruth <Store6CoreSourceOfTruth>
@@ -861,6 +875,7 @@ __attribute__((swift_name("TransactionalSourceOfTruth")))
 /**
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
 */
 __attribute__((swift_name("WallClock")))
 @protocol Store6CoreWallClock

@@ -11,7 +11,7 @@
         "org.jetbrains.compose",
         "org.jetbrains.androidx.lifecycle",
         "com.google.devtools.ksp",
-        "androidx.room",
+        "androidx.room3",
         "androidx.sqlite"
       ],
       "enabled": false
