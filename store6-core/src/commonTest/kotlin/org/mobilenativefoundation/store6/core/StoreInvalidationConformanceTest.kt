@@ -3,6 +3,7 @@ package org.mobilenativefoundation.store6.core
 import app.cash.turbine.test
 import app.cash.turbine.testIn
 import app.cash.turbine.turbineScope
+import app.cash.turbine.withTurbineTimeout
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -820,8 +821,16 @@ open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
     }
 }
 
+// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
+// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+private val TEST_TIMEOUT = 25.seconds
+private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
+
 private fun runTest(testBody: suspend TestScope.() -> Unit): TestResult =
-    coroutineRunTest(timeout = 25.seconds, testBody = testBody)
+    coroutineRunTest(timeout = TEST_TIMEOUT) {
+        val scope = this
+        withTurbineTimeout(TURBINE_DEADLINE) { scope.testBody() }
+    }
 
 private suspend fun <K : StoreKey> Store<K, String>.awaitLocalOnlyMissingReaderBarrier(
     key: K,
