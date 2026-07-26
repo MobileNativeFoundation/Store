@@ -60,8 +60,10 @@ this artifact.
 The current tabs are:
 
 - **Keys:** namespace, canonical key, derived state, last served origin, and observed-success age.
-- **Timeline:** chronological per-key rows labelled with the v0 event kind and elapsed offset. The
-  header shows the key's current derived state and age.
+- **Timeline:** chronological per-key rows labelled with the derived state after that event, the
+  exact v0 event kind, and elapsed offset. The header shows the key's current derived state and
+  age. A served event retains the prior row's state; when retained history begins with a serve,
+  its row is `OBSERVED` because the inspector does not reconstruct dropped history.
 - **Events:** the retained event log, newest first, with dropped-event accounting.
 
 The timeline is a table of telemetry-derived rows, not a freshness chart. It cannot infer policy

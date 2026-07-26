@@ -3,6 +3,7 @@
 package org.mobilenativefoundation.store6.devtools.compose
 
 import org.mobilenativefoundation.store6.core.StoreError
+import org.mobilenativefoundation.store6.devtools.DevtoolsKeyState
 import org.mobilenativefoundation.store6.devtools.DevtoolsSnapshot
 import org.mobilenativefoundation.store6.devtools.StoreDevtoolsEvent
 import kotlin.time.Duration
@@ -20,6 +21,7 @@ internal class EventRowUi(
     val seq: Long,
     val atLabel: String,
     val kindLabel: String,
+    val stateLabel: String?,
     val keyLabel: String,
     val detailLabel: String,
 )
@@ -57,9 +59,11 @@ internal fun deriveInspectorUiState(
         }
     }
     val timelineRows = state.selected?.let { selected ->
-        snapshot.events
-            .filter { it.namespace == selected.namespace && it.key == selected.key }
-            .map(::eventRow)
+        timelineEventRows(
+            snapshot.events.filter {
+                it.namespace == selected.namespace && it.key == selected.key
+            },
+        )
     }.orEmpty()
     return InspectorUiState(
         tab = state.tab,
@@ -79,7 +83,25 @@ internal fun deriveInspectorUiState(
     )
 }
 
-private fun eventRow(event: StoreDevtoolsEvent): EventRowUi {
+private fun timelineEventRows(events: List<StoreDevtoolsEvent>): List<EventRowUi> {
+    var state = DevtoolsKeyState.OBSERVED
+    return events.map { event ->
+        state = when (event) {
+            is StoreDevtoolsEvent.FetchStarted -> DevtoolsKeyState.FETCHING
+            is StoreDevtoolsEvent.FetchSucceeded -> DevtoolsKeyState.FRESH
+            is StoreDevtoolsEvent.FetchFailed -> DevtoolsKeyState.ERROR
+            is StoreDevtoolsEvent.Served -> state
+            is StoreDevtoolsEvent.Invalidated -> DevtoolsKeyState.STALE
+            is StoreDevtoolsEvent.Cleared -> DevtoolsKeyState.CLEARED
+        }
+        eventRow(event, state.name)
+    }
+}
+
+private fun eventRow(
+    event: StoreDevtoolsEvent,
+    stateLabel: String? = null,
+): EventRowUi {
     val (kind, detail) = when (event) {
         is StoreDevtoolsEvent.FetchStarted -> "fetch_started" to ""
         is StoreDevtoolsEvent.FetchSucceeded ->
@@ -95,6 +117,7 @@ private fun eventRow(event: StoreDevtoolsEvent): EventRowUi {
         seq = event.seq,
         atLabel = elapsedLabel(event.at),
         kindLabel = kind,
+        stateLabel = stateLabel,
         keyLabel = "${event.namespace}/${event.key}",
         detailLabel = detail,
     )

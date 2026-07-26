@@ -123,10 +123,23 @@ internal fun inspectorItemKey(
 private fun EventList(rows: List<EventRowUi>) {
     LazyColumn(Modifier.fillMaxSize()) {
         items(rows, key = { it.seq }) { row ->
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-                Text(row.atLabel, Modifier.padding(end = 8.dp))
-                Text(row.kindLabel, Modifier.weight(1f))
-                Text("${row.keyLabel} ${row.detailLabel}".trim())
+            if (row.stateLabel == null) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                    Text(row.atLabel, Modifier.padding(end = 8.dp))
+                    Text(row.kindLabel, Modifier.weight(1f))
+                    Text("${row.keyLabel} ${row.detailLabel}".trim())
+                }
+            } else {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                    Text(row.atLabel, Modifier.padding(end = 8.dp))
+                    Column(Modifier.weight(1f)) {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(row.stateLabel, Modifier.padding(end = 8.dp))
+                            Text(row.kindLabel)
+                        }
+                        Text("${row.keyLabel} ${row.detailLabel}".trim())
+                    }
+                }
             }
         }
     }

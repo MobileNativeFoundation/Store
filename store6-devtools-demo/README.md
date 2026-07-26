@@ -40,15 +40,19 @@ To recreate the shell, use these exact settings:
 1. In `store6-devtools-demo/iosApp`, create an iOS App project named `iosApp` with scheme `iosApp`.
 2. Set bundle identifier `org.mobilenativefoundation.store6.devtoolsdemo.iosApp` and deployment
    target iOS 15.
-3. Add this Run Script build phase **before Compile Sources**:
+3. Keep the committed `iosApp/Info.plist`, including
+   `CADisableMinimumFrameDurationOnPhone` as a Boolean `YES`.
+4. In the target build settings for both Debug and Release, set **Generate Info.plist File** to
+   `No` and **Info.plist File** to `Info.plist`.
+5. Add this Run Script build phase **before Compile Sources**:
 
    ```shell
    cd "$SRCROOT/../.." && ./gradlew :store6-devtools-demo:embedAndSignAppleFrameworkForXcode
    ```
 
-4. Add framework search path
+6. Add framework search path
    `$(SRCROOT)/../build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)`.
-5. Keep the existing `iosApp/iosApp/iOSApp.swift` and
+7. Keep the existing `iosApp/iosApp/iOSApp.swift` and
    `iosApp/iosApp/ContentView.swift` sources.
 
 From the repository root, run the exact Xcode acceptance command:

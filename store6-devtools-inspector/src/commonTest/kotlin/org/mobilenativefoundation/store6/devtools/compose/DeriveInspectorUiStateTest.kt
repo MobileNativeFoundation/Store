@@ -103,6 +103,111 @@ class DeriveInspectorUiStateTest {
             listOf("fetch_started", "fetch_succeeded"),
             ui.timelineRows.map { it.kindLabel },
         )
+        assertEquals(listOf("FETCHING", "FRESH"), ui.timelineRows.map { it.stateLabel })
+    }
+
+    @Test
+    fun timelineRowsLabelEveryStateChangingEventWithItsDerivedState() {
+        val monitor = StoreDevtoolsMonitor()
+        val key = TestKey("users", "user-1")
+        monitor.onFetchSucceeded(key, 120.milliseconds)
+        monitor.onInvalidated(key)
+        monitor.onFetchStarted(key)
+        monitor.onFetchFailed(key, TestStoreResults.fetchError("offline"), 340.milliseconds)
+        monitor.onCleared(key)
+        val selectedEntry = monitor.state.value.keys.single()
+
+        val ui = deriveInspectorUiState(
+            snapshot = monitor.state.value,
+            now = monitor.elapsedNow(),
+            state = InspectorState().withKeySelected(selectedEntry),
+        )
+
+        assertEquals(
+            listOf(
+                "FRESH",
+                "STALE",
+                "FETCHING",
+                "ERROR",
+                "CLEARED",
+            ),
+            ui.timelineRows.map { it.stateLabel },
+        )
+        assertEquals(
+            listOf(
+                "fetch_ms=120",
+                "",
+                "",
+                "fetch_ms=340 error=Fetch",
+                "",
+            ),
+            ui.timelineRows.map { it.detailLabel },
+        )
+        assertEquals(
+            listOf("fetch_succeeded", "invalidate", "fetch_started", "fetch_failed", "clear"),
+            ui.timelineRows.map { it.kindLabel },
+        )
+    }
+
+    @Test
+    fun timelineServedRowsRetainPriorStateOrUseObservedWhenFirst() {
+        val monitor = StoreDevtoolsMonitor()
+        val key = TestKey("users", "user-1")
+        monitor.onServe(key, Origin.MEMORY)
+        monitor.onInvalidated(TestKey("users", "user-2"))
+        monitor.onFetchStarted(key)
+        monitor.onServe(key, Origin.SOT)
+        monitor.onInvalidated(key)
+        monitor.onServe(key, Origin.MEMORY)
+        val selectedEntry = monitor.state.value.keys.single { it.key == "user-1" }
+
+        val ui = deriveInspectorUiState(
+            snapshot = monitor.state.value,
+            now = monitor.elapsedNow(),
+            state = InspectorState().withKeySelected(selectedEntry),
+        )
+
+        assertEquals(listOf(1L, 3L, 4L, 5L, 6L), ui.timelineRows.map { it.seq })
+        assertEquals(
+            listOf(
+                "OBSERVED",
+                "FETCHING",
+                "FETCHING",
+                "STALE",
+                "STALE",
+            ),
+            ui.timelineRows.map { it.stateLabel },
+        )
+        assertEquals(
+            listOf("origin=MEMORY", "", "origin=SOT", "", "origin=MEMORY"),
+            ui.timelineRows.map { it.detailLabel },
+        )
+        assertEquals(
+            listOf("serve", "fetch_started", "serve", "invalidate", "serve"),
+            ui.timelineRows.map { it.kindLabel },
+        )
+    }
+
+    @Test
+    fun timelineDoesNotReconstructStateFromHistoryDroppedBeforeItsFirstServe() {
+        val monitor = StoreDevtoolsMonitor(capacity = 2, timeSource = TestTimeSource())
+        val key = TestKey("users", "user-1")
+        monitor.onFetchSucceeded(key, 120.milliseconds)
+        monitor.onServe(key, Origin.MEMORY)
+        monitor.onServe(TestKey("users", "user-2"), Origin.SOT)
+        val selectedEntry = monitor.state.value.keys.single { it.key == "user-1" }
+
+        val ui = deriveInspectorUiState(
+            snapshot = monitor.state.value,
+            now = monitor.elapsedNow(),
+            state = InspectorState().withKeySelected(selectedEntry),
+        )
+
+        assertEquals(1, monitor.state.value.droppedEvents)
+        assertEquals("users / user-1 — FRESH, age 0.0s", ui.timelineHeader)
+        assertEquals(listOf(2L), ui.timelineRows.map { it.seq })
+        assertEquals(listOf("OBSERVED"), ui.timelineRows.map { it.stateLabel })
+        assertEquals(listOf("origin=MEMORY"), ui.timelineRows.map { it.detailLabel })
     }
 
     @Test
@@ -136,6 +241,7 @@ class DeriveInspectorUiStateTest {
             ),
             ui.eventRows.map { it.kindLabel },
         )
+        assertEquals(emptyList(), ui.eventRows.mapNotNull { it.stateLabel })
         assertEquals("origin=FETCHER", ui.eventRows.single { it.kindLabel == "serve" }.detailLabel)
         assertEquals(
             "fetch_ms=340 error=Fetch",
