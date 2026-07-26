@@ -137,12 +137,15 @@ jobs:
       - name: Run Store6 Room sample
         run: ./gradlew :store6-room-sample:run --stacktrace
 
+      - name: Build Store6 benchmarks
+        run: ./gradlew :store6-benchmarks:build --stacktrace
+
       - name: Reject core-internal access from extension modules
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room; do
+          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room store6-benchmarks; do
             source_dir="${module}/src"
             if [[ ! -d "${source_dir}" ]]; then
               echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2

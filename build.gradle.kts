@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.room3) apply false
     alias(libs.plugins.kotlin.compose.compiler) apply false
     alias(libs.plugins.jetbrains.compose) apply false
+    alias(libs.plugins.kotlinx.benchmark) apply false
 }
 
 buildscript {

@@ -42,6 +42,11 @@ androidxSqlite = "2.7.0"
 jetbrainsCompose = "1.8.2"
 # PIN: Lifecycle 2.9.1 remains intentionally pinned for 012.
 jetbrainsAndroidxLifecycle = "2.9.1"
+# PIN: kotlinx-benchmark for the unpublished store6-benchmarks harness. 0.4.17 is the newest
+# stable release at execution (repo is on Kotlin 2.3.20; the resolution probe below is the
+# compatibility ground truth). Unpublished-module dep: never appears in any public signature
+# (C-4 untouched).
+kotlinxBenchmark = "0.4.17"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -88,6 +93,7 @@ room3-testing = { module = "androidx.room3:room3-testing", version.ref = "room3"
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidxSqlite" }
 jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrainsCompose" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
 
 [plugins]
 ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
@@ -99,3 +105,4 @@ sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 room3 = { id = "androidx.room3", version.ref = "room3" }
 kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "baseKotlin" }
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrainsCompose" }
+kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }

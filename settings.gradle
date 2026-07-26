@@ -36,3 +36,4 @@ include ':store6-compose-demo'
 include ':store6-room'
 include ':store6-room-sample'
 project(':store6-room-sample').projectDir = file('store6-room/sample')
+include ':store6-benchmarks'
