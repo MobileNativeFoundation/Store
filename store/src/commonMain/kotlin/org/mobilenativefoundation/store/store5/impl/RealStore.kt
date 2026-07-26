@@ -15,7 +15,6 @@
  */
 package org.mobilenativefoundation.store.store5.impl
 
-import co.touchlab.kermit.CommonWriter
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -367,10 +366,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
     private fun fromMemCache(key: Key) = memCache?.getIfPresent(key)
 
     companion object {
-        private val logger =
-            Logger.apply {
-                setLogWriters(listOf(CommonWriter()))
-                setTag("Store")
-            }
+        // Derives a tagged logger instead of reconfiguring Kermit's global one, which would drop
+        // whatever log writers the host application installed.
+        private val logger = Logger.withTag("Store")
     }
 }
