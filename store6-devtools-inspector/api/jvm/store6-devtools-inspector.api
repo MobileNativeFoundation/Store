@@ -1,0 +1,5 @@
+public final class org/mobilenativefoundation/store6/devtools/compose/StoreInspectorKt {
+	public static final fun StoreInspector (Lorg/mobilenativefoundation/store6/devtools/StoreDevtoolsMonitor;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun StoreInspectorOverlay (Lorg/mobilenativefoundation/store6/devtools/StoreDevtoolsMonitor;Landroidx/compose/ui/Modifier;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+

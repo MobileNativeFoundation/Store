@@ -37,3 +37,6 @@ include ':store6-room'
 include ':store6-room-sample'
 project(':store6-room-sample').projectDir = file('store6-room/sample')
 include ':store6-benchmarks'
+include ':store6-devtools'
+include ':store6-devtools-inspector'
+include ':store6-devtools-demo'
