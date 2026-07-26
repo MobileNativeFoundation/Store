@@ -8,7 +8,7 @@ The Store6 seam remains **FREEZE CANDIDATE awaiting Matt's signature**.
 
 ### 0. Prerequisites
 
-Use Kotlin 2.1.21, SQLDelight 2.1.0, a JDK supported by your build, and a synchronous SQLDelight driver. This repository's executable sample uses JDK 11 bytecode and the JDBC SQLite driver. Until the snapshot is published remotely, publish `store6-core` and `store6-sqldelight` to Maven Local:
+Use Kotlin 2.3, SQLDelight 2.1.0, a JDK supported by your build, and a synchronous SQLDelight driver. This repository's executable sample uses JDK 11 bytecode and the JDBC SQLite driver. Until the snapshot is published remotely, publish `store6-core` and `store6-sqldelight` to Maven Local:
 
 ```shell
 ./gradlew :store6-core:publishToMavenLocal :store6-sqldelight:publishToMavenLocal
