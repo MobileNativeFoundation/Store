@@ -3387,6 +3387,164 @@ class KeyEnginePlanningTest {
     }
 
     @Test
+    fun activeExactRowMappedBeforeConfirmFresh_overlayRetireRevealsConfirmedValue() = runTest {
+        val key = TestKey("active-exact-mapped-before-confirm")
+        val sourceOfTruth = SingleWriterCurrentSourceOfTruth()
+        val mappingGate = SequencedGate()
+        val readerDeliveryGate = SequencedGate()
+        val projectionDeliveryGate = SequencedGate()
+        val overlay = RetiringTestOverlay()
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    error("write-handle acknowledgement must not fetch")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = mappingGate::awaitIfQueued,
+                beforeReaderDeliveryTestGate = readerDeliveryGate::awaitIfQueued,
+                overlay = overlay,
+                afterProjectionDeliveryTestGate = projectionDeliveryGate::awaitIfQueued,
+            )
+
+        assertEquals("seed", engine.get(Freshness.LocalOnly))
+        app.cash.turbine.turbineScope {
+            val observer = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            testScheduler.runCurrent()
+            val initial = assertIs<StoreResult.Data<String>>(observer.expectMostRecentItem())
+            assertEquals("optimistic", initial.value)
+            assertEquals(Origin.OVERLAY, initial.origin)
+            sourceOfTruth.liveReaderStarted.await()
+            testScheduler.runCurrent()
+
+            val activeExact = mappingGate.gateNext()
+            val apply =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    engine.applyWrite("echo")
+                }
+            activeExact.entered.await()
+            sourceOfTruth.writerCurrentPublished.await()
+            sourceOfTruth.releaseWriteReturn.complete(Unit)
+            apply.await()
+
+            val exactDelivery = readerDeliveryGate.gateNext()
+            activeExact.release.complete(Unit)
+            testScheduler.runCurrent()
+            assertTrue(
+                exactDelivery.entered.isCompleted,
+                "the exact R1 row must reach collector delivery before confirmFresh",
+            )
+            exactDelivery.release.complete(Unit)
+            testScheduler.runCurrent()
+            observer.expectNoEvents()
+
+            val confirmDelivery = projectionDeliveryGate.gateNext()
+            engine.confirmFresh(etag = "confirmed")
+            testScheduler.runCurrent()
+            assertTrue(confirmDelivery.entered.isCompleted)
+            observer.expectNoEvents()
+            confirmDelivery.release.complete(Unit)
+            testScheduler.runCurrent()
+            assertEquals("echo", engine.get(Freshness.MaxAge(notOlderThan = 5.minutes)))
+
+            val retireDelivery = projectionDeliveryGate.gateNext()
+            overlay.retire(key)
+            testScheduler.runCurrent()
+            assertTrue(retireDelivery.entered.isCompleted, "retirement projection was processed")
+
+            val confirmed = assertIs<StoreResult.Data<String>>(observer.expectMostRecentItem())
+            assertEquals("echo", confirmed.value)
+            assertEquals(Origin.SOT, confirmed.origin)
+            assertFalse(confirmed.isStale)
+            assertFalse(confirmed.refreshing)
+            retireDelivery.release.complete(Unit)
+            observer.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun activeExactRowMappedAfterConfirmFresh_pendingOverlayRetireRevealsConfirmedValue() = runTest {
+        val key = TestKey("active-exact-mapped-after-confirm")
+        val sourceOfTruth = SingleWriterCurrentSourceOfTruth()
+        val mappingGate = SequencedGate()
+        val readerDeliveryGate = SequencedGate()
+        val projectionDeliveryGate = SequencedGate()
+        val overlay = RetiringTestOverlay()
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    error("write-handle acknowledgement must not fetch")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = mappingGate::awaitIfQueued,
+                beforeReaderDeliveryTestGate = readerDeliveryGate::awaitIfQueued,
+                overlay = overlay,
+                afterProjectionDeliveryTestGate = projectionDeliveryGate::awaitIfQueued,
+            )
+
+        assertEquals("seed", engine.get(Freshness.LocalOnly))
+        app.cash.turbine.turbineScope {
+            val observer = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            testScheduler.runCurrent()
+            val initial = assertIs<StoreResult.Data<String>>(observer.expectMostRecentItem())
+            assertEquals("optimistic", initial.value)
+            assertEquals(Origin.OVERLAY, initial.origin)
+            sourceOfTruth.liveReaderStarted.await()
+            testScheduler.runCurrent()
+
+            val activeExact = mappingGate.gateNext()
+            val apply =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    engine.applyWrite("echo")
+                }
+            activeExact.entered.await()
+            sourceOfTruth.writerCurrentPublished.await()
+            sourceOfTruth.releaseWriteReturn.complete(Unit)
+            apply.await()
+
+            // This is the existing F-0 side of the cross-product: metadata advances first.
+            engine.confirmFresh(etag = "confirmed")
+            testScheduler.runCurrent()
+            observer.expectNoEvents()
+
+            val exactDelivery = readerDeliveryGate.gateNext()
+            activeExact.release.complete(Unit)
+            testScheduler.runCurrent()
+            assertTrue(
+                exactDelivery.entered.isCompleted,
+                "the F-0 row must reach collector delivery after confirmFresh",
+            )
+            exactDelivery.release.complete(Unit)
+            testScheduler.runCurrent()
+            observer.expectNoEvents()
+
+            val retireDelivery = projectionDeliveryGate.gateNext()
+            overlay.retire(key)
+            testScheduler.runCurrent()
+            assertTrue(retireDelivery.entered.isCompleted, "retirement projection was processed")
+            val confirmed = assertIs<StoreResult.Data<String>>(observer.expectMostRecentItem())
+            assertEquals("echo", confirmed.value)
+            assertEquals(Origin.SOT, confirmed.origin)
+            assertFalse(confirmed.isStale)
+            assertFalse(confirmed.refreshing)
+            retireDelivery.release.complete(Unit)
+            assertEquals("echo", engine.get(Freshness.MaxAge(notOlderThan = 5.minutes)))
+            observer.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun committedFence_withoutWriterEcho_restartsReaderForCurrentAuthority() = runTest {
         val key = TestKey("committed-fence-without-writer-echo")
         val sourceOfTruth = ConflatedWriterEchoSourceOfTruth()
@@ -4349,6 +4507,23 @@ class KeyEnginePlanningTest {
         ): String? = base
 
         override val changes: Flow<StoreKey> = emptyFlow()
+    }
+
+    private class RetiringTestOverlay : Overlay<TestKey, String> {
+        private val signals = MutableSharedFlow<StoreKey>(replay = 1)
+        private var pending = true
+
+        override fun apply(
+            key: TestKey,
+            base: String?,
+        ): String? = if (pending) "optimistic" else base
+
+        override val changes: Flow<StoreKey> = signals
+
+        suspend fun retire(key: TestKey) {
+            pending = false
+            signals.emit(key)
+        }
     }
 
     private class CancellingWriterSourceOfTruth : SingleRowTestSourceOfTruth<String> {

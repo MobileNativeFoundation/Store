@@ -129,6 +129,8 @@ internal class KeyEngine<K : StoreKey, V : Any>(
     private val afterProjectionDeliveryTestGate: suspend () -> Unit = {},
     /** Deterministic direct-test gate before a readiness waiter suspends on both state flows. */
     private val beforeProjectionReadinessWaitTestGate: suspend () -> Unit = {},
+    /** Deterministic direct-test gate after coherent base capture and before authorization. */
+    private val beforeProjectionAuthorizationTestGate: suspend () -> Unit = {},
 ) {
     private val stateLock = Mutex()
     private val writeLock = Mutex()
@@ -278,7 +280,21 @@ internal class KeyEngine<K : StoreKey, V : Any>(
     }
 
     /** Assigns residence and advances its revision for every accepted observation or mutation. */
-    private fun replaceResidenceLocked(envelope: ValueEnvelope<V>?): Long {
+    private fun replaceResidenceLocked(
+        envelope: ValueEnvelope<V>?,
+        preserveProjectionAuthorizationLineage: Boolean = false,
+    ): Long {
+        val nextProjectionAuthorizationLineage =
+            projectionResidence?.let { projection ->
+                when {
+                    envelope == null -> null
+                    preserveProjectionAuthorizationLineage ->
+                        checkNotNull(projection.value.base.authorizationLineage) {
+                            "A metadata successor requires an existing projection lineage."
+                        }
+                    else -> ProjectionAuthorizationLineage()
+                }
+            }
         residence.value = envelope
         residenceRevision += 1L
         projectionResidence?.value =
@@ -286,10 +302,20 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 ProjectionBase(
                     envelope = envelope,
                     revision = residenceRevision,
+                    authorizationLineage = nextProjectionAuthorizationLineage,
                 ),
             )
         return residenceRevision
     }
+
+    /** Returns the configured projection base only when it names this exact residence snapshot. */
+    private fun projectionBaseLocked(
+        envelope: ValueEnvelope<V>?,
+        revision: Long,
+    ): ProjectionBase<V>? =
+        projectionResidence?.value?.base?.takeIf { base ->
+            base.envelope === envelope && base.revision == revision
+        }
 
     /** Serially accepts residence and overlay triggers and computes outside every Store lock. */
     private suspend fun runProjectionWriter(configured: Overlay<K, V>) {
@@ -1077,6 +1103,20 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                                 state = mutableState.value,
                                 status = status,
                                 nowEpochMillis = wallClock.nowEpochMillis(),
+                                projectionBase =
+                                    when (current) {
+                                        is ReaderRecord.Row ->
+                                            projectionBaseLocked(
+                                                current.envelope,
+                                                current.residenceRevision,
+                                            )
+                                        is ReaderRecord.Absent ->
+                                            projectionBaseLocked(
+                                                envelope = null,
+                                                revision = current.residenceRevision,
+                                            )
+                                        is ReaderRecord.Failure -> null
+                                    },
                             )
                         }
                     } else {
@@ -1594,6 +1634,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             meta = meta,
                             staleEpochAtCommit = mutableState.value.staleEpoch,
                         ),
+                        preserveProjectionAuthorizationLineage = true,
                     )
                     syncObservedAttributionLocked(mutableState.value)
                     replaced = true
@@ -2149,6 +2190,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     revision = residenceRevision,
                     status = status,
                     nowEpochMillis = wallClock.nowEpochMillis(),
+                    projectionBase = projectionBaseLocked(resolved, residenceRevision),
                 )
             }
         }
@@ -2163,6 +2205,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 revision = residenceRevision,
                 status = status,
                 nowEpochMillis = wallClock.nowEpochMillis(),
+                projectionBase = projectionBaseLocked(residence.value, residenceRevision),
             )
         }
     }
@@ -2418,6 +2461,14 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 } else {
                     snapshot.revision
                 }
+            val eligibleProjectionBase =
+                if (currentIsForeignOwner) {
+                    projectionAuthorization?.base?.takeIf { base ->
+                        base.envelope === eligibleEnvelope && base.revision == eligibleRevision
+                    }
+                } else {
+                    snapshot.projectionBase
+                }
             return CollectorFetchPlan(
                 eligibleEnvelope = eligibleEnvelope,
                 eligibleRevision = eligibleRevision,
@@ -2428,6 +2479,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                         envelope = eligibleEnvelope,
                     ),
                 currentIsForeignOwner = currentIsForeignOwner,
+                eligibleProjectionBase = eligibleProjectionBase,
             )
         }
 
@@ -3070,6 +3122,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                         deliverDataLocked(
                             envelope = collectorPlan.eligibleEnvelope,
                             revision = collectorPlan.eligibleRevision,
+                            projectionBase = collectorPlan.eligibleProjectionBase,
                             originOverride =
                                 if (collectorPlan.eligibleEnvelope === memoryEnvelope) {
                                     Origin.MEMORY
@@ -3097,6 +3150,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                         deliverDataLocked(
                             envelope = collectorPlan.eligibleEnvelope,
                             revision = collectorPlan.eligibleRevision,
+                            projectionBase = collectorPlan.eligibleProjectionBase,
                             originOverride = if (memoryOverride) Origin.MEMORY else null,
                             authority =
                                 if (
@@ -3204,7 +3258,17 @@ internal class KeyEngine<K : StoreKey, V : Any>(
             val envelope = checkNotNull(snapshot.envelope)
             when {
                 demandSatisfied ->
-                    if (!emitRevalidatedLocked(outcome, envelope)) {
+                    if (
+                        !emitRevalidatedLocked(
+                            outcome = outcome,
+                            envelope = envelope,
+                            projectionBase =
+                                snapshot.projectionBase?.takeIf { captured ->
+                                    captured.envelope === outcome.envelope &&
+                                        captured.revision == outcome.residenceRevision
+                                },
+                        )
+                    ) {
                         return RevalidatedDelivery.Obsolete
                     }
 
@@ -3212,6 +3276,11 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     deliverDataLocked(
                         envelope,
                         revision = outcome.residenceRevision,
+                        projectionBase =
+                            snapshot.projectionBase?.takeIf { captured ->
+                                captured.envelope === outcome.envelope &&
+                                    captured.revision == outcome.residenceRevision
+                            },
                         authority = DataDeliveryAuthority.OwnerOutcome,
                     )
                 else -> emitLoadingLocked()
@@ -3229,6 +3298,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         private suspend fun emitRevalidatedLocked(
             outcome: FetchOutcome.Revalidated,
             envelope: ValueEnvelope<V>,
+            projectionBase: ProjectionBase<V>?,
         ): Boolean {
             if (overlay == null) {
                 producer.send(StoreResult.Revalidated(outcome.age))
@@ -3245,9 +3315,19 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 return true
             }
 
+            beforeProjectionAuthorizationTestGate()
+            val authorizationBase =
+                projectionBase?.also { captured ->
+                    check(
+                        captured.envelope === envelope &&
+                            captured.revision == outcome.residenceRevision,
+                    ) {
+                        "A captured projection base must name the revalidated residence."
+                    }
+                } ?: ProjectionBase(envelope, outcome.residenceRevision)
             val authorization =
                 projectionAuthorization(
-                    base = ProjectionBase(envelope, outcome.residenceRevision),
+                    base = authorizationBase,
                     originOverride = null,
                     authority = DataDeliveryAuthority.OwnerOutcome,
                 )
@@ -3319,6 +3399,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 revision = residenceRevision,
                 status = resolution.status,
                 nowEpochMillis = resolution.nowEpochMillis,
+                projectionBase = resolution.projectionBase,
             )
 
         /** Keeps an equal late reader replay inside the demand already settled by a failure. */
@@ -3631,6 +3712,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     deliverDataLocked(
                         eligibleEnvelope,
                         revision = collectorPlan.eligibleRevision,
+                        projectionBase = collectorPlan.eligibleProjectionBase,
                         authority =
                             if (eligibleEnvelope.directRevalidationOwner != null) {
                                 DataDeliveryAuthority.CollectorBaseline
@@ -3643,6 +3725,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     deliverDataLocked(
                         eligibleEnvelope,
                         revision = collectorPlan.eligibleRevision,
+                        projectionBase = collectorPlan.eligibleProjectionBase,
                         authority =
                             if (eligibleEnvelope.directRevalidationOwner != null) {
                                 DataDeliveryAuthority.CollectorBaseline
@@ -3712,6 +3795,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                         deliverDataLocked(
                             eligibleEnvelope,
                             revision = collectorPlan.eligibleRevision,
+                            projectionBase = collectorPlan.eligibleProjectionBase,
                             authority =
                                 if (eligibleEnvelope.directRevalidationOwner != null) {
                                     DataDeliveryAuthority.CollectorBaseline
@@ -3932,6 +4016,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     deliverDataLocked(
                         envelope,
                         revision = collectorPlan.eligibleRevision,
+                        projectionBase = collectorPlan.eligibleProjectionBase,
                         authority =
                             if (envelope.directRevalidationOwner != null) {
                                 DataDeliveryAuthority.CollectorBaseline
@@ -3977,6 +4062,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                         deliverDataLocked(
                             eligibleEnvelope,
                             revision = collectorPlan.eligibleRevision,
+                            projectionBase = collectorPlan.eligibleProjectionBase,
                             authority =
                                 if (eligibleEnvelope.directRevalidationOwner != null) {
                                     DataDeliveryAuthority.CollectorBaseline
@@ -3993,6 +4079,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                     deliverDataLocked(
                         eligibleEnvelope,
                         revision = collectorPlan.eligibleRevision,
+                        projectionBase = collectorPlan.eligibleProjectionBase,
                         authority =
                             if (eligibleEnvelope.directRevalidationOwner != null) {
                                 DataDeliveryAuthority.CollectorBaseline
@@ -4188,6 +4275,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         private suspend fun deliverDataLocked(
             envelope: ValueEnvelope<V>,
             revision: Long,
+            projectionBase: ProjectionBase<V>? = null,
             originOverride: Origin? = null,
             authority: DataDeliveryAuthority = DataDeliveryAuthority.Generic,
         ): DataDeliveryDecision {
@@ -4213,9 +4301,16 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 return DataDeliveryDecision.ForeignDirectRevalidation
             }
 
+            beforeProjectionAuthorizationTestGate()
+            val authorizationBase =
+                projectionBase?.also { captured ->
+                    check(captured.envelope === envelope && captured.revision == revision) {
+                        "A captured projection base must name the delivered residence."
+                    }
+                } ?: ProjectionBase(envelope, revision)
             val authorization =
                 projectionAuthorization(
-                    base = ProjectionBase(envelope, revision),
+                    base = authorizationBase,
                     originOverride = originOverride,
                     authority = authority,
                 )
@@ -4322,20 +4417,22 @@ internal class KeyEngine<K : StoreKey, V : Any>(
             originOverride: Origin?,
             authority: DataDeliveryAuthority,
         ): ProjectionAuthorization<V> {
+            val currentBase = checkNotNull(projectionResidence).value.base
+            val authorizedBase = currentBase.takeIf { it.matches(base) } ?: base
             val snapshot = checkNotNull(projectionSnapshot).value
             val targetGeneration =
                 when (snapshot) {
                     is ProjectionSnapshot.Pending ->
-                        snapshot.generation.takeIf { snapshot.base.matches(base) }
+                        snapshot.generation.takeIf { snapshot.base.matches(authorizedBase) }
 
                     is ProjectionSnapshot.Ready ->
-                        snapshot.generation.takeIf { snapshot.base.matches(base) }
+                        snapshot.generation.takeIf { snapshot.base.matches(authorizedBase) }
 
                     is ProjectionSnapshot.Terminal -> snapshot.generation
                     ProjectionSnapshot.Uninitialized -> null
                 } ?: 0L
             return ProjectionAuthorization(
-                base = base,
+                base = authorizedBase,
                 originOverride = originOverride,
                 authority = authority,
                 targetGeneration = targetGeneration,
@@ -4474,6 +4571,19 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 ready.base.matches(authorization.base) ->
                     renderProjectionLocked(authorization, ready.projection)
 
+                ready.base.isConfirmFreshAuthorizationSuccessorOf(authorization.base) -> {
+                    val successorAuthorization =
+                        ProjectionAuthorization(
+                            base = ready.base,
+                            originOverride = authorization.originOverride,
+                            authority = authorization.authority,
+                            targetGeneration =
+                                maxOf(authorization.targetGeneration, ready.generation),
+                        )
+                    projectionAuthorization = successorAuthorization
+                    renderProjectionLocked(successorAuthorization, ready.projection)
+                }
+
                 publicHasValue &&
                     ready.base.envelope?.directRevalidationOwner != null &&
                     authorization.base.envelope != null &&
@@ -4487,7 +4597,9 @@ internal class KeyEngine<K : StoreKey, V : Any>(
             previousAuthorization: ProjectionAuthorization<V>?,
         ) {
             if (projectionAuthorization !== authorization) return
-            val current = checkNotNull(projectionResidence).value.base.envelope
+            val currentBase = checkNotNull(projectionResidence).value.base
+            if (currentBase.isConfirmFreshAuthorizationSuccessorOf(authorization.base)) return
+            val current = currentBase.envelope
             projectionAuthorization =
                 previousAuthorization?.takeIf { previous ->
                     current?.directRevalidationOwner != null &&
@@ -4765,6 +4877,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val revision: Long,
         val status: KeyStatus?,
         val nowEpochMillis: Long,
+        val projectionBase: ProjectionBase<V>?,
     )
 
     private data class PlannedFetchEffect<V : Any>(
@@ -4891,6 +5004,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val state: KeyState,
         val status: KeyStatus?,
         val nowEpochMillis: Long,
+        val projectionBase: ProjectionBase<V>?,
     )
 
     private data class InitialDelivery<V : Any>(
@@ -4904,6 +5018,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         val eligibleRevision: Long,
         val plan: FetchPlan,
         val currentIsForeignOwner: Boolean,
+        val eligibleProjectionBase: ProjectionBase<V>? = null,
     )
 
     private data class TicketLaunchBaseline<V : Any>(
@@ -4984,13 +5099,33 @@ internal class KeyEngine<K : StoreKey, V : Any>(
     )
 }
 
+/** Opaque causal identity preserved only across metadata-only residence successors. */
+private class ProjectionAuthorizationLineage
+
 /** Exact residence identity and revision used by one projection attempt. */
 private class ProjectionBase<V : Any>(
     val envelope: ValueEnvelope<V>?,
     val revision: Long,
+    val authorizationLineage: ProjectionAuthorizationLineage? = null,
 ) {
     fun matches(other: ProjectionBase<V>): Boolean =
         envelope === other.envelope && revision == other.revision
+
+    fun isConfirmFreshAuthorizationSuccessorOf(previous: ProjectionBase<V>): Boolean {
+        val currentEnvelope = envelope ?: return false
+        val previousEnvelope = previous.envelope ?: return false
+        val lineage = authorizationLineage ?: return false
+        if (lineage !== previous.authorizationLineage) return false
+        if (currentEnvelope === previousEnvelope) return false
+        if (revision <= previous.revision) return false
+        if (currentEnvelope.value != previousEnvelope.value) return false
+        if (currentEnvelope.origin != previousEnvelope.origin) return false
+        if (currentEnvelope.meta == null || currentEnvelope.meta === previousEnvelope.meta) {
+            return false
+        }
+        if (currentEnvelope.staleEpochAtCommit < previousEnvelope.staleEpochAtCommit) return false
+        return currentEnvelope.directRevalidationOwner == null
+    }
 }
 
 /** Immediate latest-residence signal used to obsolete readiness waits without an engine lock. */
