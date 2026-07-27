@@ -35,7 +35,7 @@ class StoreDurableMaintenanceFailureTest {
             assertIs<StoreResult.Loading>(awaitItem())
             assertEquals("v1", assertIs<StoreResult.Data<String>>(awaitItem()).value)
             val invalidation = backgroundScope.async { runCatching { store.invalidate(TestKey("1")) } }
-            testScheduler.runCurrent()
+            entered.await()
             try {
                 assertTrue(entered.isCompleted, "invalidate must enter durable mark before signaling")
                 expectNoEvents()

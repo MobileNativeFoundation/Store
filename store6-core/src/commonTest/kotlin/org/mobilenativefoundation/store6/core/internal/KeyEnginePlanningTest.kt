@@ -3325,6 +3325,68 @@ class KeyEnginePlanningTest {
     }
 
     @Test
+    fun activeExactWriterRow_afterConfirmFresh_reusesCurrentEnvelopeForProjection() = runTest {
+        val key = TestKey("active-exact-after-confirm-fresh")
+        val sourceOfTruth = SingleWriterCurrentSourceOfTruth()
+        val mappingGate = SequencedGate()
+        val engine =
+            KeyEngine(
+                key = key,
+                keyId = KeyId.from(key),
+                fetcher = ResultFetcher {
+                    error("write-handle acknowledgement must not fetch")
+                },
+                sot = sourceOfTruth,
+                bookkeeper = InMemoryBookkeeper(),
+                validator = DefaultFreshnessValidator,
+                wallClock = FakeWallClock(now = 0L),
+                engineScope = backgroundScope,
+                beforeReaderRecordMappingTestGate = mappingGate::awaitIfQueued,
+                overlay = PassThroughOverlay,
+            )
+
+        assertEquals("seed", engine.get(Freshness.LocalOnly))
+        app.cash.turbine.turbineScope {
+            val observer = engine.stream(Freshness.LocalOnly).testIn(backgroundScope)
+            assertEquals("seed", assertIs<StoreResult.Data<String>>(observer.awaitItem()).value)
+            sourceOfTruth.liveReaderStarted.await()
+            testScheduler.runCurrent()
+
+            val activeExact = mappingGate.gateNext()
+            val apply =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    engine.applyWrite("echo")
+                }
+            activeExact.entered.await()
+            sourceOfTruth.writerCurrentPublished.await()
+
+            sourceOfTruth.releaseWriteReturn.complete(Unit)
+            apply.await()
+            engine.confirmFresh(etag = "confirmed")
+            testScheduler.runCurrent()
+
+            val delayed =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    observer.awaitItem()
+                }
+            activeExact.release.complete(Unit)
+            testScheduler.runCurrent()
+
+            assertTrue(
+                delayed.isCompleted,
+                "the active exact row must authorize the metadata-refreshed projection",
+            )
+            val echo = assertIs<StoreResult.Data<String>>(delayed.await())
+            assertEquals("echo", echo.value)
+            assertEquals(Origin.SOT, echo.origin)
+            assertFalse(echo.isStale)
+            assertFalse(echo.refreshing)
+            assertEquals("echo", engine.get(Freshness.MaxAge(notOlderThan = 5.minutes)))
+            observer.cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun committedFence_withoutWriterEcho_restartsReaderForCurrentAuthority() = runTest {
         val key = TestKey("committed-fence-without-writer-echo")
         val sourceOfTruth = ConflatedWriterEchoSourceOfTruth()

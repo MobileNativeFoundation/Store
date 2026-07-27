@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
@@ -110,28 +111,35 @@ class OverlayProjectionProtocolTest {
     fun sameEnvelopeAtNewRevision_cannotConsumeOldReadiness() = runTest {
         val value = RefValue("same", "base")
         val source = SharedFlowSourceOfTruth<TestKey, RefValue>()
-        var projectionNumber = 0
+        val projectionNumber = MutableStateFlow(0)
+        val completedProjections = Channel<RefValue>(Channel.UNLIMITED)
         val overlay = CountingOverlay<RefValue>({ base ->
-            base?.let { RefValue(it.id, "projection-${++projectionNumber}") }
+            base?.let {
+                val projected =
+                    RefValue(
+                        id = it.id,
+                        tag = "projection-${projectionNumber.updateAndGet { number -> number + 1 }}",
+                    )
+                check(completedProjections.trySend(projected).isSuccess)
+                projected
+            }
         })
         val staleGate = SuspendGate()
         val readerGate = SuspendGate()
-        var blockProjection = false
-        var blockReader = false
+        val blockProjection = MutableStateFlow(false)
+        val blockReader = MutableStateFlow(false)
         val harness =
             refEngine(
                 overlay = overlay,
                 sot = source,
                 fetcher = { FetcherResult.Success(value) },
                 afterProjectionApplyTestGate = { base ->
-                    if (base === value && blockProjection) {
-                        blockProjection = false
+                    if (base === value && blockProjection.compareAndSet(true, false)) {
                         staleGate.pause()
                     }
                 },
                 beforeReaderDeliveryTestGate = {
-                    if (blockReader) {
-                        blockReader = false
+                    if (blockReader.compareAndSet(true, false)) {
                         readerGate.pause()
                     }
                 },
@@ -141,20 +149,21 @@ class OverlayProjectionProtocolTest {
             harness.engine.stream(Freshness.CachedOrFetch).test {
                 awaitRefData()
                 overlay.clearCalls()
-                blockProjection = true
+                while (completedProjections.tryReceive().isSuccess) Unit
+                blockProjection.value = true
                 overlay.signals.emit(key)
                 staleGate.awaitEntered()
                 assertSame(value, overlay.awaitCall())
-                val rejectedTag = "projection-$projectionNumber"
+                val rejectedTag = completedProjections.receive().tag
 
-                blockReader = true
+                blockReader.value = true
                 source.write(key, value)
                 readerGate.awaitEntered() // mapping and its revision bump already happened
                 staleGate.release()
 
                 val latestCall = overlay.awaitCall()
                 assertSame(value, latestCall)
-                val acceptedTag = "projection-$projectionNumber"
+                val acceptedTag = completedProjections.receive().tag
                 readerGate.release()
                 val latest = awaitDataTag(acceptedTag)
                 assertEquals(Origin.OVERLAY, latest.origin)

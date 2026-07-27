@@ -594,6 +594,11 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             resolution.authoritativeRawSequence
                         ) {
                             recordFromConvergedRawLocked(event, resolution)
+                                ?: recordForConfirmFreshAdvancedEnvelopeLocked(
+                                    event = event,
+                                    resolution = resolution,
+                                    consumedAttributionOverride = null,
+                                )
                         } else {
                             null
                         }
@@ -787,6 +792,11 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                             resolution = resolution,
                             consumedAttributionOverride =
                                 retainedConsumedAttribution,
+                        ) ?: recordForConfirmFreshAdvancedEnvelopeLocked(
+                            event = event,
+                            resolution = resolution,
+                            consumedAttributionOverride =
+                                retainedConsumedAttribution,
                         )
                     } else {
                         null
@@ -878,6 +888,46 @@ internal class KeyEngine<K : StoreKey, V : Any>(
                 rawObservationSequence = event.rawObservationSequence,
             )
         }
+    }
+
+    /** Reuses only a confirmFresh-advanced envelope for the exact committed raw writer token. */
+    private fun recordForConfirmFreshAdvancedEnvelopeLocked(
+        event: RawReaderEvent.Row<V>,
+        resolution: RawCommitResolution<V>,
+        consumedAttributionOverride: AttributionTag?,
+    ): ReaderRecord.Row<V>? {
+        val value = event.value ?: return null
+        val committedEnvelope = resolution.envelope ?: return null
+        val currentEnvelope = residence.value ?: return null
+        if (residenceRevision <= resolution.residenceRevision) return null
+        if (currentEnvelope === committedEnvelope) return null
+
+        val attribution = event.activeWriteAttributionAtObservation ?: return null
+        val disposition =
+            attribution.owner.disposition.value as? FetchDisposition.Committed ?: return null
+        if (disposition.attribution !== attribution) return null
+        if (!committedEnvelope.matchesWriterAttribution(value, attribution)) return null
+
+        if (currentEnvelope.value != value) return null
+        if (currentEnvelope.origin != committedEnvelope.origin) return null
+        if (currentEnvelope.meta == null || currentEnvelope.meta === committedEnvelope.meta) {
+            return null
+        }
+        if (currentEnvelope.staleEpochAtCommit < committedEnvelope.staleEpochAtCommit) return null
+        if (currentEnvelope.directRevalidationOwner != null) return null
+
+        return ReaderRecord.Row(
+            envelope = currentEnvelope,
+            readerGen = event.readerGen,
+            residenceRevision = residenceRevision,
+            successfulWriteSequenceAtObservation =
+                event.successfulWriteSequenceAtObservation,
+            consumedAttribution =
+                consumedAttributionOverride ?: resolution.consumedAttribution,
+            activeWriteAttributionAtObservation =
+                event.activeWriteAttributionAtObservation,
+            rawObservationSequence = event.rawObservationSequence,
+        )
     }
 
     /** Returns the exact already-installed writer envelope, avoiding a duplicate revision bump. */
