@@ -150,12 +150,19 @@ jobs:
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
+      - name: Build Store6 mutations
+        run: >
+          ./gradlew :store6-mutations:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
       - name: Reject core-internal access from extension modules
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room store6-benchmarks store6-devtools store6-devtools-inspector store6-devtools-demo; do
+          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room store6-benchmarks store6-devtools store6-devtools-inspector store6-devtools-demo store6-mutations; do
             source_dir="${module}/src"
             if [[ ! -d "${source_dir}" ]]; then
               echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2
@@ -206,7 +213,7 @@ jobs:
           status=0
           banned_regex='(^|[^[:alnum:]_])(runBlocking|GlobalScope|atomicfu|Channel|actor)([^[:alnum:]_]|$)|kotlinx[.]coroutines[.]channels[.][*]'
           shopt -s nullglob
-          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main store6-room/src/*Main store6-devtools/src/*Main store6-devtools-inspector/src/*Main)
+          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main store6-room/src/*Main store6-devtools/src/*Main store6-devtools-inspector/src/*Main store6-mutations/src/*Main)
           for source_dir in "${production_source_dirs[@]}"; do
             [[ -d "${source_dir}" ]] || continue
             if grep -rnE --include='*.kt' "${banned_regex}" "${source_dir}"; then
@@ -333,7 +340,7 @@ jobs:
           exit "${status}"
 
       - name: JS lock-discipline canary (full conformance suite on the JS lane)
-        run: ./gradlew :store6-core:jsNodeTest :store6-testing:jsNodeTest --stacktrace
+        run: ./gradlew :store6-core:jsNodeTest :store6-testing:jsNodeTest :store6-mutations:jsNodeTest --stacktrace
 
       - name: Upload test reports
         if: ${{ failure() }}
@@ -411,6 +418,8 @@ jobs:
             :store6-devtools:macosArm64Test \
             :store6-devtools-inspector:iosSimulatorArm64Test \
             :store6-devtools-inspector:macosArm64Test \
+            :store6-mutations:iosSimulatorArm64Test \
+            :store6-mutations:macosArm64Test \
             "-Pstore6.iosSimulatorDevice=${STORE6_IOS_SIMULATOR_DEVICE}" \
             --stacktrace
 
@@ -504,7 +513,7 @@ jobs:
 
       - name: Publish Store6 core to Maven local without signing
         run: >
-          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal :store6-room:publishToMavenLocal :store6-devtools:publishToMavenLocal :store6-devtools-inspector:publishToMavenLocal
+          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal :store6-room:publishToMavenLocal :store6-devtools:publishToMavenLocal :store6-devtools-inspector:publishToMavenLocal :store6-mutations:publishToMavenLocal
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
@@ -516,7 +525,7 @@ jobs:
           version="6.0.0-SNAPSHOT"
           repository="${HOME}/.m2/repository/org/mobilenativefoundation/store"
 
-          modules=(store6-core store6-testing store6-sqldelight store6-compose store6-room store6-devtools store6-devtools-inspector)
+          modules=(store6-core store6-testing store6-sqldelight store6-compose store6-room store6-devtools store6-devtools-inspector store6-mutations)
           suffixes=(
             ""
             -android

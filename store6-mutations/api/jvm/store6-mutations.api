@@ -1,0 +1,57 @@
+public final class org/mobilenativefoundation/store6/mutations/MutationAck {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
+	public final fun getEcho ()Ljava/lang/Object;
+	public final fun getEtag ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationServer {
+	public abstract fun push (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationStore : org/mobilenativefoundation/store6/core/Store {
+	public fun clear (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun clearNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun close ()V
+	public final fun drainOnce (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getKeyEvents ()Lkotlinx/coroutines/flow/Flow;
+	public final fun getPoisoned ()Lkotlinx/coroutines/flow/SharedFlow;
+	public fun invalidate (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun invalidateAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun invalidateNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun mutate (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/mutations/MutatorRef;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun pending (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun stream (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationStoreKt {
+	public static final fun mutationStore (Lorg/mobilenativefoundation/store6/mutations/MutatorRegistry;Lorg/mobilenativefoundation/store6/mutations/MutationServer;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/mutations/MutationStore;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutatorRef {
+	public final fun getId ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutatorRegistry {
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutatorRegistryBuilder {
+	public final fun mutator (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutatorRegistryKt {
+	public static final fun mutatorRegistry (Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/mutations/MutatorRegistry;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/PendingIntent {
+	public final fun getMutationId ()Ljava/lang/String;
+	public final fun getMutatorId ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/PoisonedIntent {
+	public final fun getFailure ()Ljava/lang/Throwable;
+	public final fun getMutationId ()Ljava/lang/String;
+	public final fun getMutatorId ()Ljava/lang/String;
+}
+

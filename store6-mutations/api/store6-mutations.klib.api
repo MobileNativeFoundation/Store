@@ -1,0 +1,70 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:store6-mutations>
+abstract fun interface <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationServer { // org.mobilenativefoundation.store6.mutations/MutationServer|null[0]
+    abstract suspend fun push(#A, #B): org.mobilenativefoundation.store6.mutations/MutationAck<#B> // org.mobilenativefoundation.store6.mutations/MutationServer.push|push(1:0;1:1){}[0]
+}
+
+final class <#A: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationAck { // org.mobilenativefoundation.store6.mutations/MutationAck|null[0]
+    constructor <init>(#A, kotlin/String?) // org.mobilenativefoundation.store6.mutations/MutationAck.<init>|<init>(1:0;kotlin.String?){}[0]
+
+    final val echo // org.mobilenativefoundation.store6.mutations/MutationAck.echo|{}echo[0]
+        final fun <get-echo>(): #A // org.mobilenativefoundation.store6.mutations/MutationAck.echo.<get-echo>|<get-echo>(){}[0]
+    final val etag // org.mobilenativefoundation.store6.mutations/MutationAck.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations/MutationAck.etag.<get-etag>|<get-etag>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRef { // org.mobilenativefoundation.store6.mutations/MutatorRef|null[0]
+    final val id // org.mobilenativefoundation.store6.mutations/MutatorRef.id|{}id[0]
+        final fun <get-id>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutatorRef.id.<get-id>|<get-id>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationStore : org.mobilenativefoundation.store6.core/Store<#A, #B> { // org.mobilenativefoundation.store6.mutations/MutationStore|null[0]
+    final val keyEvents // org.mobilenativefoundation.store6.mutations/MutationStore.keyEvents|{}keyEvents[0]
+        final fun <get-keyEvents>(): kotlinx.coroutines.flow/Flow<org.mobilenativefoundation.store6.core.seam/KeyEvents> // org.mobilenativefoundation.store6.mutations/MutationStore.keyEvents.<get-keyEvents>|<get-keyEvents>(){}[0]
+    final val poisoned // org.mobilenativefoundation.store6.mutations/MutationStore.poisoned|{}poisoned[0]
+        final fun <get-poisoned>(): kotlinx.coroutines.flow/SharedFlow<org.mobilenativefoundation.store6.mutations/PoisonedIntent> // org.mobilenativefoundation.store6.mutations/MutationStore.poisoned.<get-poisoned>|<get-poisoned>(){}[0]
+
+    final fun close() // org.mobilenativefoundation.store6.mutations/MutationStore.close|close(){}[0]
+    final fun stream(#A, org.mobilenativefoundation.store6.core/Freshness): kotlinx.coroutines.flow/Flow<org.mobilenativefoundation.store6.core/StoreResult<#B>> // org.mobilenativefoundation.store6.mutations/MutationStore.stream|stream(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun <#A1: kotlin/Any> mutate(#A, org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1>, #A1): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationStore.mutate|mutate(1:0;org.mobilenativefoundation.store6.mutations.MutatorRef<1:0,1:1,0:0>;0:0){0§<kotlin.Any>}[0]
+    final suspend fun clear(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.clear|clear(1:0){}[0]
+    final suspend fun clearAll() // org.mobilenativefoundation.store6.mutations/MutationStore.clearAll|clearAll(){}[0]
+    final suspend fun clearNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.mutations/MutationStore.clearNamespace|clearNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun drainOnce(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.drainOnce|drainOnce(1:0){}[0]
+    final suspend fun get(#A, org.mobilenativefoundation.store6.core/Freshness): #B // org.mobilenativefoundation.store6.mutations/MutationStore.get|get(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun invalidate(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.invalidate|invalidate(1:0){}[0]
+    final suspend fun invalidateAll() // org.mobilenativefoundation.store6.mutations/MutationStore.invalidateAll|invalidateAll(){}[0]
+    final suspend fun invalidateNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.mutations/MutationStore.invalidateNamespace|invalidateNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun pending(#A): kotlin.collections/List<org.mobilenativefoundation.store6.mutations/PendingIntent> // org.mobilenativefoundation.store6.mutations/MutationStore.pending|pending(1:0){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRegistry // org.mobilenativefoundation.store6.mutations/MutatorRegistry|null[0]
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder { // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder|null[0]
+    final fun <#A1: kotlin/Any> mutator(kotlin/String, kotlin/Function2<#B?, #A1, #B?>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.mutator|mutator(kotlin.String;kotlin.Function2<1:1?,0:0,1:1?>){0§<kotlin.Any>}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/PendingIntent { // org.mobilenativefoundation.store6.mutations/PendingIntent|null[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/PendingIntent.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/PendingIntent.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/PoisonedIntent { // org.mobilenativefoundation.store6.mutations/PoisonedIntent|null[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/PoisonedIntent.failure|{}failure[0]
+        final fun <get-failure>(): kotlin/Throwable // org.mobilenativefoundation.store6.mutations/PoisonedIntent.failure.<get-failure>|<get-failure>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+}
+
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/mutationStore(org.mobilenativefoundation.store6.mutations/MutatorRegistry<#A, #B>, org.mobilenativefoundation.store6.mutations/MutationServer<#A, #B>, kotlin/Function1<org.mobilenativefoundation.store6.core/StoreBuilder<#A, #B>, kotlin/Unit>): org.mobilenativefoundation.store6.mutations/MutationStore<#A, #B> // org.mobilenativefoundation.store6.mutations/mutationStore|mutationStore(org.mobilenativefoundation.store6.mutations.MutatorRegistry<0:0,0:1>;org.mobilenativefoundation.store6.mutations.MutationServer<0:0,0:1>;kotlin.Function1<org.mobilenativefoundation.store6.core.StoreBuilder<0:0,0:1>,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/mutatorRegistry(kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder<#A, #B>, kotlin/Unit>): org.mobilenativefoundation.store6.mutations/MutatorRegistry<#A, #B> // org.mobilenativefoundation.store6.mutations/mutatorRegistry|mutatorRegistry(kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutatorRegistryBuilder<0:0,0:1>,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]
