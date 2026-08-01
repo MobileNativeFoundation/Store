@@ -660,22 +660,33 @@ class OverlayProjectionProtocolTest {
     }
 
     @Test
-    fun foreignDirectOwner_equalButDistinctBaselineIsNeverReused() = runTest {
+    fun foreignDirectOwner_equalButDistinctReaderFirstReusesExactAuthorizedBaseline() =
+        runForeignDirectOwnerEqualDistinctOrdering(ForeignOwnerOrdering.READER_FIRST)
+
+    @Test
+    fun foreignDirectOwner_equalButDistinctOwnerFirstNeverReusesOlderBaseline() =
+        runForeignDirectOwnerEqualDistinctOrdering(ForeignOwnerOrdering.OWNER_FIRST)
+
+    private fun runForeignDirectOwnerEqualDistinctOrdering(ordering: ForeignOwnerOrdering) = runTest {
         val older = RefValue("equal", "base")
         val newer = RefValue("equal", "base")
+        val mustNotLeak = RefValue("equal", "must-not-leak")
         assertEquals(older, newer)
         assertTrue(older !== newer)
         val fetchGate = SuspendGate()
         val outcomeGate = SuspendGate()
-        val projectionDelivery = SuspendGate()
-        val projectionDelivered = SuspendGate()
-        val newerReader = SuspendGate()
+        val preWriteMapping = SuspendGate()
+        val orderingMapping = SuspendGate()
+        val trailingMapping = SuspendGate()
+        val initialObserverProjection = SuspendGate()
+        val writerProjection = SuspendGate()
+        val ownerProjection = SuspendGate()
+        val targetProjection = SuspendGate()
+        val projectionAfterGates = Channel<SuspendGate>(Channel.UNLIMITED)
         val telemetry = RecordingTelemetry()
         val source = ContractSourceOfTruth<RefValue>()
         var calls = 0
-        var watchBeforeProjectionDelivery = false
-        var watchAfterProjectionDelivery = false
-        var blockNewerReader = false
+        var readerMappingCalls = 0
         val overlay = CountingOverlay<RefValue>({ it })
         val harness =
             refEngine(
@@ -693,27 +704,17 @@ class OverlayProjectionProtocolTest {
                 beforeTicketOutcomeDeliveryTestGate = {
                     if (calls == 1) outcomeGate.pause()
                 },
-                beforeReaderDeliveryLockTestGate = { record ->
-                    if (
-                        blockNewerReader &&
-                        record is ReaderRecord.Row &&
-                        record.envelope.value === newer
-                    ) {
-                        blockNewerReader = false
-                        newerReader.pause()
-                    }
-                },
-                beforeProjectionDeliveryTestGate = {
-                    if (watchBeforeProjectionDelivery) {
-                        watchBeforeProjectionDelivery = false
-                        projectionDelivery.pause()
+                beforeReaderRecordMappingTestGate = {
+                    when (++readerMappingCalls) {
+                        1 -> {
+                            preWriteMapping.pause()
+                            orderingMapping.pause()
+                        }
+                        else -> trailingMapping.pause()
                     }
                 },
                 afterProjectionDeliveryTestGate = {
-                    if (watchAfterProjectionDelivery) {
-                        watchAfterProjectionDelivery = false
-                        projectionDelivered.pause()
-                    }
+                    projectionAfterGates.tryReceive().getOrNull()?.pause()
                 },
                 telemetry = telemetry,
             )
@@ -722,45 +723,88 @@ class OverlayProjectionProtocolTest {
             harness.engine.applyWrite(older)
             overlay.awaitCallValue(older)
             overlay.clearCalls()
+            check(projectionAfterGates.trySend(initialObserverProjection).isSuccess)
             harness.engine.stream(Freshness.CachedOrFetch).test {
-                awaitDataTag("base")
+                val initial = awaitRefData()
+                assertSame(older, initial.value)
+                assertEquals(Origin.SOT, initial.origin)
                 source.readerStarted.await()
-                overlay.awaitCallValue(older)
-                telemetry.serves.clear()
+                preWriteMapping.awaitEntered()
+                initialObserverProjection.awaitEntered()
+                initialObserverProjection.release()
+                initialObserverProjection.awaitExited()
+                telemetry.clear()
                 overlay.clearCalls()
-                blockNewerReader = true
+
+                check(projectionAfterGates.trySend(writerProjection).isSuccess)
                 harness.engine.applyWrite(newer)
-                newerReader.awaitEntered()
                 assertSame(newer, overlay.awaitCall())
+                writerProjection.awaitEntered()
+                writerProjection.release()
+                writerProjection.awaitExited()
                 overlay.clearCalls()
+
+                preWriteMapping.release()
+                preWriteMapping.awaitExited()
+                orderingMapping.awaitEntered()
+                if (ordering == ForeignOwnerOrdering.READER_FIRST) {
+                    orderingMapping.release()
+                    orderingMapping.awaitExited()
+                    trailingMapping.awaitEntered()
+                    trailingMapping.release()
+                    trailingMapping.awaitExited()
+                    val current = awaitRefData()
+                    assertSame(newer, current.value)
+                    assertEquals(Origin.SOT, current.origin)
+                    assertEquals(Origin.SOT, telemetry.awaitServe(Origin.SOT))
+                }
 
                 val foreignOwner = async(Dispatchers.Default) {
                     harness.engine.get(Freshness.MustBeFresh)
                 }
                 fetchGate.awaitEntered()
+                check(projectionAfterGates.trySend(ownerProjection).isSuccess)
                 fetchGate.release()
                 outcomeGate.awaitEntered()
+                ownerProjection.awaitEntered()
+                ownerProjection.release()
+                ownerProjection.awaitExited()
 
-                overlay.transform = { base -> base?.let { RefValue(it.id, "must-not-leak") } }
-                watchBeforeProjectionDelivery = true
-                watchAfterProjectionDelivery = true
+                overlay.transform = { mustNotLeak }
+                overlay.clearCalls()
+                check(projectionAfterGates.trySend(targetProjection).isSuccess)
                 overlay.signals.emit(key)
                 assertSame(newer, overlay.awaitCall())
-                projectionDelivery.awaitEntered()
-                projectionDelivery.release()
-                projectionDelivered.awaitEntered()
-                assertFalse(telemetry.serves.contains(Origin.OVERLAY))
-                projectionDelivered.release()
-                outcomeGate.release()
-                assertSame(newer, awaitFromDefault { foreignOwner.await() })
-                cancelAndIgnoreRemainingEvents()
+                targetProjection.awaitEntered()
+                targetProjection.release()
+                targetProjection.awaitExited()
+
+                if (ordering == ForeignOwnerOrdering.READER_FIRST) {
+                    val projected = awaitRefData()
+                    assertSame(mustNotLeak, projected.value)
+                    assertEquals(Origin.OVERLAY, projected.origin)
+                    assertEquals(Origin.OVERLAY, telemetry.awaitServe(Origin.OVERLAY))
+                    outcomeGate.release()
+                    assertSame(newer, awaitFromDefault { foreignOwner.await() })
+                    cancelAndIgnoreRemainingEvents()
+                } else {
+                    expectNoEvents()
+                    assertFalse(telemetry.serves.contains(Origin.OVERLAY))
+                    outcomeGate.release()
+                    assertSame(newer, awaitFromDefault { foreignOwner.await() })
+                    cancelAndIgnoreRemainingEvents()
+                }
             }
         } finally {
             fetchGate.release()
             outcomeGate.release()
-            projectionDelivery.release()
-            projectionDelivered.release()
-            newerReader.release()
+            preWriteMapping.release()
+            orderingMapping.release()
+            trailingMapping.release()
+            initialObserverProjection.release()
+            writerProjection.release()
+            ownerProjection.release()
+            targetProjection.release()
             harness.close()
         }
     }
@@ -1890,6 +1934,11 @@ class OverlayProjectionProtocolTest {
         val id: String,
         val tag: String,
     )
+
+    private enum class ForeignOwnerOrdering {
+        READER_FIRST,
+        OWNER_FIRST,
+    }
 
     private class EngineHarness<V : Any>(
         val engine: KeyEngine<TestKey, V>,
