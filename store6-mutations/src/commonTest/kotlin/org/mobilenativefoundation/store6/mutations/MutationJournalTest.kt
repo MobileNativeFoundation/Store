@@ -77,7 +77,13 @@ class MutationJournalTest {
         lateinit var hostile: MutatorRef<MutationsTestKey, String, Unit>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                hostile = mutator("hostile") { _, _ -> throw IllegalStateException("boom") }
+                hostile =
+                    mutator(
+                        id = "hostile",
+                        version = 1,
+                        codec = inertArgsCodec<Unit>(),
+                        stales = noStales(),
+                    ) { _, _ -> throw IllegalStateException("boom") }
             }
         val engine = MutationEngine(registry, echoingMutationServer())
         val key = MutationsTestKey("hostile")
@@ -92,7 +98,13 @@ class MutationJournalTest {
         lateinit var hostile: MutatorRef<MutationsTestKey, String, Unit>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                hostile = mutator("hostile") { _, _ -> throw failure }
+                hostile =
+                    mutator(
+                        id = "hostile",
+                        version = 1,
+                        codec = inertArgsCodec<Unit>(),
+                        stales = noStales(),
+                    ) { _, _ -> throw failure }
             }
         val engine = MutationEngine(registry, echoingMutationServer())
         val key = MutationsTestKey("poison")
@@ -111,7 +123,13 @@ class MutationJournalTest {
         lateinit var cancelling: MutatorRef<MutationsTestKey, String, Unit>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                cancelling = mutator("cancelling") { _, _ -> throw failure }
+                cancelling =
+                    mutator(
+                        id = "cancelling",
+                        version = 1,
+                        codec = inertArgsCodec<Unit>(),
+                        stales = noStales(),
+                    ) { _, _ -> throw failure }
             }
         val engine = MutationEngine(registry, echoingMutationServer())
         val key = MutationsTestKey("cancellation")
@@ -139,7 +157,13 @@ class MutationJournalTest {
     fun foreignMutatorRef_withAbsentId_isRejectedBeforeJournalAppend() = runTest {
         lateinit var foreign: MutatorRef<MutationsTestKey, String, Unit>
         mutatorRegistry<MutationsTestKey, String> {
-            foreign = mutator("foreign") { base, _ -> base }
+            foreign =
+                mutator(
+                    id = "foreign",
+                    version = 1,
+                    codec = inertArgsCodec<Unit>(),
+                    stales = noStales(),
+                ) { base, _ -> base }
         }
         val journal = InMemoryMutationJournal<String>()
         val engine =
@@ -166,11 +190,30 @@ class MutationJournalTest {
     fun foreignMutatorRef_withCollidingId_isRejectedBeforeJournalAppend() = runTest {
         lateinit var foreign: MutatorRef<MutationsTestKey, String, Int>
         mutatorRegistry<MutationsTestKey, String> {
-            foreign = mutator<Int>("shared") { base, amount -> base?.plus(amount) }
+            foreign =
+                mutator(
+                    id = "shared",
+                    version = 1,
+                    codec = inertArgsCodec<Int>(),
+                    stales = noStales(),
+                ) { base, amount ->
+                    (base as? MutationPresence.Present)?.let {
+                        MutationPresence.Present(it.value + amount)
+                    }
+                }
         }
         val targetRegistry =
             mutatorRegistry<MutationsTestKey, String> {
-                mutator<String>("shared") { base, suffix -> base?.plus(suffix) }
+                mutator(
+                    id = "shared",
+                    version = 1,
+                    codec = FixtureStringArgsCodec,
+                    stales = noStales(),
+                ) { base, suffix ->
+                    (base as? MutationPresence.Present)?.let {
+                        MutationPresence.Present(it.value + suffix)
+                    }
+                }
             }
         val journal = InMemoryMutationJournal<String>()
         val engine = MutationEngine(targetRegistry, echoingMutationServer(), journal)
@@ -192,14 +235,28 @@ class MutationJournalTest {
     fun duplicateMutatorId_withDifferentArgType_isRejectedBeforeOverwrite() = runTest {
         val builder = MutatorRegistryBuilder<MutationsTestKey, String>()
         val original =
-            builder.mutator<Int>("shared") { base, amount ->
-                base.orEmpty() + amount
+            builder.mutator(
+                id = "shared",
+                version = 1,
+                codec = inertArgsCodec<Int>(),
+                stales = noStales(),
+            ) { base, amount ->
+                MutationPresence.Present(
+                    ((base as? MutationPresence.Present)?.value).orEmpty() + amount,
+                )
             }
 
         val failure =
             assertFailsWith<IllegalArgumentException> {
-                builder.mutator<String>("shared") { base, suffix ->
-                    base.orEmpty() + suffix
+                builder.mutator(
+                    id = "shared",
+                    version = 1,
+                    codec = FixtureStringArgsCodec,
+                    stales = noStales(),
+                ) { base, suffix ->
+                    MutationPresence.Present(
+                        ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                    )
                 }
             }
 
@@ -219,7 +276,12 @@ class MutationJournalTest {
 
         val registrationFailure =
             assertFailsWith<IllegalArgumentException> {
-                escaped.mutator<Unit>("late") { base, _ -> base }
+                escaped.mutator(
+                    id = "late",
+                    version = 1,
+                    codec = inertArgsCodec<Unit>(),
+                    stales = noStales(),
+                ) { base, _ -> base }
             }
 
         assertEquals(

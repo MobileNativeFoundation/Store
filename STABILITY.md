@@ -169,13 +169,14 @@ them by the mutation identity.
 
 Closing that window — making the ack path atomic — is beta01 work, not alpha01 work.
 
-### (c) The surface is under review
+### (c) The surface has been reviewed — and stays experimental
 
-The mutations entry point is provisional. The API review that ratifies its final spelling has not
-run yet, and the factory signature in particular is **expected** to change: the current shape hides
-which persistence a caller installed, which the transactional ack-path decorator will need to see.
-Treat every mutations snippet in these docs as illustrative of the shape, not as a signature to
-depend on. This document deliberately freezes no mutations signature into policy prose.
+The mutations API review ran and ruled the surface (twenty rulings, 2026-08-01): the entry point
+is the required-input `mutationStore` factory with an overlay-free builder, restart-safe key
+recovery is a compile-time-required resolver, the value state is an explicit presence algebra,
+and the persistence a caller installs is retained for the transactional ack-path decorator.
+The module remains experimental — shapes can change in any release, and this document still
+deliberately freezes no mutations signature into policy prose.
 
 ## 9. Reading pending writes and staleness
 

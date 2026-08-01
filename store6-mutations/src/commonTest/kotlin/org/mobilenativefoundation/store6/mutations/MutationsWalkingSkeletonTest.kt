@@ -33,17 +33,33 @@ class MutationsWalkingSkeletonTest {
         lateinit var rename: MutatorRef<MutationsTestKey, String, String>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                rename = mutator("rename") { _, nextName -> nextName }
+                rename =
+                    mutator(
+                        id = "rename",
+                        version = 1,
+                        codec = FixtureStringArgsCodec,
+                        stales = noStales(),
+                    ) { _, nextName -> MutationPresence.Present(nextName) }
             }
         val backend =
             FakeBackend().apply {
                 pushBehavior = { _, value ->
-                    MutationAck(echo = "confirmed:$value", etag = "server-etag")
+                    MutationPresentAck(
+                        authoritative = "confirmed:$value",
+                        etag = "server-etag",
+                        canonicalKey = null,
+                    )
                 }
             }
         val key = MutationsTestKey("quickstart")
         val users =
-            mutationStore(registry, backend) {
+            mutationStore(
+                registry = registry,
+                server = backend,
+                keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
                 fetcher { backend.load(it) }
             }
         val hydrationWrittenAwaiter =
@@ -76,7 +92,7 @@ class MutationsWalkingSkeletonTest {
                 assertEquals(Origin.OVERLAY, optimistic.origin)
 
                 // KeyEvents has replay = 0. UNDISPATCHED enters first() before async returns, so
-                // this collector is subscribed before drainOnce can emit Written.
+                // this collector is subscribed before drain(key) can emit Written.
                 val writtenAwaiter =
                     backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
                         users.keyEvents.first { event ->
@@ -87,7 +103,7 @@ class MutationsWalkingSkeletonTest {
                     }
                 try {
                     backend.offline = false
-                    users.drainOnce(key)
+                    users.drain(key)
                     assertEquals(listOf("optimistic"), backend.pushedValues)
 
                     val confirmed = awaitConfirmedWithoutOldBase("confirmed:optimistic", "base")
@@ -124,13 +140,35 @@ class MutationsWalkingSkeletonTest {
         lateinit var append: MutatorRef<MutationsTestKey, String, String>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                hostile = mutator("hostile") { _, _ -> throw projectionFailure }
-                append = mutator("append") { base, suffix -> base.orEmpty() + suffix }
+                hostile =
+                    mutator(
+                        id = "hostile",
+                        version = 1,
+                        codec = inertArgsCodec<Unit>(),
+                        stales = noStales(),
+                    ) { _, _ -> throw projectionFailure }
+                append =
+                    mutator(
+                        id = "append",
+                        version = 1,
+                        codec = FixtureStringArgsCodec,
+                        stales = noStales(),
+                    ) { base, suffix ->
+                        MutationPresence.Present(
+                            ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                        )
+                    }
             }
         val backend = FakeBackend()
         val key = MutationsTestKey("hostile")
         val users =
-            mutationStore(registry, backend) {
+            mutationStore(
+                registry = registry,
+                server = backend,
+                keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
                 fetcher { backend.load(it) }
             }
 

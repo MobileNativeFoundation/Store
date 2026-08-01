@@ -7,73 +7,72 @@ package org.mobilenativefoundation.store6.mutations
 
 import app.cash.turbine.test
 import app.cash.turbine.withTurbineTimeout
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest as coroutineRunTest
 import org.mobilenativefoundation.store6.core.Origin
-import org.mobilenativefoundation.store6.core.StoreKey
-import org.mobilenativefoundation.store6.core.store
-import org.mobilenativefoundation.store6.core.seam.Overlay
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.time.Duration.Companion.seconds
 
 class MutationsWiringSpikeTest {
+    /**
+     * Successor to `lastOverlayRegistrationWins` (T4.3's ruled compile-time posture).
+     *
+     * The landed spike proved core's last-overlay-registration-wins through core's public
+     * overlay door. Under D9/D11 that door does not exist on [MutationStoreBuilder], so the
+     * engine overlay installed by the factory is always the sole and last registration —
+     * displacement is superseded by compile-time absence. R1-13's dump audit proves the
+     * ABI-level absence; this spike proves the engine projection layer stays live through a
+     * fully-configured builder.
+     */
     @Test
-    fun lastOverlayRegistrationWins() = runTest {
-        val key = MutationsTestKey("last-overlay")
-        val firstSignals = MutableSharedFlow<StoreKey>(replay = 1)
-        val secondSignals = MutableSharedFlow<StoreKey>(replay = 1)
-        val secondPending = MutableStateFlow<String?>(null)
-        val firstOverlayInvoked = MutableStateFlow(false)
-        val store = store<MutationsTestKey, String> {
-            fetcher { "base" }
-            overlay(
-                object : Overlay<MutationsTestKey, String> {
-                    override fun apply(
-                        key: MutationsTestKey,
-                        base: String?,
-                    ): String? {
-                        firstOverlayInvoked.value = true
-                        return base
+    fun engineOverlay_isSoleProjectionLayer_noBuilderDoorCanDisplaceIt() = runTest {
+        lateinit var append: MutatorRef<MutationsTestKey, String, String>
+        val registry =
+            mutatorRegistry<MutationsTestKey, String> {
+                append =
+                    mutator(
+                        id = "append",
+                        version = 1,
+                        codec = FixtureStringArgsCodec,
+                        stales = noStales(),
+                    ) { base, suffix ->
+                        MutationPresence.Present(
+                            ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                        )
                     }
-
-                    override val changes: Flow<StoreKey> = firstSignals
-                },
-            )
-            overlay(
-                object : Overlay<MutationsTestKey, String> {
-                    override fun apply(
-                        key: MutationsTestKey,
-                        base: String?,
-                    ): String? = base?.plus(secondPending.value.orEmpty())
-
-                    override val changes: Flow<StoreKey> = secondSignals
-                },
-            )
-        }
+            }
+        val backend = FakeBackend()
+        val key = MutationsTestKey("sole-overlay")
+        val users =
+            mutationStore(
+                registry = registry,
+                server = backend,
+                keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
+                fetcher { backend.load(it) }
+                maxIdleKeys(8)
+            }
 
         try {
-            store.stream(key).test {
+            users.stream(key).test {
                 assertEquals("base", awaitData().value)
-                assertFalse(firstOverlayInvoked.value)
 
-                secondPending.value = "+second"
-                secondSignals.emit(key)
+                users.mutate(key, append, "+pending")
                 var projected = awaitData()
-                while (projected.value != "base+second") {
+                while (projected.value != "base+pending") {
                     projected = awaitData()
                 }
                 assertEquals(Origin.OVERLAY, projected.origin)
-                assertFalse(firstOverlayInvoked.value)
+                assertFalse(projected.isStale)
                 cancelAndIgnoreRemainingEvents()
             }
         } finally {
-            store.close()
+            users.close()
         }
     }
 }

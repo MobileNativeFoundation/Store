@@ -24,6 +24,10 @@ dependencies {
     compileOnly(libs.maven.publish.plugin)
     compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
+
+    testImplementation(kotlin("test", embeddedKotlinVersion))
+    testImplementation(libs.junit)
+    testImplementation(gradleTestKit())
 }
 
 gradlePlugin {

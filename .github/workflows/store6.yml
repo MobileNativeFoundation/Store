@@ -479,6 +479,7 @@ jobs:
             store6-swift-dumps/**/build/bin/iosArm64/debugFramework/**/*.h
             store6-swift-dumps/**/build/skie/**
             store6-core/api/swift/**
+            store6-mutations/api/swift/**
           if-no-files-found: warn
           retention-days: 7
 

@@ -26,6 +26,10 @@ include ':store6-swift-dumps-objc'
 project(':store6-swift-dumps-objc').projectDir = file('store6-swift-dumps/objc')
 include ':store6-swift-dumps-skie'
 project(':store6-swift-dumps-skie').projectDir = file('store6-swift-dumps/skie')
+include ':store6-swift-dumps-mutations-objc'
+project(':store6-swift-dumps-mutations-objc').projectDir = file('store6-swift-dumps/mutations-objc')
+include ':store6-swift-dumps-mutations-skie'
+project(':store6-swift-dumps-mutations-skie').projectDir = file('store6-swift-dumps/mutations-skie')
 include ':store6-extension-probe'
 include ':store6-testing'
 include ':store6-sqldelight'

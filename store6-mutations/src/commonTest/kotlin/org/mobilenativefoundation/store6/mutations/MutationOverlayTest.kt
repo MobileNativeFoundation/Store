@@ -51,7 +51,17 @@ class MutationOverlayTest {
         val engine =
             MutationEngine(
                 mutatorRegistry<MutationsTestKey, String> {
-                    append = mutator("append") { base, suffix -> base.orEmpty() + suffix }
+                    append =
+                        mutator(
+                            id = "append",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { base, suffix ->
+                            MutationPresence.Present(
+                                ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                            )
+                        }
                 },
                 echoingMutationServer(),
             )
@@ -87,7 +97,13 @@ class MutationOverlayTest {
         val engine =
             MutationEngine(
                 mutatorRegistry<MutationsTestKey, String> {
-                    create = mutator("create") { _, value -> value }
+                    create =
+                        mutator(
+                            id = "create",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { _, value -> MutationPresence.Present(value) }
                 },
                 echoingMutationServer(),
             )
@@ -103,7 +119,13 @@ class MutationOverlayTest {
         val engine =
             MutationEngine(
                 mutatorRegistry<MutationsTestKey, String> {
-                    delete = mutator<Unit>("delete") { _, _ -> null }
+                    delete =
+                        mutator(
+                            id = "delete",
+                            version = 1,
+                            codec = inertArgsCodec<Unit>(),
+                            stales = noStales(),
+                        ) { _, _ -> MutationPresence.Absent }
                 },
                 echoingMutationServer(),
             )
@@ -119,7 +141,17 @@ class MutationOverlayTest {
         val engine =
             MutationEngine(
                 mutatorRegistry<MutationsTestKey, String> {
-                    append = mutator("append") { base, suffix -> base.orEmpty() + suffix }
+                    append =
+                        mutator(
+                            id = "append",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { base, suffix ->
+                            MutationPresence.Present(
+                                ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                            )
+                        }
                 },
                 echoingMutationServer(),
             )
@@ -146,7 +178,13 @@ class MutationOverlayTest {
         val engine =
             MutationEngine(
                 mutatorRegistry<MutationsTestKey, String> {
-                    rename = mutator("rename") { _, value -> value }
+                    rename =
+                        mutator(
+                            id = "rename",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { _, value -> MutationPresence.Present(value) }
                 },
                 echoingMutationServer(),
             )
@@ -195,10 +233,16 @@ class MutationOverlayTest {
         lateinit var rename: MutatorRef<MutationsTestKey, String, String>
         val registry =
             mutatorRegistry<MutationsTestKey, String> {
-                rename = mutator("rename") { _, value -> value }
+                rename =
+                        mutator(
+                            id = "rename",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { _, value -> MutationPresence.Present(value) }
             }
         val journal = InMemoryMutationJournal<String>()
-        val engine = MutationEngine(registry, echoingMutationServer(), journal)
+        val engine = MutationEngine(registry, echoingMutationServer(), journal, baseReader = { "base" })
         engine.bind(NoopWriteHandle)
         val firstKey = MutationsTestKey("retire-signal-blocker")
         val retiredKey = MutationsTestKey("retire-signal-cancelled")
@@ -227,7 +271,7 @@ class MutationOverlayTest {
             )
             val cancelledDrain =
                 backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
-                    engine.drainOnce(retiredKey, confirmedBase = "base")
+                    engine.drain(retiredKey)
                 }
             assertFalse(cancelledDrain.isCompleted)
             assertEquals(emptyList(), engine.pending(retiredKey))
@@ -256,7 +300,17 @@ class MutationOverlayTest {
             MutationEngine(
                 registry =
                     mutatorRegistry<MutationsTestKey, String> {
-                        append = mutator("append") { base, suffix -> base.orEmpty() + suffix }
+                        append =
+                        mutator(
+                            id = "append",
+                            version = 1,
+                            codec = FixtureStringArgsCodec,
+                            stales = noStales(),
+                        ) { base, suffix ->
+                            MutationPresence.Present(
+                                ((base as? MutationPresence.Present)?.value).orEmpty() + suffix,
+                            )
+                        }
                     },
                 server = echoingMutationServer(),
                 journal = journal,

@@ -130,31 +130,41 @@ screen instead, and `close()` the store when you are done with it.
 > **Experimental.** `store6-mutations` is a separate artifact and every public symbol is
 > `@ExperimentalStoreApi`. It ships **with** 6.0.0-alpha01 — nothing here is published yet.
 >
-> **The spelling below is provisional.** The API review that ratifies the final surface has not run,
-> and the factory signature in particular is expected to change. Read this for the shape of the
-> flow, not as a signature to depend on. The shapes are drawn from the ratified mutations design,
-> not from a released artifact.
+> **The spelling below is the ratified surface.** The mutations API review ran and ruled the
+> factory signature, presence algebra, and drain spelling (twenty rulings, 2026-08-01). The
+> module is still experimental — shapes can change in any release — but the snippet below now
+> matches the landed artifact.
 
 Optimistic writes go through a journal, so they survive being offline and survive process death.
 You get a mutation store instead of a plain one, and it is a `Store` — everything above still works.
 
-<!-- plan-anchored: shapes from docs/v6/plans/020-implementation-plan.md:136-145 (consumer call site) and :1065-1097 (the end-to-end tracer). Not parity-checked: the artifact is unlanded. Re-anchor on landed code when the mutations API review completes. -->
+<!-- parity-anchored: MutationStore.kt (mutationStore factory), MutatorRegistry.kt (sugars),
+MutationsWalkingSkeletonTest.kt (the end-to-end tracer). Re-checked against the landed 021
+surface. -->
 
 ```kotlin
 @OptIn(ExperimentalStoreApi::class)   // required: the whole module is experimental
-val users = mutationStore(registry, server) {
+val users = mutationStore(
+    registry = registry,
+    server = server,
+    // Restart-safe key recovery is compile-time required. For keys reconstructible from the
+    // identity pair, the resolver is one line:
+    keyResolver = MutationKeyResolver { identity -> UserKey(identity.canonicalId) },
+    valueCodecVersion = 1,
+    valueCodec = userJsonCodec,
+) {
     fetcher { key -> api.load(key) }
 }
 
 users.mutate(key, renameRef, Rename("new name"))   // journalled — the only write path
-users.drainOnce(key)                               // push pending intents and adopt each ack
+users.drain(key)                                   // push pending intents and adopt each ack
 ```
 
 The flow, end to end:
 
 1. **Offline enqueue.** `mutate` appends one intent and returns a mutation id. Nothing is pushed.
 2. **Optimistic visibility.** `stream(key)` emits `Data(value = optimistic, origin = OVERLAY)`.
-3. **Reconnect and acknowledge.** `drainOnce(key)` pushes the pending intents and adopts each ack.
+3. **Reconnect and acknowledge.** `drain(key)` pushes the pending intents and adopts each ack.
 4. **Confirmed.** By the acknowledgement contract, the server's echo becomes the committed value,
    attributed `SOT` or `MEMORY`, and the optimistic frame is retired rather than replayed. A stream
    opened after the acknowledgement sees the echo. Convergence for a collector that was *already*

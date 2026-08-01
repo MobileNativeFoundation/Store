@@ -1,3 +1,26 @@
+// DRAFT — full replacement for
+// tooling/plugins/src/main/kotlin/org/mobilenativefoundation/store/tooling/plugins/SwiftDumpTasksPlugin.kt
+//
+// Config mechanism: a project extension (`store6SwiftDump`) with core-valued conventions.
+// Why an extension and not gradle properties:
+//   1. The existing plugins are convention plugins configured per applying project; the surface
+//      identity (framework name, committed directory) is per-project build topology, not an
+//      invocation-time switch. Gradle properties (-P / gradle.properties) are global to the build
+//      invocation and would let one lane's value leak into another; an extension is scoped to
+//      exactly one applying project.
+//   2. Property-based config cannot be expressed in the applying build.gradle.kts next to the
+//      framework declaration it must stay in sync with; the extension keeps
+//      `baseName = "Store6Mutations"` and `frameworkName.set("Store6Mutations")` in one file
+//      under one review.
+//   3. Conventions (`convention(...)`) give the byte-equivalence guarantee mechanically: an
+//      unconfigured applying project (the two existing core lanes) resolves to exactly the
+//      previous hardcoded strings, so the core build files need zero edits and
+//      `coreDefaults_remainByteEquivalent` pins that.
+// Task names are UNCHANGED for every applying project: generateSwiftDump, refreshSwiftDump,
+// checkSwiftDump, validateSkieSwiftLayout. Group is UNCHANGED: "Store6 verification".
+// All previously hardcoded strings are now derived from the extension; with defaults the derived
+// values are byte-identical to the strings at e3c9e6d (see the hardcode inventory in NOTES.md).
+
 package org.mobilenativefoundation.store.tooling.plugins
 
 import org.gradle.api.DefaultTask
@@ -25,8 +48,40 @@ import java.io.File
 private const val SKIE_GENERATED_SWIFT_LAYOUT =
     "skie/binaries/debugFramework/DEBUG/iosArm64/swift/generated"
 
+private const val SWIFT_DUMP_EXTENSION_NAME = "store6SwiftDump"
+
+private const val VERIFICATION_GROUP = "Store6 verification"
+
 private val volatileVersionLine =
     Regex("""(?i)^\s*(//|/\*|\*)?\s*(compiler|kotlin|skie)\s+version\b.*""")
+
+/**
+ * Per-project configuration for the Swift dump lanes.
+ *
+ * Every property has a core-valued convention so the two existing core lanes
+ * (store6-swift-dumps/objc and store6-swift-dumps/skie) apply the plugins without configuration
+ * and keep byte-identical task wiring. New lanes (store6-swift-dumps/mutations-objc and
+ * mutations-skie) override all identity properties explicitly.
+ */
+abstract class SwiftDumpExtension {
+    /** Reviewed surface module name, e.g. "store6-core" or "store6-mutations". */
+    abstract val surfaceName: Property<String>
+
+    /** Framework base name, e.g. "Store6Core", "Store6CoreSkie", "Store6Mutations". */
+    abstract val frameworkName: Property<String>
+
+    /** Staged header file name. Convention: "<frameworkName>.h". */
+    abstract val outputHeaderName: Property<String>
+
+    /** Staged combined Swift file name (SKIE lanes only). Convention: "<frameworkName>.swift". */
+    abstract val outputSwiftName: Property<String>
+
+    /**
+     * Committed dump directory, relative to the root project,
+     * e.g. "store6-core/api/swift/objc". Convention: "<surfaceName>/api/swift/<objc|skie>".
+     */
+    abstract val committedDumpPath: Property<String>
+}
 
 @CacheableTask
 abstract class GenerateObjcSwiftDumpTask : DefaultTask() {
@@ -182,24 +237,35 @@ abstract class CheckSwiftDumpTask : DefaultTask() {
 class Store6ObjcSwiftDumpPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
+            val dump = extensions.create(SWIFT_DUMP_EXTENSION_NAME, SwiftDumpExtension::class.java)
+            dump.surfaceName.convention("store6-core")
+            dump.frameworkName.convention("Store6Core")
+            dump.outputHeaderName.convention(dump.frameworkName.map { "$it.h" })
+            dump.outputSwiftName.convention(dump.frameworkName.map { "$it.swift" })
+            dump.committedDumpPath.convention(dump.surfaceName.map { "$it/api/swift/objc" })
+
             val stagedDirectory = layout.buildDirectory.dir("swift-dump")
-            val committedDumpDirectory = rootProject.layout.projectDirectory.dir("store6-core/api/swift/objc")
+            val committedDumpDirectory = dump.committedDumpPath.map { path ->
+                rootProject.layout.projectDirectory.dir(path)
+            }
             val generate = tasks.register("generateSwiftDump", GenerateObjcSwiftDumpTask::class.java) {
-                group = "Store6 verification"
-                description = "Generates the sanitized Obj-C export dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Generates the sanitized Obj-C export dump for ${dump.surfaceName.get()}."
                 dependsOn("linkDebugFrameworkIosArm64")
                 linkedHeader.set(
-                    layout.buildDirectory.file(
-                        "bin/iosArm64/debugFramework/Store6Core.framework/Headers/Store6Core.h",
-                    ),
+                    dump.frameworkName.flatMap { framework ->
+                        layout.buildDirectory.file(
+                            "bin/iosArm64/debugFramework/${framework}.framework/Headers/${framework}.h",
+                        )
+                    },
                 )
-                outputHeaderName.set("Store6Core.h")
+                outputHeaderName.set(dump.outputHeaderName)
                 outputDirectory.set(stagedDirectory)
             }
 
             val refresh = tasks.register("refreshSwiftDump", Sync::class.java) {
-                group = "Store6 verification"
-                description = "Refreshes the committed Obj-C export dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Refreshes the committed Obj-C export dump for ${dump.surfaceName.get()}."
                 dependsOn(generate)
                 doNotTrackState("Refresh must always reconcile stale files in the committed dump.")
                 from(stagedDirectory)
@@ -208,8 +274,8 @@ class Store6ObjcSwiftDumpPlugin : Plugin<Project> {
             }
 
             tasks.register("checkSwiftDump", CheckSwiftDumpTask::class.java) {
-                group = "Store6 verification"
-                description = "Checks the committed Obj-C export dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Checks the committed Obj-C export dump for ${dump.surfaceName.get()}."
                 dependsOn(generate)
                 mustRunAfter(refresh)
                 generatedFiles.from(stagedDirectory)
@@ -217,8 +283,10 @@ class Store6ObjcSwiftDumpPlugin : Plugin<Project> {
                 generatedDirectory.set(stagedDirectory)
                 committedDirectory.set(committedDumpDirectory)
                 failureMessage.set(
-                    "Obj-C export dump for store6-core has drifted from store6-core/api/swift/objc. " +
-                        "Run ./gradlew refreshSwiftDumps and commit the result.",
+                    dump.surfaceName.zip(dump.committedDumpPath) { surface, committedPath ->
+                        "Obj-C export dump for $surface has drifted from $committedPath. " +
+                            "Run ./gradlew refreshSwiftDumps and commit the result."
+                    },
                 )
             }
         }
@@ -228,41 +296,52 @@ class Store6ObjcSwiftDumpPlugin : Plugin<Project> {
 class Store6SkieSwiftDumpPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
+            val dump = extensions.create(SWIFT_DUMP_EXTENSION_NAME, SwiftDumpExtension::class.java)
+            dump.surfaceName.convention("store6-core")
+            dump.frameworkName.convention("Store6CoreSkie")
+            dump.outputHeaderName.convention(dump.frameworkName.map { "$it.h" })
+            dump.outputSwiftName.convention(dump.frameworkName.map { "$it.swift" })
+            dump.committedDumpPath.convention(dump.surfaceName.map { "$it/api/swift/skie" })
+
             val stagedDirectory = layout.buildDirectory.dir("swift-dump")
-            val committedDumpDirectory = rootProject.layout.projectDirectory.dir("store6-core/api/swift/skie")
+            val committedDumpDirectory = dump.committedDumpPath.map { path ->
+                rootProject.layout.projectDirectory.dir(path)
+            }
             val generatedSwiftDirectory = layout.buildDirectory.dir(SKIE_GENERATED_SWIFT_LAYOUT)
             val validateLayout = tasks.register(
                 "validateSkieSwiftLayout",
                 ValidateSkieSwiftLayoutTask::class.java,
             ) {
-                group = "Store6 verification"
-                description = "Validates the pinned SKIE-generated Swift layout for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Validates the pinned SKIE-generated Swift layout for ${dump.surfaceName.get()}."
                 dependsOn("linkDebugFrameworkIosArm64")
                 generatedSwiftRoot.set(generatedSwiftDirectory)
                 supportedLayout.set(SKIE_GENERATED_SWIFT_LAYOUT)
             }
             val generate = tasks.register("generateSwiftDump", GenerateSkieSwiftDumpTask::class.java) {
-                group = "Store6 verification"
-                description = "Generates the sanitized SKIE dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Generates the sanitized SKIE dump for ${dump.surfaceName.get()}."
                 dependsOn(validateLayout)
                 doNotTrackState(
                     "SKIE does not expose the generated Swift directory as a declared task output.",
                 )
                 linkedHeader.set(
-                    layout.buildDirectory.file(
-                        "bin/iosArm64/debugFramework/Store6CoreSkie.framework/Headers/Store6CoreSkie.h",
-                    ),
+                    dump.frameworkName.flatMap { framework ->
+                        layout.buildDirectory.file(
+                            "bin/iosArm64/debugFramework/${framework}.framework/Headers/${framework}.h",
+                        )
+                    },
                 )
                 generatedSwiftRoot.set(generatedSwiftDirectory)
                 supportedLayout.set(SKIE_GENERATED_SWIFT_LAYOUT)
-                outputHeaderName.set("Store6CoreSkie.h")
-                outputSwiftName.set("Store6CoreSkie.swift")
+                outputHeaderName.set(dump.outputHeaderName)
+                outputSwiftName.set(dump.outputSwiftName)
                 outputDirectory.set(stagedDirectory)
             }
 
             val refresh = tasks.register("refreshSwiftDump", Sync::class.java) {
-                group = "Store6 verification"
-                description = "Refreshes the committed SKIE dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Refreshes the committed SKIE dump for ${dump.surfaceName.get()}."
                 dependsOn(generate)
                 doNotTrackState("Refresh must always reconcile stale files in the committed dump.")
                 from(stagedDirectory)
@@ -271,8 +350,8 @@ class Store6SkieSwiftDumpPlugin : Plugin<Project> {
             }
 
             tasks.register("checkSwiftDump", CheckSwiftDumpTask::class.java) {
-                group = "Store6 verification"
-                description = "Checks the committed SKIE dump for store6-core."
+                group = VERIFICATION_GROUP
+                description = "Checks the committed SKIE dump for ${dump.surfaceName.get()}."
                 dependsOn(generate)
                 mustRunAfter(refresh)
                 generatedFiles.from(stagedDirectory)
@@ -280,8 +359,10 @@ class Store6SkieSwiftDumpPlugin : Plugin<Project> {
                 generatedDirectory.set(stagedDirectory)
                 committedDirectory.set(committedDumpDirectory)
                 failureMessage.set(
-                    "SKIE dump for store6-core has drifted from store6-core/api/swift/skie. " +
-                        "Run ./gradlew refreshSwiftDumps and commit the result.",
+                    dump.surfaceName.zip(dump.committedDumpPath) { surface, committedPath ->
+                        "SKIE dump for $surface has drifted from $committedPath. " +
+                            "Run ./gradlew refreshSwiftDumps and commit the result."
+                    },
                 )
             }
         }

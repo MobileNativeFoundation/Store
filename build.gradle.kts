@@ -91,6 +91,8 @@ tasks.register("refreshSwiftDumps") {
     dependsOn(
         ":store6-swift-dumps-objc:refreshSwiftDump",
         ":store6-swift-dumps-skie:refreshSwiftDump",
+        ":store6-swift-dumps-mutations-objc:refreshSwiftDump",
+        ":store6-swift-dumps-mutations-skie:refreshSwiftDump",
     )
 }
 
@@ -98,5 +100,7 @@ tasks.register("checkSwiftDumps") {
     dependsOn(
         ":store6-swift-dumps-objc:checkSwiftDump",
         ":store6-swift-dumps-skie:checkSwiftDump",
+        ":store6-swift-dumps-mutations-objc:checkSwiftDump",
+        ":store6-swift-dumps-mutations-skie:checkSwiftDump",
     )
 }

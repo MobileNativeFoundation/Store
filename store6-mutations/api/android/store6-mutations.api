@@ -1,11 +1,256 @@
-public final class org/mobilenativefoundation/store6/mutations/MutationAck {
-	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
-	public final fun getEcho ()Ljava/lang/Object;
-	public final fun getEtag ()Ljava/lang/String;
+public final class org/mobilenativefoundation/store6/mutations/DeadLetter {
+	public final fun getAttempts ()I
+	public final fun getCanonicalId ()Ljava/lang/String;
+	public final fun getFailure ()Lorg/mobilenativefoundation/store6/mutations/MutationFailure;
+	public final fun getGeneration ()I
+	public final fun getMutationId ()Ljava/lang/String;
+	public final fun getMutatorId ()Ljava/lang/String;
+	public final fun getNamespace ()Ljava/lang/String;
+	public final fun getParkedAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationAbsentAck : org/mobilenativefoundation/store6/mutations/MutationAck {
+	public fun <init> (Ljava/lang/String;)V
+	public fun getEtag ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationAck {
+	public abstract fun getEtag ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationAcknowledged : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getPresence ()Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationAdopted : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getPresence ()Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationAttempted : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getAttempt ()I
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationCheckpointConfirmed : org/mobilenativefoundation/store6/mutations/MutationEvent {
+	public final fun getClientId ()Ljava/lang/String;
+	public final fun getConfirmedThroughSequence ()J
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getRequestedThroughSequence ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationCheckpointFailed : org/mobilenativefoundation/store6/mutations/MutationEvent {
+	public final fun getClientId ()Ljava/lang/String;
+	public final fun getFailure ()Lorg/mobilenativefoundation/store6/mutations/MutationFailure;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getRequestedThroughSequence ()J
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationCodec {
+	public abstract fun decode (I[B)Ljava/lang/Object;
+	public abstract fun encode (Ljava/lang/Object;)[B
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationConflictBuilder {
+	public final fun merge (Lkotlin/jvm/functions/Function3;)V
+	public final fun precondition (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationConflictObserved : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getServerMeta ()Lorg/mobilenativefoundation/store6/core/StoreMeta;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationConflictResolution {
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationConflictResolution$Retry : org/mobilenativefoundation/store6/mutations/MutationConflictResolution {
+	public fun <init> (Lorg/mobilenativefoundation/store6/mutations/MutationPresence;)V
+	public final fun getValue ()Lorg/mobilenativefoundation/store6/mutations/MutationPresence;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationConflictResolution$ServerWins : org/mobilenativefoundation/store6/mutations/MutationConflictResolution {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/mutations/MutationConflictResolution$ServerWins;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationEffectApplied : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getEffectIndex ()I
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationEffectSkipped : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getEffectIndex ()I
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationEnqueued : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getClientSequence ()J
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public final fun getMutatorId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationEvent {
+	public abstract fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationFailed : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getFailure ()Lorg/mobilenativefoundation/store6/mutations/MutationFailure;
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getState ()Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationFailure {
+	public final fun getDetail ()Ljava/lang/String;
+	public final fun getKind ()Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationFailureKind : java/lang/Enum {
+	public static final field ADOPTION Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field CODEC Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field CONFLICT Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field EFFECT Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field IDENTITY Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field PERSISTENCE Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field PROJECTION Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field PROTOCOL Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static final field TRANSPORT Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/mutations/MutationFailureKind;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationIntentEvent : org/mobilenativefoundation/store6/mutations/MutationEvent {
+	public abstract fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public abstract fun getMutationId ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationKeyIdentity {
+	public final fun getCanonicalId ()Ljava/lang/String;
+	public final fun getNamespace ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationKeyResolver {
+	public abstract fun resolve (Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationParked : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getFailure ()Lorg/mobilenativefoundation/store6/mutations/MutationFailure;
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPendingState : java/lang/Enum {
+	public static final field ADOPTING Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static final field APPLYING_EFFECTS Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static final field INFLIGHT Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static final field PENDING Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static final field REFRESHING Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPreconditionCandidate {
+	public final fun getBase ()Lorg/mobilenativefoundation/store6/mutations/MutationPresence;
+	public final fun getCapturedMeta ()Lorg/mobilenativefoundation/store6/core/StoreMeta;
+	public final fun getGeneration ()I
+	public final fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public final fun getMine ()Lorg/mobilenativefoundation/store6/mutations/MutationPresence;
+	public final fun getMutationId ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/MutationPresence {
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPresence$Absent : org/mobilenativefoundation/store6/mutations/MutationPresence {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/mutations/MutationPresence$Absent;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPresence$Present : org/mobilenativefoundation/store6/mutations/MutationPresence {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun getValue ()Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPresenceState : java/lang/Enum {
+	public static final field ABSENT Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+	public static final field PRESENT Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/mutations/MutationPresenceState;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPresentAck : org/mobilenativefoundation/store6/mutations/MutationAck {
+	public fun <init> (Ljava/lang/Object;Ljava/lang/String;Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public final fun getAuthoritative ()Ljava/lang/Object;
+	public final fun getCanonicalKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public fun getEtag ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationPush {
+	public final fun getBase ()Lorg/mobilenativefoundation/store6/mutations/MutationPresence;
+	public final fun getBaseMeta ()Lorg/mobilenativefoundation/store6/core/StoreMeta;
+	public final fun getClientId ()Ljava/lang/String;
+	public final fun getClientSequence ()J
+	public final fun getGeneration ()I
+	public final fun getIdempotencyKey ()Ljava/lang/String;
+	public final fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public final fun getMine ()Lorg/mobilenativefoundation/store6/mutations/MutationPresence;
+	public final fun getMutationId ()Ljava/lang/String;
+	public final fun getRetiredThroughSequence ()J
+	public final fun getValueCodecVersion ()I
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationRetired : org/mobilenativefoundation/store6/mutations/MutationIntentEvent {
+	public final fun getGeneration ()I
+	public fun getIdentity ()Lorg/mobilenativefoundation/store6/mutations/MutationKeyIdentity;
+	public fun getMutationId ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getRetiredThroughSequence ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationRetirement {
+	public final fun getClientId ()Ljava/lang/String;
+	public final fun getRetiredThroughSequence ()J
+}
+
+public final class org/mobilenativefoundation/store6/mutations/MutationRetirementAck {
+	public fun <init> (J)V
+	public final fun getConfirmedThroughSequence ()J
 }
 
 public abstract interface class org/mobilenativefoundation/store6/mutations/MutationServer {
-	public abstract fun push (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun push (Lorg/mobilenativefoundation/store6/mutations/MutationPush;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun retire (Lorg/mobilenativefoundation/store6/mutations/MutationRetirement;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class org/mobilenativefoundation/store6/mutations/MutationStore : org/mobilenativefoundation/store6/core/Store {
@@ -13,8 +258,11 @@ public final class org/mobilenativefoundation/store6/mutations/MutationStore : o
 	public fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun clearNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun close ()V
-	public final fun drainOnce (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun deadLetters (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun drain (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun drain (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getEvents ()Lkotlinx/coroutines/flow/SharedFlow;
 	public final fun getKeyEvents ()Lkotlinx/coroutines/flow/Flow;
 	public final fun getPoisoned ()Lkotlinx/coroutines/flow/SharedFlow;
 	public fun invalidate (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -22,11 +270,25 @@ public final class org/mobilenativefoundation/store6/mutations/MutationStore : o
 	public fun invalidateNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun mutate (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/mutations/MutatorRef;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun pending (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun pendingWrites (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun stream (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;)Lkotlinx/coroutines/flow/Flow;
 }
 
+public final class org/mobilenativefoundation/store6/mutations/MutationStoreBuilder {
+	public final fun bookkeeper (Lorg/mobilenativefoundation/store6/core/seam/Bookkeeper;)V
+	public final fun conflicts (Lkotlin/jvm/functions/Function1;)V
+	public final fun fetcher (Lkotlin/jvm/functions/Function2;)V
+	public final fun fetcher (Lorg/mobilenativefoundation/store6/core/seam/Fetcher;)V
+	public final fun fetcherOfResult (Lkotlin/jvm/functions/Function2;)V
+	public final fun freshnessValidator (Lorg/mobilenativefoundation/store6/core/seam/FreshnessValidator;)V
+	public final fun maxIdleKeys (I)V
+	public final fun persistence (Lorg/mobilenativefoundation/store6/core/seam/SourceOfTruth;)V
+	public final fun telemetry (Lorg/mobilenativefoundation/store6/core/seam/StoreTelemetry;)V
+	public final fun wallClock (Lorg/mobilenativefoundation/store6/core/seam/WallClock;)V
+}
+
 public final class org/mobilenativefoundation/store6/mutations/MutationStoreKt {
-	public static final fun mutationStore (Lorg/mobilenativefoundation/store6/mutations/MutatorRegistry;Lorg/mobilenativefoundation/store6/mutations/MutationServer;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/mutations/MutationStore;
+	public static final fun mutationStore (Lorg/mobilenativefoundation/store6/mutations/MutatorRegistry;Lorg/mobilenativefoundation/store6/mutations/MutationServer;Lorg/mobilenativefoundation/store6/mutations/MutationKeyResolver;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/mutations/MutationStore;
 }
 
 public final class org/mobilenativefoundation/store6/mutations/MutatorRef {
@@ -37,7 +299,11 @@ public final class org/mobilenativefoundation/store6/mutations/MutatorRegistry {
 }
 
 public final class org/mobilenativefoundation/store6/mutations/MutatorRegistryBuilder {
-	public final fun mutator (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun create (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun delete (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun mutator (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun update (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun upsert (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
 }
 
 public final class org/mobilenativefoundation/store6/mutations/MutatorRegistryKt {
@@ -45,13 +311,24 @@ public final class org/mobilenativefoundation/store6/mutations/MutatorRegistryKt
 }
 
 public final class org/mobilenativefoundation/store6/mutations/PendingIntent {
+	public final fun getAttempt ()I
+	public final fun getCanonicalId ()Ljava/lang/String;
+	public final fun getCreatedAtEpochMillis ()J
 	public final fun getMutationId ()Ljava/lang/String;
 	public final fun getMutatorId ()Ljava/lang/String;
+	public final fun getNamespace ()Ljava/lang/String;
+	public final fun getState ()Lorg/mobilenativefoundation/store6/mutations/MutationPendingState;
 }
 
 public final class org/mobilenativefoundation/store6/mutations/PoisonedIntent {
 	public final fun getFailure ()Ljava/lang/Throwable;
 	public final fun getMutationId ()Ljava/lang/String;
 	public final fun getMutatorId ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/StaleSet {
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;)V
+	public final fun getKeys ()Ljava/util/Set;
+	public final fun getNamespaces ()Ljava/util/Set;
 }
 
