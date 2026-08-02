@@ -1,0 +1,96 @@
+public final class org/mobilenativefoundation/store6/mutations/testing/JournalStorageCrashException : java/lang/RuntimeException {
+	public fun <init> (Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;)V
+	public final fun getKillPoint ()Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint : java/lang/Enum {
+	public static final field AFTER_PRUNE_COMMIT Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static final field AFTER_RETIREMENT_FINALIZATION_COMMIT Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static final field BEFORE_PRUNE Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static final field BEFORE_PRUNE_COMMIT Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static final field BEFORE_RETIREMENT_FINALIZATION_COMMIT Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;
+}
+
+public abstract class org/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPointScenarios {
+	public fun <init> ()V
+	public final fun afterPruneCommit_commitsAndClears ()V
+	public final fun afterRetirementFinalizationCommit_commitsAndClears ()V
+	public final fun beforePruneCommit_rollsBackAndClears ()V
+	public final fun beforePrune_abortsBeforeDeleteAndClears ()V
+	public final fun beforeRetirementFinalizationCommit_rollsBackAndClears ()V
+	public abstract fun createStorage ()Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;
+	public abstract fun reopenStorage (Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;)Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/KillPointJournalStorage : org/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;)V
+	public final fun arm (Lorg/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPoint;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transaction (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract class org/mobilenativefoundation/store6/mutations/testing/MutationJournalStorageContractKit : org/mobilenativefoundation/store6/mutations/testing/JournalStorageKillPointScenarios {
+	public fun <init> ()V
+	public final fun ackReceipt_ackRoutingGenerationAndAckedCommitAtomically ()V
+	public final fun ack_isWriteOnceAndMismatchDoesNotOverwrite ()V
+	public final fun adoptionAdvance_commitsAtomically ()V
+	public final fun alias_equalDuplicateIsIdempotentAndActivationIsMonotonic ()V
+	public final fun alias_rejectsSelfEdgeRetargetAndCycle ()V
+	public final fun attemptGeneration_isImmutableAndAppendOnly ()V
+	public final fun blobs_areCopiedOnEntryAndDelivery ()V
+	public final fun clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation ()V
+	public abstract fun createStorage ()Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;
+	public final fun effect_startsPendingAndAdvancesDispositionForwardOnly ()V
+	public final fun enqueue_intentAndUnpreparedExecutionCommitAtomically ()V
+	public final fun execution_ackedRequiresMatchingAcknowledgement ()V
+	public final fun execution_preservesRuledLegalEdgesAndTerminalStates ()V
+	public final fun failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary ()V
+	public final fun intent_isImmutableUniqueAndOrderedByClientSequence ()V
+	public final fun parking_failurePhaseAndActiveFailureCommitAtomically ()V
+	public final fun persistedEnums_roundTripEveryStableName ()V
+	public final fun preparation_attemptEffectsAndReadyCommitAtomically ()V
+	public final fun prune_preservesAliasesAndActiveTombstoneGeneration ()V
+	public final fun prune_stopsAtServerConfirmedPrefix ()V
+	public abstract fun reopenStorage (Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;)Lorg/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage;
+	public final fun reopen_roundTripsAliasAndTombstoneRecords ()V
+	public final fun reopen_roundTripsAttemptAndAckRecords ()V
+	public final fun reopen_roundTripsClientRecord ()V
+	public final fun reopen_roundTripsFailureAndEffectRecords ()V
+	public final fun reopen_roundTripsIntentAndExecutionRecords ()V
+	public final fun retirementFinalization_highWaterAndRoutingCommitAtomically ()V
+	public final fun serverWins_skipRetireAndPrefixCommitAtomically ()V
+	public final fun tombstone_allowsAtMostOnePendingAndOneActiveGeneration ()V
+	public final fun tombstone_generationAdvancesForwardOnly ()V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/MutatorAmbientProbe {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;)V
+	public final fun getName ()Ljava/lang/String;
+}
+
+public abstract class org/mobilenativefoundation/store6/mutations/testing/MutatorPurityContractKit {
+	public fun <init> ()V
+	public final fun ambientState_doesNotAffectProjection ()V
+	public abstract fun createSubject ()Lorg/mobilenativefoundation/store6/mutations/testing/MutatorPuritySubject;
+	public final fun doubleApplication_independentReplayTracesAreEquivalent ()V
+	public final fun invocationCount_doesNotAffectProjection ()V
+	public final fun repeatDeterminism_sameInputsProduceStructurallyEqualOutput ()V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/MutatorPurityContractKitKt {
+	public static final fun mutatorPuritySubject (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function1;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/mutations/testing/MutatorPuritySubject;
+	public static synthetic fun mutatorPuritySubject$default (Ljava/lang/String;ILorg/mobilenativefoundation/store6/mutations/MutationCodec;Lkotlin/jvm/functions/Function2;Ljava/util/List;Lkotlin/jvm/functions/Function1;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/mutations/testing/MutatorPuritySubject;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/MutatorPuritySample {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;)V
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/testing/MutatorPuritySubject {
+	public final fun getRef ()Lorg/mobilenativefoundation/store6/mutations/MutatorRef;
+	public final fun getRegistry ()Lorg/mobilenativefoundation/store6/mutations/MutatorRegistry;
+}
+

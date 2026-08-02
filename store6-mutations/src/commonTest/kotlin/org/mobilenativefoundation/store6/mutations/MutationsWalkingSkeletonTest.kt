@@ -144,7 +144,7 @@ class MutationsWalkingSkeletonTest {
                     mutator(
                         id = "hostile",
                         version = 1,
-                        codec = inertArgsCodec<Unit>(),
+                        codec = FixtureUnitArgsCodec,
                         stales = noStales(),
                     ) { _, _ -> throw projectionFailure }
                 append =

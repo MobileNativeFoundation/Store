@@ -17,6 +17,12 @@ kotlin {
                 implementation(libs.turbine)
             }
         }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.lincheck)
+            }
+        }
     }
 }
 

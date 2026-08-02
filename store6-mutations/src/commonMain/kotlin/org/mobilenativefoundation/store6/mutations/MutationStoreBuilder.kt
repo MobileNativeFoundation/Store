@@ -15,6 +15,8 @@ import org.mobilenativefoundation.store6.core.seam.FreshnessValidator
 import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
 import org.mobilenativefoundation.store6.core.seam.StoreTelemetry
 import org.mobilenativefoundation.store6.core.seam.WallClock
+import org.mobilenativefoundation.store6.mutations.storage.InMemoryMutationJournalStorage
+import org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage
 
 /**
  * Configuration receiver for the [mutationStore] creation DSL.
@@ -42,6 +44,7 @@ public class MutationStoreBuilder<K : StoreKey, V : Any> internal constructor() 
     private var validator: FreshnessValidator? = null
     private var maxIdleKeys: Int? = null
     private var conflicts: MutationConflictRegistration<K, V>? = null
+    private var journalStorage: MutationJournalStorage? = null
     private var snapshot: MutationStoreConfiguration<K, V>? = null
 
     /**
@@ -159,6 +162,20 @@ public class MutationStoreBuilder<K : StoreKey, V : Any> internal constructor() 
     }
 
     /**
+     * Selects the durable mutation-journal storage for this store.
+     *
+     * The exact instance is retained by the mutation engine. Leaving this door unset creates one
+     * mutations-owned [InMemoryMutationJournalStorage], preserving the 021 in-memory behavior.
+     * Reopening a store over the same durable instance enables restart hydration.
+     *
+     * @param storage the journal storage instance owned by this mutation store
+     */
+    @ExperimentalStoreApi
+    public fun journalStorage(storage: MutationJournalStorage) {
+        journalStorage = storage
+    }
+
+    /**
      * Materializes the retained configuration exactly once.
      *
      * The first call creates the mutations-owned defaults for any unset seam; every later call
@@ -180,6 +197,7 @@ public class MutationStoreBuilder<K : StoreKey, V : Any> internal constructor() 
             freshnessValidator = validator,
             maxIdleKeys = maxIdleKeys,
             conflicts = conflicts,
+            journalStorage = journalStorage ?: InMemoryMutationJournalStorage(),
         ).also { snapshot = it }
     }
 }
@@ -289,6 +307,7 @@ internal class MutationStoreConfiguration<K : StoreKey, V : Any>(
     private val freshnessValidator: FreshnessValidator?,
     private val maxIdleKeys: Int?,
     internal val conflicts: MutationConflictRegistration<K, V>?,
+    internal val journalStorage: MutationJournalStorage,
 ) {
     internal fun applyCoreConfiguration(builder: StoreBuilder<K, V>) {
         builder.installFetcher()

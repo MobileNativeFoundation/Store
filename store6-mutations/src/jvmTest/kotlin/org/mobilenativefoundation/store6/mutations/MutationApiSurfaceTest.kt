@@ -6,9 +6,11 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
- * R1-13: the committed KLib declaration exposes no overlay setter, no [org.mobilenativefoundation.store6.core.seam.StoreRuntime],
- * no [org.mobilenativefoundation.store6.core.seam.StoreWriteHandle], and no core
- * `StoreBuilder` door through `mutationStore` — the narrowed-facade invariant at dump level.
+ * R1-13: the committed KLib declaration exposes the ruled `MutationJournalStorage` seam, but no
+ * overlay setter, no [org.mobilenativefoundation.store6.core.seam.StoreRuntime], no
+ * [org.mobilenativefoundation.store6.core.seam.StoreWriteHandle], no core `StoreBuilder` door
+ * through `mutationStore`, and no SQLDelight driver or `Transacter` type — the narrowed-facade
+ * invariant at dump level.
  * The dump path arrives via the `store6.mutations.apiDumpDir` system property injected by the
  * module build file; a missing property or file fails loudly rather than passing vacuously.
  */
@@ -22,12 +24,19 @@ class MutationApiSurfaceTest {
         assertTrue(dump.isFile, "Committed KLib dump not found at ${dump.absolutePath}.")
         val text = dump.readText()
 
+        assertTrue(
+            text.contains("MutationJournalStorage"),
+            "Committed KLib dump is missing the ruled MutationJournalStorage seam.",
+        )
+
         val banned =
             listOf(
                 "StoreWriteHandle",
                 "StoreRuntime",
                 "core/StoreBuilder",
                 "overlay(",
+                "SqlDriver",
+                "Transacter",
             )
         val violations =
             banned.filter { needle -> text.contains(needle) }

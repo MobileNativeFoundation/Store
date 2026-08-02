@@ -1484,7 +1484,7 @@ extension Store6MutationsSkie.Skie.RuntimeKotlin.SkieColdFlowIterator.__Suspend 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func hasNext() async throws -> Store6MutationsSkie.KotlinBoolean {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__33__hasNext(dispatchReceiver: __kotlinObject as! Store6MutationsSkie.SkieColdFlowIterator<Swift.AnyObject>, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__34__hasNext(dispatchReceiver: __kotlinObject as! Store6MutationsSkie.SkieColdFlowIterator<Swift.AnyObject>, suspendHandler: $0)
         }
     }
 
@@ -2366,7 +2366,7 @@ extension Store6MutationsSkie.KotlinSuspendFunction1 {
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func invoke(p1: Any?) async throws -> Any? {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__22__invoke(dispatchReceiver: self, p1: p1, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__23__invoke(dispatchReceiver: self, p1: p1, suspendHandler: $0)
         }
     }
 
@@ -2382,63 +2382,63 @@ extension Store6MutationsSkie.Store6_coreBookkeeper {
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func advanceGlobalStaleWatermark() async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__24__advanceGlobalStaleWatermark(dispatchReceiver: self, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__25__advanceGlobalStaleWatermark(dispatchReceiver: self, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func advanceStaleWatermark(namespace: Store6MutationsSkie.Store6_coreStoreNamespace) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__25__advanceStaleWatermark(dispatchReceiver: self, namespace: namespace, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__26__advanceStaleWatermark(dispatchReceiver: self, namespace: namespace, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func forget(key: Store6MutationsSkie.Store6_coreStoreKey) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__26__forget(dispatchReceiver: self, key: key, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__27__forget(dispatchReceiver: self, key: key, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func forgetAll() async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__27__forgetAll(dispatchReceiver: self, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__28__forgetAll(dispatchReceiver: self, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func forgetNamespace(namespace: Store6MutationsSkie.Store6_coreStoreNamespace) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__28__forgetNamespace(dispatchReceiver: self, namespace: namespace, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__29__forgetNamespace(dispatchReceiver: self, namespace: namespace, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func markStale(key: Store6MutationsSkie.Store6_coreStoreKey) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__29__markStale(dispatchReceiver: self, key: key, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__30__markStale(dispatchReceiver: self, key: key, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func recordFailure(key: Store6MutationsSkie.Store6_coreStoreKey, atEpochMillis: Swift.Int64) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__30__recordFailure(dispatchReceiver: self, key: key, atEpochMillis: atEpochMillis, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__31__recordFailure(dispatchReceiver: self, key: key, atEpochMillis: atEpochMillis, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func recordSuccess(key: Store6MutationsSkie.Store6_coreStoreKey, meta: Store6MutationsSkie.Store6_coreStoreMeta) async throws -> Swift.Void {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__31__recordSuccess(dispatchReceiver: self, key: key, meta: meta, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__32__recordSuccess(dispatchReceiver: self, key: key, meta: meta, suspendHandler: $0)
         }
     }
 
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func status(key: Store6MutationsSkie.Store6_coreStoreKey) async throws -> Store6MutationsSkie.Store6_coreKeyStatus? {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__32__status(dispatchReceiver: self, key: key, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__33__status(dispatchReceiver: self, key: key, suspendHandler: $0)
         }
     }
 
@@ -2493,7 +2493,7 @@ extension Store6MutationsSkie.Store6_coreFetcher {
     @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
     public func fetch(key: Store6MutationsSkie.Store6_coreStoreKey, etag: Swift.String?) async throws -> Store6MutationsSkie.Store6_coreFetcherResult {
         return try await SwiftCoroutineDispatcher.dispatch {
-            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__23__fetch(dispatchReceiver: self, key: key, etag: etag, suspendHandler: $0)
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__24__fetch(dispatchReceiver: self, key: key, etag: etag, suspendHandler: $0)
         }
     }
 
@@ -2887,6 +2887,78 @@ public func onEnum<__Sealed : Store6MutationsSkie.MutationAck>(of sealed: __Seal
     }
 }
 
+// FILE: Store6Mutations/Store6Mutations.MutationAliasState.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+@frozen
+public enum MutationAliasState : Swift.Hashable, Swift.CaseIterable, Swift._ObjectiveCBridgeable {
+
+    case pending
+    case active
+
+    public var name: Swift.String {
+        return (self as _ObjectiveCType).name
+    }
+
+    public var ordinal: Swift.Int32 {
+        return (self as _ObjectiveCType).ordinal
+    }
+
+    public static func _forceBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationAliasState, result: inout Store6MutationsSkie.MutationAliasState?) -> Swift.Void {
+        result = fromObjectiveC(source)
+    }
+
+    public static func _conditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationAliasState, result: inout Store6MutationsSkie.MutationAliasState?) -> Swift.Bool {
+        result = fromObjectiveC(source)
+        return true
+    }
+
+    public static func _unconditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationAliasState?) -> Self {
+        return fromObjectiveC(source)
+    }
+
+    public func _bridgeToObjectiveC() -> Store6MutationsSkie.__MutationAliasState {
+        switch self {
+        case .pending: return Store6MutationsSkie.__MutationAliasState.pending as Store6MutationsSkie.__MutationAliasState
+        case .active: return Store6MutationsSkie.__MutationAliasState.active as Store6MutationsSkie.__MutationAliasState
+        }
+    }
+
+    private static func fromObjectiveC(_ source: Store6MutationsSkie.__MutationAliasState?) -> Self {
+        guard let source = source else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.MutationAliasState")
+        }
+        if source == Store6MutationsSkie.__MutationAliasState.pending as Store6MutationsSkie.__MutationAliasState {
+            return .pending
+        } else if source == Store6MutationsSkie.__MutationAliasState.active as Store6MutationsSkie.__MutationAliasState {
+            return .active
+        } else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.__MutationAliasState")
+        }
+    }
+
+    public typealias _ObjectiveCType = Store6MutationsSkie.__MutationAliasState
+
+}
+
+extension Store6MutationsSkie.MutationAliasState {
+
+    public func toKotlinEnum() -> Store6MutationsSkie.__MutationAliasState {
+        return _bridgeToObjectiveC()
+    }
+
+}
+
+extension Store6MutationsSkie.__MutationAliasState {
+
+    public func toSwiftEnum() -> Store6MutationsSkie.MutationAliasState {
+        return Store6MutationsSkie.MutationAliasState._unconditionallyBridgeFromObjectiveC(self)
+    }
+
+}
+
 // FILE: Store6Mutations/Store6Mutations.MutationConflictResolution.swift
 // Generated by Touchlab SKIE 0.10.13
 
@@ -2921,6 +2993,155 @@ public func onEnum<__Sealed : Store6MutationsSkie.MutationConflictResolution>(of
     } else {
         return nil
     }
+}
+
+// FILE: Store6Mutations/Store6Mutations.MutationEffectDisposition.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+@frozen
+public enum MutationEffectDisposition : Swift.Hashable, Swift.CaseIterable,
+        Swift._ObjectiveCBridgeable {
+
+    case pending
+    case applied
+    case skipped
+
+    public var name: Swift.String {
+        return (self as _ObjectiveCType).name
+    }
+
+    public var ordinal: Swift.Int32 {
+        return (self as _ObjectiveCType).ordinal
+    }
+
+    public static func _forceBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectDisposition, result: inout Store6MutationsSkie.MutationEffectDisposition?) -> Swift.Void {
+        result = fromObjectiveC(source)
+    }
+
+    public static func _conditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectDisposition, result: inout Store6MutationsSkie.MutationEffectDisposition?) -> Swift.Bool {
+        result = fromObjectiveC(source)
+        return true
+    }
+
+    public static func _unconditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectDisposition?) -> Self {
+        return fromObjectiveC(source)
+    }
+
+    public func _bridgeToObjectiveC() -> Store6MutationsSkie.__MutationEffectDisposition {
+        switch self {
+        case .pending: return Store6MutationsSkie.__MutationEffectDisposition.pending as Store6MutationsSkie.__MutationEffectDisposition
+        case .applied: return Store6MutationsSkie.__MutationEffectDisposition.applied as Store6MutationsSkie.__MutationEffectDisposition
+        case .skipped: return Store6MutationsSkie.__MutationEffectDisposition.skipped as Store6MutationsSkie.__MutationEffectDisposition
+        }
+    }
+
+    private static func fromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectDisposition?) -> Self {
+        guard let source = source else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.MutationEffectDisposition")
+        }
+        if source == Store6MutationsSkie.__MutationEffectDisposition.pending as Store6MutationsSkie.__MutationEffectDisposition {
+            return .pending
+        } else if source == Store6MutationsSkie.__MutationEffectDisposition.applied as Store6MutationsSkie.__MutationEffectDisposition {
+            return .applied
+        } else if source == Store6MutationsSkie.__MutationEffectDisposition.skipped as Store6MutationsSkie.__MutationEffectDisposition {
+            return .skipped
+        } else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.__MutationEffectDisposition")
+        }
+    }
+
+    public typealias _ObjectiveCType = Store6MutationsSkie.__MutationEffectDisposition
+
+}
+
+extension Store6MutationsSkie.MutationEffectDisposition {
+
+    public func toKotlinEnum() -> Store6MutationsSkie.__MutationEffectDisposition {
+        return _bridgeToObjectiveC()
+    }
+
+}
+
+extension Store6MutationsSkie.__MutationEffectDisposition {
+
+    public func toSwiftEnum() -> Store6MutationsSkie.MutationEffectDisposition {
+        return Store6MutationsSkie.MutationEffectDisposition._unconditionallyBridgeFromObjectiveC(self)
+    }
+
+}
+
+// FILE: Store6Mutations/Store6Mutations.MutationEffectKind.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+@frozen
+public enum MutationEffectKind : Swift.Hashable, Swift.CaseIterable, Swift._ObjectiveCBridgeable {
+
+    case key
+    case namespace
+
+    public var name: Swift.String {
+        return (self as _ObjectiveCType).name
+    }
+
+    public var ordinal: Swift.Int32 {
+        return (self as _ObjectiveCType).ordinal
+    }
+
+    public static func _forceBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectKind, result: inout Store6MutationsSkie.MutationEffectKind?) -> Swift.Void {
+        result = fromObjectiveC(source)
+    }
+
+    public static func _conditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectKind, result: inout Store6MutationsSkie.MutationEffectKind?) -> Swift.Bool {
+        result = fromObjectiveC(source)
+        return true
+    }
+
+    public static func _unconditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectKind?) -> Self {
+        return fromObjectiveC(source)
+    }
+
+    public func _bridgeToObjectiveC() -> Store6MutationsSkie.__MutationEffectKind {
+        switch self {
+        case .key: return Store6MutationsSkie.__MutationEffectKind.key as Store6MutationsSkie.__MutationEffectKind
+        case .namespace: return Store6MutationsSkie.__MutationEffectKind.namespace as Store6MutationsSkie.__MutationEffectKind
+        }
+    }
+
+    private static func fromObjectiveC(_ source: Store6MutationsSkie.__MutationEffectKind?) -> Self {
+        guard let source = source else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.MutationEffectKind")
+        }
+        if source == Store6MutationsSkie.__MutationEffectKind.key as Store6MutationsSkie.__MutationEffectKind {
+            return .key
+        } else if source == Store6MutationsSkie.__MutationEffectKind.namespace as Store6MutationsSkie.__MutationEffectKind {
+            return .namespace
+        } else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.__MutationEffectKind")
+        }
+    }
+
+    public typealias _ObjectiveCType = Store6MutationsSkie.__MutationEffectKind
+
+}
+
+extension Store6MutationsSkie.MutationEffectKind {
+
+    public func toKotlinEnum() -> Store6MutationsSkie.__MutationEffectKind {
+        return _bridgeToObjectiveC()
+    }
+
+}
+
+extension Store6MutationsSkie.__MutationEffectKind {
+
+    public func toSwiftEnum() -> Store6MutationsSkie.MutationEffectKind {
+        return Store6MutationsSkie.MutationEffectKind._unconditionallyBridgeFromObjectiveC(self)
+    }
+
 }
 
 // FILE: Store6Mutations/Store6Mutations.MutationEvent.swift
@@ -2960,6 +3181,103 @@ public func onEnum<__Sealed : Store6MutationsSkie.MutationEvent>(of sealed: __Se
     } else {
         return nil
     }
+}
+
+// FILE: Store6Mutations/Store6Mutations.MutationExecutionPhase.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+@frozen
+public enum MutationExecutionPhase : Swift.Hashable, Swift.CaseIterable,
+        Swift._ObjectiveCBridgeable {
+
+    case unprepared
+    case ready
+    case inflight
+    case refreshRequired
+    case acked
+    case effectsPending
+    case parked
+    case retired
+
+    public var name: Swift.String {
+        return (self as _ObjectiveCType).name
+    }
+
+    public var ordinal: Swift.Int32 {
+        return (self as _ObjectiveCType).ordinal
+    }
+
+    public static func _forceBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationExecutionPhase, result: inout Store6MutationsSkie.MutationExecutionPhase?) -> Swift.Void {
+        result = fromObjectiveC(source)
+    }
+
+    public static func _conditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationExecutionPhase, result: inout Store6MutationsSkie.MutationExecutionPhase?) -> Swift.Bool {
+        result = fromObjectiveC(source)
+        return true
+    }
+
+    public static func _unconditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationExecutionPhase?) -> Self {
+        return fromObjectiveC(source)
+    }
+
+    public func _bridgeToObjectiveC() -> Store6MutationsSkie.__MutationExecutionPhase {
+        switch self {
+        case .unprepared: return Store6MutationsSkie.__MutationExecutionPhase.unprepared as Store6MutationsSkie.__MutationExecutionPhase
+        case .ready: return Store6MutationsSkie.__MutationExecutionPhase.ready as Store6MutationsSkie.__MutationExecutionPhase
+        case .inflight: return Store6MutationsSkie.__MutationExecutionPhase.inflight as Store6MutationsSkie.__MutationExecutionPhase
+        case .refreshRequired: return Store6MutationsSkie.__MutationExecutionPhase.refreshRequired as Store6MutationsSkie.__MutationExecutionPhase
+        case .acked: return Store6MutationsSkie.__MutationExecutionPhase.acked as Store6MutationsSkie.__MutationExecutionPhase
+        case .effectsPending: return Store6MutationsSkie.__MutationExecutionPhase.effectsPending as Store6MutationsSkie.__MutationExecutionPhase
+        case .parked: return Store6MutationsSkie.__MutationExecutionPhase.parked as Store6MutationsSkie.__MutationExecutionPhase
+        case .retired: return Store6MutationsSkie.__MutationExecutionPhase.retired as Store6MutationsSkie.__MutationExecutionPhase
+        }
+    }
+
+    private static func fromObjectiveC(_ source: Store6MutationsSkie.__MutationExecutionPhase?) -> Self {
+        guard let source = source else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.MutationExecutionPhase")
+        }
+        if source == Store6MutationsSkie.__MutationExecutionPhase.unprepared as Store6MutationsSkie.__MutationExecutionPhase {
+            return .unprepared
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.ready as Store6MutationsSkie.__MutationExecutionPhase {
+            return .ready
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.inflight as Store6MutationsSkie.__MutationExecutionPhase {
+            return .inflight
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.refreshRequired as Store6MutationsSkie.__MutationExecutionPhase {
+            return .refreshRequired
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.acked as Store6MutationsSkie.__MutationExecutionPhase {
+            return .acked
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.effectsPending as Store6MutationsSkie.__MutationExecutionPhase {
+            return .effectsPending
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.parked as Store6MutationsSkie.__MutationExecutionPhase {
+            return .parked
+        } else if source == Store6MutationsSkie.__MutationExecutionPhase.retired as Store6MutationsSkie.__MutationExecutionPhase {
+            return .retired
+        } else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.__MutationExecutionPhase")
+        }
+    }
+
+    public typealias _ObjectiveCType = Store6MutationsSkie.__MutationExecutionPhase
+
+}
+
+extension Store6MutationsSkie.MutationExecutionPhase {
+
+    public func toKotlinEnum() -> Store6MutationsSkie.__MutationExecutionPhase {
+        return _bridgeToObjectiveC()
+    }
+
+}
+
+extension Store6MutationsSkie.__MutationExecutionPhase {
+
+    public func toSwiftEnum() -> Store6MutationsSkie.MutationExecutionPhase {
+        return Store6MutationsSkie.MutationExecutionPhase._unconditionallyBridgeFromObjectiveC(self)
+    }
+
 }
 
 // FILE: Store6Mutations/Store6Mutations.MutationFailureKind.swift
@@ -3120,6 +3438,22 @@ public func onEnum<__Sealed : Store6MutationsSkie.MutationIntentEvent>(of sealed
     } else {
         return nil
     }
+}
+
+// FILE: Store6Mutations/Store6Mutations.MutationJournalStorage.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+extension Store6MutationsSkie.MutationJournalStorage {
+
+    @available(iOS 13, macOS 10.15, watchOS 6, tvOS 13, *)
+    public func transaction(block: @escaping (Store6MutationsSkie.MutationJournalTransaction) -> Any?) async throws -> Any? {
+        return try await SwiftCoroutineDispatcher.dispatch {
+            Store6MutationsSkie.__SkieSuspendWrappersKt.Skie_Suspend__22__transaction(dispatchReceiver: self, block: block, suspendHandler: $0)
+        }
+    }
+
 }
 
 // FILE: Store6Mutations/Store6Mutations.MutationKeyResolver.swift
@@ -3441,6 +3775,83 @@ public func mutationStore(
     configure: @escaping (Store6MutationsSkie.MutationStoreBuilder<Store6MutationsSkie.Store6_coreStoreKey, Swift.AnyObject>) -> Swift.Void
 ) -> Store6MutationsSkie.MutationStore<Store6MutationsSkie.Store6_coreStoreKey, Swift.AnyObject> {
     return Store6MutationsSkie.MutationStoreKt.mutationStore(registry: registry, server: server, keyResolver: keyResolver, valueCodecVersion: valueCodecVersion, valueCodec: valueCodec, configure: configure)
+}
+
+// FILE: Store6Mutations/Store6Mutations.MutationTombstoneState.swift
+// Generated by Touchlab SKIE 0.10.13
+
+import Foundation
+
+@frozen
+public enum MutationTombstoneState : Swift.Hashable, Swift.CaseIterable,
+        Swift._ObjectiveCBridgeable {
+
+    case pending
+    case active
+    case superseded
+
+    public var name: Swift.String {
+        return (self as _ObjectiveCType).name
+    }
+
+    public var ordinal: Swift.Int32 {
+        return (self as _ObjectiveCType).ordinal
+    }
+
+    public static func _forceBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationTombstoneState, result: inout Store6MutationsSkie.MutationTombstoneState?) -> Swift.Void {
+        result = fromObjectiveC(source)
+    }
+
+    public static func _conditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationTombstoneState, result: inout Store6MutationsSkie.MutationTombstoneState?) -> Swift.Bool {
+        result = fromObjectiveC(source)
+        return true
+    }
+
+    public static func _unconditionallyBridgeFromObjectiveC(_ source: Store6MutationsSkie.__MutationTombstoneState?) -> Self {
+        return fromObjectiveC(source)
+    }
+
+    public func _bridgeToObjectiveC() -> Store6MutationsSkie.__MutationTombstoneState {
+        switch self {
+        case .pending: return Store6MutationsSkie.__MutationTombstoneState.pending as Store6MutationsSkie.__MutationTombstoneState
+        case .active: return Store6MutationsSkie.__MutationTombstoneState.active as Store6MutationsSkie.__MutationTombstoneState
+        case .superseded: return Store6MutationsSkie.__MutationTombstoneState.superseded as Store6MutationsSkie.__MutationTombstoneState
+        }
+    }
+
+    private static func fromObjectiveC(_ source: Store6MutationsSkie.__MutationTombstoneState?) -> Self {
+        guard let source = source else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.MutationTombstoneState")
+        }
+        if source == Store6MutationsSkie.__MutationTombstoneState.pending as Store6MutationsSkie.__MutationTombstoneState {
+            return .pending
+        } else if source == Store6MutationsSkie.__MutationTombstoneState.active as Store6MutationsSkie.__MutationTombstoneState {
+            return .active
+        } else if source == Store6MutationsSkie.__MutationTombstoneState.superseded as Store6MutationsSkie.__MutationTombstoneState {
+            return .superseded
+        } else {
+            fatalError("Couldn't map value of \(Swift.String(describing: source)) to Store6MutationsSkie.__MutationTombstoneState")
+        }
+    }
+
+    public typealias _ObjectiveCType = Store6MutationsSkie.__MutationTombstoneState
+
+}
+
+extension Store6MutationsSkie.MutationTombstoneState {
+
+    public func toKotlinEnum() -> Store6MutationsSkie.__MutationTombstoneState {
+        return _bridgeToObjectiveC()
+    }
+
+}
+
+extension Store6MutationsSkie.__MutationTombstoneState {
+
+    public func toSwiftEnum() -> Store6MutationsSkie.MutationTombstoneState {
+        return Store6MutationsSkie.MutationTombstoneState._unconditionallyBridgeFromObjectiveC(self)
+    }
+
 }
 
 // FILE: Store6Mutations/Store6Mutations.MutatorRegistryKt.swift

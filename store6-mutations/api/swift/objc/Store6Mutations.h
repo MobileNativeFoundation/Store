@@ -6,9 +6,9 @@
 #import <Foundation/NSString.h>
 #import <Foundation/NSValue.h>
 
-@class Store6MutationsDeadLetter, Store6MutationsKotlinArray<T>, Store6MutationsKotlinByteArray, Store6MutationsKotlinByteIterator, Store6MutationsKotlinEnum<E>, Store6MutationsKotlinEnumCompanion, Store6MutationsKotlinException, Store6MutationsKotlinIllegalStateException, Store6MutationsKotlinRuntimeException, Store6MutationsKotlinThrowable, Store6MutationsKotlinUnit, Store6MutationsMutationConflictBuilder<K, V>, Store6MutationsMutationConflictResolutionServerWins, Store6MutationsMutationFailure, Store6MutationsMutationFailureKind, Store6MutationsMutationKeyIdentity, Store6MutationsMutationPendingState, Store6MutationsMutationPreconditionCandidate<K, V>, Store6MutationsMutationPresenceAbsent, Store6MutationsMutationPresenceState, Store6MutationsMutationPush<K, V>, Store6MutationsMutationRetirement, Store6MutationsMutationRetirementAck, Store6MutationsMutationStore<K, V>, Store6MutationsMutationStoreBuilder<K, V>, Store6MutationsMutatorRef<K, V, A>, Store6MutationsMutatorRegistry<K, V>, Store6MutationsMutatorRegistryBuilder<K, V>, Store6MutationsPendingIntent, Store6MutationsStaleSet<K>, Store6MutationsStore6_coreFreshnessContext, Store6MutationsStore6_coreKeyStatus, Store6MutationsStore6_coreOrigin, Store6MutationsStore6_coreStoreError, Store6MutationsStore6_coreStoreNamespace;
+@class Store6MutationsDeadLetter, Store6MutationsKotlinArray<T>, Store6MutationsKotlinByteArray, Store6MutationsKotlinByteIterator, Store6MutationsKotlinEnum<E>, Store6MutationsKotlinEnumCompanion, Store6MutationsKotlinException, Store6MutationsKotlinIllegalStateException, Store6MutationsKotlinRuntimeException, Store6MutationsKotlinThrowable, Store6MutationsKotlinUnit, Store6MutationsMutationAckRecord, Store6MutationsMutationAliasState, Store6MutationsMutationAttemptRecord, Store6MutationsMutationClientRecord, Store6MutationsMutationConflictBuilder<K, V>, Store6MutationsMutationConflictResolutionServerWins, Store6MutationsMutationEffectDisposition, Store6MutationsMutationEffectKind, Store6MutationsMutationEffectRecord, Store6MutationsMutationExecutionPhase, Store6MutationsMutationExecutionRecord, Store6MutationsMutationFailure, Store6MutationsMutationFailureKind, Store6MutationsMutationFailureRecord, Store6MutationsMutationIntentRecord, Store6MutationsMutationKeyAliasRecord, Store6MutationsMutationKeyIdentity, Store6MutationsMutationKeyTombstoneRecord, Store6MutationsMutationPendingState, Store6MutationsMutationPreconditionCandidate<K, V>, Store6MutationsMutationPresenceAbsent, Store6MutationsMutationPresenceState, Store6MutationsMutationPush<K, V>, Store6MutationsMutationRetirement, Store6MutationsMutationRetirementAck, Store6MutationsMutationStore<K, V>, Store6MutationsMutationStoreBuilder<K, V>, Store6MutationsMutationTombstoneState, Store6MutationsMutatorRef<K, V, A>, Store6MutationsMutatorRegistry<K, V>, Store6MutationsMutatorRegistryBuilder<K, V>, Store6MutationsPendingIntent, Store6MutationsStaleSet<K>, Store6MutationsStore6_coreFreshnessContext, Store6MutationsStore6_coreKeyStatus, Store6MutationsStore6_coreOrigin, Store6MutationsStore6_coreStoreError, Store6MutationsStore6_coreStoreNamespace;
 
-@protocol Store6MutationsKotlinComparable, Store6MutationsKotlinFunction, Store6MutationsKotlinIterator, Store6MutationsKotlinSuspendFunction1, Store6MutationsKotlinx_coroutines_coreFlow, Store6MutationsKotlinx_coroutines_coreFlowCollector, Store6MutationsKotlinx_coroutines_coreSharedFlow, Store6MutationsMutationAck, Store6MutationsMutationCodec, Store6MutationsMutationConflictResolution, Store6MutationsMutationEvent, Store6MutationsMutationIntentEvent, Store6MutationsMutationKeyResolver, Store6MutationsMutationPresence, Store6MutationsMutationServer, Store6MutationsStore6_coreBookkeeper, Store6MutationsStore6_coreFetchPlan, Store6MutationsStore6_coreFetcher, Store6MutationsStore6_coreFetcherResult, Store6MutationsStore6_coreFreshness, Store6MutationsStore6_coreFreshnessValidator, Store6MutationsStore6_coreSourceOfTruth, Store6MutationsStore6_coreStore, Store6MutationsStore6_coreStoreKey, Store6MutationsStore6_coreStoreMeta, Store6MutationsStore6_coreStoreTelemetry, Store6MutationsStore6_coreWallClock;
+@protocol Store6MutationsKotlinComparable, Store6MutationsKotlinFunction, Store6MutationsKotlinIterator, Store6MutationsKotlinSuspendFunction1, Store6MutationsKotlinx_coroutines_coreFlow, Store6MutationsKotlinx_coroutines_coreFlowCollector, Store6MutationsKotlinx_coroutines_coreSharedFlow, Store6MutationsMutationAck, Store6MutationsMutationCodec, Store6MutationsMutationConflictResolution, Store6MutationsMutationEvent, Store6MutationsMutationIntentEvent, Store6MutationsMutationJournalStorage, Store6MutationsMutationJournalTransaction, Store6MutationsMutationKeyResolver, Store6MutationsMutationPresence, Store6MutationsMutationServer, Store6MutationsStore6_coreBookkeeper, Store6MutationsStore6_coreFetchPlan, Store6MutationsStore6_coreFetcher, Store6MutationsStore6_coreFetcherResult, Store6MutationsStore6_coreFreshness, Store6MutationsStore6_coreFreshnessValidator, Store6MutationsStore6_coreSourceOfTruth, Store6MutationsStore6_coreStore, Store6MutationsStore6_coreStoreKey, Store6MutationsStore6_coreStoreMeta, Store6MutationsStore6_coreStoreTelemetry, Store6MutationsStore6_coreWallClock;
 
 NS_ASSUME_NONNULL_BEGIN
 #pragma clang diagnostic push
@@ -1477,6 +1477,12 @@ __attribute__((swift_name("MutationStoreBuilder")))
  * @note annotations
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 */
+- (void)journalStorageStorage:(id<Store6MutationsMutationJournalStorage>)storage __attribute__((swift_name("journalStorage(storage:)")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
 - (void)maxIdleKeysCount:(int32_t)count __attribute__((swift_name("maxIdleKeys(count:)")));
 
 /**
@@ -1665,6 +1671,822 @@ __attribute__((swift_name("StaleSet")))
  *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 */
 @property (readonly) NSSet<Store6MutationsStore6_coreStoreNamespace *> *namespaces __attribute__((swift_name("namespaces")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
+*/
+__attribute__((swift_name("MutationJournalStorage")))
+@protocol Store6MutationsMutationJournalStorage
+@required
+
+/**
+ * @note This method converts instances of CancellationException to errors.
+ * Other uncaught Kotlin exceptions are fatal.
+*/
+- (void)transactionBlock:(id _Nullable (^)(id<Store6MutationsMutationJournalTransaction>))block completionHandler:(void (^)(id _Nullable_result, NSError * _Nullable))completionHandler __attribute__((swift_name("transaction(block:completionHandler:)")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("InMemoryMutationJournalStorage")))
+@interface Store6MutationsInMemoryMutationJournalStorage : Store6MutationsBase <Store6MutationsMutationJournalStorage>
+- (instancetype)init __attribute__((swift_name("init()"))) __attribute__((objc_designated_initializer));
++ (instancetype)new __attribute__((availability(swift, unavailable, message="use object initializers instead")));
+
+/**
+ * @note This method converts instances of CancellationException to errors.
+ * Other uncaught Kotlin exceptions are fatal.
+*/
+- (void)transactionBlock:(id _Nullable (^)(id<Store6MutationsMutationJournalTransaction>))block completionHandler:(void (^)(id _Nullable_result, NSError * _Nullable))completionHandler __attribute__((swift_name("transaction(block:completionHandler:)")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationAckRecord")))
+@interface Store6MutationsMutationAckRecord : Store6MutationsBase
+- (instancetype)initWithClientId:(NSString *)clientId clientSequence:(int64_t)clientSequence generation:(int32_t)generation authoritativePresence:(Store6MutationsMutationPresenceState *)authoritativePresence authoritativeBlob:(Store6MutationsKotlinByteArray * _Nullable)authoritativeBlob valueCodecVersion:(int32_t)valueCodecVersion etag:(NSString * _Nullable)etag canonicalTargetNamespace:(NSString * _Nullable)canonicalTargetNamespace canonicalTargetId:(NSString * _Nullable)canonicalTargetId receivedAt:(int64_t)receivedAt __attribute__((swift_name("init(clientId:clientSequence:generation:authoritativePresence:authoritativeBlob:valueCodecVersion:etag:canonicalTargetNamespace:canonicalTargetId:receivedAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsKotlinByteArray * _Nullable authoritativeBlob __attribute__((swift_name("authoritativeBlob")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationPresenceState *authoritativePresence __attribute__((swift_name("authoritativePresence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable canonicalTargetId __attribute__((swift_name("canonicalTargetId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable canonicalTargetNamespace __attribute__((swift_name("canonicalTargetNamespace")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable etag __attribute__((swift_name("etag")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t generation __attribute__((swift_name("generation")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t receivedAt __attribute__((swift_name("receivedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t valueCodecVersion __attribute__((swift_name("valueCodecVersion")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationAliasState")))
+@interface Store6MutationsMutationAliasState : Store6MutationsKotlinEnum<Store6MutationsMutationAliasState *>
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
+- (instancetype)initWithName:(NSString *)name ordinal:(int32_t)ordinal __attribute__((swift_name("init(name:ordinal:)"))) __attribute__((objc_designated_initializer)) __attribute__((unavailable));
+@property (class, readonly) Store6MutationsMutationAliasState *pending __attribute__((swift_name("pending")));
+@property (class, readonly) Store6MutationsMutationAliasState *active __attribute__((swift_name("active")));
++ (Store6MutationsKotlinArray<Store6MutationsMutationAliasState *> *)values __attribute__((swift_name("values()")));
+@property (class, readonly) NSArray<Store6MutationsMutationAliasState *> *entries __attribute__((swift_name("entries")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationAttemptRecord")))
+@interface Store6MutationsMutationAttemptRecord : Store6MutationsBase
+- (instancetype)initWithClientId:(NSString *)clientId clientSequence:(int64_t)clientSequence generation:(int32_t)generation effectiveNamespace:(NSString *)effectiveNamespace effectiveCanonicalId:(NSString *)effectiveCanonicalId valueCodecVersion:(int32_t)valueCodecVersion basePresence:(Store6MutationsMutationPresenceState *)basePresence baseBlob:(Store6MutationsKotlinByteArray * _Nullable)baseBlob minePresence:(Store6MutationsMutationPresenceState *)minePresence mineBlob:(Store6MutationsKotlinByteArray * _Nullable)mineBlob preconditionMetaPresent:(BOOL)preconditionMetaPresent preconditionWrittenAt:(Store6MutationsLong * _Nullable)preconditionWrittenAt preconditionEtag:(NSString * _Nullable)preconditionEtag advertisedRetiredThroughSequence:(int64_t)advertisedRetiredThroughSequence generationIdempotencyKey:(NSString *)generationIdempotencyKey preparedAt:(int64_t)preparedAt conflictMetaPresent:(Store6MutationsBoolean * _Nullable)conflictMetaPresent conflictWrittenAt:(Store6MutationsLong * _Nullable)conflictWrittenAt conflictEtag:(NSString * _Nullable)conflictEtag conflictReceivedAt:(Store6MutationsLong * _Nullable)conflictReceivedAt __attribute__((swift_name("init(clientId:clientSequence:generation:effectiveNamespace:effectiveCanonicalId:valueCodecVersion:basePresence:baseBlob:minePresence:mineBlob:preconditionMetaPresent:preconditionWrittenAt:preconditionEtag:advertisedRetiredThroughSequence:generationIdempotencyKey:preparedAt:conflictMetaPresent:conflictWrittenAt:conflictEtag:conflictReceivedAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t advertisedRetiredThroughSequence __attribute__((swift_name("advertisedRetiredThroughSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsKotlinByteArray * _Nullable baseBlob __attribute__((swift_name("baseBlob")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationPresenceState *basePresence __attribute__((swift_name("basePresence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable conflictEtag __attribute__((swift_name("conflictEtag")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsBoolean * _Nullable conflictMetaPresent __attribute__((swift_name("conflictMetaPresent")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable conflictReceivedAt __attribute__((swift_name("conflictReceivedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable conflictWrittenAt __attribute__((swift_name("conflictWrittenAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *effectiveCanonicalId __attribute__((swift_name("effectiveCanonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *effectiveNamespace __attribute__((swift_name("effectiveNamespace")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t generation __attribute__((swift_name("generation")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *generationIdempotencyKey __attribute__((swift_name("generationIdempotencyKey")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsKotlinByteArray * _Nullable mineBlob __attribute__((swift_name("mineBlob")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationPresenceState *minePresence __attribute__((swift_name("minePresence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable preconditionEtag __attribute__((swift_name("preconditionEtag")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) BOOL preconditionMetaPresent __attribute__((swift_name("preconditionMetaPresent")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable preconditionWrittenAt __attribute__((swift_name("preconditionWrittenAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t preparedAt __attribute__((swift_name("preparedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t valueCodecVersion __attribute__((swift_name("valueCodecVersion")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationClientRecord")))
+@interface Store6MutationsMutationClientRecord : Store6MutationsBase
+- (instancetype)initWithRecordVersion:(int32_t)recordVersion clientId:(NSString *)clientId lastAllocatedSequence:(int64_t)lastAllocatedSequence retiredThroughSequence:(int64_t)retiredThroughSequence serverConfirmedRetiredThroughSequence:(int64_t)serverConfirmedRetiredThroughSequence createdAt:(int64_t)createdAt __attribute__((swift_name("init(recordVersion:clientId:lastAllocatedSequence:retiredThroughSequence:serverConfirmedRetiredThroughSequence:createdAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdAt __attribute__((swift_name("createdAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t lastAllocatedSequence __attribute__((swift_name("lastAllocatedSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t recordVersion __attribute__((swift_name("recordVersion")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t retiredThroughSequence __attribute__((swift_name("retiredThroughSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t serverConfirmedRetiredThroughSequence __attribute__((swift_name("serverConfirmedRetiredThroughSequence")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationEffectDisposition")))
+@interface Store6MutationsMutationEffectDisposition : Store6MutationsKotlinEnum<Store6MutationsMutationEffectDisposition *>
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
+- (instancetype)initWithName:(NSString *)name ordinal:(int32_t)ordinal __attribute__((swift_name("init(name:ordinal:)"))) __attribute__((objc_designated_initializer)) __attribute__((unavailable));
+@property (class, readonly) Store6MutationsMutationEffectDisposition *pending __attribute__((swift_name("pending")));
+@property (class, readonly) Store6MutationsMutationEffectDisposition *applied __attribute__((swift_name("applied")));
+@property (class, readonly) Store6MutationsMutationEffectDisposition *skipped __attribute__((swift_name("skipped")));
++ (Store6MutationsKotlinArray<Store6MutationsMutationEffectDisposition *> *)values __attribute__((swift_name("values()")));
+@property (class, readonly) NSArray<Store6MutationsMutationEffectDisposition *> *entries __attribute__((swift_name("entries")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationEffectKind")))
+@interface Store6MutationsMutationEffectKind : Store6MutationsKotlinEnum<Store6MutationsMutationEffectKind *>
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
+- (instancetype)initWithName:(NSString *)name ordinal:(int32_t)ordinal __attribute__((swift_name("init(name:ordinal:)"))) __attribute__((objc_designated_initializer)) __attribute__((unavailable));
+@property (class, readonly) Store6MutationsMutationEffectKind *key __attribute__((swift_name("key")));
+@property (class, readonly) Store6MutationsMutationEffectKind *namespace_ __attribute__((swift_name("namespace_")));
++ (Store6MutationsKotlinArray<Store6MutationsMutationEffectKind *> *)values __attribute__((swift_name("values()")));
+@property (class, readonly) NSArray<Store6MutationsMutationEffectKind *> *entries __attribute__((swift_name("entries")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationEffectRecord")))
+@interface Store6MutationsMutationEffectRecord : Store6MutationsBase
+- (instancetype)initWithClientId:(NSString *)clientId clientSequence:(int64_t)clientSequence effectIndex:(int32_t)effectIndex kind:(Store6MutationsMutationEffectKind *)kind namespace:(NSString *)namespace_ canonicalId:(NSString * _Nullable)canonicalId createdAt:(int64_t)createdAt disposition:(Store6MutationsMutationEffectDisposition *)disposition completedAt:(Store6MutationsLong * _Nullable)completedAt __attribute__((swift_name("init(clientId:clientSequence:effectIndex:kind:namespace:canonicalId:createdAt:disposition:completedAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable canonicalId __attribute__((swift_name("canonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable completedAt __attribute__((swift_name("completedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdAt __attribute__((swift_name("createdAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationEffectDisposition *disposition __attribute__((swift_name("disposition")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t effectIndex __attribute__((swift_name("effectIndex")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationEffectKind *kind __attribute__((swift_name("kind")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly, getter=namespace) NSString *namespace_ __attribute__((swift_name("namespace_")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationExecutionPhase")))
+@interface Store6MutationsMutationExecutionPhase : Store6MutationsKotlinEnum<Store6MutationsMutationExecutionPhase *>
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
+- (instancetype)initWithName:(NSString *)name ordinal:(int32_t)ordinal __attribute__((swift_name("init(name:ordinal:)"))) __attribute__((objc_designated_initializer)) __attribute__((unavailable));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *unprepared __attribute__((swift_name("unprepared")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *ready __attribute__((swift_name("ready")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *inflight __attribute__((swift_name("inflight")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *refreshRequired __attribute__((swift_name("refreshRequired")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *acked __attribute__((swift_name("acked")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *effectsPending __attribute__((swift_name("effectsPending")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *parked __attribute__((swift_name("parked")));
+@property (class, readonly) Store6MutationsMutationExecutionPhase *retired __attribute__((swift_name("retired")));
++ (Store6MutationsKotlinArray<Store6MutationsMutationExecutionPhase *> *)values __attribute__((swift_name("values()")));
+@property (class, readonly) NSArray<Store6MutationsMutationExecutionPhase *> *entries __attribute__((swift_name("entries")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationExecutionRecord")))
+@interface Store6MutationsMutationExecutionRecord : Store6MutationsBase
+- (instancetype)initWithClientId:(NSString *)clientId clientSequence:(int64_t)clientSequence phase:(Store6MutationsMutationExecutionPhase *)phase currentGeneration:(int32_t)currentGeneration attempt:(int32_t)attempt lastAttemptAt:(Store6MutationsLong * _Nullable)lastAttemptAt activeFailureId:(Store6MutationsLong * _Nullable)activeFailureId retiredAt:(Store6MutationsLong * _Nullable)retiredAt __attribute__((swift_name("init(clientId:clientSequence:phase:currentGeneration:attempt:lastAttemptAt:activeFailureId:retiredAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable activeFailureId __attribute__((swift_name("activeFailureId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t attempt __attribute__((swift_name("attempt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t currentGeneration __attribute__((swift_name("currentGeneration")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable lastAttemptAt __attribute__((swift_name("lastAttemptAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationExecutionPhase *phase __attribute__((swift_name("phase")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable retiredAt __attribute__((swift_name("retiredAt")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationFailureRecord")))
+@interface Store6MutationsMutationFailureRecord : Store6MutationsBase
+- (instancetype)initWithFailureId:(int64_t)failureId clientId:(NSString *)clientId clientSequence:(int64_t)clientSequence generation:(int32_t)generation kind:(Store6MutationsMutationFailureKind *)kind detail:(NSString *)detail message:(NSString *)message occurredAt:(int64_t)occurredAt __attribute__((swift_name("init(failureId:clientId:clientSequence:generation:kind:detail:message:occurredAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *detail __attribute__((swift_name("detail")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t failureId __attribute__((swift_name("failureId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t generation __attribute__((swift_name("generation")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationFailureKind *kind __attribute__((swift_name("kind")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *message __attribute__((swift_name("message")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t occurredAt __attribute__((swift_name("occurredAt")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationIntentRecord")))
+@interface Store6MutationsMutationIntentRecord : Store6MutationsBase
+- (instancetype)initWithRowId:(int64_t)rowId recordVersion:(int32_t)recordVersion clientId:(NSString *)clientId clientSequence:(int64_t)clientSequence mutationId:(NSString *)mutationId namespace:(NSString *)namespace_ canonicalId:(NSString *)canonicalId mutatorId:(NSString *)mutatorId mutatorVersion:(int32_t)mutatorVersion argsBlob:(Store6MutationsKotlinByteArray *)argsBlob idempotencyRoot:(NSString *)idempotencyRoot createdAt:(int64_t)createdAt __attribute__((swift_name("init(rowId:recordVersion:clientId:clientSequence:mutationId:namespace:canonicalId:mutatorId:mutatorVersion:argsBlob:idempotencyRoot:createdAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsKotlinByteArray *argsBlob __attribute__((swift_name("argsBlob")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *canonicalId __attribute__((swift_name("canonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *clientId __attribute__((swift_name("clientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t clientSequence __attribute__((swift_name("clientSequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdAt __attribute__((swift_name("createdAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *idempotencyRoot __attribute__((swift_name("idempotencyRoot")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *mutationId __attribute__((swift_name("mutationId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *mutatorId __attribute__((swift_name("mutatorId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t mutatorVersion __attribute__((swift_name("mutatorVersion")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly, getter=namespace) NSString *namespace_ __attribute__((swift_name("namespace_")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int32_t recordVersion __attribute__((swift_name("recordVersion")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t rowId __attribute__((swift_name("rowId")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+ *   kotlin.SubclassOptInRequired(markerClass=[NormalClass(value=org/mobilenativefoundation/store6/core/DelicateStoreApi)])
+*/
+__attribute__((swift_name("MutationJournalTransaction")))
+@protocol Store6MutationsMutationJournalTransaction
+@required
+- (NSArray<Store6MutationsMutationAckRecord *> *)acksClientId:(NSString *)clientId __attribute__((swift_name("acks(clientId:)")));
+- (void)advanceAliasRecord:(Store6MutationsMutationKeyAliasRecord *)record __attribute__((swift_name("advanceAlias(record:)")));
+- (void)advanceClientRecord:(Store6MutationsMutationClientRecord *)record __attribute__((swift_name("advanceClient(record:)")));
+- (void)advanceEffectRecord:(Store6MutationsMutationEffectRecord *)record __attribute__((swift_name("advanceEffect(record:)")));
+- (void)advanceExecutionRecord:(Store6MutationsMutationExecutionRecord *)record __attribute__((swift_name("advanceExecution(record:)")));
+- (void)advanceTombstoneRecord:(Store6MutationsMutationKeyTombstoneRecord *)record __attribute__((swift_name("advanceTombstone(record:)")));
+- (NSArray<Store6MutationsMutationKeyAliasRecord *> *)aliases __attribute__((swift_name("aliases()")));
+- (Store6MutationsMutationFailureRecord *)appendFailureClientId:(NSString *)clientId clientSequence:(int64_t)clientSequence generation:(int32_t)generation kind:(Store6MutationsMutationFailureKind *)kind detail:(NSString *)detail message:(NSString *)message occurredAt:(int64_t)occurredAt __attribute__((swift_name("appendFailure(clientId:clientSequence:generation:kind:detail:message:occurredAt:)")));
+- (NSArray<Store6MutationsMutationAttemptRecord *> *)attemptsClientId:(NSString *)clientId __attribute__((swift_name("attempts(clientId:)")));
+- (Store6MutationsMutationClientRecord * _Nullable)clientClientId:(NSString *)clientId __attribute__((swift_name("client(clientId:)")));
+- (Store6MutationsMutationClientRecord *)confirmRetiredThroughClientId:(NSString *)clientId requestedThroughSequence:(int64_t)requestedThroughSequence serverConfirmedThroughSequence:(int64_t)serverConfirmedThroughSequence __attribute__((swift_name("confirmRetiredThrough(clientId:requestedThroughSequence:serverConfirmedThroughSequence:)")));
+- (NSArray<Store6MutationsMutationEffectRecord *> *)effectsClientId:(NSString *)clientId __attribute__((swift_name("effects(clientId:)")));
+- (NSArray<Store6MutationsMutationExecutionRecord *> *)executionsClientId:(NSString *)clientId __attribute__((swift_name("executions(clientId:)")));
+- (NSArray<Store6MutationsMutationFailureRecord *> *)failuresClientId:(NSString *)clientId __attribute__((swift_name("failures(clientId:)")));
+- (void)insertAckRecord:(Store6MutationsMutationAckRecord *)record __attribute__((swift_name("insertAck(record:)")));
+- (void)insertAliasRecord:(Store6MutationsMutationKeyAliasRecord *)record __attribute__((swift_name("insertAlias(record:)")));
+- (void)insertAttemptRecord:(Store6MutationsMutationAttemptRecord *)record __attribute__((swift_name("insertAttempt(record:)")));
+- (void)insertClientRecord:(Store6MutationsMutationClientRecord *)record __attribute__((swift_name("insertClient(record:)")));
+- (void)insertEffectRecord:(Store6MutationsMutationEffectRecord *)record __attribute__((swift_name("insertEffect(record:)")));
+- (void)insertExecutionRecord:(Store6MutationsMutationExecutionRecord *)record __attribute__((swift_name("insertExecution(record:)")));
+- (Store6MutationsMutationIntentRecord *)insertIntentRecordVersion:(int32_t)recordVersion clientId:(NSString *)clientId clientSequence:(int64_t)clientSequence mutationId:(NSString *)mutationId namespace:(NSString *)namespace_ canonicalId:(NSString *)canonicalId mutatorId:(NSString *)mutatorId mutatorVersion:(int32_t)mutatorVersion argsBlob:(Store6MutationsKotlinByteArray *)argsBlob idempotencyRoot:(NSString *)idempotencyRoot createdAt:(int64_t)createdAt __attribute__((swift_name("insertIntent(recordVersion:clientId:clientSequence:mutationId:namespace:canonicalId:mutatorId:mutatorVersion:argsBlob:idempotencyRoot:createdAt:)")));
+- (void)insertTombstoneRecord:(Store6MutationsMutationKeyTombstoneRecord *)record __attribute__((swift_name("insertTombstone(record:)")));
+- (NSArray<Store6MutationsMutationIntentRecord *> *)intentsClientId:(NSString *)clientId __attribute__((swift_name("intents(clientId:)")));
+- (void)pruneClientId:(NSString *)clientId serverConfirmedRetiredThroughSequence:(int64_t)serverConfirmedRetiredThroughSequence __attribute__((swift_name("prune(clientId:serverConfirmedRetiredThroughSequence:)")));
+- (void)recordConflictReceiptRecord:(Store6MutationsMutationAttemptRecord *)record __attribute__((swift_name("recordConflictReceipt(record:)")));
+- (NSArray<Store6MutationsMutationKeyTombstoneRecord *> *)tombstones __attribute__((swift_name("tombstones()")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationKeyAliasRecord")))
+@interface Store6MutationsMutationKeyAliasRecord : Store6MutationsBase
+- (instancetype)initWithSourceNamespace:(NSString *)sourceNamespace sourceCanonicalId:(NSString *)sourceCanonicalId targetNamespace:(NSString *)targetNamespace targetCanonicalId:(NSString *)targetCanonicalId state:(Store6MutationsMutationAliasState *)state createdByClientId:(NSString *)createdByClientId createdBySequence:(int64_t)createdBySequence createdAt:(int64_t)createdAt activatedAt:(Store6MutationsLong * _Nullable)activatedAt __attribute__((swift_name("init(sourceNamespace:sourceCanonicalId:targetNamespace:targetCanonicalId:state:createdByClientId:createdBySequence:createdAt:activatedAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable activatedAt __attribute__((swift_name("activatedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdAt __attribute__((swift_name("createdAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *createdByClientId __attribute__((swift_name("createdByClientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdBySequence __attribute__((swift_name("createdBySequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *sourceCanonicalId __attribute__((swift_name("sourceCanonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *sourceNamespace __attribute__((swift_name("sourceNamespace")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationAliasState *state __attribute__((swift_name("state")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *targetCanonicalId __attribute__((swift_name("targetCanonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *targetNamespace __attribute__((swift_name("targetNamespace")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationKeyTombstoneRecord")))
+@interface Store6MutationsMutationKeyTombstoneRecord : Store6MutationsBase
+- (instancetype)initWithNamespace:(NSString *)namespace_ canonicalId:(NSString *)canonicalId createdByClientId:(NSString *)createdByClientId createdBySequence:(int64_t)createdBySequence state:(Store6MutationsMutationTombstoneState *)state createdAt:(int64_t)createdAt activatedAt:(Store6MutationsLong * _Nullable)activatedAt supersededByClientId:(NSString * _Nullable)supersededByClientId supersededBySequence:(Store6MutationsLong * _Nullable)supersededBySequence supersededAt:(Store6MutationsLong * _Nullable)supersededAt __attribute__((swift_name("init(namespace:canonicalId:createdByClientId:createdBySequence:state:createdAt:activatedAt:supersededByClientId:supersededBySequence:supersededAt:)"))) __attribute__((objc_designated_initializer));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable activatedAt __attribute__((swift_name("activatedAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *canonicalId __attribute__((swift_name("canonicalId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdAt __attribute__((swift_name("createdAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString *createdByClientId __attribute__((swift_name("createdByClientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) int64_t createdBySequence __attribute__((swift_name("createdBySequence")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly, getter=namespace) NSString *namespace_ __attribute__((swift_name("namespace_")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsMutationTombstoneState *state __attribute__((swift_name("state")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable supersededAt __attribute__((swift_name("supersededAt")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) NSString * _Nullable supersededByClientId __attribute__((swift_name("supersededByClientId")));
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+@property (readonly) Store6MutationsLong * _Nullable supersededBySequence __attribute__((swift_name("supersededBySequence")));
+@end
+
+
+/**
+ * @note annotations
+ *   org.mobilenativefoundation.store6.core.ExperimentalStoreApi
+*/
+__attribute__((objc_subclassing_restricted))
+__attribute__((swift_name("MutationTombstoneState")))
+@interface Store6MutationsMutationTombstoneState : Store6MutationsKotlinEnum<Store6MutationsMutationTombstoneState *>
++ (instancetype)alloc __attribute__((unavailable));
++ (instancetype)allocWithZone:(struct _NSZone *)zone __attribute__((unavailable));
+- (instancetype)initWithName:(NSString *)name ordinal:(int32_t)ordinal __attribute__((swift_name("init(name:ordinal:)"))) __attribute__((objc_designated_initializer)) __attribute__((unavailable));
+@property (class, readonly) Store6MutationsMutationTombstoneState *pending __attribute__((swift_name("pending")));
+@property (class, readonly) Store6MutationsMutationTombstoneState *active __attribute__((swift_name("active")));
+@property (class, readonly) Store6MutationsMutationTombstoneState *superseded __attribute__((swift_name("superseded")));
++ (Store6MutationsKotlinArray<Store6MutationsMutationTombstoneState *> *)values __attribute__((swift_name("values()")));
+@property (class, readonly) NSArray<Store6MutationsMutationTombstoneState *> *entries __attribute__((swift_name("entries")));
 @end
 
 __attribute__((objc_subclassing_restricted))

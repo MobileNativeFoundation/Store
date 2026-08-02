@@ -12,7 +12,8 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The authored Lincheck budget runs inside :store6-mutations:build and takes about 62 minutes.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:

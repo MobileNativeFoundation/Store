@@ -10,9 +10,11 @@ import app.cash.turbine.test
 import app.cash.turbine.withTurbineTimeout
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest as coroutineRunTest
@@ -27,6 +29,7 @@ import org.mobilenativefoundation.store6.core.StoreResult
 import org.mobilenativefoundation.store6.core.store
 import org.mobilenativefoundation.store6.core.seam.StoreWriteHandle
 import org.mobilenativefoundation.store6.core.seam.runtime
+import org.mobilenativefoundation.store6.mutations.storage.InMemoryMutationJournalStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -290,6 +293,31 @@ class MutationAliasFacadeTest {
             )
             users.drain(provisional)
             assertEquals("real-2", backend.receivedPushes.last().identity.canonicalId)
+        } finally {
+            users.close()
+        }
+    }
+
+    @Test
+    fun presentAckToActiveAlias_adoptsAtTerminalIdentity() = runTest {
+        val mutations = AliasMutationSet()
+        val backend = FakeBackend()
+        backend.redirectEcho("source" to "canonical", "canonical" to "terminal")
+        val source = MutationsTestKey("source")
+        val canonical = MutationsTestKey("canonical")
+        val users = aliasMutationStore(mutations.registry, backend)
+
+        try {
+            users.mutate(canonical, mutations.rename, "terminal-seed")
+            users.drain(canonical)
+
+            users.mutate(source, mutations.rename, "source-authoritative")
+            users.drain(source)
+
+            assertEquals(
+                "source-authoritative",
+                users.get(source, Freshness.LocalOnly),
+            )
         } finally {
             users.close()
         }
@@ -764,6 +792,237 @@ class MutationAliasFacadeTest {
     }
 
     @Test
+    fun aliasActivationCacheHandoff_neverExposesPartialSiblingProjection() = runTest {
+        val mutations = AliasMutationSet()
+        val backend = FakeBackend()
+        val source = MutationsTestKey("handoff-source")
+        val target = MutationsTestKey("handoff-target")
+        val secondPushEntered = CompletableDeferred<Unit>()
+        val releaseSecondPush = CompletableDeferred<Unit>()
+        var pushCount = 0
+        backend.pushBehavior = { key, value ->
+            pushCount += 1
+            if (pushCount == 2) {
+                secondPushEntered.complete(Unit)
+                releaseSecondPush.await()
+            }
+            MutationPresentAck(
+                authoritative = value,
+                etag = "etag-$pushCount",
+                canonicalKey = target.takeIf { key.canonicalId() == source.canonicalId() },
+            )
+        }
+        val journal = AliasRetireGateJournal(mutations.registry.registrations)
+        val harness = aliasHarness(mutations.registry, backend, journal = journal)
+        val users = harness.users
+
+        val headId = users.mutate(source, mutations.rename, "head")
+        val siblingId = users.mutate(source, mutations.append, "+tail")
+        val drain =
+            backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                users.drain(source)
+            }
+
+        try {
+            // Before the repair this pauses after ACTIVE routing publication but before retire;
+            // after the repair it pauses on sibling push, after the one-snapshot handoff.
+            select<Unit> {
+                journal.retireEntered.onAwait { }
+                secondPushEntered.onAwait { }
+            }
+
+            val pending = users.pending(source).map(PendingIntent::mutationId)
+            var observed: StoreResult.Data<String>? = null
+            users.stream(source, Freshness.LocalOnly).test {
+                observed = awaitData()
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            assertEquals(listOf(siblingId), pending)
+            assertEquals("head+tail", checkNotNull(observed).value)
+            assertEquals(Origin.OVERLAY, checkNotNull(observed).origin)
+            assertTrue(headId !in pending)
+        } finally {
+            journal.releaseRetire.complete(Unit)
+            releaseSecondPush.complete(Unit)
+            drain.await()
+            users.close()
+        }
+    }
+
+    @Test
+    fun concurrentEnqueueDuringAliasActivation_rehomesAtTerminalIdentity() = runTest {
+        val mutations = AliasMutationSet()
+        val backend = FakeBackend()
+        val source = MutationsTestKey("enqueue-source")
+        val target = MutationsTestKey("enqueue-target")
+        backend.redirectEcho(source.canonicalId() to target.canonicalId())
+        val applyEntered = CompletableDeferred<Unit>()
+        val releaseApply = CompletableDeferred<Unit>()
+        val handle =
+            object : StoreWriteHandle<MutationsTestKey, String> {
+                override suspend fun apply(
+                    key: MutationsTestKey,
+                    value: String,
+                ) {
+                    applyEntered.complete(Unit)
+                    releaseApply.await()
+                }
+
+                override suspend fun markStale(key: MutationsTestKey) = Unit
+
+                override suspend fun confirmFresh(
+                    key: MutationsTestKey,
+                    etag: String?,
+                ) = Unit
+            }
+        val journal = LateAppendGateJournal(mutations.registry.registrations)
+        val harness =
+            aliasHarness(
+                registry = mutations.registry,
+                backend = backend,
+                journal = journal,
+                engineWriteHandle = handle,
+                nonSuspendingBaseValue = "base",
+            )
+        val users = harness.users
+
+        users.mutate(source, mutations.rename, "head")
+        val drain =
+            backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                users.drain(source)
+            }
+        applyEntered.await()
+
+        journal.armLateAppend()
+        val lateAppend =
+            backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                users.mutate(source, mutations.append, "+late")
+            }
+        journal.lateAppendEntered.await()
+
+        // Current code can publish ACTIVE while append is paused after facade resolution. A
+        // shared enqueue/activation gate may instead keep the drain queued behind that append.
+        releaseApply.complete(Unit)
+        testScheduler.runCurrent()
+        journal.releaseLateAppend.complete(Unit)
+
+        val lateId = lateAppend.await()
+        drain.await()
+        try {
+            assertEquals(target.identity(), harness.engine.terminalIdentityOf(source.identity()))
+            assertEquals(
+                listOf(lateId),
+                users.pending(source).map(PendingIntent::mutationId),
+            )
+            assertEquals(
+                listOf(target.canonicalId()),
+                users.pendingWrites().map(PendingIntent::canonicalId),
+            )
+            assertEquals("head+late", harness.engine.projectAll(target, "head"))
+        } finally {
+            users.close()
+        }
+    }
+
+    @Test
+    fun suspendingResolver_doesNotHoldGlobalMutationGate() = runTest {
+        val mutations = AliasMutationSet()
+        val backend = FakeBackend()
+        val source = MutationsTestKey("resolver-source")
+        val target = MutationsTestKey("resolver-target")
+        backend.redirectEcho(source.canonicalId() to target.canonicalId())
+        val storage = InMemoryMutationJournalStorage()
+        val first =
+            aliasHarness(
+                registry = mutations.registry,
+                backend = backend,
+                journal =
+                    StorageBackedMutationJournal(
+                        storage = storage,
+                        registrations = mutations.registry.registrations,
+                        hydrateOnFirstUse = true,
+                    ),
+            )
+        first.users.mutate(source, mutations.rename, "head")
+        first.users.drain(source)
+        first.users.close()
+
+        val resolverEntered = CompletableDeferred<Unit>()
+        val releaseResolver = CompletableDeferred<Unit>()
+        val reopened =
+            aliasHarness(
+                registry = mutations.registry,
+                backend = backend,
+                journal =
+                    StorageBackedMutationJournal(
+                        storage = storage,
+                        registrations = mutations.registry.registrations,
+                        hydrateOnFirstUse = true,
+                    ),
+                keyResolver =
+                    MutationKeyResolver { identity ->
+                        if (identity.canonicalId == target.canonicalId()) {
+                            resolverEntered.complete(Unit)
+                            releaseResolver.await()
+                        }
+                        MutationsTestKeyResolver.resolve(identity)
+                    },
+                nonSuspendingBaseValue = "base",
+            )
+        val blocked =
+            backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                reopened.users.mutate(source, mutations.append, "+blocked")
+            }
+        resolverEntered.await()
+        val unrelated =
+            backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                reopened.users.mutate(
+                    MutationsTestKey("resolver-unrelated"),
+                    mutations.append,
+                    "+free",
+                )
+            }
+        testScheduler.runCurrent()
+
+        try {
+            assertTrue(unrelated.isCompleted)
+        } finally {
+            releaseResolver.complete(Unit)
+            blocked.await()
+            unrelated.await()
+            reopened.users.close()
+        }
+    }
+
+    @Test
+    fun pendingInspection_usesOneRuntimeSnapshotAcrossAliasHandoff() = runTest {
+        val staged = stageInspectionSplit(InspectionSplit.KEYED)
+        try {
+            assertTrue(
+                staged.siblingId in
+                    staged.users.pending(staged.source).map(PendingIntent::mutationId),
+            )
+        } finally {
+            staged.drain.cancelAndJoin()
+            staged.users.close()
+        }
+    }
+
+    @Test
+    fun pendingWritesInspection_usesOneRuntimeSnapshotAcrossAliasHandoff() = runTest {
+        val staged = stageInspectionSplit(InspectionSplit.GLOBAL)
+        try {
+            assertTrue(
+                staged.siblingId in staged.users.pendingWrites().map(PendingIntent::mutationId),
+            )
+        } finally {
+            staged.drain.cancelAndJoin()
+            staged.users.close()
+        }
+    }
+
+    @Test
     fun closeWhileWaitingForResolver_cancelsStreamPromptlyAndReleasesRetrySubscription() = runTest {
         val mutations = AliasMutationSet()
         val backend = FakeBackend()
@@ -933,6 +1192,175 @@ private class AliasHarness(
     val engine: MutationEngine<MutationsTestKey, String>,
     val users: MutationStore<MutationsTestKey, String>,
 )
+
+private class AliasRetireGateJournal(
+    registrations: Map<String, MutatorRegistration<*, String>>,
+) : StorageBackedMutationJournal<String>(
+        storage = InMemoryMutationJournalStorage(),
+        registrations = registrations,
+        hydrateOnFirstUse = true,
+    ) {
+    val retireEntered = CompletableDeferred<Unit>()
+    val releaseRetire = CompletableDeferred<Unit>()
+
+    override suspend fun retire(
+        key: KeyIdentity,
+        mutationId: String,
+    ) {
+        retireEntered.complete(Unit)
+        releaseRetire.await()
+        super.retire(key, mutationId)
+    }
+}
+
+private class LateAppendGateJournal(
+    registrations: Map<String, MutatorRegistration<*, String>>,
+) : StorageBackedMutationJournal<String>(
+        storage = InMemoryMutationJournalStorage(),
+        registrations = registrations,
+        hydrateOnFirstUse = true,
+    ) {
+    val lateAppendEntered = CompletableDeferred<Unit>()
+    val releaseLateAppend = CompletableDeferred<Unit>()
+    private var gateNextAppend = false
+
+    fun armLateAppend() {
+        gateNextAppend = true
+    }
+
+    override suspend fun append(
+        key: KeyIdentity,
+        entry: JournalEntry<String>,
+    ): String {
+        if (gateNextAppend) {
+            gateNextAppend = false
+            lateAppendEntered.complete(Unit)
+            releaseLateAppend.await()
+        }
+        return super.append(key, entry)
+    }
+}
+
+private enum class InspectionSplit {
+    KEYED,
+    GLOBAL,
+}
+
+private class SnapshotSwapOnReadJournal(
+    registrations: Map<String, MutatorRegistration<*, String>>,
+) : StorageBackedMutationJournal<String>(
+        storage = InMemoryMutationJournalStorage(),
+        registrations = registrations,
+        hydrateOnFirstUse = true,
+    ) {
+    private var split: InspectionSplit? = null
+    private lateinit var source: KeyIdentity
+    private lateinit var target: KeyIdentity
+    private lateinit var retiredMutationId: String
+
+    fun arm(
+        split: InspectionSplit,
+        source: KeyIdentity,
+        target: KeyIdentity,
+        retiredMutationId: String,
+    ) {
+        this.split = split
+        this.source = source
+        this.target = target
+        this.retiredMutationId = retiredMutationId
+    }
+
+    override fun pendingSnapshot(key: KeyIdentity): List<JournalEntry<String>> {
+        if (split == InspectionSplit.KEYED) swapToActiveSnapshot()
+        return super.pendingSnapshot(key)
+    }
+
+    override fun identities(): Set<KeyIdentity> {
+        val before = super.identities()
+        if (split == InspectionSplit.GLOBAL) swapToActiveSnapshot()
+        return before
+    }
+
+    private fun swapToActiveSnapshot() {
+        if (split == null) return
+        split = null
+        val current = runtimeState.snapshots.value
+        val edge = checkNotNull(current.aliases[source])
+        val siblings =
+            current.entries[source]
+                .orEmpty()
+                .filterNot { entry -> entry.mutationId == retiredMutationId }
+        val targetRows =
+            (current.entries[target].orEmpty() + siblings)
+                .distinctBy(JournalEntry<String>::mutationId)
+                .sortedBy(JournalEntry<String>::durableClientSequence)
+        val movedEntries =
+            if (targetRows.isEmpty()) {
+                current.entries - source - target
+            } else {
+                current.entries - source + (target to targetRows)
+            }
+        runtimeState.snapshots.value =
+            current.copy(
+                entries = movedEntries,
+                aliases = current.aliases + (source to edge.copy(state = AliasEdgeState.ACTIVE)),
+            )
+    }
+}
+
+private class InspectionSplitHarness(
+    val users: MutationStore<MutationsTestKey, String>,
+    val source: MutationsTestKey,
+    val siblingId: String,
+    val drain: Deferred<Unit>,
+)
+
+private suspend fun TestScope.stageInspectionSplit(
+    split: InspectionSplit,
+): InspectionSplitHarness {
+    val mutations = AliasMutationSet()
+    val backend = FakeBackend()
+    val source = MutationsTestKey("inspection-source-${split.name.lowercase()}")
+    val target = MutationsTestKey("inspection-target-${split.name.lowercase()}")
+    backend.redirectEcho(source.canonicalId() to target.canonicalId())
+    val applyEntered = CompletableDeferred<Unit>()
+    val releaseApply = CompletableDeferred<Unit>()
+    val handle =
+        object : StoreWriteHandle<MutationsTestKey, String> {
+            override suspend fun apply(
+                key: MutationsTestKey,
+                value: String,
+            ) {
+                applyEntered.complete(Unit)
+                releaseApply.await()
+            }
+
+            override suspend fun markStale(key: MutationsTestKey) = Unit
+
+            override suspend fun confirmFresh(
+                key: MutationsTestKey,
+                etag: String?,
+            ) = Unit
+        }
+    val journal = SnapshotSwapOnReadJournal(mutations.registry.registrations)
+    val harness =
+        aliasHarness(
+            registry = mutations.registry,
+            backend = backend,
+            journal = journal,
+            engineWriteHandle = handle,
+            nonSuspendingBaseValue = "base",
+        )
+    val headId = harness.users.mutate(source, mutations.rename, "head")
+    val siblingId = harness.users.mutate(source, mutations.append, "+tail")
+    val drain =
+        backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+            harness.users.drain(source)
+        }
+    applyEntered.await()
+    journal.arm(split, source.identity(), target.identity(), headId)
+    return InspectionSplitHarness(harness.users, source, siblingId, drain)
+}
 
 /**
  * Mirrors the [mutationStore] factory wiring — same delegate construction cycle, captured

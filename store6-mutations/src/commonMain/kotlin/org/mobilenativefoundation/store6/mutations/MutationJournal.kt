@@ -6,9 +6,23 @@
 package org.mobilenativefoundation.store6.mutations
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store6.core.StoreKey
+import org.mobilenativefoundation.store6.mutations.storage.InMemoryMutationJournalStorage
+import org.mobilenativefoundation.store6.mutations.storage.MutationAliasState
+import org.mobilenativefoundation.store6.mutations.storage.MutationAckRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationAttemptRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationClientRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectRecord as StoredEffectRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase as StoredExecutionPhase
+import org.mobilenativefoundation.store6.mutations.storage.MutationExecutionRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationFailureRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage
+import org.mobilenativefoundation.store6.mutations.storage.MutationKeyAliasRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationIntentRecord
 
 internal data class KeyIdentity(
     val namespace: String,
@@ -119,7 +133,30 @@ internal class JournalEntry<V : Any>(
     val args: Any,
     val clientSequence: Long = 0L,
     val createdAtEpochMillis: Long = 0L,
+    internal val durableClientSequence: Long = clientSequence,
 )
+
+/** One immutable process-cache view: projection membership and alias routing move together. */
+internal data class MutationRuntimeSnapshot<V : Any>(
+    val entries: Map<KeyIdentity, List<JournalEntry<V>>> = emptyMap(),
+    val aliases: Map<KeyIdentity, AliasEdge> = emptyMap(),
+)
+
+/** Shared synchronization and publication state for the journal cache and alias router. */
+internal class MutationRuntimeState<V : Any> {
+    internal val mutex = Mutex()
+    internal val snapshots = MutableStateFlow(MutationRuntimeSnapshot<V>())
+
+    internal fun aliasesSnapshot(): Map<KeyIdentity, AliasEdge> = snapshots.value.aliases
+
+    internal fun updateAliases(
+        transform: (Map<KeyIdentity, AliasEdge>) -> Map<KeyIdentity, AliasEdge>,
+    ) {
+        snapshots.update { current ->
+            current.copy(aliases = transform(current.aliases))
+        }
+    }
+}
 
 internal interface MutationJournal<V : Any> {
     suspend fun append(
@@ -132,6 +169,16 @@ internal interface MutationJournal<V : Any> {
         mutationId: String,
     )
 
+    /** Rehomes a pending cache entry after durable alias activation without reinserting intent. */
+    suspend fun rehome(
+        from: KeyIdentity,
+        to: KeyIdentity,
+        entry: JournalEntry<V>,
+    ) {
+        retire(from, entry.mutationId)
+        append(to, entry)
+    }
+
     fun pendingSnapshot(key: KeyIdentity): List<JournalEntry<V>>
 
     /**
@@ -142,48 +189,255 @@ internal interface MutationJournal<V : Any> {
     fun identities(): Set<KeyIdentity>
 }
 
-internal class InMemoryMutationJournal<V : Any> : MutationJournal<V> {
-    private val entries =
-        MutableStateFlow<Map<KeyIdentity, List<JournalEntry<V>>>>(emptyMap())
-    private val mutations = Mutex()
+/** One internally copied view of all nine durable record groups for a single client. */
+internal class DurableJournalSnapshot(
+    val client: MutationClientRecord?,
+    val intents: List<MutationIntentRecord>,
+    val executions: List<MutationExecutionRecord>,
+    val attempts: List<MutationAttemptRecord>,
+    val acks: List<MutationAckRecord>,
+    val failures: List<MutationFailureRecord>,
+    val effects: List<StoredEffectRecord>,
+    val aliases: List<MutationKeyAliasRecord>,
+    val tombstones: List<MutationKeyTombstoneRecord>,
+)
+
+/**
+ * Cache-fronted adapter over the public durable storage seam.
+ *
+ * Synchronous overlay reads use the cache; every accepted append first commits the immutable
+ * intent and its initial execution row to [storage], then publishes the same entry to the cache.
+ * T2.4 hydrates this cache and owns the remaining execution-state persistence.
+ */
+internal open class StorageBackedMutationJournal<V : Any>(
+    internal val storage: MutationJournalStorage,
+    private val registrations: Map<String, MutatorRegistration<*, V>> = emptyMap(),
+    private val clientId: String = "client-0",
+    internal val hydrateOnFirstUse: Boolean = false,
+) : MutationJournal<V> {
+    internal val runtimeState = MutationRuntimeState<V>()
 
     override suspend fun append(
         key: KeyIdentity,
         entry: JournalEntry<V>,
     ): String =
-        mutations.withLock {
-            val current = entries.value
-            entries.value = current + (key to current[key].orEmpty() + entry)
-            entry.mutationId
+        runtimeState.mutex.withLock {
+            val registration = registrations[entry.mutatorId]
+            val argsVersion = registration?.argsVersion ?: 1
+            val argsBlob = registration?.encodeArgs(entry.args) ?: ByteArray(0)
+            // The durable bytes define the accepted intent. Decode that exact snapshot before
+            // committing so the live cache never retains a caller-owned mutable args object.
+            val acceptedArgs = registration?.decodeArgs(argsVersion, argsBlob) ?: entry.args
+            val storedEntry: JournalEntry<V> =
+                storage.transaction { transaction ->
+                    val currentClient =
+                        transaction.client(clientId)
+                            ?: MutationClientRecord(
+                                recordVersion = 1,
+                                clientId = clientId,
+                                lastAllocatedSequence = 0L,
+                                retiredThroughSequence = 0L,
+                                serverConfirmedRetiredThroughSequence = 0L,
+                                createdAt = entry.createdAtEpochMillis,
+                            ).also(transaction::insertClient)
+                    val sequence =
+                        if (entry.clientSequence > 0L) {
+                            entry.clientSequence
+                        } else {
+                            currentClient.lastAllocatedSequence + 1L
+                        }
+                    require(sequence == currentClient.lastAllocatedSequence + 1L) {
+                        "Mutation sequence $sequence must immediately follow " +
+                            "${currentClient.lastAllocatedSequence}."
+                    }
+                    transaction.advanceClient(
+                        MutationClientRecord(
+                            recordVersion = currentClient.recordVersion,
+                            clientId = clientId,
+                            lastAllocatedSequence = sequence,
+                            retiredThroughSequence = currentClient.retiredThroughSequence,
+                            serverConfirmedRetiredThroughSequence =
+                                currentClient.serverConfirmedRetiredThroughSequence,
+                            createdAt = currentClient.createdAt,
+                        ),
+                    )
+                    transaction.insertIntent(
+                        recordVersion = 1,
+                        clientId = clientId,
+                        clientSequence = sequence,
+                        mutationId = entry.mutationId,
+                        namespace = key.namespace,
+                        canonicalId = key.canonicalId,
+                        mutatorId = entry.mutatorId,
+                        mutatorVersion = argsVersion,
+                        argsBlob = argsBlob,
+                        idempotencyRoot = "$clientId:$sequence",
+                        createdAt = entry.createdAtEpochMillis,
+                    )
+                    transaction.insertExecution(
+                        MutationExecutionRecord(
+                            clientId = clientId,
+                            clientSequence = sequence,
+                            phase = StoredExecutionPhase.UNPREPARED,
+                            currentGeneration = 0,
+                            attempt = 0,
+                            lastAttemptAt = null,
+                            activeFailureId = null,
+                            retiredAt = null,
+                        ),
+                    )
+                    JournalEntry<V>(
+                        mutationId = entry.mutationId,
+                        mutatorId = entry.mutatorId,
+                        args = acceptedArgs,
+                        // Direct internal-shape tests intentionally use sequence zero. Persist a
+                        // legal allocated sequence while retaining their caller-visible cache
+                        // shape; factory-created entries already carry the same positive value.
+                        clientSequence = entry.clientSequence,
+                        createdAtEpochMillis = entry.createdAtEpochMillis,
+                        durableClientSequence = sequence,
+                    )
+                }
+            runtimeState.snapshots.update { current ->
+                current.copy(
+                    entries =
+                        current.entries +
+                            (key to current.entries[key].orEmpty() + storedEntry),
+                )
+            }
+            storedEntry.mutationId
         }
 
     override suspend fun retire(
         key: KeyIdentity,
         mutationId: String,
     ) {
-        mutations.withLock {
-            val current = entries.value
-            val remaining =
-                current[key]
-                    .orEmpty()
-                    .filterNot { it.mutationId == mutationId }
-            entries.value =
-                if (remaining.isEmpty()) {
-                    current - key
-                } else {
-                    current + (key to remaining)
-                }
+        runtimeState.mutex.withLock {
+            runtimeState.snapshots.update { current ->
+                val remaining =
+                    current.entries[key]
+                        .orEmpty()
+                        .filterNot { it.mutationId == mutationId }
+                val updatedEntries =
+                    if (remaining.isEmpty()) {
+                        current.entries - key
+                    } else {
+                        current.entries + (key to remaining)
+                    }
+                current.copy(entries = updatedEntries)
+            }
+        }
+    }
+
+    override suspend fun rehome(
+        from: KeyIdentity,
+        to: KeyIdentity,
+        entry: JournalEntry<V>,
+    ) {
+        runtimeState.mutex.withLock {
+            runtimeState.snapshots.update { current ->
+                val sourceRemaining =
+                    current.entries[from].orEmpty().filterNot { candidate ->
+                        candidate.mutationId == entry.mutationId
+                    }
+                val withoutSource =
+                    if (sourceRemaining.isEmpty()) {
+                        current.entries - from
+                    } else {
+                        current.entries + (from to sourceRemaining)
+                    }
+                current.copy(
+                    entries = withoutSource + (to to withoutSource[to].orEmpty() + entry),
+                )
+            }
         }
     }
 
     override fun pendingSnapshot(key: KeyIdentity): List<JournalEntry<V>> =
-        entries.value[key].orEmpty()
+        runtimeState.snapshots.value.entries[key].orEmpty()
 
-    override fun identities(): Set<KeyIdentity> = entries.value.keys
+    override fun identities(): Set<KeyIdentity> = runtimeState.snapshots.value.entries.keys
+
+    /** One immutable cache capture for inspection paths that must not split alias and entry reads. */
+    internal fun runtimeSnapshot(): MutationRuntimeSnapshot<V> = runtimeState.snapshots.value
+
+    /** Reads all nine record groups in one storage transaction; no consumer code runs inside. */
+    internal suspend fun readDurableSnapshot(): DurableJournalSnapshot =
+        storage.transaction { transaction ->
+            DurableJournalSnapshot(
+                client = transaction.client(clientId),
+                intents = transaction.intents(clientId),
+                executions = transaction.executions(clientId),
+                attempts = transaction.attempts(clientId),
+                acks = transaction.acks(clientId),
+                failures = transaction.failures(clientId),
+                effects = transaction.effects(clientId),
+                aliases = transaction.aliases(),
+                tombstones = transaction.tombstones(),
+            )
+        }
+
+    /** Atomically replaces projection membership and alias routing after successful hydration. */
+    internal suspend fun installHydratedState(
+        hydrated: Map<KeyIdentity, List<JournalEntry<V>>>,
+        aliases: Map<KeyIdentity, AliasEdge>,
+    ) {
+        runtimeState.mutex.withLock {
+            runtimeState.snapshots.value =
+                MutationRuntimeSnapshot(
+                    entries = hydrated.mapValues { (_, rows) -> rows.toList() },
+                    aliases = aliases.toMap(),
+                )
+        }
+    }
+
+    /**
+     * Publishes one post-commit alias retirement as a single runtime-cache linearization point.
+     * The durable edge remains the raw source-to-acknowledged-target fact; queued entries move to
+     * the already-resolved terminal execution residence.
+     */
+    internal suspend fun publishAliasRetirement(
+        source: KeyIdentity,
+        terminalTarget: KeyIdentity,
+        retiredMutationId: String,
+    ) {
+        runtimeState.mutex.withLock {
+            runtimeState.snapshots.update { current ->
+                val edge = checkNotNull(current.aliases[source]) {
+                    "Alias retirement requires a published pending edge for $source."
+                }
+                val sourceSiblings =
+                    current.entries[source]
+                        .orEmpty()
+                        .filterNot { entry -> entry.mutationId == retiredMutationId }
+                val mergedTarget =
+                    (current.entries[terminalTarget].orEmpty() + sourceSiblings)
+                        .distinctBy { entry -> entry.mutationId }
+                        .sortedBy { entry -> entry.durableClientSequence }
+                var updatedEntries = current.entries - source
+                updatedEntries =
+                    if (mergedTarget.isEmpty()) {
+                        updatedEntries - terminalTarget
+                    } else {
+                        updatedEntries + (terminalTarget to mergedTarget)
+                    }
+                current.copy(
+                    entries = updatedEntries,
+                    aliases =
+                        current.aliases +
+                            (source to edge.copy(state = AliasEdgeState.ACTIVE)),
+                )
+            }
+        }
+    }
 }
 
+/** The 021-compatible default journal, now implemented by the public in-memory storage seam. */
+internal class InMemoryMutationJournal<V : Any> :
+    StorageBackedMutationJournal<V>(storage = InMemoryMutationJournalStorage())
+
 // ---------------------------------------------------------------------------------------------
-// In-memory canonical alias routing (D15a, 021 preview).
+// Cache-fronted canonical alias routing (D15a).
 // ---------------------------------------------------------------------------------------------
 
 /** Stable machine detail for a canonical target in a different namespace (D15a). */
@@ -211,11 +465,51 @@ internal enum class AliasEdgeState {
 }
 
 /** One normalized same-namespace full-pair redirect: source identity to target identity (D15a). */
-internal class AliasEdge(
+internal data class AliasEdge(
     val source: KeyIdentity,
     val target: KeyIdentity,
-    var state: AliasEdgeState,
+    val state: AliasEdgeState,
+    val createdByClientId: String,
+    val createdBySequence: Long,
+    val createdAt: Long,
 )
+
+private fun MutationKeyAliasRecord.toAliasEdge(): AliasEdge =
+    AliasEdge(
+        source = KeyIdentity(sourceNamespace, sourceCanonicalId),
+        target = KeyIdentity(targetNamespace, targetCanonicalId),
+        state =
+            when (state) {
+                MutationAliasState.PENDING -> AliasEdgeState.PENDING
+                MutationAliasState.ACTIVE -> AliasEdgeState.ACTIVE
+            },
+        createdByClientId = createdByClientId,
+        createdBySequence = createdBySequence,
+        createdAt = createdAt,
+    )
+
+internal fun List<MutationKeyAliasRecord>.toAliasEdgesBySource(): Map<KeyIdentity, AliasEdge> =
+    associate { record ->
+        val edge = record.toAliasEdge()
+        edge.source to edge
+    }
+
+internal fun terminalIdentity(
+    identity: KeyIdentity,
+    edges: Map<KeyIdentity, AliasEdge>,
+): KeyIdentity {
+    var current = identity
+    val visited = mutableSetOf<KeyIdentity>()
+    while (true) {
+        val edge = edges[current] ?: return current
+        if (edge.state != AliasEdgeState.ACTIVE) return current
+        check(visited.add(current)) {
+            "Alias chain from (${identity.namespace}, ${identity.canonicalId}) cycled at " +
+                "(${current.namespace}, ${current.canonicalId})."
+        }
+        current = edge.target
+    }
+}
 
 /** The outcome of validating one acknowledged canonical target at ack receipt (D15a). */
 internal sealed interface AliasAdmission {
@@ -226,6 +520,9 @@ internal sealed interface AliasAdmission {
      */
     class Admitted(
         val redirect: AliasEdge?,
+        internal val pendingRecord: MutationKeyAliasRecord?,
+        internal val idempotencyKey: String,
+        internal val effectiveTarget: KeyIdentity,
     ) : AliasAdmission
 
     /** The acknowledgement violates the alias protocol; the intent halts without adoption. */
@@ -236,29 +533,33 @@ internal sealed interface AliasAdmission {
 }
 
 /**
- * The 021 in-memory alias router: normalized same-namespace full-pair redirects with
+ * Cache-fronted alias adapter: normalized same-namespace full-pair redirects with
  * `PENDING`/`ACTIVE` states, transitive terminal resolution, and generation-idempotency receipt
  * tracking (D15a normative rules; D14 facade routing).
  *
- * DOUBLE-BUILD NOTE (plan T4.6): this router is a same-process preview and is expected to be
- * substantially rewritten when Issues 022/023 build canonical routing over durable records —
- * durable edges, restart rehydration, tombstone generations, retired-prefix interaction, and
- * pruning immunity are all deferred. Its TESTS (`MutationAliasFacadeTest`), not this
- * implementation, are the durable asset; 022's executor must not treat this machinery as
- * protected. Deferred proofs: 022
+ * PENDING and ACTIVE changes commit through [storage] before this synchronous routing cache is
+ * published. Restart hydration restores both states without advancing an advisory revision.
+ * Tombstone storage/hydration is modeled separately; tombstone activation orchestration and
+ * transactional retirement composition remain later slices. Deferred proofs: 022
  * `MutationJournalContractTest.kt::aliasEdgesAndActivation_roundTripAcrossRestart`; 023
  * `MutationAckOrchestrationTest.kt::ackAliasActivationRebasesQueuedSourceAndTargetSiblings`.
  * Tombstone generations and high-water interaction are R1-21's 022/023/024 tests; 021 records
  * no tombstones.
  */
-internal class InMemoryAliasRouter {
-    private val edges = mutableMapOf<KeyIdentity, AliasEdge>()
-
+internal class InMemoryAliasRouter(
+    private val storage: MutationJournalStorage = InMemoryMutationJournalStorage(),
+    private val runtimeState: MutationRuntimeState<*> = MutationRuntimeState<Any>(),
+) {
     // D15a: a retry of one generation idempotency key must return the same canonical target.
     // The receipt records the EFFECTIVE canonical identity (the source itself when the ack
     // carried no target or a self-alias), so a retry that flips between "unchanged" and a real
     // redirect is also a protocol failure. 022 owns the durable receipt row.
     private val effectiveTargetsByIdempotencyKey = mutableMapOf<String, KeyIdentity>()
+
+    /** Clears process-only retry receipts after the shared durable snapshot is installed. */
+    fun resetAfterHydration() {
+        effectiveTargetsByIdempotencyKey.clear()
+    }
 
     /**
      * Resolves the terminal identity for [identity] by following `ACTIVE` edges transitively
@@ -268,31 +569,24 @@ internal class InMemoryAliasRouter {
      * them).
      */
     fun terminalOf(identity: KeyIdentity): KeyIdentity {
-        var current = identity
-        val visited = mutableSetOf<KeyIdentity>()
-        while (true) {
-            val edge = edges[current] ?: return current
-            if (edge.state != AliasEdgeState.ACTIVE) return current
-            check(visited.add(current)) {
-                "Alias chain from (${identity.namespace}, ${identity.canonicalId}) cycled at " +
-                    "(${current.namespace}, ${current.canonicalId})."
-            }
-            current = edge.target
-        }
+        return terminalIdentity(identity, runtimeState.aliasesSnapshot())
     }
 
     /**
-     * Validates one acknowledged canonical target at ack receipt and, when legal, inserts or
-     * reuses the pending redirect edge and records the generation-idempotency receipt (D15a):
+     * Validates one acknowledged canonical target at ack receipt and prepares, but does not
+     * persist or publish, an optional pending redirect edge (D15a):
      * cross-namespace targets are rejected; a receipt mismatch for [idempotencyKey] is rejected;
      * a null or self target is an admitted no-op; a duplicate equal edge is idempotent; a
      * different target for an already-aliased source is a retarget rejection; a target whose
      * active-or-pending chain reaches back to [source] is a cycle rejection.
      */
-    fun admit(
+    suspend fun admit(
         source: KeyIdentity,
         claimed: KeyIdentity?,
         idempotencyKey: String,
+        createdByClientId: String,
+        createdBySequence: Long,
+        createdAt: Long,
     ): AliasAdmission {
         if (claimed != null && claimed.namespace != source.namespace) {
             return AliasAdmission.Rejected(
@@ -316,9 +610,14 @@ internal class InMemoryAliasRouter {
             )
         }
         if (claimed == null || claimed == source) {
-            effectiveTargetsByIdempotencyKey[idempotencyKey] = effectiveTarget
-            return AliasAdmission.Admitted(redirect = null)
+            return AliasAdmission.Admitted(
+                redirect = null,
+                pendingRecord = null,
+                idempotencyKey = idempotencyKey,
+                effectiveTarget = effectiveTarget,
+            )
         }
+        val edges = runtimeState.aliasesSnapshot()
         val existing = edges[source]
         if (existing != null && existing.target != claimed) {
             return AliasAdmission.Rejected(
@@ -330,7 +629,7 @@ internal class InMemoryAliasRouter {
                         "protocol violation.",
             )
         }
-        if (existing == null && reaches(from = claimed, needle = source)) {
+        if (existing == null && reaches(edges = edges, from = claimed, needle = source)) {
             return AliasAdmission.Rejected(
                 detail = ALIAS_FAILURE_DETAIL_CYCLE,
                 message =
@@ -339,14 +638,58 @@ internal class InMemoryAliasRouter {
                         "cycle.",
             )
         }
+        val pendingRecord =
+            if (existing == null) {
+                MutationKeyAliasRecord(
+                    sourceNamespace = source.namespace,
+                    sourceCanonicalId = source.canonicalId,
+                    targetNamespace = claimed.namespace,
+                    targetCanonicalId = claimed.canonicalId,
+                    state = MutationAliasState.PENDING,
+                    createdByClientId = createdByClientId,
+                    createdBySequence = createdBySequence,
+                    createdAt = createdAt,
+                    activatedAt = null,
+                )
+            } else {
+                null
+            }
         val edge =
-            existing ?: AliasEdge(
-                source = source,
-                target = claimed,
-                state = AliasEdgeState.PENDING,
-            ).also { edges[source] = it }
-        effectiveTargetsByIdempotencyKey[idempotencyKey] = claimed
-        return AliasAdmission.Admitted(redirect = edge)
+            existing
+                ?: AliasEdge(
+                    source = source,
+                    target = claimed,
+                    state = AliasEdgeState.PENDING,
+                    createdByClientId = createdByClientId,
+                    createdBySequence = createdBySequence,
+                    createdAt = createdAt,
+                )
+        return AliasAdmission.Admitted(
+            redirect = edge,
+            pendingRecord = pendingRecord,
+            idempotencyKey = idempotencyKey,
+            effectiveTarget = effectiveTarget,
+        )
+    }
+
+    /** Commits a non-durable-engine admission, then publishes its routing cache state. */
+    suspend fun commitAdmission(admission: AliasAdmission.Admitted) {
+        admission.pendingRecord?.let { record ->
+            storage.transaction { transaction -> transaction.insertAlias(record) }
+        }
+        publishAdmission(admission)
+    }
+
+    /** Publishes an admission only after the caller's durable transaction has committed. */
+    fun publishAdmission(admission: AliasAdmission.Admitted) {
+        runtimeState.updateAliases { edges ->
+            admission.pendingRecord?.let { record ->
+                edges +
+                    (KeyIdentity(record.sourceNamespace, record.sourceCanonicalId) to
+                        checkNotNull(admission.redirect))
+            } ?: edges
+        }
+        effectiveTargetsByIdempotencyKey[admission.idempotencyKey] = admission.effectiveTarget
     }
 
     /**
@@ -354,15 +697,56 @@ internal class InMemoryAliasRouter {
      * idempotent; the caller performs it inside the `NonCancellable` retirement handoff and then
      * synchronously advances the mutation-owned alias revision.
      */
-    fun activate(source: KeyIdentity) {
-        edges[source]?.state = AliasEdgeState.ACTIVE
+    suspend fun activate(
+        source: KeyIdentity,
+        activatedAt: Long,
+    ) {
+        val record = activationRecord(source, activatedAt) ?: return
+        storage.transaction { transaction ->
+            transaction.advanceAlias(record)
+        }
+        publishActivation(source)
+    }
+
+    /** Persists a prepared ACTIVE row without publishing a separate routing-cache state. */
+    suspend fun persistActivation(record: MutationKeyAliasRecord) {
+        storage.transaction { transaction -> transaction.advanceAlias(record) }
+    }
+
+    /** Builds the immutable ACTIVE row without touching storage or the routing cache. */
+    fun activationRecord(
+        source: KeyIdentity,
+        activatedAt: Long,
+    ): MutationKeyAliasRecord? {
+        val edge = runtimeState.aliasesSnapshot()[source] ?: return null
+        if (edge.state == AliasEdgeState.ACTIVE) return null
+        return MutationKeyAliasRecord(
+            sourceNamespace = edge.source.namespace,
+            sourceCanonicalId = edge.source.canonicalId,
+            targetNamespace = edge.target.namespace,
+            targetCanonicalId = edge.target.canonicalId,
+            state = MutationAliasState.ACTIVE,
+            createdByClientId = edge.createdByClientId,
+            createdBySequence = edge.createdBySequence,
+            createdAt = edge.createdAt,
+            activatedAt = activatedAt,
+        )
+    }
+
+    /** Publishes a previously committed ACTIVE row to the synchronous routing cache. */
+    fun publishActivation(source: KeyIdentity) {
+        runtimeState.updateAliases { edges ->
+            val edge = edges[source] ?: return@updateAliases edges
+            edges + (source to edge.copy(state = AliasEdgeState.ACTIVE))
+        }
     }
 
     /** The redirect edge whose source is [source], regardless of state; test/engine door. */
-    fun edgeFor(source: KeyIdentity): AliasEdge? = edges[source]
+    fun edgeFor(source: KeyIdentity): AliasEdge? = runtimeState.aliasesSnapshot()[source]
 
     /** Cycle guard: walks pending-or-active edges from [from] looking for [needle]. */
     private fun reaches(
+        edges: Map<KeyIdentity, AliasEdge>,
         from: KeyIdentity,
         needle: KeyIdentity,
     ): Boolean {

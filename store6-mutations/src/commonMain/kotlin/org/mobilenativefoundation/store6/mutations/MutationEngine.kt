@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -26,6 +27,24 @@ import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
 import org.mobilenativefoundation.store6.core.seam.StoreResults
 import org.mobilenativefoundation.store6.core.seam.StoreWriteHandle
 import org.mobilenativefoundation.store6.core.seam.WallClock
+import org.mobilenativefoundation.store6.mutations.storage.InMemoryMutationJournalStorage
+import org.mobilenativefoundation.store6.mutations.storage.MutationAckRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationAttemptRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationClientRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectDisposition
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectKind
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectRecord as StoredEffectRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase as StoredExecutionPhase
+import org.mobilenativefoundation.store6.mutations.storage.MutationExecutionRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationFailureRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationIntentRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationKeyAliasRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneRecord
+
+private const val HYDRATION_FAILURE_DETAIL_VALUE_PRE_ACK: String = "value-codec-pre-ack"
+private const val HYDRATION_FAILURE_DETAIL_VALUE_ACKED: String = "value-codec-acked"
+private const val HYDRATION_FAILURE_DETAIL_MUTATOR_MISSING: String = "mutator-missing"
+private const val HYDRATION_FAILURE_DETAIL_ARGS: String = "args-codec"
 
 /** The single in-memory attempt generation every 021 push transmits; merges are 023's (D2). */
 private const val IN_MEMORY_GENERATION: Int = 1
@@ -105,6 +124,12 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     internal val clientId: String = "client-0",
 ) {
     private val mutations = Mutex()
+    private val hydration = Mutex()
+    private val durableJournal =
+        (journal as? StorageBackedMutationJournal<V>)?.takeIf { candidate ->
+            candidate.hydrateOnFirstUse && valueCodec != null
+        }
+    private var hydrated = durableJournal == null
     private var nextMutationSequence = 0L
     private val signalSink = MutableSharedFlow<StoreKey>(replay = 1)
     private val poisonSink =
@@ -116,24 +141,39 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     // In-memory effect snapshots captured before first push (D8/R-0 §7); never executed at 021.
     private val effectSnapshots = mutableMapOf<String, List<MutationEffectRecord>>()
+    private val durableEffectRows = mutableMapOf<String, List<StoredEffectRecord>>()
+    private val hydratedTombstones = mutableListOf<MutationKeyTombstoneRecord>()
 
     // In-memory execution bookkeeping for truthful inspection (D3/R-0 §3). All of it is
     // rewritten over durable records at 022/023.
     private val phases = mutableMapOf<String, MutationExecutionPhase>()
     private val completedAttempts = mutableMapOf<String, Int>()
     private val drainFailures = mutableListOf<MutationFailure>()
+    private val durableExecutions = mutableMapOf<String, MutationExecutionRecord>()
+    private val durableAttempts = mutableMapOf<String, MutationAttemptRecord>()
+    private val durableAcks = mutableMapOf<String, MutationAckRecord>()
+    private val deadLettersByMutationId = mutableMapOf<String, DeadLetter>()
+    private val codecBlockedMutationIds = mutableSetOf<String>()
 
     // D12/D14: the live key map is CACHE ONLY. Global drain's correctness path is the durable
     // journal identity plus the resolver; every cache hit is revalidated against the exact pair
     // before reuse and a drifted entry is discarded. Facade terminal-alias resolution shares
     // this cache under the same revalidation rule (D15a: path compression may be cached but
     // never replaces durable edges).
-    private val liveKeys = mutableMapOf<KeyIdentity, K>()
+    private val liveKeys = MutableStateFlow<Map<KeyIdentity, K>>(emptyMap())
 
     // D15a's in-memory normalized alias table: same-namespace full-pair redirects with
     // PENDING/ACTIVE states plus generation-idempotency receipts. A same-process preview only;
     // 022/023 rebuild routing over durable records.
-    private val aliasRouter = InMemoryAliasRouter()
+    private val aliasRouter =
+        InMemoryAliasRouter(
+            storage =
+                (journal as? StorageBackedMutationJournal<V>)?.storage
+                    ?: InMemoryMutationJournalStorage(),
+            runtimeState =
+                (journal as? StorageBackedMutationJournal<V>)?.runtimeState
+                    ?: MutationRuntimeState<Any>(),
+        )
 
     // D14/D15a's lost-wakeup-free per-terminal-identity signals, both mutation-owned stateful
     // monotonic counters:
@@ -144,11 +184,14 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     //   facade/drain resolution attempt-or-success for an identity; a facade stream waiting
     //   after a resolver failure retries on a strictly newer value. A stream's own attempt
     //   never advances either signal.
-    private val aliasRevisionSignals = mutableMapOf<KeyIdentity, MutableStateFlow<Long>>()
-    private val resolutionPulseSignals = mutableMapOf<KeyIdentity, MutableStateFlow<Long>>()
+    private val aliasRevisionSignals =
+        MutableStateFlow<Map<KeyIdentity, MutableStateFlow<Long>>>(emptyMap())
+    private val resolutionPulseSignals =
+        MutableStateFlow<Map<KeyIdentity, MutableStateFlow<Long>>>(emptyMap())
 
     // R-0 §1's contiguous locally retired prefix, in-memory form, advertised on pushes (D15a).
     private var retiredThroughSequence = 0L
+    private var serverConfirmedRetiredThroughSequence = 0L
     private val retiredSequences = mutableSetOf<Long>()
 
     internal val changes: SharedFlow<StoreKey> = signalSink.asSharedFlow()
@@ -174,22 +217,301 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             override val changes: Flow<StoreKey> = this@MutationEngine.changes
         }
 
+    /**
+     * Rebuilds every process cache from one coherent durable snapshot. Codec work runs only after
+     * the storage transaction has returned; hydration never emits an overlay or alias revision.
+     */
+    internal suspend fun ensureHydrated() {
+        val durable = durableJournal ?: return
+        hydration.withLock {
+            if (hydrated) return
+            val snapshot = durable.readDurableSnapshot()
+            val hydratedAliases = snapshot.aliases.toAliasEdgesBySource()
+            hydratedTombstones.clear()
+            hydratedTombstones += snapshot.tombstones
+            val executionsBySequence = snapshot.executions.associateBy { it.clientSequence }
+            val attemptsByIdentity =
+                snapshot.attempts.associateBy { it.clientSequence to it.generation }
+            val failuresById = snapshot.failures.associateBy(MutationFailureRecord::failureId)
+            val effectsBySequence = snapshot.effects.groupBy { it.clientSequence }
+            val entriesByIdentity = linkedMapOf<KeyIdentity, MutableList<JournalEntry<V>>>()
+            val existingCodecFailures =
+                snapshot.failures
+                    .asSequence()
+                    .filter { failure -> failure.kind == MutationFailureKind.CODEC }
+                    .map { failure ->
+                        Triple(failure.clientSequence, failure.generation, failure.detail)
+                    }
+                    .toMutableSet()
+
+            phases.clear()
+            completedAttempts.clear()
+            durableExecutions.clear()
+            durableAttempts.clear()
+            durableAcks.clear()
+            deadLettersByMutationId.clear()
+            codecBlockedMutationIds.clear()
+            effectSnapshots.clear()
+            durableEffectRows.clear()
+            drainFailures.clear()
+            retiredSequences.clear()
+
+            val client = snapshot.client
+            if (client == null) {
+                durable.installHydratedState(emptyMap(), hydratedAliases)
+                aliasRouter.resetAfterHydration()
+                nextMutationSequence = 0L
+                retiredThroughSequence = 0L
+                serverConfirmedRetiredThroughSequence = 0L
+                hydrated = true
+                return
+            }
+
+            for (failure in snapshot.failures) {
+                drainFailures += failure.toPublicFailure()
+            }
+            for (ack in snapshot.acks) {
+                val intent = snapshot.intents.firstOrNull { it.clientSequence == ack.clientSequence }
+                if (intent != null) durableAcks[intent.mutationId] = ack
+            }
+
+            for (intent in snapshot.intents.sortedBy { it.clientSequence }) {
+                val execution = executionsBySequence[intent.clientSequence] ?: continue
+                val phase = execution.phase.toEnginePhase()
+                durableExecutions[intent.mutationId] = execution
+                phases[intent.mutationId] = phase
+                completedAttempts[intent.mutationId] = execution.attempt
+                if (execution.currentGeneration > 0) {
+                    attemptsByIdentity[intent.clientSequence to execution.currentGeneration]?.let {
+                        durableAttempts[intent.mutationId] = it
+                    }
+                }
+                effectSnapshots[intent.mutationId] =
+                    effectsBySequence[intent.clientSequence]
+                        .orEmpty()
+                        .sortedBy { it.effectIndex }
+                        .map { effect ->
+                            MutationEffectRecord(
+                                kind =
+                                    when (effect.kind) {
+                                        MutationEffectKind.KEY -> MutationEffectRecordKind.KEY
+                                        MutationEffectKind.NAMESPACE -> MutationEffectRecordKind.NAMESPACE
+                                    },
+                                namespace = effect.namespace,
+                                canonicalId = effect.canonicalId,
+                            )
+                        }
+                durableEffectRows[intent.mutationId] =
+                    effectsBySequence[intent.clientSequence]
+                        .orEmpty()
+                        .sortedBy { it.effectIndex }
+
+                if (phase == MutationExecutionPhase.PARKED) {
+                    val failure = execution.activeFailureId?.let(failuresById::get) ?: continue
+                    deadLettersByMutationId[intent.mutationId] =
+                        DeadLetter(
+                            namespace = intent.namespace,
+                            canonicalId = intent.canonicalId,
+                            mutationId = intent.mutationId,
+                            mutatorId = intent.mutatorId,
+                            generation = execution.currentGeneration,
+                            attempts = execution.attempt,
+                            failure = failure.toPublicFailure(),
+                            parkedAtEpochMillis = failure.occurredAt,
+                        )
+                    continue
+                }
+                if (phase == MutationExecutionPhase.RETIRED) {
+                    if (intent.clientSequence > client.retiredThroughSequence) {
+                        retiredSequences += intent.clientSequence
+                    }
+                    continue
+                }
+
+                var blocked = false
+                val preAck =
+                    phase == MutationExecutionPhase.UNPREPARED ||
+                        phase == MutationExecutionPhase.READY ||
+                        phase == MutationExecutionPhase.INFLIGHT ||
+                        phase == MutationExecutionPhase.REFRESH_REQUIRED
+                val registration = registry.registrations[intent.mutatorId]
+                val args =
+                    if (registration == null) {
+                        if (preAck) {
+                            classifyHydrationCodecFailure(
+                                intent = intent,
+                                generation = execution.currentGeneration,
+                                detail = HYDRATION_FAILURE_DETAIL_MUTATOR_MISSING,
+                                message =
+                                    "No mutator '${intent.mutatorId}' is registered for durable " +
+                                        "hydration.",
+                                existing = existingCodecFailures,
+                            )
+                            blocked = true
+                        }
+                        UnavailableMutationArgs
+                    } else {
+                        try {
+                            registration.decodeArgs(intent.mutatorVersion, intent.argsBlob)
+                        } catch (failure: Throwable) {
+                            if (failure is CancellationException) throw failure
+                            if (preAck) {
+                                classifyHydrationCodecFailure(
+                                    intent = intent,
+                                    generation = execution.currentGeneration,
+                                    detail = HYDRATION_FAILURE_DETAIL_ARGS,
+                                    message =
+                                        failure.message
+                                            ?: "Mutation args codec failed without a message.",
+                                    existing = existingCodecFailures,
+                                )
+                                blocked = true
+                            }
+                            UnavailableMutationArgs
+                        }
+                    }
+
+                if (!blocked) {
+                    try {
+                        when (phase) {
+                            MutationExecutionPhase.READY,
+                            MutationExecutionPhase.INFLIGHT,
+                            MutationExecutionPhase.REFRESH_REQUIRED,
+                            -> {
+                                val attempt = requireNotNull(durableAttempts[intent.mutationId])
+                                val codec = checkNotNull(valueCodec)
+                                attempt.decodeBase(codec)
+                                attempt.decodeMine(codec)
+                            }
+
+                            MutationExecutionPhase.ACKED -> {
+                                val ack = requireNotNull(durableAcks[intent.mutationId])
+                                if (ack.authoritativePresence == MutationPresenceState.PRESENT) {
+                                    checkNotNull(valueCodec).decodeCopied(
+                                        ack.valueCodecVersion,
+                                        checkNotNull(ack.authoritativeBlob),
+                                    )
+                                }
+                            }
+
+                            MutationExecutionPhase.UNPREPARED,
+                            MutationExecutionPhase.EFFECTS_PENDING,
+                            MutationExecutionPhase.PARKED,
+                            MutationExecutionPhase.RETIRED,
+                            -> Unit
+                        }
+                    } catch (failure: Throwable) {
+                        if (failure is CancellationException) throw failure
+                        val postAck = phase == MutationExecutionPhase.ACKED
+                        classifyHydrationCodecFailure(
+                            intent = intent,
+                            generation = execution.currentGeneration,
+                            detail =
+                                if (postAck) {
+                                    HYDRATION_FAILURE_DETAIL_VALUE_ACKED
+                                } else {
+                                    HYDRATION_FAILURE_DETAIL_VALUE_PRE_ACK
+                                },
+                            message =
+                                failure.message
+                                    ?: "Mutation value codec failed without a message.",
+                            existing = existingCodecFailures,
+                        )
+                        blocked = true
+                    }
+                }
+                if (blocked) codecBlockedMutationIds += intent.mutationId
+                val attemptedIdentity =
+                    durableAttempts[intent.mutationId]?.let { attempt ->
+                        KeyIdentity(attempt.effectiveNamespace, attempt.effectiveCanonicalId)
+                    } ?: KeyIdentity(intent.namespace, intent.canonicalId)
+                val effectiveIdentity = terminalIdentity(attemptedIdentity, hydratedAliases)
+                entriesByIdentity
+                    .getOrPut(effectiveIdentity) { mutableListOf() }
+                    .add(
+                        JournalEntry(
+                            mutationId = intent.mutationId,
+                            mutatorId = intent.mutatorId,
+                            args = args,
+                            clientSequence = intent.clientSequence,
+                            createdAtEpochMillis = intent.createdAt,
+                            durableClientSequence = intent.clientSequence,
+                        ),
+                    )
+            }
+
+            durable.installHydratedState(entriesByIdentity, hydratedAliases)
+            aliasRouter.resetAfterHydration()
+            nextMutationSequence = client.lastAllocatedSequence
+            retiredThroughSequence = client.retiredThroughSequence
+            serverConfirmedRetiredThroughSequence = client.serverConfirmedRetiredThroughSequence
+            hydrated = true
+        }
+    }
+
+    private suspend fun classifyHydrationCodecFailure(
+        intent: MutationIntentRecord,
+        generation: Int,
+        detail: String,
+        message: String,
+        existing: MutableSet<Triple<Long, Int, String>>,
+    ) {
+        codecBlockedMutationIds += intent.mutationId
+        if (!existing.add(Triple(intent.clientSequence, generation, detail))) return
+        val durable = requireNotNull(durableJournal)
+        val occurredAt = wallClock.nowEpochMillis()
+        val normalized =
+            sanitizedMutationFailure(
+                kind = MutationFailureKind.CODEC,
+                detail = detail,
+                message = message,
+                occurredAtEpochMillis = occurredAt,
+            )
+        durable.storage.transaction { transaction ->
+            transaction.appendFailure(
+                clientId = clientId,
+                clientSequence = intent.clientSequence,
+                generation = generation,
+                kind = normalized.kind,
+                detail = normalized.detail,
+                message = normalized.message,
+                occurredAt = occurredAt,
+            )
+        }
+        drainFailures += normalized
+    }
+
     internal suspend fun <A : Any> mutate(
         key: K,
         ref: MutatorRef<K, V, A>,
         args: A,
     ): String {
+        ensureHydrated()
         require(ref.ownership === registry.ownership) {
             "MutatorRef '${ref.id}' belongs to a different MutatorRegistry."
         }
-        val identity = key.identity()
-        val mutationId =
+        // Consumer resolution may suspend or re-enter this store, so it must remain outside the
+        // global enqueue/activation gate. D14 still gets exactly one resolution attempt.
+        val resolvedKey = requireTerminalKey(key)
+        val originalIdentity = key.identity()
+        val (mutationId, effectiveKey) =
             mutations.withLock {
-                nextMutationSequence += 1
-                val sequence = nextMutationSequence
+                // Revalidate only the immutable routing cache under the gate. If activation won
+                // after the one consumer resolution above, it published its exact target K under
+                // this same gate, so no second resolver attempt is needed.
+                val terminal = aliasRouter.terminalOf(originalIdentity)
+                val appendKey =
+                    if (resolvedKey.identity() == terminal) {
+                        resolvedKey
+                    } else {
+                        checkNotNull(cachedLiveKey(terminal)) {
+                            "Alias activation published terminal identity $terminal without its " +
+                                "exact canonical key."
+                        }
+                    }
+                val identity = appendKey.identity()
+                val sequence = nextMutationSequence + 1L
                 val nextId = "mutation-$sequence"
-                liveKeys[identity] = key
-                phases[nextId] = MutationExecutionPhase.UNPREPARED
                 journal.append(
                     identity,
                     JournalEntry(
@@ -200,8 +522,23 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                         createdAtEpochMillis = wallClock.nowEpochMillis(),
                     ),
                 )
+                nextMutationSequence = sequence
+                cacheLiveKey(identity, appendKey)
+                phases[nextId] = MutationExecutionPhase.UNPREPARED
+                durableExecutions[nextId] =
+                    MutationExecutionRecord(
+                        clientId = clientId,
+                        clientSequence = sequence,
+                        phase = StoredExecutionPhase.UNPREPARED,
+                        currentGeneration = 0,
+                        attempt = 0,
+                        lastAttemptAt = null,
+                        activeFailureId = null,
+                        retiredAt = null,
+                    )
+                nextId to appendKey
             }
-        signalChange(key)
+        signalChange(effectiveKey)
         return mutationId
     }
 
@@ -221,6 +558,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * there.
      */
     internal suspend fun drain(key: K) {
+        ensureHydrated()
         drainIdentity(key)
     }
 
@@ -233,6 +571,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * promised. Scheduling, parking, and checkpoint flushing are 022/023's.
      */
     internal suspend fun drain() {
+        ensureHydrated()
         for (identity in journal.identities()) {
             val key = resolveForDrain(identity) ?: continue
             drainIdentity(key)
@@ -241,7 +580,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     /** D12/D14: drops every cached resolution so the next global drain must reconstruct. */
     internal fun clearLiveKeyCache() {
-        liveKeys.clear()
+        liveKeys.value = emptyMap()
     }
 
     /**
@@ -252,33 +591,54 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      */
     internal fun drainFailuresForInspection(): List<MutationFailure> = drainFailures.toList()
 
-    internal suspend fun pending(key: K): List<PendingIntent> = pendingRows(key.identity())
+    internal suspend fun pending(key: K): List<PendingIntent> {
+        ensureHydrated()
+        return pendingForIdentity(key.identity())
+    }
 
-    /** Snapshot rows for one durable identity in durable client-sequence order (D3/D15a). */
-    internal fun pendingForIdentity(identity: KeyIdentity): List<PendingIntent> =
-        pendingRows(identity)
+    /** Snapshot terminal routing and rows together in durable client-sequence order (D3/D15a). */
+    internal fun pendingForIdentity(identity: KeyIdentity): List<PendingIntent> {
+        val cache = journal as? StorageBackedMutationJournal<V>
+        if (cache == null) {
+            return pendingRows(aliasRouter.terminalOf(identity))
+        }
+        val snapshot = cache.runtimeSnapshot()
+        val terminal = terminalIdentity(identity, snapshot.aliases)
+        return snapshot.entries[terminal]
+            .orEmpty()
+            .sortedBy { entry -> entry.clientSequence }
+            .map { entry -> pendingRow(terminal, entry) }
+    }
 
     /**
      * Snapshot rows for every durable identity in durable client-sequence order (D3): the
      * per-client sequence is the FIFO and watermark unit, so the global view sorts by it.
      */
-    internal suspend fun pendingWrites(): List<PendingIntent> =
-        journal
-            .identities()
-            .flatMap { identity ->
-                journal.pendingSnapshot(identity).map { entry ->
+    internal suspend fun pendingWrites(): List<PendingIntent> {
+        ensureHydrated()
+        val cache = journal as? StorageBackedMutationJournal<V>
+        val entriesByIdentity =
+            cache?.runtimeSnapshot()?.entries
+                ?: journal.identities().associateWith(journal::pendingSnapshot)
+        return entriesByIdentity
+            .flatMap { (identity, entries) ->
+                entries.map { entry ->
                     entry.clientSequence to pendingRow(identity, entry)
                 }
             }
             .sortedBy { (clientSequence, _) -> clientSequence }
             .map { (_, row) -> row }
+    }
 
     /**
      * Durably parked intents only (D3). Always empty at 021: parking is 023's transition over
      * 022's durable rows, and the walking skeleton never fakes it. The normalized failure
      * carrier those rows will hold is already real — see [drainFailuresForInspection].
      */
-    internal fun deadLetters(): List<DeadLetter> = emptyList()
+    internal suspend fun deadLetters(): List<DeadLetter> {
+        ensureHydrated()
+        return deadLettersByMutationId.values.sortedBy { it.parkedAtEpochMillis }
+    }
 
     internal fun projectAll(
         key: K,
@@ -329,18 +689,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * always rethrown.
      */
     internal suspend fun resolveTerminalKey(key: K): TerminalKeyResolution<K> {
+        ensureHydrated()
         val terminal = aliasRouter.terminalOf(key.identity())
         if (terminal == key.identity()) {
             return TerminalKeyResolution.Resolved(key, terminal)
         }
-        liveKeys[terminal]?.let { cached ->
-            if (
-                cached.namespace.value == terminal.namespace &&
-                cached.canonicalId() == terminal.canonicalId
-            ) {
-                return TerminalKeyResolution.Resolved(cached, terminal)
-            }
-            liveKeys.remove(terminal)
+        cachedLiveKey(terminal)?.let { cached ->
+            return TerminalKeyResolution.Resolved(cached, terminal)
         }
         val requested = MutationKeyIdentity(terminal.namespace, terminal.canonicalId)
         val resolved =
@@ -361,7 +716,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             TerminalKeyResolution.Resolved(
                 key =
                     requireResolvedKey(requested, resolved).also { validated ->
-                        liveKeys[terminal] = validated
+                        cacheLiveKey(terminal, validated)
                     },
                 identity = terminal,
             )
@@ -415,13 +770,53 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     private fun aliasRevisionSignal(identity: KeyIdentity): MutableStateFlow<Long> =
-        aliasRevisionSignals.getOrPut(identity) { MutableStateFlow(0L) }
+        signalFor(aliasRevisionSignals, identity)
 
     private fun resolutionPulseSignal(identity: KeyIdentity): MutableStateFlow<Long> =
-        resolutionPulseSignals.getOrPut(identity) { MutableStateFlow(0L) }
+        signalFor(resolutionPulseSignals, identity)
+
+    private fun signalFor(
+        signals: MutableStateFlow<Map<KeyIdentity, MutableStateFlow<Long>>>,
+        identity: KeyIdentity,
+    ): MutableStateFlow<Long> {
+        signals.value[identity]?.let { return it }
+        val candidate = MutableStateFlow(0L)
+        signals.update { current ->
+            if (identity in current) current else current + (identity to candidate)
+        }
+        return checkNotNull(signals.value[identity])
+    }
 
     private fun bumpResolutionPulse(identity: KeyIdentity) {
-        resolutionPulseSignal(identity).value += 1
+        resolutionPulseSignal(identity).update { revision -> revision + 1L }
+    }
+
+    private fun cachedLiveKey(identity: KeyIdentity): K? {
+        val cached = liveKeys.value[identity] ?: return null
+        if (
+            cached.namespace.value == identity.namespace &&
+            cached.canonicalId() == identity.canonicalId
+        ) {
+            return cached
+        }
+        liveKeys.update { current ->
+            if (current[identity] === cached) current - identity else current
+        }
+        return null
+    }
+
+    private fun cacheLiveKey(
+        identity: KeyIdentity,
+        key: K,
+    ) {
+        check(
+            key.namespace.value == identity.namespace &&
+                key.canonicalId() == identity.canonicalId,
+        ) {
+            "Live key (${key.namespace.value}, ${key.canonicalId()}) does not match cache " +
+                "identity (${identity.namespace}, ${identity.canonicalId})."
+        }
+        liveKeys.update { current -> current + (identity to key) }
     }
 
     private fun orderedPending(identity: KeyIdentity): List<JournalEntry<V>> =
@@ -457,15 +852,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * is always rethrown.
      */
     private suspend fun resolveForDrain(identity: KeyIdentity): K? {
-        liveKeys[identity]?.let { cached ->
-            if (
-                cached.namespace.value == identity.namespace &&
-                cached.canonicalId() == identity.canonicalId
-            ) {
-                return cached
-            }
-            liveKeys.remove(identity)
-        }
+        cachedLiveKey(identity)?.let { cached -> return cached }
         val requested = MutationKeyIdentity(identity.namespace, identity.canonicalId)
         val resolved =
             try {
@@ -481,7 +868,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             }
         return try {
             requireResolvedKey(requested, resolved).also { validated ->
-                liveKeys[identity] = validated
+                cacheLiveKey(identity, validated)
             }
         } catch (failure: IllegalStateException) {
             recordNormalizedFailure(
@@ -527,6 +914,15 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * key's pass; 023 owns the durable park transition that halt previews.
      */
     private suspend fun drainIdentity(key: K) {
+        if (durableJournal == null) {
+            drainIdentityLegacy(key)
+        } else {
+            drainIdentityDurable(key)
+        }
+    }
+
+    /** Protected 021 path for direct, codec-less engine constructions in module tests. */
+    private suspend fun drainIdentityLegacy(key: K) {
         var currentKey = key
         val sequenceBound = mutations.withLock { nextMutationSequence }
         var entry = nextEligible(currentKey.identity(), sequenceBound) ?: return
@@ -574,6 +970,600 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
+     * Durable foreground pass. Phase dispatch happens before any consumer callback: READY and
+     * INFLIGHT replay their immutable attempt, ACKED resumes adoption, EFFECTS_PENDING resumes
+     * only retirement finalization, and only UNPREPARED may capture/project/prepare a generation.
+     */
+    private suspend fun drainIdentityDurable(key: K) {
+        var currentKey = key
+        val sequenceBound = mutations.withLock { nextMutationSequence }
+        var entry = nextEligible(currentKey.identity(), sequenceBound) ?: return
+        while (true) {
+            if (entry.mutationId in codecBlockedMutationIds) return
+            val phase = phases[entry.mutationId] ?: MutationExecutionPhase.UNPREPARED
+            when (phase) {
+                MutationExecutionPhase.UNPREPARED -> {
+                    if (prepareDurableAttempt(currentKey, entry) == null) return
+                    markDurableInflight(entry)
+                }
+
+                MutationExecutionPhase.READY -> markDurableInflight(entry)
+
+                MutationExecutionPhase.INFLIGHT -> Unit
+
+                MutationExecutionPhase.ACKED -> {
+                    currentKey = resumeDurableAck(currentKey, entry) ?: return
+                    entry = nextEligible(currentKey.identity(), sequenceBound) ?: return
+                    continue
+                }
+
+                MutationExecutionPhase.EFFECTS_PENDING -> {
+                    currentKey = resumeDurableEffectsPending(currentKey, entry) ?: return
+                    entry = nextEligible(currentKey.identity(), sequenceBound) ?: return
+                    continue
+                }
+
+                MutationExecutionPhase.REFRESH_REQUIRED,
+                MutationExecutionPhase.PARKED,
+                MutationExecutionPhase.RETIRED,
+                -> return
+            }
+
+            val attempt = requireNotNull(durableAttempts[entry.mutationId])
+            val push = buildPushFromDurableAttempt(currentKey, entry, attempt)
+            val ack =
+                try {
+                    server.push(push)
+                } catch (failure: Throwable) {
+                    if (failure is CancellationException) throw failure
+                    recordDurableTransportFailure(entry, failure)
+                    return
+                }
+            currentKey =
+                when (ack) {
+                    is MutationPresentAck ->
+                        adoptDurablePresent(currentKey, entry, attempt, ack)?.effectiveKey ?: return
+                    is MutationAbsentAck -> {
+                        if (!adoptDurableAbsent(currentKey, entry, attempt, ack)) return
+                        currentKey
+                    }
+                }
+            entry = nextEligible(currentKey.identity(), sequenceBound) ?: return
+        }
+    }
+
+    private suspend fun prepareDurableAttempt(
+        key: K,
+        entry: JournalEntry<V>,
+    ): MutationAttemptRecord? {
+        val durable = requireNotNull(durableJournal)
+        val captured = captureBase(key)
+        val projected = project(captured.presence, entry)
+        if (!projected.advanced) return null
+        val effects = evaluateEffects(key, entry) ?: return null
+        val codec = checkNotNull(valueCodec)
+        val preparedAt = wallClock.nowEpochMillis()
+        val attempt =
+            MutationAttemptRecord(
+                clientId = clientId,
+                clientSequence = entry.durableClientSequence,
+                generation = 1,
+                effectiveNamespace = key.namespace.value,
+                effectiveCanonicalId = key.canonicalId(),
+                valueCodecVersion = valueCodecVersion,
+                basePresence = captured.presence.toPresenceState(),
+                baseBlob = captured.presence.encodePresentOrNull(codec),
+                minePresence = projected.value.toPresenceState(),
+                mineBlob = projected.value.encodePresentOrNull(codec),
+                preconditionMetaPresent = captured.meta != null,
+                preconditionWrittenAt = captured.meta?.writtenAtEpochMillis,
+                preconditionEtag = captured.meta?.etag,
+                advertisedRetiredThroughSequence = retiredThroughSequence,
+                generationIdempotencyKey =
+                    "$clientId:${entry.durableClientSequence}:g$IN_MEMORY_GENERATION",
+                preparedAt = preparedAt,
+                conflictMetaPresent = null,
+                conflictWrittenAt = null,
+                conflictEtag = null,
+                conflictReceivedAt = null,
+            )
+        val storedEffects =
+            effects.mapIndexed { index, effect ->
+                StoredEffectRecord(
+                    clientId = clientId,
+                    clientSequence = entry.durableClientSequence,
+                    effectIndex = index,
+                    kind =
+                        when (effect.kind) {
+                            MutationEffectRecordKind.KEY -> MutationEffectKind.KEY
+                            MutationEffectRecordKind.NAMESPACE -> MutationEffectKind.NAMESPACE
+                        },
+                    namespace = effect.namespace,
+                    canonicalId = effect.canonicalId,
+                    createdAt = preparedAt,
+                    disposition = MutationEffectDisposition.PENDING,
+                    completedAt = null,
+                )
+            }
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        val ready =
+            previous.copyExecution(
+                phase = StoredExecutionPhase.READY,
+                currentGeneration = 1,
+                attempt = 0,
+                lastAttemptAt = null,
+            )
+        durable.storage.transaction { transaction ->
+            transaction.insertAttempt(attempt)
+            storedEffects.forEach(transaction::insertEffect)
+            transaction.advanceExecution(ready)
+        }
+        effectSnapshots[entry.mutationId] = effects
+        durableEffectRows[entry.mutationId] = storedEffects
+        durableAttempts[entry.mutationId] = attempt
+        durableExecutions[entry.mutationId] = ready
+        phases[entry.mutationId] = MutationExecutionPhase.READY
+        completedAttempts[entry.mutationId] = 0
+        return attempt
+    }
+
+    private suspend fun markDurableInflight(entry: JournalEntry<V>) {
+        val durable = requireNotNull(durableJournal)
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        val inflight = previous.copyExecution(phase = StoredExecutionPhase.INFLIGHT)
+        durable.storage.transaction { it.advanceExecution(inflight) }
+        durableExecutions[entry.mutationId] = inflight
+        phases[entry.mutationId] = MutationExecutionPhase.INFLIGHT
+    }
+
+    private suspend fun recordDurableTransportFailure(
+        entry: JournalEntry<V>,
+        failure: Throwable,
+    ) {
+        val durable = requireNotNull(durableJournal)
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        val occurredAt = wallClock.nowEpochMillis()
+        val normalized =
+            sanitizedMutationFailure(
+                kind = MutationFailureKind.TRANSPORT,
+                detail = "push-failed",
+                message = failure.message ?: "Mutation transport failed without a message.",
+                occurredAtEpochMillis = occurredAt,
+            )
+        val ready =
+            previous.copyExecution(
+                phase = StoredExecutionPhase.READY,
+                attempt = previous.attempt + 1,
+                lastAttemptAt = occurredAt,
+            )
+        durable.storage.transaction { transaction ->
+            transaction.appendFailure(
+                clientId = clientId,
+                clientSequence = entry.durableClientSequence,
+                generation = previous.currentGeneration,
+                kind = normalized.kind,
+                detail = normalized.detail,
+                message = normalized.message,
+                occurredAt = occurredAt,
+            )
+            transaction.advanceExecution(ready)
+        }
+        drainFailures += normalized
+        durableExecutions[entry.mutationId] = ready
+        phases[entry.mutationId] = MutationExecutionPhase.READY
+        completedAttempts[entry.mutationId] = ready.attempt
+    }
+
+    private fun buildPushFromDurableAttempt(
+        key: K,
+        entry: JournalEntry<V>,
+        attempt: MutationAttemptRecord,
+    ): MutationPush<K, V> {
+        require(key.namespace.value == attempt.effectiveNamespace) {
+            "Resolved mutation key namespace does not match durable attempt identity."
+        }
+        require(key.canonicalId() == attempt.effectiveCanonicalId) {
+            "Resolved mutation key canonical id does not match durable attempt identity."
+        }
+        val codec = checkNotNull(valueCodec)
+        return MutationPush(
+            identity = MutationKeyIdentity(attempt.effectiveNamespace, attempt.effectiveCanonicalId),
+            key = key,
+            clientId = clientId,
+            clientSequence = entry.durableClientSequence,
+            retiredThroughSequence = attempt.advertisedRetiredThroughSequence,
+            mutationId = entry.mutationId,
+            generation = attempt.generation,
+            idempotencyKey = attempt.generationIdempotencyKey,
+            valueCodecVersion = attempt.valueCodecVersion,
+            base = attempt.decodeBase(codec),
+            mine = attempt.decodeMine(codec),
+            baseMeta = attempt.preconditionMetaOrNull(),
+        )
+    }
+
+    private suspend fun adoptDurablePresent(
+        key: K,
+        entry: JournalEntry<V>,
+        attempt: MutationAttemptRecord,
+        ack: MutationPresentAck<K, V>,
+    ): PresentAdoption<K, V>? {
+        val source = key.identity()
+        val claimed = ack.canonicalKey?.identity()
+        val admission =
+            aliasRouter.admit(
+                source = source,
+                claimed = claimed,
+                idempotencyKey = attempt.generationIdempotencyKey,
+                createdByClientId = clientId,
+                createdBySequence = entry.durableClientSequence,
+                createdAt = wallClock.nowEpochMillis(),
+            )
+        val admitted =
+            when (admission) {
+                is AliasAdmission.Rejected -> {
+                    recordDurableProtocolFailure(entry, admission)
+                    return null
+                }
+                is AliasAdmission.Admitted -> admission
+            }
+        val redirect = admitted.redirect
+        val ackRecord = recordDurableAck(entry, attempt, ack, admitted)
+        val authoritative =
+            checkNotNull(valueCodec).decodeCopied(
+                ackRecord.valueCodecVersion,
+                checkNotNull(ackRecord.authoritativeBlob),
+            )
+        val effectiveKey =
+            if (redirect == null) {
+                key
+            } else {
+                resolveExecutionIdentity(redirect.target, checkNotNull(ack.canonicalKey))
+            }
+        handle.apply(effectiveKey, authoritative)
+        handle.confirmFresh(effectiveKey, ackRecord.etag)
+        persistDurableEffectsPending(entry)
+        val retired =
+            if (redirect == null) {
+                finalizeDurableRetirement(key, entry)
+            } else {
+                finalizeDurableAliasRetirement(key, effectiveKey, entry)
+            }
+        return if (retired) PresentAdoption(authoritative, effectiveKey) else null
+    }
+
+    private suspend fun adoptDurableAbsent(
+        key: K,
+        entry: JournalEntry<V>,
+        attempt: MutationAttemptRecord,
+        ack: MutationAbsentAck<K, V>,
+    ): Boolean {
+        recordDurableAck(entry, attempt, ack)
+        absentAdoption(key)
+        persistDurableEffectsPending(entry)
+        return finalizeDurableRetirement(key, entry)
+    }
+
+    private suspend fun recordDurableProtocolFailure(
+        entry: JournalEntry<V>,
+        rejection: AliasAdmission.Rejected,
+    ) {
+        val durable = requireNotNull(durableJournal)
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        val occurredAt = wallClock.nowEpochMillis()
+        val normalized =
+            sanitizedMutationFailure(
+                kind = MutationFailureKind.PROTOCOL,
+                detail = rejection.detail,
+                message = rejection.message,
+                occurredAtEpochMillis = occurredAt,
+            )
+        val ready =
+            previous.copyExecution(
+                phase = StoredExecutionPhase.READY,
+                attempt = previous.attempt + 1,
+                lastAttemptAt = occurredAt,
+            )
+        durable.storage.transaction { transaction ->
+            transaction.appendFailure(
+                clientId,
+                entry.durableClientSequence,
+                previous.currentGeneration,
+                normalized.kind,
+                normalized.detail,
+                normalized.message,
+                occurredAt,
+            )
+            transaction.advanceExecution(ready)
+        }
+        drainFailures += normalized
+        durableExecutions[entry.mutationId] = ready
+        phases[entry.mutationId] = MutationExecutionPhase.READY
+        completedAttempts[entry.mutationId] = ready.attempt
+    }
+
+    private suspend fun recordDurableAck(
+        entry: JournalEntry<V>,
+        attempt: MutationAttemptRecord,
+        ack: MutationAck<K, V>,
+        aliasAdmission: AliasAdmission.Admitted? = null,
+    ): MutationAckRecord {
+        val durable = requireNotNull(durableJournal)
+        val codec = checkNotNull(valueCodec)
+        val receivedAt = wallClock.nowEpochMillis()
+        val record =
+            when (ack) {
+                is MutationPresentAck ->
+                    MutationAckRecord(
+                        clientId,
+                        entry.durableClientSequence,
+                        attempt.generation,
+                        MutationPresenceState.PRESENT,
+                        codec.encodeCopied(ack.authoritative),
+                        attempt.valueCodecVersion,
+                        ack.etag,
+                        ack.canonicalKey?.namespace?.value,
+                        ack.canonicalKey?.canonicalId(),
+                        receivedAt,
+                    )
+                is MutationAbsentAck ->
+                    MutationAckRecord(
+                        clientId,
+                        entry.durableClientSequence,
+                        attempt.generation,
+                        MutationPresenceState.ABSENT,
+                        null,
+                        attempt.valueCodecVersion,
+                        ack.etag,
+                        null,
+                        null,
+                        receivedAt,
+                    )
+            }
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        val acknowledged =
+            previous.copyExecution(
+                phase = StoredExecutionPhase.ACKED,
+                attempt = previous.attempt + 1,
+                lastAttemptAt = receivedAt,
+            )
+        durable.storage.transaction { transaction ->
+            aliasAdmission?.pendingRecord?.let(transaction::insertAlias)
+            transaction.insertAck(record)
+            transaction.advanceExecution(acknowledged)
+        }
+        if (aliasAdmission != null) {
+            aliasRouter.publishAdmission(aliasAdmission)
+        }
+        durableAcks[entry.mutationId] = record
+        durableExecutions[entry.mutationId] = acknowledged
+        phases[entry.mutationId] = MutationExecutionPhase.ACKED
+        completedAttempts[entry.mutationId] = acknowledged.attempt
+        return record
+    }
+
+    private suspend fun resumeDurableAck(
+        key: K,
+        entry: JournalEntry<V>,
+    ): K? {
+        val ack = requireNotNull(durableAcks[entry.mutationId])
+        return when (ack.authoritativePresence) {
+            MutationPresenceState.PRESENT -> {
+                val effectiveKey =
+                    if (ack.canonicalTargetNamespace == null) {
+                        key
+                    } else {
+                        resolveExecutionIdentity(
+                            KeyIdentity(
+                                checkNotNull(ack.canonicalTargetNamespace),
+                                checkNotNull(ack.canonicalTargetId),
+                            ),
+                        )
+                    }
+                val authoritative =
+                    checkNotNull(valueCodec).decodeCopied(
+                        ack.valueCodecVersion,
+                        checkNotNull(ack.authoritativeBlob),
+                )
+                handle.apply(effectiveKey, authoritative)
+                handle.confirmFresh(effectiveKey, ack.etag)
+                persistDurableEffectsPending(entry)
+                val retired =
+                    if (effectiveKey.identity() == key.identity()) {
+                        finalizeDurableRetirement(key, entry)
+                    } else {
+                        finalizeDurableAliasRetirement(key, effectiveKey, entry)
+                    }
+                effectiveKey.takeIf { retired }
+            }
+            MutationPresenceState.ABSENT -> {
+                absentAdoption(key)
+                persistDurableEffectsPending(entry)
+                key.takeIf { finalizeDurableRetirement(key, entry) }
+            }
+        }
+    }
+
+    /**
+     * Resumes only retirement finalization for a durably adopted generation. Adoption and
+     * transport are never repeated from `EFFECTS_PENDING`; pending effect rows leave the intent
+     * at this boundary for Issue 023's effect executor.
+     */
+    private suspend fun resumeDurableEffectsPending(
+        key: K,
+        entry: JournalEntry<V>,
+    ): K? {
+        val ack = requireNotNull(durableAcks[entry.mutationId])
+        val effectiveKey =
+            if (
+                ack.authoritativePresence == MutationPresenceState.PRESENT &&
+                ack.canonicalTargetNamespace != null
+            ) {
+                resolveExecutionIdentity(
+                    KeyIdentity(
+                        checkNotNull(ack.canonicalTargetNamespace),
+                        checkNotNull(ack.canonicalTargetId),
+                    ),
+                )
+            } else {
+                key
+            }
+        val retired =
+            if (effectiveKey.identity() == key.identity()) {
+                finalizeDurableRetirement(key, entry)
+            } else {
+                finalizeDurableAliasRetirement(key, effectiveKey, entry)
+            }
+        return effectiveKey.takeIf { retired }
+    }
+
+    private suspend fun resolveExecutionIdentity(
+        acknowledged: KeyIdentity,
+        acknowledgedKey: K? = null,
+    ): K {
+        val terminal = aliasRouter.terminalOf(acknowledged)
+        acknowledgedKey?.let { candidate ->
+            if (
+                candidate.namespace.value == terminal.namespace &&
+                candidate.canonicalId() == terminal.canonicalId
+            ) {
+                cacheLiveKey(terminal, candidate)
+                return candidate
+            }
+        }
+        cachedLiveKey(terminal)?.let { cached -> return cached }
+        val requested = MutationKeyIdentity(terminal.namespace, terminal.canonicalId)
+        return requireResolvedKey(requested, keyResolver.resolve(requested)).also { resolved ->
+            cacheLiveKey(terminal, resolved)
+        }
+    }
+
+    private suspend fun finalizeDurableRetirement(
+        key: K,
+        entry: JournalEntry<V>,
+    ): Boolean =
+        withContext(NonCancellable) {
+            if (!persistDurableRetirement(entry)) return@withContext false
+            journal.retire(key.identity(), entry.mutationId)
+            phases.remove(entry.mutationId)
+            completedAttempts.remove(entry.mutationId)
+            signalSink.emit(key)
+            true
+        }
+
+    private suspend fun finalizeDurableAliasRetirement(
+        sourceKey: K,
+        targetKey: K,
+        entry: JournalEntry<V>,
+    ): Boolean {
+        val source = sourceKey.identity()
+        val target = targetKey.identity()
+        return withContext(NonCancellable) {
+            val retired =
+                mutations.withLock {
+                    val activation = aliasRouter.activationRecord(source, wallClock.nowEpochMillis())
+                    if (!persistDurableRetirement(entry, activation)) return@withLock false
+                    requireNotNull(durableJournal).publishAliasRetirement(
+                        source = source,
+                        terminalTarget = target,
+                        retiredMutationId = entry.mutationId,
+                    )
+                    cacheLiveKey(target, targetKey)
+                    phases.remove(entry.mutationId)
+                    completedAttempts.remove(entry.mutationId)
+                    aliasRevisionSignal(source).update { revision -> revision + 1L }
+                    bumpResolutionPulse(source)
+                    bumpResolutionPulse(target)
+                    true
+                }
+            if (!retired) return@withContext false
+            signalSink.emit(sourceKey)
+            signalSink.emit(targetKey)
+            true
+        }
+    }
+
+    /** Commits R-0 rule 6's adoption advance independently of retirement finalization. */
+    private suspend fun persistDurableEffectsPending(entry: JournalEntry<V>) {
+        val durable = requireNotNull(durableJournal)
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        require(previous.phase == StoredExecutionPhase.ACKED) {
+            "Durable adoption advance requires ACKED, but was ${previous.phase}."
+        }
+        val effectsPending = previous.copyExecution(phase = StoredExecutionPhase.EFFECTS_PENDING)
+        durable.storage.transaction { transaction ->
+            transaction.advanceExecution(effectsPending)
+        }
+        durableExecutions[entry.mutationId] = effectsPending
+        phases[entry.mutationId] = MutationExecutionPhase.EFFECTS_PENDING
+    }
+
+    /** Returns true only when no durable PENDING effect prevented retirement. */
+    private suspend fun persistDurableRetirement(
+        entry: JournalEntry<V>,
+        aliasActivation: MutationKeyAliasRecord? = null,
+    ): Boolean {
+        val durable = requireNotNull(durableJournal)
+        val sequence = entry.durableClientSequence
+        val previous = requireNotNull(durableExecutions[entry.mutationId])
+        require(previous.phase == StoredExecutionPhase.EFFECTS_PENDING) {
+            "Durable retirement finalization requires EFFECTS_PENDING, but was ${previous.phase}."
+        }
+        val retiredAt = wallClock.nowEpochMillis()
+        var retired = false
+        var committedPrefix = retiredThroughSequence
+        var committedConfirmed = serverConfirmedRetiredThroughSequence
+        var committedExecution = previous
+        durable.storage.transaction { transaction ->
+            val effectsPending =
+                transaction.effects(clientId).any { effect ->
+                    effect.clientSequence == sequence &&
+                        effect.disposition ==
+                        org.mobilenativefoundation.store6.mutations.storage.MutationEffectDisposition.PENDING
+                }
+            if (effectsPending) return@transaction
+            val retiredRecord =
+                previous.copyExecution(
+                    phase = StoredExecutionPhase.RETIRED,
+                    retiredAt = retiredAt,
+                )
+            aliasActivation?.let(transaction::advanceAlias)
+            transaction.advanceExecution(retiredRecord)
+            val client = requireNotNull(transaction.client(clientId))
+            val gaps = retiredSequences.toMutableSet().apply { add(sequence) }
+            var prefix = client.retiredThroughSequence
+            while (gaps.remove(prefix + 1L)) prefix += 1L
+            transaction.advanceClient(
+                MutationClientRecord(
+                    recordVersion = client.recordVersion,
+                    clientId = client.clientId,
+                    lastAllocatedSequence = client.lastAllocatedSequence,
+                    retiredThroughSequence = prefix,
+                    serverConfirmedRetiredThroughSequence =
+                        client.serverConfirmedRetiredThroughSequence,
+                    createdAt = client.createdAt,
+                ),
+            )
+            committedExecution = retiredRecord
+            committedPrefix = prefix
+            committedConfirmed = client.serverConfirmedRetiredThroughSequence
+            retired = true
+        }
+        durableExecutions[entry.mutationId] = committedExecution
+        if (!retired) {
+            phases[entry.mutationId] = MutationExecutionPhase.EFFECTS_PENDING
+            return false
+        }
+        retiredSequences += sequence
+        while (retiredSequences.remove(retiredThroughSequence + 1L)) {
+            retiredThroughSequence += 1L
+        }
+        check(retiredThroughSequence == committedPrefix)
+        serverConfirmedRetiredThroughSequence = committedConfirmed
+        return true
+    }
+
+    /**
      * The lowest pending durable client sequence at [identity] within this pass's enqueue bound:
      * the pass drains the prefix that existed when it started and never chases intents enqueued
      * behind it (D12). Ties (direct journal appends in module tests use the default sequence)
@@ -617,6 +1607,9 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         base: MutationPresence<V>,
         entry: JournalEntry<V>,
     ): ProjectionOutcome<V> {
+        if (entry.mutationId in codecBlockedMutationIds || entry.args === UnavailableMutationArgs) {
+            return ProjectionOutcome(value = base, advanced = false)
+        }
         val registration =
             registry.registrations[entry.mutatorId]
                 ?: return ProjectionOutcome(value = base, advanced = false)
@@ -693,8 +1686,16 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     ): PresentAdoption<K, V>? {
         val source = key.identity()
         val claimed = ack.canonicalKey?.identity()
-        val admission = aliasRouter.admit(source, claimed, idempotencyKey)
-        val redirect =
+        val admission =
+            aliasRouter.admit(
+                source = source,
+                claimed = claimed,
+                idempotencyKey = idempotencyKey,
+                createdByClientId = clientId,
+                createdBySequence = entry.durableClientSequence,
+                createdAt = wallClock.nowEpochMillis(),
+            )
+        val admitted =
             when (admission) {
                 is AliasAdmission.Rejected -> {
                     recordNormalizedFailure(
@@ -707,11 +1708,18 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                     phases[entry.mutationId] = MutationExecutionPhase.READY
                     return null
                 }
-                is AliasAdmission.Admitted -> admission.redirect
+                is AliasAdmission.Admitted -> admission
             }
+        aliasRouter.commitAdmission(admitted)
+        val redirect = admitted.redirect
         phases[entry.mutationId] = MutationExecutionPhase.ACKED
         val authoritative = copiedValue(ack.authoritative)
-        val effectiveKey = if (redirect == null) key else checkNotNull(ack.canonicalKey)
+        val effectiveKey =
+            if (redirect == null) {
+                key
+            } else {
+                resolveExecutionIdentity(redirect.target, checkNotNull(ack.canonicalKey))
+            }
         handle.apply(effectiveKey, authoritative)
         handle.confirmFresh(effectiveKey, ack.etag)
         if (redirect == null) {
@@ -730,8 +1738,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * D13's absent adoption: the acknowledged state is recorded, confirmed absence is adopted
      * through the bound `Store.clear` door, and only then does the intent retire and signal.
      * The sealed [MutationAbsentAck] carries no canonical key, so rekey-on-deletion is
-     * unrepresentable (D15a). The tombstone generation this adoption will persist is 022's
-     * (R1-21); 021 records none.
+     * unrepresentable (D15a). Issue 022 lands tombstone storage and hydration; the ack/clear and
+     * activation transitions remain 023/024-owned.
      */
     private suspend fun adoptAbsent(
         key: K,
@@ -771,21 +1779,33 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         val source = sourceKey.identity()
         val target = targetKey.identity()
         withContext(NonCancellable) {
-            journal.retire(source, entry.mutationId)
-            aliasRouter.activate(source)
-            for (sibling in orderedPending(source)) {
-                journal.retire(source, sibling.mutationId)
-                journal.append(target, sibling)
+            mutations.withLock {
+                val activation = aliasRouter.activationRecord(source, wallClock.nowEpochMillis())
+                activation?.let { record -> aliasRouter.persistActivation(record) }
+                val cache = journal as? StorageBackedMutationJournal<V>
+                if (cache == null) {
+                    journal.retire(source, entry.mutationId)
+                    aliasRouter.publishActivation(source)
+                    for (sibling in orderedPending(source)) {
+                        journal.rehome(source, target, sibling)
+                    }
+                } else {
+                    cache.publishAliasRetirement(
+                        source = source,
+                        terminalTarget = target,
+                        retiredMutationId = entry.mutationId,
+                    )
+                }
+                cacheLiveKey(target, targetKey)
+                phases.remove(entry.mutationId)
+                completedAttempts.remove(entry.mutationId)
+                recordRetiredSequence(entry.clientSequence)
+                // The synchronous stateful revision handoff: no cancellable suspension may
+                // separate the in-memory commit above from these advances.
+                aliasRevisionSignal(source).update { revision -> revision + 1L }
+                bumpResolutionPulse(source)
+                bumpResolutionPulse(target)
             }
-            liveKeys[target] = targetKey
-            phases.remove(entry.mutationId)
-            completedAttempts.remove(entry.mutationId)
-            recordRetiredSequence(entry.clientSequence)
-            // The synchronous stateful revision handoff: no cancellable suspension may separate
-            // the in-memory commit above from these advances.
-            aliasRevisionSignal(source).value += 1
-            bumpResolutionPulse(source)
-            bumpResolutionPulse(target)
             signalSink.emit(sourceKey)
             signalSink.emit(targetKey)
         }
@@ -809,27 +1829,41 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         key: K,
         entry: JournalEntry<V>,
     ): Boolean {
-        val registration = registry.registrations[entry.mutatorId] ?: return false
-        val effects =
-            try {
-                normalizedMutationEffects(registration.stales(key, entry.args))
-            } catch (failure: Throwable) {
-                poisonSink.tryEmit(
-                    PoisonedIntent(
-                        mutationId = entry.mutationId,
-                        mutatorId = entry.mutatorId,
-                        failure = failure,
-                    ),
-                )
-                return false
-            }
+        val effects = evaluateEffects(key, entry) ?: return false
         effectSnapshots[entry.mutationId] = effects
         return true
+    }
+
+    private fun evaluateEffects(
+        key: K,
+        entry: JournalEntry<V>,
+    ): List<MutationEffectRecord>? {
+        val registration = registry.registrations[entry.mutatorId] ?: return null
+        return try {
+            normalizedMutationEffects(registration.stales(key, entry.args))
+        } catch (failure: Throwable) {
+            poisonSink.tryEmit(
+                PoisonedIntent(
+                    mutationId = entry.mutationId,
+                    mutatorId = entry.mutatorId,
+                    failure = failure,
+                ),
+            )
+            null
+        }
     }
 
     /** The captured (never executed) effect snapshot for a mutation; 022 owns durability. */
     internal fun capturedEffectsSnapshot(mutationId: String): List<MutationEffectRecord>? =
         effectSnapshots[mutationId]
+
+    internal fun durableEffectsSnapshot(mutationId: String): List<StoredEffectRecord> =
+        durableEffectRows[mutationId].orEmpty()
+
+    internal fun tombstoneSnapshot(identity: KeyIdentity): List<MutationKeyTombstoneRecord> =
+        hydratedTombstones.filter { row ->
+            row.namespace == identity.namespace && row.canonicalId == identity.canonicalId
+        }
 
     private fun copiedPresence(presence: MutationPresence<V>): MutationPresence<V> =
         when (presence) {
@@ -883,6 +1917,89 @@ private class ProjectionOutcome<V : Any>(
     val value: MutationPresence<V>,
     val advanced: Boolean,
 )
+
+private object UnavailableMutationArgs
+
+private fun MutationFailureRecord.toPublicFailure(): MutationFailure =
+    MutationFailure(
+        kind = kind,
+        detail = detail,
+        message = message,
+        occurredAtEpochMillis = occurredAt,
+    )
+
+private fun StoredExecutionPhase.toEnginePhase(): MutationExecutionPhase =
+    when (this) {
+        StoredExecutionPhase.UNPREPARED -> MutationExecutionPhase.UNPREPARED
+        StoredExecutionPhase.READY -> MutationExecutionPhase.READY
+        StoredExecutionPhase.INFLIGHT -> MutationExecutionPhase.INFLIGHT
+        StoredExecutionPhase.REFRESH_REQUIRED -> MutationExecutionPhase.REFRESH_REQUIRED
+        StoredExecutionPhase.ACKED -> MutationExecutionPhase.ACKED
+        StoredExecutionPhase.EFFECTS_PENDING -> MutationExecutionPhase.EFFECTS_PENDING
+        StoredExecutionPhase.PARKED -> MutationExecutionPhase.PARKED
+        StoredExecutionPhase.RETIRED -> MutationExecutionPhase.RETIRED
+    }
+
+private fun MutationExecutionRecord.copyExecution(
+    phase: StoredExecutionPhase = this.phase,
+    currentGeneration: Int = this.currentGeneration,
+    attempt: Int = this.attempt,
+    lastAttemptAt: Long? = this.lastAttemptAt,
+    activeFailureId: Long? = this.activeFailureId,
+    retiredAt: Long? = this.retiredAt,
+): MutationExecutionRecord =
+    MutationExecutionRecord(
+        clientId = clientId,
+        clientSequence = clientSequence,
+        phase = phase,
+        currentGeneration = currentGeneration,
+        attempt = attempt,
+        lastAttemptAt = lastAttemptAt,
+        activeFailureId = activeFailureId,
+        retiredAt = retiredAt,
+    )
+
+private fun <V : Any> MutationPresence<V>.toPresenceState(): MutationPresenceState =
+    when (this) {
+        is MutationPresence.Present -> MutationPresenceState.PRESENT
+        MutationPresence.Absent -> MutationPresenceState.ABSENT
+    }
+
+private fun <V : Any> MutationPresence<V>.encodePresentOrNull(
+    codec: MutationCodec<V>,
+): ByteArray? =
+    when (this) {
+        is MutationPresence.Present -> codec.encodeCopied(value)
+        MutationPresence.Absent -> null
+    }
+
+private fun <V : Any> MutationAttemptRecord.decodeBase(
+    codec: MutationCodec<V>,
+): MutationPresence<V> =
+    when (basePresence) {
+        MutationPresenceState.PRESENT ->
+            MutationPresence.Present(codec.decodeCopied(valueCodecVersion, checkNotNull(baseBlob)))
+        MutationPresenceState.ABSENT -> MutationPresence.Absent
+    }
+
+private fun <V : Any> MutationAttemptRecord.decodeMine(
+    codec: MutationCodec<V>,
+): MutationPresence<V> =
+    when (minePresence) {
+        MutationPresenceState.PRESENT ->
+            MutationPresence.Present(codec.decodeCopied(valueCodecVersion, checkNotNull(mineBlob)))
+        MutationPresenceState.ABSENT -> MutationPresence.Absent
+    }
+
+private fun MutationAttemptRecord.preconditionMetaOrNull(): StoreMeta? =
+    if (preconditionMetaPresent) {
+        CapturedMetaSnapshot(
+            writtenAtEpochMillis = checkNotNull(preconditionWrittenAt),
+            etag = preconditionEtag,
+        )
+    } else {
+        null
+    }
 
 /** One completed present adoption: the adopted value and the effective (possibly rekeyed) key. */
 private class PresentAdoption<K : StoreKey, V : Any>(

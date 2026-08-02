@@ -32,6 +32,8 @@ import org.mobilenativefoundation.store6.core.seam.KeyEvents
 import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
 import org.mobilenativefoundation.store6.core.seam.StoreResults
 import org.mobilenativefoundation.store6.core.seam.runtime
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectRecord
+import org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneRecord
 
 /**
  * Narrows a [Store] to journalled mutation writes while preserving Store reads and maintenance,
@@ -82,6 +84,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
         freshness: Freshness,
     ): Flow<StoreResult<V>> =
         flow {
+            if (closed.value) throw IllegalStateException("Store is closed.")
+            engine.ensureHydrated()
             var firstAttempt = true
             while (true) {
                 if (closed.value) {
@@ -222,7 +226,7 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
         args: A,
     ): String {
         checkOpen()
-        return engine.mutate(engine.requireTerminalKey(key), ref, args)
+        return engine.mutate(key, ref, args)
     }
 
     /**
@@ -271,7 +275,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     @ExperimentalStoreApi
     public suspend fun pending(key: K): List<PendingIntent> {
         checkOpen()
-        return engine.pendingForIdentity(engine.terminalIdentityOf(key.identity()))
+        engine.ensureHydrated()
+        return engine.pendingForIdentity(key.identity())
     }
 
     /**
@@ -316,6 +321,15 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     /** The exact SourceOfTruth the engine retained (D9); test/022/024 verification door. */
     internal val sourceOfTruthRetainedByEngine: SourceOfTruth<K, V>
         get() = engine.sourceOfTruth
+
+    internal fun durableEffectsForInspection(mutationId: String): List<MutationEffectRecord> =
+        engine.durableEffectsSnapshot(mutationId)
+
+    internal fun tombstonesForInspection(
+        namespace: String,
+        canonicalId: String,
+    ): List<MutationKeyTombstoneRecord> =
+        engine.tombstoneSnapshot(KeyIdentity(namespace, canonicalId))
 
     override fun close() {
         // The stateful transition wakes any stream suspended on a resolver-retry subscription
@@ -376,6 +390,12 @@ public fun <K : StoreKey, V : Any> mutationStore(
         MutationEngine(
             registry = registry,
             server = server,
+            journal =
+                StorageBackedMutationJournal(
+                    storage = configuration.journalStorage,
+                    registrations = registry.registrations,
+                    hydrateOnFirstUse = true,
+                ),
             keyResolver = keyResolver,
             valueCodecVersion = valueCodecVersion,
             valueCodec = valueCodec,

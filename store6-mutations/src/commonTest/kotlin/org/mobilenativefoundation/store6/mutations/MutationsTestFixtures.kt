@@ -41,6 +41,19 @@ internal object FixtureStringArgsCodec : MutationCodec<String> {
     ): String = bytes.decodeToString()
 }
 
+/** Version-1 Unit codec for durable tests that exercise the complete encode/decode boundary. */
+internal object FixtureUnitArgsCodec : MutationCodec<Unit> {
+    override fun encode(value: Unit): ByteArray = ByteArray(0)
+
+    override fun decode(
+        version: Int,
+        bytes: ByteArray,
+    ) {
+        require(version == 1) { "Fixture Unit args require version 1; was $version." }
+        require(bytes.isEmpty()) { "Fixture Unit args require zero bytes; received ${bytes.size}." }
+    }
+}
+
 /** Args codec for registrations whose codec is never exercised by the test at hand. */
 internal fun <A : Any> inertArgsCodec(): MutationCodec<A> =
     object : MutationCodec<A> {

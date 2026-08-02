@@ -1,0 +1,5 @@
+public final class org/mobilenativefoundation/store6/mutations/sqldelight/SqlDelightMutationJournalStorage : org/mobilenativefoundation/store6/mutations/storage/MutationJournalStorage {
+	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;Lapp/cash/sqldelight/Transacter;)V
+	public fun transaction (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

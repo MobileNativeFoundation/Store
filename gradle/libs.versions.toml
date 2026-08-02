@@ -47,6 +47,8 @@ jetbrainsAndroidxLifecycle = "2.9.1"
 # compatibility ground truth). Unpublished-module dep: never appears in any public signature
 # (C-4 untouched).
 kotlinxBenchmark = "0.4.17"
+# TEST-3 JVM-only model checking; 2.39 uses dynamic instrumentation and needs no module opens.
+lincheck = "2.39"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -94,6 +96,7 @@ androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.r
 jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrainsCompose" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
+lincheck = { module = "org.jetbrains.kotlinx:lincheck", version.ref = "lincheck" }
 
 [plugins]
 ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
