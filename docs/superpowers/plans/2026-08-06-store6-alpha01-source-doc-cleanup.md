@@ -361,3 +361,16 @@ EOF
 - Baseline counts and file lists are measured (2026-08-06), labeled as such, and every task re-enumerates at execution time instead of trusting them.
 - The plan writes no rewrite text it has not verified: the four worked examples quote the current tree verbatim; all other rewrites are governed by the rubric plus a verify-before-keep rule, because pre-authoring 190+ rewrites without reading each surrounding declaration would bake in unverified contract claims.
 - Known risk, mitigated: contract-bearing sentences entangled with provenance. Mitigation is the `Unverifiable` class (keep meaning, record) plus the apiCheck/empty-`api/`-diff/hunk-review boundary proof in every task.
+
+---
+
+## Amendment A1 (2026-08-06, during execution): Sweep v2
+
+Task 3 surfaced internal-referent families the Detection sweep does not match: design-doc section references (`engine-design §7`, `design §`), acceptance/test/criteria tags (`TEST-1`, `C-01`, `AC-3`, `OQ-5`), design-table rows (`row-7/8`), and bare zero-padded issue numbers (`017 residual-deadline repair`). Ruling:
+
+- **Sweep v2 (hard, zero-hit gate):** `engine-design|design §|§[0-9]+|\bTEST-[0-9]+\b|\bC-[0-9]{2}\b|\bAC-[0-9]+\b|\bOQ-[0-9]+\b|\brow-7/8\b`
+- **Sweep v2 (classify-only, FPs recorded):** `\b0(0[1-9]|1[0-9]|2[0-9])\b|\bR[0-9]\b|\bT2E\b`
+- **Task 3b (inserted):** apply v2 to `store6-core/src` (the only module whose v1 pass is complete). Includes the `seam/TransactionalSourceOfTruth.kt` second KDoc paragraph ("The row-7/8 direct-write optimization requires an extension-owned coordinated decorator…"): P3 speculative intent plus internal referent on published KDoc — delete the paragraph; the interface's own contract sentences stay. Also `StoreConformanceTest.kt` "(validator arrives in 004)" and remaining tagged comments.
+- **Tasks 4–6:** each module gate = Detection sweep v1 + v2, both to zero (recorded FPs excepted). **Task 8:** full-tree gate = v1 + v2.
+- **Known out-of-charter residue** (protected executable content; recorded in the completion report, not edited): internal shorthand inside string literals (e.g. an `error(...)` message in `SourceOfTruthHydrationRaceTest.kt`) and test-fixture data (`User("42", "Matt")`).
+- `ktlintCheck` is a no-op for `store6-*` modules (root `build.gradle.kts` returns early); formatting assurance for this plan rests on `spotlessCheck` in Task 8 plus hunk review. Verification recipes' ktlint mentions are harmless but vacuous.
