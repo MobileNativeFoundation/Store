@@ -30,7 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalStoreApi::class, ExperimentalCoroutinesApi::class)
 class SourceOfTruthConformanceTest {
 
-    // C-05 shape: values arriving via fetch commit are attributed FETCHER.
+    // Values arriving via fetch commit are attributed FETCHER.
     @Test
     fun originHonesty_fetchCommit_emitsFetcher() = runTest {
         var calls = 0
@@ -69,7 +69,7 @@ class SourceOfTruthConformanceTest {
         }
     }
 
-    // C-06 shape: external data is delivered as SOT/stale before its one active-demand revalidation.
+    // External data is delivered as SOT/stale before its one active-demand revalidation.
     @Test
     fun originHonesty_externalSotWrite_emitsSotToActiveStream() = runTest {
         var calls = 0
@@ -107,7 +107,7 @@ class SourceOfTruthConformanceTest {
         store.close()
     }
 
-    // C-04 shape: the memory fast path serves without waiting for the pipeline, stamped MEMORY.
+    // The memory fast path serves without waiting for the pipeline, stamped MEMORY.
     @Test
     fun originHonesty_memoryFastPath_reStampsMemory() = runTest {
         val store = store<TestKey, String> { fetcher { "v" } }
@@ -220,7 +220,7 @@ class SourceOfTruthConformanceTest {
         }
     }
 
-    // R7: resubscribe after clear may duplicate, never lose; cleared value never replays.
+    // Resubscribe after clear may duplicate, never lose; cleared value never replays.
     @Test
     fun resubscribeAfterClear_duplicatesNotLosses() = runTest {
         var calls = 0

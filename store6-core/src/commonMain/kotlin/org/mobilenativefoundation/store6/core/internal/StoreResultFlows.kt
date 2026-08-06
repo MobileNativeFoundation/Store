@@ -22,11 +22,11 @@ import org.mobilenativefoundation.store6.core.StoreResult
  * blocked collector instead receives at least the latest pending result per kind. This realizes
  * an O(1)-per-collector bound and closes the lifecycle-signal bound.
  *
- * Per engine-design R3, a pathological fetch-error storm cannot grow a collector's buffer because
- * the queue is kind-bounded. This operator bounds delivery buffering only and adds or changes no
- * engine retry or backoff behavior. [StoreResult.Revalidated] is never conflated away in favor of
- * another kind: only a newer Revalidated supersedes an older queued one for a blocked collector,
- * so the kind is never lost.
+ * A pathological fetch-error storm cannot grow a collector's buffer because the queue is
+ * kind-bounded. This operator bounds delivery buffering only and adds or changes no engine retry
+ * or backoff behavior. [StoreResult.Revalidated] is never conflated away in favor of another kind:
+ * only a newer Revalidated supersedes an older queued one for a blocked collector, so the kind is
+ * never lost.
  */
 internal fun <V> Flow<StoreResult<V>>.conflateLatestData(): Flow<StoreResult<V>> = flow {
     var terminalFailure: Throwable? = null

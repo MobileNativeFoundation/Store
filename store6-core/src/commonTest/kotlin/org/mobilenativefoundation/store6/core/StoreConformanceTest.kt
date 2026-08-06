@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 
 open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
 
-    // (a) THE 001 acceptance test — cold stream: Loading then Data(origin=FETCHER). TEST-1 emission-sequence seed.
+    // (a) the cold-stream acceptance test: Loading then Data(origin=FETCHER)
     @Test
     fun coldStream_noCachedValue_emitsLoadingThenDataFromFetcher() = runTest {
         val store = testStore<TestKey, String> { fetcher { "value-for-${it.canonicalId()}" } }
@@ -61,7 +61,7 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
         store.close()
     }
 
-    // (c) single-flight smoke: two concurrent collectors, one fetcher invocation. C-01/C-02 seed.
+    // (c) single-flight smoke: two concurrent collectors, one fetcher invocation
     @Test
     fun twoConcurrentCollectors_singleFetcherInvocation() = runTest {
         var calls = 0
@@ -86,7 +86,7 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
         store.close()
     }
 
-    // (d) pins the 001 get-posture: a resident value is served without a refetch (validator arrives in 004)
+    // (d) pins get's posture: a resident value is served without a refetch
     @Test
     fun getAfterStreamCommitted_servesResidentValueWithoutRefetch() = runTest {
         var calls = 0

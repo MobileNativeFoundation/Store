@@ -11,8 +11,8 @@ import kotlin.time.Duration.Companion.hours
 
 /**
  * Simulates restart by constructing a fresh Store around the same Bookkeeper and SourceOfTruth.
- * This proves store-instance-independent durable facts; on-disk/process durability remains adapter
- * work for issues 010/011.
+ * This proves store-instance-independent durable facts, not on-disk or cross-process durability,
+ * which the persistence adapter modules cover.
  */
 @OptIn(ExperimentalStoreApi::class)
 abstract class StoreDurableMaintenanceConformance {

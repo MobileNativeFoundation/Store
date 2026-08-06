@@ -9,7 +9,7 @@ import org.mobilenativefoundation.store6.core.StoreKey
 /**
  * Owns at most one [KeyEngine] per canonical [KeyId], refcounted, with quiescent-only LRU idling.
  *
- * Structure (engine-design §7, reconciled with the landed registry):
+ * Structure:
  * - [active] holds engines with refCount >= 1 or a not-yet-idled zero-ref engine awaiting its
  *   fetch reference release; [idle] holds only quiescent zero-ref engines in LRU (insertion)
  *   order. The maps are disjoint. Eviction reads only [idle], and acquisition removes from
@@ -109,7 +109,7 @@ internal class KeyRegistry<K : StoreKey, V : Any>(
                 handle.refCount -= 1
                 if (handle.refCount > 0) return@withLock emptyList()
                 // A non-quiescent zero-ref engine holds an in-flight fetch whose own reference
-                // release re-runs this check; leaving it active is the engine-design §7 shape.
+                // release re-runs this check, so it deliberately stays active until then.
                 if (!handle.engine.isQuiescentForIdle()) return@withLock emptyList()
                 active.remove(id)
                 if (maxIdle == 0) {

@@ -111,6 +111,6 @@ class StoreTelemetryTest {
         assertEquals(plain.get(TestKey("1")), instrumented.get(TestKey("1")))
         plain.close()
         instrumented.close()
-        // Allocation-count measurement is deferred to store6-benchmarks (TEST-7).
+        // Allocation-count measurement lives in store6-benchmarks.
     }
 }

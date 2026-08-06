@@ -40,7 +40,7 @@ internal fun elapsedAge(
 }
 
 /**
- * The zero-configuration AC-6 seed policy table.
+ * The zero-configuration policy table.
  *
  * Negative wall-clock deltas are clamped to zero before evaluating [Freshness.MaxAge].
  */

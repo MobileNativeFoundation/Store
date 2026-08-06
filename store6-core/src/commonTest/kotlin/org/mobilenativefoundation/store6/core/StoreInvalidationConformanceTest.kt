@@ -25,7 +25,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
-    // AC-3 (TEST-1): an active stream signaled by invalidate observes refetched data.
+    // An active stream signaled by invalidate observes refetched data.
     @Test
     fun invalidate_activeStream_observesRefetchedData() = runTest {
         var calls = 0
@@ -282,7 +282,7 @@ open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
         }
     }
 
-    // C-12 seed: clear during an in-flight fetch discards the commit; no resurrection.
+    // Clear during an in-flight fetch discards the commit; no resurrection.
     @Test
     fun clearDuringInFlightFetch_commitDiscarded_noResurrection() = runTest {
         var calls = 0
