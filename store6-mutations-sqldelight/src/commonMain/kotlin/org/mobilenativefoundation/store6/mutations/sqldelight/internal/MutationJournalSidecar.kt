@@ -15,6 +15,23 @@ internal class MutationJournalSidecar(
     }
 
     private fun ensureSchema() {
+        if (!mutationSchemaTableExists()) {
+            createSchemaV2()
+            return
+        }
+
+        val version = queryLong("SELECT version FROM store6_mutation_schema WHERE id = 0")
+        if (version == null || version !in 1L..SCHEMA_VERSION) {
+            unsupportedSchemaVersion(version)
+        }
+
+        when (version) {
+            1L -> migrateV1ToV2()
+            SCHEMA_VERSION -> createSchemaV2()
+        }
+    }
+
+    private fun createSchemaV2() {
         executeAll(
             """CREATE TABLE IF NOT EXISTS store6_mutation_schema(
                id INTEGER NOT NULL PRIMARY KEY CHECK (id = 0),
@@ -167,9 +184,6 @@ internal class MutationJournalSidecar(
                PRIMARY KEY (namespace, canonical_id, created_by_client_id, created_by_sequence),
                CHECK ((superseded_by_client_id IS NULL) = (superseded_by_sequence IS NULL)),
                CHECK (superseded_by_sequence IS NULL OR superseded_by_sequence > 0),
-               CHECK (superseded_by_client_id IS NULL
-                 OR superseded_by_client_id <> created_by_client_id
-                 OR superseded_by_sequence > created_by_sequence),
                CHECK ((state = 'PENDING') = (activated_at IS NULL)),
                CHECK ((state = 'SUPERSEDED') = (superseded_by_client_id IS NOT NULL)),
                CHECK ((state = 'SUPERSEDED') = (superseded_at IS NOT NULL)))""",
@@ -187,17 +201,76 @@ internal class MutationJournalSidecar(
                ON store6_key_tombstone(namespace, canonical_id) WHERE state = 'PENDING'""",
             """CREATE UNIQUE INDEX IF NOT EXISTS store6_key_tombstone_one_active
                ON store6_key_tombstone(namespace, canonical_id) WHERE state = 'ACTIVE'""",
-            "INSERT OR IGNORE INTO store6_mutation_schema(id, version) VALUES (0, 1)",
+            "INSERT OR IGNORE INTO store6_mutation_schema(id, version) VALUES (0, 2)",
         )
+    }
 
-        val version = queryLong("SELECT version FROM store6_mutation_schema WHERE id = 0")
-        check(version != null && version in 1L..SCHEMA_VERSION) {
+    private fun migrateV1ToV2() {
+        if (hasNonQuiescentNamespaceOwner()) {
+            error(MIGRATION_QUIESCENCE_DIAGNOSTIC)
+        }
+
+        executeAll(
+            """CREATE TABLE store6_key_tombstone_v2(
+               namespace TEXT NOT NULL,
+               canonical_id TEXT NOT NULL,
+               created_by_client_id TEXT NOT NULL,
+               created_by_sequence INTEGER NOT NULL CHECK (created_by_sequence > 0),
+               state TEXT NOT NULL,
+               created_at INTEGER NOT NULL,
+               activated_at INTEGER,
+               superseded_by_client_id TEXT,
+               superseded_by_sequence INTEGER,
+               superseded_at INTEGER,
+               PRIMARY KEY (namespace, canonical_id, created_by_client_id, created_by_sequence),
+               CHECK ((superseded_by_client_id IS NULL) = (superseded_by_sequence IS NULL)),
+               CHECK (superseded_by_sequence IS NULL OR superseded_by_sequence > 0),
+               CHECK ((state = 'PENDING') = (activated_at IS NULL)),
+               CHECK ((state = 'SUPERSEDED') = (superseded_by_client_id IS NOT NULL)),
+               CHECK ((state = 'SUPERSEDED') = (superseded_at IS NOT NULL)))""",
+            """INSERT INTO store6_key_tombstone_v2(
+               namespace, canonical_id, created_by_client_id, created_by_sequence,
+               state, created_at, activated_at, superseded_by_client_id,
+               superseded_by_sequence, superseded_at)
+               SELECT namespace, canonical_id, created_by_client_id, created_by_sequence,
+                 state, created_at, activated_at, superseded_by_client_id,
+                 superseded_by_sequence, superseded_at
+               FROM store6_key_tombstone""",
+            "DROP TABLE store6_key_tombstone",
+            "ALTER TABLE store6_key_tombstone_v2 RENAME TO store6_key_tombstone",
+            """CREATE INDEX store6_key_tombstone_state
+               ON store6_key_tombstone(namespace, canonical_id, state)""",
+            """CREATE UNIQUE INDEX store6_key_tombstone_one_pending
+               ON store6_key_tombstone(namespace, canonical_id) WHERE state = 'PENDING'""",
+            """CREATE UNIQUE INDEX store6_key_tombstone_one_active
+               ON store6_key_tombstone(namespace, canonical_id) WHERE state = 'ACTIVE'""",
+            "UPDATE store6_mutation_schema SET version = 2 WHERE id = 0",
+        )
+    }
+
+    private fun mutationSchemaTableExists(): Boolean =
+        queryLong(
+            """SELECT 1 FROM sqlite_master
+               WHERE type = 'table' AND name = 'store6_mutation_schema'
+               LIMIT 1""",
+        ) != null
+
+    private fun hasNonQuiescentNamespaceOwner(): Boolean =
+        queryLong(
+            """SELECT 1 FROM store6_mutation_execution
+               WHERE phase IN ('INFLIGHT', 'REFRESH_REQUIRED', 'ACKED', 'EFFECTS_PENDING')
+                 OR (phase = 'READY' AND attempt > 0)
+                 OR (phase = 'READY' AND current_generation > 1)
+               LIMIT 1""",
+        ) != null
+
+    private fun unsupportedSchemaVersion(version: Long?): Nothing =
+        error(
             "store6-mutations-sqldelight found mutation-journal schema version $version in this " +
                 "database, but this adapter supports up to $SCHEMA_VERSION. Upgrade the " +
                 "store6-mutations-sqldelight dependency for this database, or restore the " +
-                "database."
-        }
-    }
+                "database.",
+        )
 
     private fun executeAll(vararg statements: String) {
         statements.forEach(::execute)
@@ -223,6 +296,13 @@ internal class MutationJournalSidecar(
         ).value
 
     private companion object {
-        const val SCHEMA_VERSION = 1L
+        const val SCHEMA_VERSION = 2L
+
+        const val MIGRATION_QUIESCENCE_DIAGNOSTIC: String =
+            "store6-mutations-sqldelight cannot migrate mutation-journal schema version 1 to 2 " +
+                "because durable mutation namespaces are not quiescent. Downgrade the " +
+                "store6-mutations-sqldelight dependency to a version that supports schema " +
+                "version 1, drain or park/retire every non-quiescent mutation namespace, then " +
+                "retry the upgrade."
     }
 }

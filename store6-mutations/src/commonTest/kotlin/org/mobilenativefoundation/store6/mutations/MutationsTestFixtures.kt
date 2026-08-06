@@ -6,6 +6,11 @@
 package org.mobilenativefoundation.store6.mutations
 
 import app.cash.turbine.ReceiveTurbine
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store6.core.Origin
 import org.mobilenativefoundation.store6.core.StoreKey
 import org.mobilenativefoundation.store6.core.StoreNamespace
@@ -69,6 +74,13 @@ internal fun <A : Any> inertArgsCodec(): MutationCodec<A> =
 internal fun <K : StoreKey, A : Any> noStales(): (K, A) -> StaleSet<K> =
     { _, _ -> StaleSet(keys = emptySet(), namespaces = emptySet()) }
 
+/** Default-preserving typed stale declaration for drain/effect orchestration tests. */
+internal fun <A : Any> typedStales(
+    keys: Set<MutationsTestKey> = emptySet(),
+    namespaces: Set<StoreNamespace> = emptySet(),
+): (MutationsTestKey, A) -> StaleSet<MutationsTestKey> =
+    { _, _ -> StaleSet(keys = keys, namespaces = namespaces) }
+
 /**
  * Test-only dual-role backend for the mutations tracer.
  *
@@ -97,6 +109,21 @@ internal class FakeBackend(
         private set
     internal val pushedValues: MutableList<String> = mutableListOf()
     internal val receivedPushes: MutableList<MutationPush<MutationsTestKey, String>> = mutableListOf()
+    internal val receivedIdempotencyKeys: MutableList<String> = mutableListOf()
+    internal val effectivePushApplications: MutableList<String> = mutableListOf()
+    internal val retirementRequests: MutableList<MutationRetirement> = mutableListOf()
+
+    /**
+     * When enabled, a repeated generation idempotency key remains observable as another request
+     * but returns its stored acknowledgement without applying the request again.
+     */
+    internal var dedupingPushBehavior: Boolean = false
+
+    private val pushState = Mutex()
+    private val acknowledgementsByIdempotencyKey =
+        mutableMapOf<String, MutationAck<MutationsTestKey, String>>()
+    private val acknowledgementsInFlightByIdempotencyKey =
+        mutableMapOf<String, CompletableDeferred<MutationAck<MutationsTestKey, String>>>()
     internal var lastAck: MutationAck<MutationsTestKey, String>? = null
         private set
 
@@ -115,6 +142,11 @@ internal class FakeBackend(
     internal var absentPushBehavior:
         suspend (MutationsTestKey) -> MutationAck<MutationsTestKey, String> = { _ ->
             MutationAbsentAck(etag = "etag-${receivedPushes.size}")
+        }
+
+    internal var retireBehavior:
+        suspend (MutationRetirement) -> MutationRetirementAck = { request ->
+            MutationRetirementAck(confirmedThroughSequence = request.retiredThroughSequence)
         }
 
     internal fun seed(
@@ -151,35 +183,95 @@ internal class FakeBackend(
 
     override suspend fun push(request: MutationPush<MutationsTestKey, String>): MutationAck<MutationsTestKey, String> {
         check(!offline) { "backend is offline" }
-        receivedPushes += request
-        val ack =
-            when (val mine = request.mine) {
-                is MutationPresence.Present -> {
-                    pushedValues += mine.value
-                    pushBehavior(request.key, mine.value)
+        val idempotencyKey = request.idempotencyKey
+        var storedAck: MutationAck<MutationsTestKey, String>? = null
+        var inFlightAck: CompletableDeferred<MutationAck<MutationsTestKey, String>>? = null
+        var ownsInFlightAck = false
+        pushState.withLock {
+            receivedPushes += request
+            receivedIdempotencyKeys += idempotencyKey
+            if (dedupingPushBehavior) {
+                storedAck = acknowledgementsByIdempotencyKey[idempotencyKey]
+                if (storedAck == null) {
+                    inFlightAck = acknowledgementsInFlightByIdempotencyKey[idempotencyKey]
+                    if (inFlightAck == null) {
+                        val createdAck =
+                            CompletableDeferred<MutationAck<MutationsTestKey, String>>()
+                        inFlightAck = createdAck
+                        acknowledgementsInFlightByIdempotencyKey[idempotencyKey] = createdAck
+                        ownsInFlightAck = true
+                    }
                 }
-                MutationPresence.Absent -> absentPushBehavior(request.key)
-            }
-        when (ack) {
-            is MutationPresentAck -> {
-                // D15a: a canonical redirect means the entity's authoritative row IS the
-                // canonical identity; the acknowledged value lands there.
-                val effectiveIdentity = (ack.canonicalKey ?: request.key).identity()
-                confirmed[effectiveIdentity] = ack.authoritative
-                deletedIdentities -= effectiveIdentity
-            }
-            is MutationAbsentAck -> {
-                val identity = request.key.identity()
-                confirmed.remove(identity)
-                deletedIdentities += identity
             }
         }
-        lastAck = ack
-        return ack
+
+        storedAck?.let { ack ->
+            pushState.withLock { lastAck = ack }
+            return ack
+        }
+        val pendingAck = inFlightAck
+        if (pendingAck != null && !ownsInFlightAck) {
+            val ack = pendingAck.await()
+            pushState.withLock { lastAck = ack }
+            return ack
+        }
+
+        try {
+            val ack =
+                when (val mine = request.mine) {
+                    is MutationPresence.Present -> {
+                        pushState.withLock { pushedValues += mine.value }
+                        pushBehavior(request.key, mine.value)
+                    }
+                    MutationPresence.Absent -> absentPushBehavior(request.key)
+                }
+            withContext(NonCancellable) {
+                pushState.withLock {
+                    effectivePushApplications += idempotencyKey
+                    when (ack) {
+                        is MutationPresentAck -> {
+                            // D15a: a canonical redirect means the entity's authoritative row IS the
+                            // canonical identity; the acknowledged value lands there.
+                            val effectiveIdentity = (ack.canonicalKey ?: request.key).identity()
+                            confirmed[effectiveIdentity] = ack.authoritative
+                            deletedIdentities -= effectiveIdentity
+                        }
+                        is MutationAbsentAck -> {
+                            val identity = request.key.identity()
+                            confirmed.remove(identity)
+                            deletedIdentities += identity
+                        }
+                    }
+                    lastAck = ack
+                    if (ownsInFlightAck) {
+                        acknowledgementsByIdempotencyKey[idempotencyKey] = ack
+                        acknowledgementsInFlightByIdempotencyKey.remove(idempotencyKey)
+                        checkNotNull(pendingAck).complete(ack)
+                    }
+                }
+            }
+            return ack
+        } catch (failure: Throwable) {
+            if (ownsInFlightAck) {
+                withContext(NonCancellable) {
+                    pushState.withLock {
+                        acknowledgementsInFlightByIdempotencyKey.remove(idempotencyKey)
+                        checkNotNull(pendingAck).completeExceptionally(failure)
+                    }
+                }
+            }
+            throw failure
+        }
     }
 
-    override suspend fun retire(request: MutationRetirement): MutationRetirementAck =
-        MutationRetirementAck(confirmedThroughSequence = request.retiredThroughSequence)
+    override suspend fun retire(request: MutationRetirement): MutationRetirementAck {
+        val behavior =
+            pushState.withLock {
+                retirementRequests += request
+                retireBehavior
+            }
+        return behavior(request)
+    }
 }
 
 internal fun <K : StoreKey, V : Any> echoingMutationServer(): MutationServer<K, V> =

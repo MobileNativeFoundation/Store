@@ -394,7 +394,9 @@ internal open class StorageBackedMutationJournal<V : Any>(
     /**
      * Publishes one post-commit alias retirement as a single runtime-cache linearization point.
      * The durable edge remains the raw source-to-acknowledged-target fact; queued entries move to
-     * the already-resolved terminal execution residence.
+     * the already-resolved terminal execution residence. The caller retains the old tombstone
+     * cache until this method returns, so no observer can see a superseded watermark while
+     * routing or projection membership is still old.
      */
     internal suspend fun publishAliasRetirement(
         source: KeyIdentity,

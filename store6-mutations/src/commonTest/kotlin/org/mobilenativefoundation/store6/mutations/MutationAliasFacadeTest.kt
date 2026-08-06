@@ -325,111 +325,372 @@ class MutationAliasFacadeTest {
 
     @Test
     fun cycleRetargetAndRetryMismatchAreProtocolFailures() = runTest {
-        val mutations = AliasMutationSet()
-        val backend = FakeBackend()
-        var retargetTarget = "real-b1"
-        var retryTarget = "real-c1"
-        backend.pushBehavior = { key, value ->
-            val canonicalId =
-                when (key.canonicalId()) {
-                    "temp-a" -> "real-a"
-                    "real-a" -> "temp-a" // the cycle attempt
-                    "temp-b" -> retargetTarget
-                    "temp-c" -> retryTarget
-                    else -> null
+        suspend fun assertProtocolPark(
+            journal: StorageBackedMutationJournal<String>,
+            engine: MutationEngine<MutationsTestKey, String>,
+            mutationId: String,
+            expectedDetail: String,
+        ) {
+            val snapshot = journal.readDurableSnapshot()
+            val intent = snapshot.intents.single { row -> row.mutationId == mutationId }
+            val execution =
+                snapshot.executions.single { row ->
+                    row.clientId == intent.clientId && row.clientSequence == intent.clientSequence
                 }
-            MutationPresentAck(
-                authoritative = value,
-                etag = "etag",
-                canonicalKey = canonicalId?.let(::MutationsTestKey),
+            val failures =
+                snapshot.failures.filter { row ->
+                    row.clientId == intent.clientId && row.clientSequence == intent.clientSequence
+                }
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.PARKED,
+                execution.phase,
             )
+            val activeFailureId =
+                execution.activeFailureId
+                    ?: throw AssertionError("expected PARKED execution to link an active failure")
+            val failure = failures.single { row -> row.failureId == activeFailureId }
+            assertEquals(failure.failureId, execution.activeFailureId)
+            assertEquals(MutationFailureKind.PROTOCOL, failure.kind)
+            assertEquals(expectedDetail, failure.detail)
+            assertEquals(1, execution.attempt)
+            assertTrue(execution.lastAttemptAt != null)
+            assertEquals(
+                1,
+                failures.count { row ->
+                    row.kind == MutationFailureKind.PROTOCOL && row.detail == expectedDetail
+                },
+            )
+            assertEquals(null, execution.retiredAt)
+            assertTrue(
+                snapshot.acks.none { row ->
+                    row.clientId == intent.clientId && row.clientSequence == intent.clientSequence
+                },
+            )
+            assertTrue(
+                snapshot.effects.none { row ->
+                    row.clientId == intent.clientId && row.clientSequence == intent.clientSequence
+                },
+            )
+            assertTrue(
+                snapshot.aliases.none { row ->
+                    row.createdByClientId == intent.clientId &&
+                        row.createdBySequence == intent.clientSequence
+                },
+            )
+            assertTrue(
+                snapshot.tombstones.none { row ->
+                    row.createdByClientId == intent.clientId &&
+                        row.createdBySequence == intent.clientSequence
+                },
+            )
+            assertTrue(engine.pendingWrites().none { row -> row.mutationId == mutationId })
+            val deadLetter = engine.deadLetters().single { row -> row.mutationId == mutationId }
+            assertEquals(1, deadLetter.attempts)
+            assertEquals(MutationFailureKind.PROTOCOL, deadLetter.failure.kind)
+            assertEquals(expectedDetail, deadLetter.failure.detail)
         }
-        val handle = ScriptableWriteHandle()
-        val journal = InMemoryMutationJournal<String>()
-        val engine =
-            MutationEngine(
-                registry = mutations.registry,
-                server = backend,
-                journal = journal,
-                keyResolver = MutationsTestKeyResolver,
-                baseReader = { "base" },
+
+        val armFailures = mutableListOf<String>()
+        suspend fun runArm(
+            label: String,
+            block: suspend () -> Unit,
+        ) {
+            try {
+                block()
+            } catch (failure: AssertionError) {
+                armFailures += "$label: ${failure.message.orEmpty()}"
+            }
+        }
+
+        // Cycle: establish one ACTIVE durable edge, then park a head whose target closes it.
+        runArm("cycle") {
+            val mutations = AliasMutationSet()
+            val storage = InMemoryMutationJournalStorage()
+            val journal =
+                StorageBackedMutationJournal<String>(
+                    storage = storage,
+                    registrations = mutations.registry.registrations,
+                    hydrateOnFirstUse = true,
+                )
+            val backend = FakeBackend()
+            backend.pushBehavior = { key, value ->
+                MutationPresentAck(
+                    authoritative = value,
+                    etag = "etag-$value",
+                    canonicalKey =
+                        when {
+                            key.canonicalId() == "temp-a" -> MutationsTestKey("real-a")
+                            value == "cycle-head" -> MutationsTestKey("temp-a")
+                            else -> null
+                        },
+                )
+            }
+            val handle = ScriptableWriteHandle()
+            val engine =
+                MutationEngine(
+                    registry = mutations.registry,
+                    server = backend,
+                    journal = journal,
+                    keyResolver = MutationsTestKeyResolver,
+                    valueCodecVersion = 1,
+                    valueCodec = FixtureStringArgsCodec,
+                    baseReader = { "base" },
+                )
+            engine.bind(handle)
+            val source = MutationsTestKey("temp-a")
+            val target = MutationsTestKey("real-a")
+
+            engine.mutate(source, mutations.rename, "cycle-seed")
+            engine.drain(source)
+            assertEquals(target.identity(), engine.terminalIdentityOf(source.identity()))
+            val appliesBeforeViolation = handle.applied.toList()
+            val subject = engine.mutate(target, mutations.rename, "cycle-head")
+            val suffix = engine.mutate(target, mutations.rename, "cycle-suffix")
+
+            engine.drain(target)
+
+            assertProtocolPark(journal, engine, subject, ALIAS_FAILURE_DETAIL_CYCLE)
+            val after = journal.readDurableSnapshot()
+            val suffixIntent = after.intents.single { row -> row.mutationId == suffix }
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.RETIRED,
+                after.executions.single { row ->
+                    row.clientId == suffixIntent.clientId &&
+                        row.clientSequence == suffixIntent.clientSequence
+                }.phase,
             )
-        engine.bind(handle)
+            assertEquals(appliesBeforeViolation + ("real-a" to "cycle-suffix"), handle.applied)
+            assertTrue(handle.applied.none { (_, value) -> value == "cycle-head" })
+            assertEquals(1, after.aliases.size)
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationAliasState.ACTIVE,
+                after.aliases.single().state,
+            )
+            assertEquals(emptyList(), engine.pending(target))
+            assertEquals(1, engine.deadLetters().size)
+            val pushCount = backend.receivedPushes.size
+            engine.drain(target)
+            assertEquals(pushCount, backend.receivedPushes.size)
+        }
 
-        // --- Cycle: temp-a -> real-a is active; an ack at real-a claiming temp-a must reject.
-        val cycleSource = MutationsTestKey("temp-a")
-        val cycleTarget = MutationsTestKey("real-a")
-        engine.mutate(cycleSource, mutations.rename, "one")
-        engine.drain(cycleSource)
-        assertEquals(
-            cycleTarget.identity(),
-            engine.terminalIdentityOf(cycleSource.identity()),
-        )
-        val appliesBeforeCycle = handle.applied.size
-        val cycleIntent = engine.mutate(cycleTarget, mutations.rename, "two")
-        engine.drain(cycleTarget)
-        assertEquals(appliesBeforeCycle, handle.applied.size)
-        assertEquals(
-            listOf(cycleIntent),
-            engine.pending(cycleTarget).map(PendingIntent::mutationId),
-        )
-        assertEquals(1, engine.pending(cycleTarget).single().attempt)
-        assertEquals(
-            cycleTarget.identity(),
-            engine.terminalIdentityOf(cycleSource.identity()),
-        )
+        // Retarget: a separate durable client legally leaves the first edge PENDING at ACKED.
+        // This client can then prove that a different generation cannot replace that target.
+        runArm("retarget") {
+            val mutations = AliasMutationSet()
+            val storage = InMemoryMutationJournalStorage()
+            val seedJournal =
+                StorageBackedMutationJournal<String>(
+                    storage = storage,
+                    registrations = mutations.registry.registrations,
+                    clientId = "retarget-seed-client",
+                    hydrateOnFirstUse = true,
+                )
+            val seedBackend = FakeBackend()
+            seedBackend.redirectEcho("temp-b" to "real-b1")
+            val seedHandle = ScriptableWriteHandle()
+            seedHandle.applyFailure = IllegalStateException("hold pending alias at ACKED")
+            val seedEngine =
+                MutationEngine(
+                    registry = mutations.registry,
+                    server = seedBackend,
+                    journal = seedJournal,
+                    keyResolver = MutationsTestKeyResolver,
+                    valueCodecVersion = 1,
+                    valueCodec = FixtureStringArgsCodec,
+                    baseReader = { "base" },
+                    clientId = "retarget-seed-client",
+                )
+            seedEngine.bind(seedHandle)
+            val source = MutationsTestKey("temp-b")
+            seedEngine.mutate(source, mutations.rename, "retarget-seed")
+            assertFailsWith<IllegalStateException> { seedEngine.drain(source) }
+            val seeded = seedJournal.readDurableSnapshot()
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.ACKED,
+                seeded.executions.single().phase,
+            )
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationAliasState.PENDING,
+                seeded.aliases.single().state,
+            )
 
-        // --- Retarget: a DIFFERENT intent at an already-aliased source claims a new target.
-        val retargetSource = MutationsTestKey("temp-b")
-        handle.applyFailure = IllegalStateException("first adoption interrupted")
-        val firstRetargetIntent = engine.mutate(retargetSource, mutations.rename, "three")
-        assertFailsWith<IllegalStateException> { engine.drain(retargetSource) }
-        handle.applyFailure = null
-        // Clear the half-adopted head directly (staging only, like the overlay regressions'
-        // direct journal use) so the NEXT intent — a new generation/idempotency key — pushes
-        // against the pinned pending edge temp-b -> real-b1.
-        journal.retire(retargetSource.identity(), firstRetargetIntent)
-        retargetTarget = "real-b2"
-        val retargetIntent = engine.mutate(retargetSource, mutations.rename, "four")
-        val appliesBeforeRetarget = handle.applied.size
-        engine.drain(retargetSource)
-        assertEquals(appliesBeforeRetarget, handle.applied.size)
-        assertEquals(
-            listOf(retargetIntent),
-            engine.pending(retargetSource).map(PendingIntent::mutationId),
-        )
+            val journal =
+                StorageBackedMutationJournal<String>(
+                    storage = storage,
+                    registrations = mutations.registry.registrations,
+                    hydrateOnFirstUse = true,
+                )
+            val backend = FakeBackend()
+            backend.pushBehavior = { _, value ->
+                MutationPresentAck(
+                    authoritative = value,
+                    etag = "etag-$value",
+                    canonicalKey =
+                        when (value) {
+                            "retarget-head" -> MutationsTestKey("real-b2")
+                            "retarget-suffix" -> MutationsTestKey("real-b1")
+                            else -> null
+                        },
+                )
+            }
+            val handle = ScriptableWriteHandle()
+            val engine =
+                MutationEngine(
+                    registry = mutations.registry,
+                    server = backend,
+                    journal = journal,
+                    keyResolver = MutationsTestKeyResolver,
+                    valueCodecVersion = 1,
+                    valueCodec = FixtureStringArgsCodec,
+                    baseReader = { "base" },
+                )
+            engine.bind(handle)
+            val subject = engine.mutate(source, mutations.rename, "retarget-head")
+            val suffix = engine.mutate(source, mutations.rename, "retarget-suffix")
 
-        // --- Retry mismatch: the SAME generation retries and acknowledges a different target.
-        val retrySource = MutationsTestKey("temp-c")
-        handle.applyFailure = IllegalStateException("retry adoption interrupted")
-        val retryIntent = engine.mutate(retrySource, mutations.rename, "five")
-        assertFailsWith<IllegalStateException> { engine.drain(retrySource) }
-        handle.applyFailure = null
-        retryTarget = "real-c2"
-        val appliesBeforeRetry = handle.applied.size
-        engine.drain(retrySource)
-        assertEquals(appliesBeforeRetry, handle.applied.size)
-        assertEquals(
-            listOf(retryIntent),
-            engine.pending(retrySource).map(PendingIntent::mutationId),
-        )
-        assertEquals(
-            retrySource.identity(),
-            engine.terminalIdentityOf(retrySource.identity()),
-        )
+            engine.drain(source)
 
-        // All three violations surfaced as normalized PROTOCOL carriers, in order, with no
-        // Throwable retained (D3/D15a); 023 owns the durable park these halts preview.
-        val failures = engine.drainFailuresForInspection()
-        assertEquals(
-            listOf(
-                ALIAS_FAILURE_DETAIL_CYCLE,
-                ALIAS_FAILURE_DETAIL_RETARGET,
+            assertProtocolPark(journal, engine, subject, ALIAS_FAILURE_DETAIL_RETARGET)
+            val after = journal.readDurableSnapshot()
+            val suffixIntent = after.intents.single { row -> row.mutationId == suffix }
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.RETIRED,
+                after.executions.single { row ->
+                    row.clientId == suffixIntent.clientId &&
+                        row.clientSequence == suffixIntent.clientSequence
+                }.phase,
+            )
+            assertEquals(listOf("real-b1" to "retarget-suffix"), handle.applied)
+            assertTrue(handle.applied.none { (_, value) -> value == "retarget-head" })
+            assertEquals(1, after.aliases.size)
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationAliasState.ACTIVE,
+                after.aliases.single().state,
+            )
+            assertEquals(emptyList(), engine.pendingWrites())
+            assertEquals(1, engine.deadLetters().size)
+            val pushCount = backend.receivedPushes.size
+            engine.drain(source)
+            assertEquals(pushCount, backend.receivedPushes.size)
+        }
+
+        // Retry mismatch: the first target is observed, but its ACK transaction rolls back.
+        // The exact generation replays once; changing its target must park before any receipt.
+        runArm("retry-mismatch") {
+            val mutations = AliasMutationSet()
+            val backing = InMemoryMutationJournalStorage()
+            var failAckTransaction = true
+            val storage =
+                object :
+                    org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage {
+                    override suspend fun <R> transaction(
+                        block: (
+                            org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction,
+                        ) -> R,
+                    ): R =
+                        backing.transaction { transaction ->
+                            var insertedAck = false
+                            val observing =
+                                object :
+                                    org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction by
+                                        transaction {
+                                    override fun insertAck(
+                                        record: org.mobilenativefoundation.store6.mutations.storage.MutationAckRecord,
+                                    ) {
+                                        transaction.insertAck(record)
+                                        insertedAck = true
+                                    }
+                                }
+                            val result = block(observing)
+                            if (failAckTransaction && insertedAck) {
+                                failAckTransaction = false
+                                throw IllegalStateException("ack transaction interrupted")
+                            }
+                            result
+                        }
+                }
+            val journal =
+                StorageBackedMutationJournal<String>(
+                    storage = storage,
+                    registrations = mutations.registry.registrations,
+                    hydrateOnFirstUse = true,
+                )
+            val backend = FakeBackend()
+            var target = "real-c1"
+            backend.pushBehavior = { _, value ->
+                MutationPresentAck(
+                    authoritative = value,
+                    etag = "etag-$value",
+                    canonicalKey =
+                        if (value == "retry-head") MutationsTestKey(target) else null,
+                )
+            }
+            val handle = ScriptableWriteHandle()
+            val engine =
+                MutationEngine(
+                    registry = mutations.registry,
+                    server = backend,
+                    journal = journal,
+                    keyResolver = MutationsTestKeyResolver,
+                    valueCodecVersion = 1,
+                    valueCodec = FixtureStringArgsCodec,
+                    baseReader = { "base" },
+                )
+            engine.bind(handle)
+            val source = MutationsTestKey("temp-c")
+            val subject = engine.mutate(source, mutations.rename, "retry-head")
+            val suffix = engine.mutate(source, mutations.rename, "retry-suffix")
+
+            assertFailsWith<IllegalStateException> { engine.drain(source) }
+            assertFalse(failAckTransaction)
+            val rolledBack = journal.readDurableSnapshot()
+            val subjectIntent = rolledBack.intents.single { row -> row.mutationId == subject }
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.INFLIGHT,
+                rolledBack.executions.single { row ->
+                    row.clientId == subjectIntent.clientId &&
+                        row.clientSequence == subjectIntent.clientSequence
+                }.phase,
+            )
+            assertTrue(
+                rolledBack.acks.none { row -> row.clientSequence == subjectIntent.clientSequence },
+            )
+            assertTrue(rolledBack.aliases.isEmpty())
+            assertTrue(journal.runtimeSnapshot().aliases.isEmpty())
+            target = "real-c2"
+
+            engine.drain(source)
+
+            assertEquals(
+                backend.receivedPushes[0].idempotencyKey,
+                backend.receivedPushes[1].idempotencyKey,
+            )
+            assertProtocolPark(
+                journal,
+                engine,
+                subject,
                 ALIAS_FAILURE_DETAIL_RETRY_TARGET_MISMATCH,
-            ),
-            failures.map(MutationFailure::detail),
-        )
-        assertTrue(failures.all { failure -> failure.kind == MutationFailureKind.PROTOCOL })
+            )
+            val after = journal.readDurableSnapshot()
+            val suffixIntent = after.intents.single { row -> row.mutationId == suffix }
+            assertEquals(
+                org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.RETIRED,
+                after.executions.single { row ->
+                    row.clientId == suffixIntent.clientId &&
+                        row.clientSequence == suffixIntent.clientSequence
+                }.phase,
+            )
+            assertEquals(listOf("temp-c" to "retry-suffix"), handle.applied)
+            assertTrue(handle.applied.none { (_, value) -> value == "retry-head" })
+            assertTrue(after.aliases.isEmpty())
+            assertEquals(emptyList(), engine.pending(source))
+            assertEquals(1, engine.deadLetters().size)
+            val pushCount = backend.receivedPushes.size
+            engine.drain(source)
+            assertEquals(pushCount, backend.receivedPushes.size)
+        }
+
+        assertEquals(emptyList(), armFailures, armFailures.joinToString(separator = "\n"))
     }
 
     @Test
@@ -1079,6 +1340,42 @@ class MutationAliasFacadeTest {
     @Test
     fun retryOfGenerationWithDifferentCanonicalTarget_isProtocolFailure() = runTest {
         val mutations = AliasMutationSet()
+        val backing = InMemoryMutationJournalStorage()
+        var failAckTransaction = true
+        val storage =
+            object : org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage {
+                override suspend fun <R> transaction(
+                    block: (
+                        org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction,
+                    ) -> R,
+                ): R =
+                    backing.transaction { transaction ->
+                        var insertedAck = false
+                        val observing =
+                            object :
+                                org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction by
+                                    transaction {
+                                override fun insertAck(
+                                    record: org.mobilenativefoundation.store6.mutations.storage.MutationAckRecord,
+                                ) {
+                                    transaction.insertAck(record)
+                                    insertedAck = true
+                                }
+                            }
+                        val result = block(observing)
+                        if (failAckTransaction && insertedAck) {
+                            failAckTransaction = false
+                            throw IllegalStateException("ack transaction interrupted")
+                        }
+                        result
+                    }
+            }
+        val journal =
+            StorageBackedMutationJournal<String>(
+                storage = storage,
+                registrations = mutations.registry.registrations,
+                hydrateOnFirstUse = true,
+            )
         val backend = FakeBackend()
         var canonicalTarget = "real-1"
         backend.pushBehavior = { _, value ->
@@ -1093,22 +1390,36 @@ class MutationAliasFacadeTest {
             MutationEngine(
                 registry = mutations.registry,
                 server = backend,
+                journal = journal,
                 keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
                 baseReader = { "base" },
             )
         engine.bind(handle)
         val provisional = MutationsTestKey("temp-1")
 
-        // First attempt: the ack's target is validated and receipted, then adoption fails, so
-        // the same generation stays eligible for an exact replay.
-        handle.applyFailure = IllegalStateException("adoption interrupted")
+        // The first target is validated, but its acknowledgement transaction rolls back. The
+        // durable generation remains INFLIGHT and therefore replays with the exact idempotency
+        // key; the process-local target receipt still makes a different retry target illegal.
         val intent = engine.mutate(provisional, mutations.rename, "draft")
         assertFailsWith<IllegalStateException> { engine.drain(provisional) }
-        handle.applyFailure = null
+        assertFalse(failAckTransaction)
+        val rolledBack = journal.readDurableSnapshot()
+        val intentRow = rolledBack.intents.single { row -> row.mutationId == intent }
+        assertEquals(
+            org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.INFLIGHT,
+            rolledBack.executions.single { row ->
+                row.clientId == intentRow.clientId && row.clientSequence == intentRow.clientSequence
+            }.phase,
+        )
+        assertTrue(rolledBack.acks.isEmpty())
+        assertTrue(rolledBack.aliases.isEmpty())
+        assertTrue(rolledBack.tombstones.isEmpty())
+        assertTrue(journal.runtimeSnapshot().aliases.isEmpty())
 
         // The retry of the SAME idempotency key acknowledges a different canonical target.
         canonicalTarget = "real-9"
-        val appliesBefore = handle.applied.size
         engine.drain(provisional)
 
         assertEquals(2, backend.receivedPushes.size)
@@ -1116,15 +1427,54 @@ class MutationAliasFacadeTest {
             backend.receivedPushes.first().idempotencyKey,
             backend.receivedPushes.last().idempotencyKey,
         )
-        val failure = engine.drainFailuresForInspection().single()
+        val snapshot = journal.readDurableSnapshot()
+        val execution =
+            snapshot.executions.single { row ->
+                row.clientId == intentRow.clientId && row.clientSequence == intentRow.clientSequence
+            }
+        val failures =
+            snapshot.failures.filter { row ->
+                row.clientId == intentRow.clientId && row.clientSequence == intentRow.clientSequence
+            }
+        assertEquals(
+            org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase.PARKED,
+            execution.phase,
+        )
+        val activeFailureId =
+            execution.activeFailureId
+                ?: throw AssertionError("expected PARKED execution to link an active failure")
+        val failure = failures.single { row -> row.failureId == activeFailureId }
+        assertEquals(failure.failureId, execution.activeFailureId)
         assertEquals(MutationFailureKind.PROTOCOL, failure.kind)
         assertEquals(ALIAS_FAILURE_DETAIL_RETRY_TARGET_MISMATCH, failure.detail)
-        assertEquals(appliesBefore, handle.applied.size)
-        assertEquals(listOf(intent), engine.pending(provisional).map(PendingIntent::mutationId))
+        assertEquals(1, execution.attempt)
+        assertTrue(execution.lastAttemptAt != null)
+        assertEquals(
+            1,
+            failures.count { row ->
+                row.kind == MutationFailureKind.PROTOCOL &&
+                    row.detail == ALIAS_FAILURE_DETAIL_RETRY_TARGET_MISMATCH
+            },
+        )
+        assertEquals(null, execution.retiredAt)
+        assertTrue(snapshot.acks.isEmpty())
+        assertTrue(snapshot.aliases.isEmpty())
+        assertTrue(snapshot.tombstones.isEmpty())
+        assertTrue(snapshot.effects.isEmpty())
+        assertTrue(journal.runtimeSnapshot().aliases.isEmpty())
+        assertTrue(handle.applied.isEmpty())
+        assertTrue(engine.pendingWrites().none { row -> row.mutationId == intent })
+        val deadLetter = engine.deadLetters().single()
+        assertEquals(intent, deadLetter.mutationId)
+        assertEquals(1, deadLetter.attempts)
+        assertEquals(MutationFailureKind.PROTOCOL, deadLetter.failure.kind)
+        assertEquals(ALIAS_FAILURE_DETAIL_RETRY_TARGET_MISMATCH, deadLetter.failure.detail)
         assertEquals(
             provisional.identity(),
             engine.terminalIdentityOf(provisional.identity()),
         )
+        engine.drain(provisional)
+        assertEquals(2, backend.receivedPushes.size)
     }
 }
 

@@ -178,6 +178,9 @@ public class MutationPreconditionCandidate<K : StoreKey, V : Any> internal const
  * Transport cancellation is not failure: once a push has entered `INFLIGHT`, a thrown
  * `CancellationException` is rethrown and leaves that phase intact because remote acceptance is
  * uncertain; the next explicit drain or restart sends this exact same immutable generation.
+ * That uncertain generation retains causal authority for its `(clientId, identity.namespace)`:
+ * later keys in the same client namespace cannot begin transport until it parks or retires,
+ * while keys in different namespaces remain eligible to progress.
  *
  * [baseMeta] strengthens the existence/value precondition when present; `baseMeta == null` never
  * means an unconditional write — [base] itself is always a precondition.
@@ -216,7 +219,7 @@ public class MutationPush<K : StoreKey, V : Any> internal constructor(
     @ExperimentalStoreApi
     public val idempotencyKey: String,
 
-    /** The value-codec version that decodes this generation's base, mine, and ack blobs. */
+    /** The value-codec version that decodes this generation's base and mine blobs. */
     @ExperimentalStoreApi
     public val valueCodecVersion: Int,
 

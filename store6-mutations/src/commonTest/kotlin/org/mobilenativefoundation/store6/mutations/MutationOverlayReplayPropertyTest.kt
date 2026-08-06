@@ -127,7 +127,11 @@ class MutationOverlayReplayPropertyTest {
             val storage = InMemoryMutationJournalStorage()
             val source = CountingPlainSourceOfTruth<MutationsTestKey, String>()
             val fixture = fallbackAppendFixture()
-            val server = PropertyCountingServer(authoritative = "v2")
+            val server =
+                PropertyCountingServer(
+                    authoritative = "v2",
+                    retirementConfirmationCeiling = 0L,
+                )
             val key = MutationsTestKey("retired-fallback")
             val first = openFallbackStore(storage, source, fixture.registry, server)
 
@@ -564,6 +568,7 @@ private fun openFallbackStore(
 
 private class PropertyCountingServer(
     private val authoritative: String,
+    private val retirementConfirmationCeiling: Long? = null,
 ) : MutationServer<MutationsTestKey, String> {
     var pushCount: Int = 0
         private set
@@ -576,7 +581,12 @@ private class PropertyCountingServer(
     }
 
     override suspend fun retire(request: MutationRetirement): MutationRetirementAck =
-        MutationRetirementAck(request.retiredThroughSequence)
+        MutationRetirementAck(
+            minOf(
+                request.retiredThroughSequence,
+                retirementConfirmationCeiling ?: request.retiredThroughSequence,
+            ),
+        )
 }
 
 private class CountingPlainSourceOfTruth<K : StoreKey, V : Any>(

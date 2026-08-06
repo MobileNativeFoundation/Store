@@ -5,12 +5,26 @@
 
 package org.mobilenativefoundation.store6.mutations
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest as coroutineRunTest
+import org.mobilenativefoundation.store6.core.StoreNamespace
 import org.mobilenativefoundation.store6.core.seam.StoreWriteHandle
+import org.mobilenativefoundation.store6.mutations.storage.InMemoryMutationJournalStorage
+import org.mobilenativefoundation.store6.mutations.storage.MutationEffectDisposition
+import org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase as StoredPhase
+import org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
@@ -258,6 +272,208 @@ class MutationDrainTest {
         assertEquals(emptyList(), engine.drainFailuresForInspection())
         assertTrue(engine.poisoned.replayCache.isEmpty())
     }
+
+    @Test
+    fun foregroundPassAttemptsEachFailedLocalPhaseOnlyOnce() = runTest {
+        val backing = InMemoryMutationJournalStorage()
+        val storage = FailPointJournalStorage(backing)
+        val mutations = DrainLocalPhaseMutations()
+        val backend = FakeBackend()
+        val handle = ScriptedDrainPhaseHandle()
+        val engine = openDrainPhaseEngine(storage, mutations, backend, handle)
+        val adoption = drainPhaseKey("adoption")
+        val effect = drainPhaseKey("effect")
+        val finalization = drainPhaseKey("finalization")
+
+        suspend fun stage(
+            key: MutationsTestKey,
+            ref: MutatorRef<MutationsTestKey, String, String>,
+            boundary: JournalFailPointBoundary,
+        ): String {
+            val mutationId = engine.mutate(key, ref, "+${key.canonicalId()}")
+            storage.armFailTransaction(boundary)
+            assertIs<FailPointTransactionException>(captureDrainPhaseFailure { engine.drain(key) })
+            return mutationId
+        }
+
+        val adoptionId = stage(adoption, mutations.plain, JournalFailPointBoundary.ADOPTION_ADVANCE)
+        // Keep effect 2 PENDING after effect 1's one-shot marker failure during this setup pass.
+        handle.remainingMarkStaleFailures[mutations.effectTargets(effect).last().identity()] = 1
+        val effectId = stage(effect, mutations.effectful, JournalFailPointBoundary.EFFECT_MARKER)
+        val finalizationId =
+            stage(finalization, mutations.plain, JournalFailPointBoundary.FINALIZATION)
+
+        handle.applyAttempts.clear()
+        handle.markStaleAttempts.clear()
+        handle.remainingApplyFailures[adoption.identity()] = 1
+        mutations.effectTargets(effect).forEach { target ->
+            handle.remainingMarkStaleFailures[target.identity()] = 1
+        }
+        storage.triggeredBoundaries.clear()
+        storage.armFailTransaction(JournalFailPointBoundary.FINALIZATION)
+        val pushCount = backend.receivedPushes.size
+
+        val exposed = captureDrainPhaseFailure { engine.drain() }
+        val (phases, effectDispositions) =
+            backing.transaction { transaction ->
+                val intents = transaction.intents(DRAIN_PHASE_CLIENT_ID).associateBy { it.mutationId }
+                val phases =
+                    transaction.executions(DRAIN_PHASE_CLIENT_ID).associate { execution ->
+                        val mutationId =
+                            intents.values.single { intent ->
+                                intent.clientSequence == execution.clientSequence
+                            }.mutationId
+                        mutationId to execution.phase
+                    }
+                val effectSequence = intents.getValue(effectId).clientSequence
+                val effectDispositions =
+                    transaction
+                        .effects(DRAIN_PHASE_CLIENT_ID)
+                        .filter { effect -> effect.clientSequence == effectSequence }
+                        .sortedBy { effect -> effect.effectIndex }
+                        .map { effect -> effect.disposition }
+                phases to effectDispositions
+            }
+        val deadLetters = engine.deadLetters()
+        val errors = mutableListOf<String>()
+        expectDrainPhase(errors, "global foreground pass returns normally") { assertNull(exposed) }
+        expectDrainPhase(errors, "adoption is attempted once") {
+            assertEquals(listOf(adoption.identity()), handle.applyAttempts)
+            assertEquals(StoredPhase.ACKED, phases.getValue(adoptionId))
+        }
+        expectDrainPhase(errors, "each runnable effect is attempted once") {
+            assertEquals(
+                mutations.effectTargets(effect).map { target -> target.identity() },
+                handle.markStaleAttempts,
+            )
+            assertEquals(
+                listOf(
+                    MutationEffectDisposition.PENDING,
+                    MutationEffectDisposition.PENDING,
+                ),
+                effectDispositions,
+            )
+            assertEquals(StoredPhase.EFFECTS_PENDING, phases.getValue(effectId))
+        }
+        expectDrainPhase(errors, "finalization is attempted once") {
+            assertEquals(listOf(JournalFailPointBoundary.FINALIZATION), storage.triggeredBoundaries)
+            assertEquals(StoredPhase.EFFECTS_PENDING, phases.getValue(finalizationId))
+        }
+        expectDrainPhase(errors, "no failed local phase repushes or parks") {
+            assertEquals(pushCount, backend.receivedPushes.size)
+            assertTrue(deadLetters.isEmpty())
+        }
+        assertTrue(errors.isEmpty(), errors.joinToString(separator = "\n"))
+    }
+
+    @Test
+    fun pushCancellation_rethrowsAndReplayUsesExactInflightGeneration() = runTest {
+        val storage = InMemoryMutationJournalStorage()
+        val mutation = DrainAppendMutation()
+        val backend =
+            FakeBackend().apply {
+                retireBehavior = {
+                    MutationRetirementAck(confirmedThroughSequence = 0L)
+                }
+            }
+        val pushEntered = CompletableDeferred<Unit>()
+        val releasePush = CompletableDeferred<Unit>()
+        backend.pushBehavior = { _, value ->
+            pushEntered.complete(Unit)
+            releasePush.await()
+            MutationPresentAck(value, "etag-replayed", null)
+        }
+        val key = MutationsTestKey("cancelled-inflight-replay")
+        val first =
+            mutationStore(
+                registry = mutation.registry,
+                server = backend,
+                keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
+                fetcher { backend.load(it) }
+                journalStorage(storage)
+            }
+
+        val firstPush: MutationPush<MutationsTestKey, String>
+        try {
+            assertEquals("base", first.get(key))
+            first.mutate(key, mutation.ref, "+pending")
+            val draining =
+                backgroundScope.async(start = CoroutineStart.UNDISPATCHED) {
+                    first.drain(key)
+                }
+            pushEntered.await()
+            assertFalse(draining.isCompleted)
+            firstPush = backend.receivedPushes.single()
+
+            val inflight = storage.transaction { it.executions("client-0").single() }
+            assertEquals(StoredPhase.INFLIGHT, inflight.phase)
+            assertEquals(0, inflight.attempt)
+            assertNull(inflight.lastAttemptAt)
+            assertNull(inflight.activeFailureId)
+            assertEquals(emptyList(), storage.transaction { it.failures("client-0") })
+
+            draining.cancel(CancellationException("host cancelled the in-flight push"))
+            assertFailsWith<CancellationException> { draining.await() }
+
+            val afterCancellation = storage.transaction { it.executions("client-0").single() }
+            assertEquals(StoredPhase.INFLIGHT, afterCancellation.phase)
+            assertEquals(0, afterCancellation.attempt)
+            assertNull(afterCancellation.lastAttemptAt)
+            assertNull(afterCancellation.activeFailureId)
+            assertEquals(emptyList(), storage.transaction { it.failures("client-0") })
+        } finally {
+            releasePush.complete(Unit)
+            first.close()
+        }
+
+        backend.pushBehavior = { _, value -> MutationPresentAck(value, "etag-replayed", null) }
+        val reopened =
+            mutationStore(
+                registry = mutation.registry,
+                server = backend,
+                keyResolver = MutationsTestKeyResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
+                fetcher { backend.load(it) }
+                journalStorage(storage)
+            }
+        try {
+            reopened.drain(key)
+            val replay = backend.receivedPushes.last()
+
+            assertEquals(2, backend.receivedPushes.size)
+            assertEquals(firstPush.clientId, replay.clientId)
+            assertEquals(firstPush.clientSequence, replay.clientSequence)
+            assertEquals(firstPush.mutationId, replay.mutationId)
+            assertEquals(firstPush.generation, replay.generation)
+            assertEquals(firstPush.identity.namespace, replay.identity.namespace)
+            assertEquals(firstPush.identity.canonicalId, replay.identity.canonicalId)
+            assertEquals(firstPush.retiredThroughSequence, replay.retiredThroughSequence)
+            assertEquals(firstPush.idempotencyKey, replay.idempotencyKey)
+            assertEquals(firstPush.valueCodecVersion, replay.valueCodecVersion)
+            assertEquals(
+                assertIs<MutationPresence.Present<String>>(firstPush.base).value,
+                assertIs<MutationPresence.Present<String>>(replay.base).value,
+            )
+            assertEquals(
+                assertIs<MutationPresence.Present<String>>(firstPush.mine).value,
+                assertIs<MutationPresence.Present<String>>(replay.mine).value,
+            )
+            assertEquals(firstPush.baseMeta?.writtenAtEpochMillis, replay.baseMeta?.writtenAtEpochMillis)
+            assertEquals(firstPush.baseMeta?.etag, replay.baseMeta?.etag)
+            assertEquals(
+                StoredPhase.RETIRED,
+                storage.transaction { it.executions("client-0").single().phase },
+            )
+            assertEquals(emptyList(), storage.transaction { it.failures("client-0") })
+        } finally {
+            reopened.close()
+        }
+    }
 }
 
 private class DrainRenameMutation {
@@ -292,6 +508,136 @@ private class DrainAppendMutation {
         }
 }
 
+private class DrainLocalPhaseMutations {
+    lateinit var plain: MutatorRef<MutationsTestKey, String, String>
+    lateinit var effectful: MutatorRef<MutationsTestKey, String, String>
+
+    val registry: MutatorRegistry<MutationsTestKey, String> =
+        mutatorRegistry {
+            plain =
+                upsert(
+                    id = "drain-phase-plain",
+                    version = 1,
+                    codec = FixtureStringArgsCodec,
+                    stales = noStales(),
+                ) { base, suffix ->
+                    MutationPresence.Present(
+                        (base as? MutationPresence.Present)?.value.orEmpty() + suffix,
+                    )
+                }
+            effectful =
+                upsert(
+                    id = "drain-phase-effectful",
+                    version = 1,
+                    codec = FixtureStringArgsCodec,
+                    stales = { key, _ ->
+                        StaleSet(
+                            keys = effectTargets(key).toSet(),
+                            namespaces = emptySet(),
+                        )
+                    },
+                ) { base, suffix ->
+                    MutationPresence.Present(
+                        (base as? MutationPresence.Present)?.value.orEmpty() + suffix,
+                    )
+                }
+        }
+
+    fun effectTargets(key: MutationsTestKey): List<MutationsTestKey> =
+        listOf(
+            MutationsTestKey("${key.canonicalId()}-target-1", key.namespace),
+            MutationsTestKey("${key.canonicalId()}-target-2", key.namespace),
+        )
+}
+
+private class ScriptedDrainPhaseHandle : StoreWriteHandle<MutationsTestKey, String> {
+    val remainingApplyFailures = mutableMapOf<KeyIdentity, Int>()
+    val remainingMarkStaleFailures = mutableMapOf<KeyIdentity, Int>()
+    val applyAttempts = mutableListOf<KeyIdentity>()
+    val markStaleAttempts = mutableListOf<KeyIdentity>()
+
+    override suspend fun apply(
+        key: MutationsTestKey,
+        value: String,
+    ) {
+        val identity = key.identity()
+        applyAttempts += identity
+        val remaining = remainingApplyFailures[identity] ?: 0
+        if (remaining > 0) {
+            remainingApplyFailures[identity] = remaining - 1
+            throw IllegalStateException("scripted adoption failure")
+        }
+    }
+
+    override suspend fun markStale(key: MutationsTestKey) {
+        val identity = key.identity()
+        markStaleAttempts += identity
+        val remaining = remainingMarkStaleFailures[identity] ?: 0
+        if (remaining > 0) {
+            remainingMarkStaleFailures[identity] = remaining - 1
+            throw IllegalStateException("scripted effect failure")
+        }
+    }
+
+    override suspend fun confirmFresh(
+        key: MutationsTestKey,
+        etag: String?,
+    ) = Unit
+}
+
+private fun openDrainPhaseEngine(
+    storage: MutationJournalStorage,
+    mutations: DrainLocalPhaseMutations,
+    backend: FakeBackend,
+    handle: ScriptedDrainPhaseHandle,
+): MutationEngine<MutationsTestKey, String> {
+    val journal =
+        StorageBackedMutationJournal<String>(
+            storage = storage,
+            registrations = mutations.registry.registrations,
+            clientId = DRAIN_PHASE_CLIENT_ID,
+            hydrateOnFirstUse = true,
+        )
+    val resolver =
+        MutationKeyResolver<MutationsTestKey> { identity ->
+            MutationsTestKey(identity.canonicalId, StoreNamespace(identity.namespace))
+        }
+    return MutationEngine(
+        registry = mutations.registry,
+        server = backend,
+        journal = journal,
+        keyResolver = resolver,
+        valueCodecVersion = 1,
+        valueCodec = FixtureStringArgsCodec,
+        baseReader = { "base" },
+        clientId = DRAIN_PHASE_CLIENT_ID,
+    ).also { engine -> engine.bind(handle) }
+}
+
+private fun drainPhaseKey(label: String): MutationsTestKey =
+    MutationsTestKey(label, StoreNamespace("drain-phase-$label"))
+
+private suspend fun captureDrainPhaseFailure(block: suspend () -> Unit): Throwable? =
+    try {
+        block()
+        null
+    } catch (failure: Throwable) {
+        if (failure is CancellationException) throw failure
+        failure
+    }
+
+private fun expectDrainPhase(
+    errors: MutableList<String>,
+    label: String,
+    assertion: () -> Unit,
+) {
+    try {
+        assertion()
+    } catch (failure: AssertionError) {
+        errors += "$label: ${failure.message}"
+    }
+}
+
 private object DrainNoopHandle : StoreWriteHandle<MutationsTestKey, String> {
     override suspend fun apply(
         key: MutationsTestKey,
@@ -305,6 +651,8 @@ private object DrainNoopHandle : StoreWriteHandle<MutationsTestKey, String> {
         etag: String?,
     ) = Unit
 }
+
+private const val DRAIN_PHASE_CLIENT_ID: String = "client-0"
 
 private fun runTest(testBody: suspend TestScope.() -> Unit): TestResult =
     coroutineRunTest(timeout = 25.seconds, testBody = testBody)
