@@ -208,9 +208,6 @@ private class RoomEchoTransactionFrame(
  * transaction commits. A rollback publishes no value. Multiple same-key writes in one outer
  * transaction coalesce to its final committed value, so readers never observe a transient nested
  * value that did not exist outside the transaction.
- *
- * Freeze candidate: issue 007 has landed; the seam freezes only after Matt signs the prepared
- * sign-off package.
  */
 @ExperimentalStoreApi
 public class RoomSourceOfTruth<K : StoreKey, V : Any>(

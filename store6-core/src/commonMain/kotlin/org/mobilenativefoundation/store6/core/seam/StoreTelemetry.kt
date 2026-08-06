@@ -21,9 +21,6 @@ import kotlin.time.Duration
  * fetch-coroutine start. [onFetchSucceeded] or [onFetchFailed] runs after commit or settlement and
  * before the fetch ticket completes, so every resumed waiter observes the terminal hook first.
  * Superseded fetches have no terminal hook.
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may
- * still change until then.
  */
 @ExperimentalStoreApi
 @SubclassOptInRequired(DelicateStoreApi::class)

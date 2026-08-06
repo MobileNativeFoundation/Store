@@ -10,9 +10,6 @@ import org.mobilenativefoundation.store6.core.internal.RealStore
 /**
  * Optional engine-backed capabilities exposed to Store extensions without implementation downcasts.
  *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may
- * still change until then.
- *
  * @param K the key type accepted by the owning Store
  * @param V the non-null value type produced by the owning Store
  */

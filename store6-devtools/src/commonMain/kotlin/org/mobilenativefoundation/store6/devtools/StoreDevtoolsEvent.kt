@@ -10,7 +10,7 @@ import kotlin.time.Duration
  * Identity-only event vocabulary derived from the six [StoreTelemetry] hooks.
  *
  * This v0 vocabulary is versioned but experimental. The Store 6.1 wire format is deliberately not
- * decided: values never cross this seam. The seam remains a freeze candidate and sign-off is held.
+ * decided: values never cross this seam.
  */
 @ExperimentalStoreApi
 public sealed class StoreDevtoolsEvent {

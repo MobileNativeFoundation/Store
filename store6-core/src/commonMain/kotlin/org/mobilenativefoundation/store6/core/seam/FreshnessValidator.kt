@@ -11,8 +11,6 @@ import org.mobilenativefoundation.store6.core.StoreMeta
  *
  * [status] carries the durable bookkeeping posture captured before the corresponding engine-state
  * snapshot. A resident value with null [meta] is treated as conservatively stale.
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
  */
 @ExperimentalStoreApi
 public class FreshnessContext(
@@ -26,8 +24,6 @@ public class FreshnessContext(
 
 /**
  * Selects the fetch plan for one coherent [FreshnessContext].
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
  */
 @ExperimentalStoreApi
 @SubclassOptInRequired(DelicateStoreApi::class)
@@ -38,23 +34,17 @@ public interface FreshnessValidator {
 
 /**
  * Fetch action selected by a [FreshnessValidator].
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
  */
 @ExperimentalStoreApi
 public sealed interface FetchPlan {
     /**
      * Skips fetching. Skip with no resident value yields [StoreError.Missing] (get throws, stream
      * emits Error).
-     *
-     * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
      */
     public data object Skip : FetchPlan
 
     /**
      * Performs an unconditional fetch and optionally serves the resident value while it runs.
-     *
-     * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
      */
     public class Fetch(
         public val servesResidentWhileFetching: Boolean,
@@ -62,8 +52,6 @@ public sealed interface FetchPlan {
 
     /**
      * Performs a conditional fetch for [etag] and optionally serves residence while it runs.
-     *
-     * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
      */
     public class Conditional(
         public val etag: String,

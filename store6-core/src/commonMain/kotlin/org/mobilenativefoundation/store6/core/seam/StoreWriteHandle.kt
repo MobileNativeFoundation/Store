@@ -9,9 +9,6 @@ import org.mobilenativefoundation.store6.core.StoreKey
 /**
  * Engine-backed acknowledgement path for committing and refreshing source-of-truth values.
  *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may
- * still change until then.
- *
  * @param K the key type accepted by the owning Store
  * @param V the non-null value type committed by the owning Store
  */

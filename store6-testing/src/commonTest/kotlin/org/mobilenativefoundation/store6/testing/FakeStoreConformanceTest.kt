@@ -29,8 +29,8 @@ import kotlin.time.Duration.Companion.minutes
  * dispatcher contention, backpressure conflation, overlay projection, key events, and runtime
  * access. Test those by composing the seam fakes into a real store. |
  *
- * There is no invalidate-divergence row: Decision #37 (Matt, 2026-07-20) aligned the fake to the
- * engine's stale-mark-only, next-demand consumption posture.
+ * There is no invalidate-divergence row: the fake is aligned to the engine's stale-mark-only,
+ * next-demand consumption posture.
  */
 @OptIn(ExperimentalStoreApi::class)
 class FakeStoreConformanceTest {
@@ -188,7 +188,7 @@ class FakeStoreConformanceTest {
 
     @Test
     fun invalidate_withoutActiveDemand_getServesStaleThenRefreshCommitsBehind() = runTest {
-        // THE Decision #37 alignment pin (ruled by Matt, 2026-07-20): with NO active demand,
+        // With NO active demand,
         // invalidate defers scripted-staleness consumption to the next demand — engine parity:
         // get-after-invalidate serves the STALE value and fires the SWR refresh behind it. Under
         // the rejected eager design the first get would have returned "v2".
@@ -372,7 +372,7 @@ class FakeStoreConformanceTest {
 
     @Test
     fun close_isIdempotent_andOperationsAfterCloseFailFast() = runTest {
-        // Finalized by issue 007: pins verified against StoreCloseLifecycleTest in store6-core.
+        // Pins verified against StoreCloseLifecycleTest in store6-core.
         val store = FakeStore<TestingKey, String>()
         store.close()
         store.close() // no additional effect
@@ -383,7 +383,7 @@ class FakeStoreConformanceTest {
 
     @Test
     fun close_cancelsActiveCollectors() = runTest {
-        // Finalized by issue 007: pins verified against StoreCloseLifecycleTest in store6-core.
+        // Pins verified against StoreCloseLifecycleTest in store6-core.
         val store = FakeStore<TestingKey, String>()
         store.setValue(key, "v")
         val started = CompletableDeferred<Unit>()

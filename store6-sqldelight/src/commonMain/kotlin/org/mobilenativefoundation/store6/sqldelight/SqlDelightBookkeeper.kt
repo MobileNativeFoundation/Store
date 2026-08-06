@@ -31,8 +31,6 @@ import kotlin.coroutines.cancellation.CancellationException
  * [status] treats a non-cancellation storage failure as unavailable status and returns null, so
  * age is unknown and the caller treats the key as stale. Cancellation always propagates.
  * Maintenance operations rethrow storage failures so their transactions remain exception-atomic.
- *
- * This seam remains FREEZE CANDIDATE awaiting Matt signature.
  */
 @ExperimentalStoreApi
 @OptIn(DelicateStoreApi::class)

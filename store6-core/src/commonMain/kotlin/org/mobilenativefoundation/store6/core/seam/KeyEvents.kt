@@ -22,9 +22,6 @@ import org.mobilenativefoundation.store6.core.StoreKey
  * deletion, and once per engine in the authoritative first sweep of namespace or global clear.
  * Purge sweeps, nonresident watermark coverage, external source-of-truth changes, and superseded
  * fetches produce no event.
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may
- * still change until then.
  */
 @ExperimentalStoreApi
 public abstract class KeyEvents internal constructor() {

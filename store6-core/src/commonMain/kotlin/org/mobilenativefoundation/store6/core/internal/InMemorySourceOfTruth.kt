@@ -17,7 +17,7 @@ import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
  * DSL-default source of truth that keeps the engine on one persistence path with or without a
  * caller-supplied implementation.
  *
- * Canonical-key cells are intentionally unbounded until issue 007 adds their lifecycle policy.
+ * Canonical-key cells are intentionally unbounded.
  */
 @OptIn(DelicateStoreApi::class, ExperimentalStoreApi::class)
 internal class InMemorySourceOfTruth<K : StoreKey, V : Any> : SourceOfTruth<K, V> {

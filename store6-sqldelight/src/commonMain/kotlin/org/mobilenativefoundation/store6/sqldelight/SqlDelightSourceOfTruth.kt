@@ -59,8 +59,6 @@ import kotlin.coroutines.CoroutineContext
  * reporting that failure, preventing cooperatively cancellable work from resuming after rollback.
  * Non-cooperative suspension is unsupported.
  *
- * Seam status: FREEZE CANDIDATE awaiting Matt signature; never frozen.
- *
  * @param K the key type used to locate a row
  * @param V the non-null row type
  */

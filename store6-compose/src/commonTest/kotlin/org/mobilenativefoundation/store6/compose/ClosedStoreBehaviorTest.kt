@@ -17,8 +17,8 @@ import kotlinx.coroutines.test.runTest as coroutineRunTest
 
 /**
  * Type-only characterization of the closed-store behavior the composables inherit, asserted at the
- * exact `Store.stream` seam they call. Close semantics were finalized by issue 007; the close
- * message is engine-internal diagnostic text, not ABI (OQ-3), so no message text is asserted here.
+ * exact `Store.stream` seam they call. The close message is engine-internal diagnostic text, not
+ * ABI (OQ-3), so no message text is asserted here.
  */
 class ClosedStoreBehaviorTest {
     private class TestKey(val id: String) : StoreKey {

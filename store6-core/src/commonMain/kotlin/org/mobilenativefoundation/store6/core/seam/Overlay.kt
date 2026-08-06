@@ -35,9 +35,6 @@ import org.mobilenativefoundation.store6.core.StoreKey
  * the engine remains active, terminalizes projection for that key. Every current or future
  * projected stream then fails with a deterministic internal exception retaining the cause; the
  * engine never silently falls back to an unprojected value.
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes
- * may still change until then.
  */
 @ExperimentalStoreApi
 @SubclassOptInRequired(DelicateStoreApi::class)

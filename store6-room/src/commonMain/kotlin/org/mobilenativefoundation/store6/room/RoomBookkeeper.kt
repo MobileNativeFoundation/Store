@@ -37,8 +37,6 @@ import kotlin.coroutines.cancellation.CancellationException
  * A Room-internal cancellation from unavailable or closed storage is classified using the active
  * caller context and treated as the corresponding storage failure. Maintenance methods propagate
  * storage failures and remain transaction-atomic.
- *
- * This seam remains FREEZE CANDIDATE pending Matt signature.
  */
 @ExperimentalStoreApi
 public class RoomBookkeeper(

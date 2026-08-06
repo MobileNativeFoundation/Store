@@ -11,8 +11,6 @@ import kotlin.time.Duration
 
 /**
  * StoreResults is the sanctioned construction door for extensions, fakes, and tests; internal constructors remain internal.
- *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
  */
 @ExperimentalStoreApi
 public object StoreResults {

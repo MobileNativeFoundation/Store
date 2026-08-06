@@ -18,9 +18,7 @@ import org.mobilenativefoundation.store6.testing.FakeSourceOfTruth
 /**
  * Supplementary: attach -> first Data -> cancel against a long-lived store, repeatedly. This is
  * the registry/reader-pipeline lifecycle that READER_PIPELINE_GRACE_MILLIS parks between
- * collections — issue 007's OQ-5 explicitly deferred grace tuning (and retry-backoff shape) to
- * first 016 data; this benchmark is that data's source. The raw side is the same churn against
- * the bare reader.
+ * collections. The raw side is the same churn against the bare reader.
  */
 @OptIn(ExperimentalStoreApi::class)
 @State(Scope.Thread)

@@ -23,7 +23,7 @@ import org.mobilenativefoundation.store6.core.seam.StoreResults
  * Collection is scoped to the composition; for lifecycle-gated collection use
  * `collectAsStateWithLifecycle` on the CMP lifecycle tier.
  *
- * Closed-store behavior (finalized by issue 007): calling this on a closed store fails the
+ * Closed-store behavior: calling this on a closed store fails the
  * composition — [Store.stream] throws [IllegalStateException] inside the launched effect (the
  * stream is guarded both at call and at collection start); a collection cancelled by
  * [Store.close] ends as coroutine cancellation. The close message is engine-internal diagnostic

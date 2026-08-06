@@ -38,8 +38,7 @@ import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
  *   means the mutation was applied and its final row notification published, while throwing means
  *   it was not applied.
  *
- * Cells are intentionally unbounded, matching the core default's posture until the issue 007
- * lifecycle policy applies here.
+ * Cells are intentionally unbounded, matching the core default's posture.
  */
 internal class MutationSourceOfTruth<K : StoreKey, V : Any> : SourceOfTruth<K, V> {
     private class Row<V : Any>(

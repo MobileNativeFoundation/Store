@@ -21,8 +21,6 @@ import org.mobilenativefoundation.store6.core.StoreKey
  * retirement.
  * `StoreWriteHandle.confirmFresh` alone is not an observation mechanism.
  *
- * Freeze candidate: this surface freezes only after issue 007 lands and Matt signs off; shapes may still change until then.
- *
  * @param K the key type used to locate a row
  * @param V the non-null row type
  */

@@ -37,8 +37,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * Revalidated outcome refreshes its write time and clears staleness; without residence it becomes
  * Missing on both channels.
  *
- * Invalidation implements Decision #37 (Matt, 2026-07-20): it is a stale-mark only and never
- * consumes a script. A stale Data frame reports `refreshing` from whether a script is currently
+ * Invalidation is a stale-mark only and never consumes a script. A stale Data frame reports
+ * `refreshing` from whether a script is currently
  * pending. Scripted staleness is consumed at the next demand from an active collector, a later
  * stream after its stale snapshot, or behind a stale [get] read. One CAS consumption site allows at
  * most one winner across concurrent collectors. With no demand, the queued outcome is retained;
@@ -56,11 +56,10 @@ import kotlin.time.Duration.Companion.milliseconds
  * `runtime()` returns null by design. [FakeStore] produces no KeyEvents and performs no overlay
  * projection; runtime, events, overlays, and freshness-policy behavior belong to a real store.
  *
- * The seam consumed here is a FREEZE CANDIDATE, not frozen: freeze sign-off remains held until
- * issue 007 lands and Matt signs off. [close] is synchronous and idempotent. Active collectors are
- * cancelled; later [Store] operations fail immediately, and stream checks closure both when called
- * and when collection starts. Those exception types, post-close behavior, and the exact message
- * text were finalized by issue 007 against the engine's close lifecycle.
+ * [close] is synchronous and idempotent. Active collectors are cancelled; later [Store] operations
+ * fail immediately, and stream checks closure both when called and when collection starts. Those
+ * exception types, post-close behavior, and the exact message text are pinned against the engine's
+ * close lifecycle.
  */
 @ExperimentalStoreApi
 @OptIn(DelicateStoreApi::class)
@@ -271,7 +270,6 @@ public class FakeStore<K : StoreKey, V : Any>(
 
     /**
      * Closes this fake synchronously and idempotently.
-     * Close semantics finalized by issue 007.
      */
     override fun close() {
         if (!closed.compareAndSet(expect = false, update = true)) return
@@ -434,9 +432,9 @@ public class FakeStore<K : StoreKey, V : Any>(
     }
 
     /**
-     * Decision #37 (ruled by Matt, 2026-07-20): invalidate is a stale-mark only, the engine's
-     * epoch-bump analog. It appends the stale re-emission frame for active collectors and never
-     * consumes a script; stale get, active stream, or later stream demand owns consumption.
+     * Invalidate is a stale-mark only, the engine's epoch-bump analog. It appends the stale
+     * re-emission frame for active collectors and never consumes a script; stale get, active
+     * stream, or later stream demand owns consumption.
      */
     private fun invalidateCell(id: Pair<String, String>) {
         cells.update { map ->
@@ -484,7 +482,7 @@ public class FakeStore<K : StoreKey, V : Any>(
     }
 
     private companion object {
-        // Finalized by issue 007: core keeps STORE_CLOSED_MESSAGE internal by design (FS-5 —
+        // Core keeps STORE_CLOSED_MESSAGE internal by design (FS-5 —
         // diagnostics are review-gated text, not ABI). This literal is pinned by the close
         // conformance tests here and by StoreCloseLifecycleTest in store6-core; change both
         // pins together if the message ever changes.
