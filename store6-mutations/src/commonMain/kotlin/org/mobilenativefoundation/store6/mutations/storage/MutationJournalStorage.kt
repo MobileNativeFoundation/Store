@@ -100,7 +100,14 @@ public interface MutationJournalTransaction {
     /** Inserts the one execution row paired with an intent. */
     public fun insertExecution(record: MutationExecutionRecord)
 
-    /** Applies a ruled execution-state transition. */
+    /**
+     * Applies a ruled execution-state transition.
+     *
+     * The first `READY -> INFLIGHT` transition acquires the derived durable authority for the
+     * exact attempt's `(clientId, effectiveNamespace)`. Another execution may not acquire that
+     * authority until the owner commits `PARKED` or `RETIRED`; continuation by the exact owner and
+     * acquisition in a different namespace remain legal.
+     */
     public fun advanceExecution(record: MutationExecutionRecord)
 
     /** Inserts one immutable semantic attempt generation. */
@@ -109,7 +116,10 @@ public interface MutationJournalTransaction {
     /** Writes the four conflict-receipt fields of an existing attempt exactly once. */
     public fun recordConflictReceipt(record: MutationAttemptRecord)
 
-    /** Inserts a write-once acknowledgement; an exact duplicate is idempotent. */
+    /**
+     * Inserts a write-once acknowledgement. Its codec version identifies its own authoritative
+     * bytes and may differ from the referenced attempt version; an exact duplicate is idempotent.
+     */
     public fun insertAck(record: MutationAckRecord)
 
     /** Allocates an ID and appends normalized, UTF-8-bounded failure evidence. */
@@ -138,7 +148,14 @@ public interface MutationJournalTransaction {
     /** Inserts one pending tombstone generation. */
     public fun insertTombstone(record: MutationKeyTombstoneRecord)
 
-    /** Advances one tombstone generation forward. */
+    /**
+     * Advances one tombstone generation forward.
+     *
+     * Same-client successors ordinarily have a greater sequence. A lower positive sequence is
+     * accepted only as part of the exact causal retirement transaction that proves the successor's
+     * unique namespace authority, PRESENT acknowledgement and alias, terminal effects, routing
+     * activation, truthful retirement prefix, and complete tombstone collapse atomically.
+     */
     public fun advanceTombstone(record: MutationKeyTombstoneRecord)
 
     /**

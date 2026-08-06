@@ -32,6 +32,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
@@ -79,7 +80,7 @@ class MutationJournalContractTest {
         }
 
         val resolver = RecordingRestartResolver()
-        val server = RecordingRestartServer()
+        val server = RecordingRestartServer(retirementConfirmationCeiling = 0L)
         openRestartStore(storage, mutations, server = server, resolver = resolver).use { reopened ->
             val pending = reopened.pending(RestartKey("identity-only", "second-process"))
             assertEquals(listOf("mutation-1"), pending.map(PendingIntent::mutationId))
@@ -154,7 +155,7 @@ class MutationJournalContractTest {
     fun confirmedRetiredPrefix_roundTripsAcrossRestart() = runTest {
         val storage = InMemoryMutationJournalStorage()
         val mutations = restartMutators()
-        val server = RecordingRestartServer()
+        val server = RecordingRestartServer(retirementConfirmationCeiling = 1L)
         val firstKey = RestartKey("prefix-one", "first-process")
         val secondKey = RestartKey("prefix-two", "first-process")
         val thirdKey = RestartKey("prefix-three", "first-process")
@@ -316,14 +317,22 @@ class MutationJournalContractTest {
 
     @Test
     fun valueCodecVersionAndBlobs_roundTripAcrossRestart() = runTest {
-        val storage = InMemoryMutationJournalStorage()
+        val backing = InMemoryMutationJournalStorage()
         val mutations = restartMutators()
-        val writingCodec = StrictRecordingStringCodec(supportedVersions = setOf(7))
-        val server = RecordingRestartServer(cancelPushes = 2)
+        val writingCodec =
+            StrictRecordingStringCodec(
+                supportedVersions = setOf(7),
+                encodeVersion = 7,
+            )
+        val server =
+            RecordingRestartServer(
+                cancelPushes = 1,
+                retirementConfirmationCeiling = 0L,
+            )
         val key = RestartKey("value-codec", "first-process")
 
         openRestartStore(
-            storage,
+            backing,
             mutations,
             server = server,
             valueCodecVersion = 7,
@@ -334,32 +343,113 @@ class MutationJournalContractTest {
             assertFailsWith<CancellationException> { first.drain(key) }
         }
         writingCodec.encodedBuffers.forEach { bytes -> bytes.fill(0) }
-        val beforeRestart = storage.transaction { it.attempts("client-0").single().snapshot() }
+        val beforeRestart = backing.transaction { it.attempts("client-0").single().snapshot() }
         assertEquals(7, beforeRestart.codecVersion)
-        assertEquals("confirmed".encodeToByteArray().toList(), beforeRestart.baseBlob)
-        assertEquals("confirmed+mine".encodeToByteArray().toList(), beforeRestart.mineBlob)
+        assertEquals("store6-codec-7:confirmed".encodeToByteArray().toList(), beforeRestart.baseBlob)
+        assertEquals("store6-codec-7:confirmed+mine".encodeToByteArray().toList(), beforeRestart.mineBlob)
 
-        val readingCodec = StrictRecordingStringCodec(supportedVersions = setOf(7))
+        val failPointStorage = FailPointJournalStorage(backing)
+        failPointStorage.armKillAfterCommit(JournalFailPointBoundary.ACK_RECEIPT)
+        val replayCodec =
+            StrictRecordingStringCodec(
+                supportedVersions = setOf(7, 9),
+                encodeVersion = 9,
+            )
         openRestartStore(
-            storage,
+            failPointStorage,
             mutations,
             server = server,
             resolver = RecordingRestartResolver(),
             valueCodecVersion = 9,
-            valueCodec = readingCodec,
+            valueCodec = replayCodec,
         ).use { reopened ->
             assertEquals(listOf("mutation-1"), reopened.pendingWrites().map(PendingIntent::mutationId))
-            assertEquals(listOf(7, 7), readingCodec.decodeVersions)
-            assertFailsWith<CancellationException> { reopened.drain() }
+            assertEquals(listOf(7, 7), replayCodec.decodeVersions)
+            val processDeath =
+                assertFailsWith<FailPointProcessDeathException> { reopened.drain() }
+            assertTrue(processDeath.committed)
         }
 
-        assertTrue(readingCodec.decodeVersions.isNotEmpty())
-        assertTrue(readingCodec.decodeVersions.all { version -> version == 7 })
-        assertEquals(7, server.pushes.last().valueCodecVersion)
-        readingCodec.decodeInputs.forEach { bytes -> bytes.fill(0) }
-        val afterDecoderMutation =
-            storage.transaction { it.attempts("client-0").single().snapshot() }
-        assertEquals(beforeRestart, afterDecoderMutation)
+        val afterAckCommit =
+            backing.transaction { transaction ->
+                Triple(
+                    transaction.attempts("client-0").single().snapshot(),
+                    transaction.acks("client-0").single(),
+                    transaction.executions("client-0").single(),
+                )
+            }
+        assertEquals(beforeRestart, afterAckCommit.first)
+        assertEquals(7, afterAckCommit.first.codecVersion)
+        assertEquals(9, afterAckCommit.second.valueCodecVersion)
+        assertContentEquals(
+            "store6-codec-9:confirmed+mine".encodeToByteArray(),
+            afterAckCommit.second.authoritativeBlob,
+        )
+        assertEquals(StoredPhase.ACKED, afterAckCommit.third.phase)
+        assertEquals(2, server.pushes.size)
+        val cancelledPush = server.pushes.first()
+        val replayedPush = server.pushes.last()
+        assertEquals(7, cancelledPush.valueCodecVersion)
+        assertEquals(7, replayedPush.valueCodecVersion)
+        assertEquals(1, replayedPush.generation)
+        assertEquals(cancelledPush.generation, replayedPush.generation)
+        assertEquals(cancelledPush.idempotencyKey, replayedPush.idempotencyKey)
+        assertEquals(cancelledPush.identity.namespace, replayedPush.identity.namespace)
+        assertEquals(cancelledPush.identity.canonicalId, replayedPush.identity.canonicalId)
+        assertEquals(
+            assertIs<MutationPresence.Present<String>>(cancelledPush.base).value,
+            assertIs<MutationPresence.Present<String>>(replayedPush.base).value,
+        )
+        assertEquals(
+            assertIs<MutationPresence.Present<String>>(cancelledPush.mine).value,
+            assertIs<MutationPresence.Present<String>>(replayedPush.mine).value,
+        )
+        assertEquals(
+            cancelledPush.baseMeta?.writtenAtEpochMillis,
+            replayedPush.baseMeta?.writtenAtEpochMillis,
+        )
+        assertEquals(cancelledPush.baseMeta?.etag, replayedPush.baseMeta?.etag)
+        assertEquals("confirmed", assertIs<MutationPresence.Present<String>>(replayedPush.base).value)
+        assertEquals("confirmed+mine", assertIs<MutationPresence.Present<String>>(replayedPush.mine).value)
+
+        replayCodec.encodedBuffers.forEach { bytes -> bytes.fill(0) }
+        replayCodec.decodeInputs.forEach { bytes -> bytes.fill(0) }
+        val afterCodecBufferMutation =
+            backing.transaction { transaction ->
+                Triple(
+                    transaction.attempts("client-0").single().snapshot(),
+                    transaction.acks("client-0").single(),
+                    transaction.executions("client-0").single(),
+                )
+            }
+        assertEquals(beforeRestart, afterCodecBufferMutation.first)
+        assertEquals(9, afterCodecBufferMutation.second.valueCodecVersion)
+        assertContentEquals(
+            "store6-codec-9:confirmed+mine".encodeToByteArray(),
+            afterCodecBufferMutation.second.authoritativeBlob,
+        )
+        assertEquals(StoredPhase.ACKED, afterCodecBufferMutation.third.phase)
+
+        val adoptingCodec =
+            StrictRecordingStringCodec(
+                supportedVersions = setOf(7, 9),
+                encodeVersion = 9,
+            )
+        val pushesBeforeAdoption = server.pushes.size
+        openRestartStore(
+            backing,
+            mutations,
+            server = server,
+            resolver = RecordingRestartResolver(),
+            valueCodecVersion = 9,
+            valueCodec = adoptingCodec,
+        ).use { reopened ->
+            reopened.drain()
+            assertTrue(reopened.pendingWrites().isEmpty())
+        }
+
+        assertEquals(pushesBeforeAdoption, server.pushes.size)
+        assertTrue(9 in adoptingCodec.decodeVersions)
     }
 
     @Test
@@ -377,7 +467,13 @@ class MutationJournalContractTest {
         ).use { reopened ->
             assertEquals(MutationPendingState.PENDING, reopened.pendingWrites().single().state)
             reopened.drain()
-            assertTrue(reopened.deadLetters().isEmpty())
+            assertTrue(reopened.pendingWrites().isEmpty())
+            val deadLetter = reopened.deadLetters().single()
+            assertEquals("mutation-1", deadLetter.mutationId)
+            assertEquals(1, deadLetter.generation)
+            assertEquals(0, deadLetter.attempts)
+            assertEquals(MutationFailureKind.CODEC, deadLetter.failure.kind)
+            assertEquals("value-codec-pre-ack", deadLetter.failure.detail)
         }
 
         val failure = storage.transaction { it.failures("client-0").single() }
@@ -387,8 +483,8 @@ class MutationJournalContractTest {
         assertFalse(failure.message.contains("IllegalArgumentException"))
         assertFalse(failure.message.contains('\n'))
         val execution = storage.transaction { it.executions("client-0").single() }
-        assertEquals(StoredPhase.READY, execution.phase)
-        assertNull(execution.activeFailureId)
+        assertEquals(StoredPhase.PARKED, execution.phase)
+        assertEquals(failure.failureId, execution.activeFailureId)
         assertTrue(server.pushes.isEmpty())
     }
 
@@ -440,7 +536,7 @@ class MutationJournalContractTest {
 
         val readingCodec = StrictRecordingStringCodec(supportedVersions = setOf(3))
         val reopenedMutations = restartMutators(argsVersion = 4, argsCodec = readingCodec)
-        val server = RecordingRestartServer()
+        val server = RecordingRestartServer(retirementConfirmationCeiling = 0L)
         openRestartStore(storage, reopenedMutations, server = server).use { reopened ->
             assertEquals(listOf("mutation-1"), reopened.pendingWrites().map(PendingIntent::mutationId))
             reopened.drain(RestartKey("args-codec", "second-process"))
@@ -515,7 +611,25 @@ class MutationJournalContractTest {
                 reopened.pendingWrites().map(PendingIntent::mutationId),
             )
             reopened.drain()
-            assertTrue(reopened.deadLetters().isEmpty())
+            assertTrue(reopened.pendingWrites().isEmpty())
+            val deadLetters = reopened.deadLetters()
+            assertEquals(2, deadLetters.size)
+            assertEquals(
+                mapOf(
+                    "mutation-1" to "mutator-missing",
+                    "mutation-2" to "args-codec",
+                ),
+                deadLetters.associate { deadLetter ->
+                    deadLetter.mutationId to deadLetter.failure.detail
+                },
+            )
+            assertTrue(
+                deadLetters.all { deadLetter ->
+                    deadLetter.generation == 0 &&
+                        deadLetter.attempts == 0 &&
+                        deadLetter.failure.kind == MutationFailureKind.CODEC
+                },
+            )
         }
 
         val failures = storage.transaction { it.failures("client-0") }
@@ -524,12 +638,14 @@ class MutationJournalContractTest {
         assertEquals(setOf("mutator-missing", "args-codec"), failures.map { it.detail }.toSet())
         assertTrue(failures.none { failure -> failure.message.contains("Throwable") })
         assertTrue(failures.none { failure -> failure.message.contains('\n') })
+        val failuresBySequence = failures.associateBy { failure -> failure.clientSequence }
         val executions = storage.transaction { it.executions("client-0") }
         assertTrue(
             executions.all { execution ->
-                execution.phase == StoredPhase.UNPREPARED &&
+                execution.phase == StoredPhase.PARKED &&
                     execution.currentGeneration == 0 &&
-                    execution.activeFailureId == null
+                    execution.activeFailureId ==
+                        failuresBySequence.getValue(execution.clientSequence).failureId
             },
         )
         assertEquals(listOf(0, 0), failures.map { it.generation })
@@ -542,7 +658,7 @@ class MutationJournalContractTest {
             valueCodecVersion = 1,
             mutatorId = "not-registered-after-ack",
         )
-        val acknowledgedServer = RecordingRestartServer()
+        val acknowledgedServer = RecordingRestartServer(retirementConfirmationCeiling = 0L)
         openRestartStore(
             acknowledgedStorage,
             restartMutators(),
@@ -597,11 +713,25 @@ class MutationJournalContractTest {
         openRestartStore(storage, restartMutators(), server = server).use { reopened ->
             assertEquals(3, reopened.pendingWrites().size)
             reopened.drain()
+            assertTrue(reopened.pendingWrites().isEmpty())
+            val deadLetters = reopened.deadLetters()
+            assertEquals(2, deadLetters.size)
             assertEquals(
-                listOf("mutation-1", "mutation-2"),
-                reopened.pendingWrites().map(PendingIntent::mutationId),
+                mapOf(
+                    "mutation-1" to "args-codec",
+                    "mutation-2" to "args-codec",
+                ),
+                deadLetters.associate { deadLetter ->
+                    deadLetter.mutationId to deadLetter.failure.detail
+                },
             )
-            assertTrue(reopened.deadLetters().isEmpty())
+            assertTrue(
+                deadLetters.all { deadLetter ->
+                    deadLetter.generation == 0 &&
+                        deadLetter.attempts == 0 &&
+                        deadLetter.failure.kind == MutationFailureKind.CODEC
+                },
+            )
         }
 
         val failures = storage.transaction { it.failures("client-0") }
@@ -614,12 +744,14 @@ class MutationJournalContractTest {
         val push = server.pushes.single()
         assertEquals(3L, push.clientSequence)
         assertEquals(MutationPresence.Absent, push.mine)
+        val failuresBySequence = failures.associateBy { failure -> failure.clientSequence }
         val executions = storage.transaction { it.executions("client-0") }
         assertTrue(
             executions.take(2).all { execution ->
-                execution.phase == StoredPhase.UNPREPARED &&
+                execution.phase == StoredPhase.PARKED &&
                     execution.currentGeneration == 0 &&
-                    execution.activeFailureId == null
+                    execution.activeFailureId ==
+                        failuresBySequence.getValue(execution.clientSequence).failureId
             },
         )
         assertEquals(StoredPhase.RETIRED, executions.last().phase)
@@ -655,10 +787,55 @@ class MutationJournalContractTest {
                     effectsAtPush = storage.transaction { it.effects("client-0").map(StoredEffectRecord::snapshot) }
                 },
             )
+        val effectTargetStop = IllegalStateException("effect target unavailable")
+        val effectResolver =
+            MutationKeyResolver<RestartKey> { identity ->
+                if (identity.canonicalId == "a" || identity.canonicalId == "z") {
+                    throw effectTargetStop
+                }
+                RestartKey(identity.canonicalId, "resolver-process")
+            }
+        fun openEffectStore(): MutationStore<RestartKey, String> =
+            mutationStore(
+                registry = mutations.registry,
+                server = server,
+                keyResolver = effectResolver,
+                valueCodecVersion = 1,
+                valueCodec = FixtureStringArgsCodec,
+            ) {
+                fetcher { "confirmed" }
+                journalStorage(storage)
+                wallClock(clock)
+                bookkeeper(
+                    object :
+                        org.mobilenativefoundation.store6.core.seam.Bookkeeper by
+                        MutationBookkeeper() {
+                        override suspend fun advanceStaleWatermark(namespace: StoreNamespace) {
+                            throw effectTargetStop
+                        }
+                    },
+                )
+            }
+        suspend fun drainAllowingEffectTargetStop(drain: suspend () -> Unit) {
+            try {
+                drain()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                val configuredStoreFailure =
+                    failure is org.mobilenativefoundation.store6.core.StoreException &&
+                        failure.cause === effectTargetStop
+                if (failure !== effectTargetStop && !configuredStoreFailure) {
+                    throw failure
+                }
+            }
+        }
 
-        openRestartStore(storage, mutations, server = server, clock = clock).use { first ->
+        openEffectStore().use { first ->
             first.mutate(RestartKey("effect-source", "first-process"), mutations.upsert, "+mine")
-            first.drain(RestartKey("effect-source", "first-process"))
+            drainAllowingEffectTargetStop {
+                first.drain(RestartKey("effect-source", "first-process"))
+            }
             assertEquals(
                 MutationPendingState.APPLYING_EFFECTS,
                 first.pendingWrites().single().state,
@@ -679,7 +856,7 @@ class MutationJournalContractTest {
             storage.transaction { it.executions("client-0").single().phase },
         )
 
-        openRestartStore(storage, mutations, server = server, clock = clock).use { reopened ->
+        openEffectStore().use { reopened ->
             assertEquals(
                 MutationPendingState.APPLYING_EFFECTS,
                 reopened.pendingWrites().single().state,
@@ -688,7 +865,7 @@ class MutationJournalContractTest {
                 expected,
                 reopened.durableEffectsForInspection("mutation-1").map(StoredEffectRecord::snapshot),
             )
-            reopened.drain()
+            drainAllowingEffectTargetStop { reopened.drain() }
         }
         assertEquals(1, server.pushes.size)
         assertEquals(expected, storage.transaction { it.effects("client-0").map(StoredEffectRecord::snapshot) })
@@ -711,7 +888,11 @@ class MutationJournalContractTest {
         val mutations = restartMutators()
         val source = RestartKey("source", "first-process")
         val canonical = RestartKey("canonical", "server-process")
-        val server = RecordingRestartServer(canonicalTarget = canonical)
+        val server =
+            RecordingRestartServer(
+                canonicalTarget = canonical,
+                retirementConfirmationCeiling = 0L,
+            )
 
         openRestartStore(storage, mutations, server = server).use { first ->
             first.mutate(source, mutations.upsert, "+mine")
@@ -927,8 +1108,8 @@ class MutationJournalContractTest {
         val storage = InMemoryMutationJournalStorage()
         storage.transaction { transaction ->
             seedClient(transaction, lastAllocatedSequence = 3L)
-            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT)
-            seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.PRESENT)
+            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT, retire = true)
+            seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.PRESENT, retire = true)
             seedAcknowledgedIntent(transaction, "client-0", 3L, MutationPresenceState.ABSENT)
             insertActiveTombstone(transaction, "entity", "client-0", 1L, 10L, 11L)
             supersedeTombstone(transaction, "entity", "client-0", 1L, 10L, 11L, "client-0", 2L, 20L)
@@ -960,8 +1141,8 @@ class MutationJournalContractTest {
         val storage = InMemoryMutationJournalStorage()
         storage.transaction { transaction ->
             seedClient(transaction, lastAllocatedSequence = 3L)
-            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT)
-            seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.ABSENT)
+            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT, retire = true)
+            seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.ABSENT, retire = true)
             seedAcknowledgedIntent(transaction, "client-0", 3L, MutationPresenceState.ABSENT)
             insertActiveTombstone(transaction, "entity", "client-0", 1L, 10L, 11L)
             transaction.insertTombstone(
@@ -1000,7 +1181,7 @@ class MutationJournalContractTest {
         val storage = InMemoryMutationJournalStorage()
         storage.transaction { transaction ->
             seedClient(transaction, lastAllocatedSequence = 2L)
-            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT)
+            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT, retire = true)
             seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.ABSENT)
             insertActiveTombstone(transaction, "entity", "client-0", 1L, 10L, 11L)
             transaction.insertTombstone(
@@ -1031,7 +1212,7 @@ class MutationJournalContractTest {
         val storage = InMemoryMutationJournalStorage()
         storage.transaction { transaction ->
             seedClient(transaction, lastAllocatedSequence = 2L)
-            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT)
+            seedAcknowledgedIntent(transaction, "client-0", 1L, MutationPresenceState.ABSENT, retire = true)
             seedAcknowledgedIntent(transaction, "client-0", 2L, MutationPresenceState.PRESENT)
             insertActiveTombstone(transaction, "entity", "client-0", 1L, 10L, 11L)
             supersedeTombstone(transaction, "entity", "client-0", 1L, 10L, 11L, "client-0", 2L, 20L)
@@ -1063,15 +1244,34 @@ class MutationJournalContractTest {
         assertEquals("client-b", row.supersededByClientId)
         assertEquals(1L, row.supersededBySequence)
         assertTrue(checkNotNull(row.supersededBySequence) < row.creatorSequence)
+
+        val sameClientLowerSuccessor =
+            tombstone(
+                canonicalId = "structural-only",
+                creatorClientId = "client-a",
+                creatorSequence = 5L,
+                state = MutationTombstoneState.SUPERSEDED,
+                createdAt = 100L,
+                activatedAt = 110L,
+                supersededByClientId = "client-a",
+                supersededBySequence = 1L,
+                supersededAt = 200L,
+            )
+        assertEquals("client-a", sameClientLowerSuccessor.supersededByClientId)
+        assertEquals(1L, sameClientLowerSuccessor.supersededBySequence)
+        assertEquals(110L, sameClientLowerSuccessor.activatedAt)
+        assertTrue(
+            checkNotNull(sameClientLowerSuccessor.supersededBySequence) <
+                sameClientLowerSuccessor.createdBySequence,
+        )
     }
 }
 
 private class RestartKey(
     private val id: String,
     val processSentinel: String,
+    override val namespace: StoreNamespace = StoreNamespace("mutations"),
 ) : StoreKey {
-    override val namespace: StoreNamespace = StoreNamespace("mutations")
-
     override fun canonicalId(): String = id
 }
 
@@ -1196,7 +1396,11 @@ private class RecordingRestartResolver : MutationKeyResolver<RestartKey> {
 
     override suspend fun resolve(identity: MutationKeyIdentity): RestartKey {
         requests += identity.namespace to identity.canonicalId
-        return RestartKey(identity.canonicalId, "resolver-process")
+        return RestartKey(
+            identity.canonicalId,
+            "resolver-process",
+            StoreNamespace(identity.namespace),
+        )
     }
 }
 
@@ -1204,6 +1408,7 @@ private class RecordingRestartServer(
     private var cancelPushes: Int = 0,
     private val canonicalTarget: RestartKey? = null,
     private val beforePush: suspend (MutationPush<RestartKey, String>) -> Unit = {},
+    private val retirementConfirmationCeiling: Long? = null,
 ) : MutationServer<RestartKey, String> {
     val pushes = mutableListOf<MutationPush<RestartKey, String>>()
 
@@ -1226,7 +1431,12 @@ private class RecordingRestartServer(
     }
 
     override suspend fun retire(request: MutationRetirement): MutationRetirementAck =
-        MutationRetirementAck(request.retiredThroughSequence)
+        MutationRetirementAck(
+            minOf(
+                request.retiredThroughSequence,
+                retirementConfirmationCeiling ?: request.retiredThroughSequence,
+            ),
+        )
 }
 
 private class RecordingRestartWriteHandle : StoreWriteHandle<RestartKey, String> {
@@ -1252,13 +1462,16 @@ private class RecordingRestartWriteHandle : StoreWriteHandle<RestartKey, String>
 
 private class StrictRecordingStringCodec(
     private val supportedVersions: Set<Int>,
+    private val encodeVersion: Int? = null,
 ) : MutationCodec<String> {
     val encodedBuffers = mutableListOf<ByteArray>()
     val decodeVersions = mutableListOf<Int>()
     val decodeInputs = mutableListOf<ByteArray>()
 
     override fun encode(value: String): ByteArray =
-        value.encodeToByteArray().also(encodedBuffers::add)
+        (encodeVersion?.let { version -> "store6-codec-$version:$value" } ?: value)
+            .encodeToByteArray()
+            .also(encodedBuffers::add)
 
     override fun decode(
         version: Int,
@@ -1269,7 +1482,13 @@ private class StrictRecordingStringCodec(
         require(version in supportedVersions) {
             "unsupported codec version $version\nIllegalArgumentException raw marker"
         }
-        return bytes.decodeToString()
+        val decoded = bytes.decodeToString()
+        if (encodeVersion == null && !decoded.startsWith("store6-codec-")) return decoded
+        val expectedPrefix = "store6-codec-$version:"
+        require(decoded.startsWith(expectedPrefix)) {
+            "codec payload does not match decoder version $version"
+        }
+        return decoded.removePrefix(expectedPrefix)
     }
 }
 
@@ -1465,7 +1684,12 @@ private suspend fun phaseKeyedSnapshots(
 ): Map<String, List<PendingSnapshot>> =
     (1..8).associate { sequence ->
         val id = "phase-$sequence"
-        id to store.pending(RestartKey(id, "inspection")).map(PendingIntent::snapshot)
+        val namespace =
+            when (sequence) {
+                3, 4, 5, 6 -> StoreNamespace("inspection-$sequence")
+                else -> StoreNamespace("mutations")
+            }
+        id to store.pending(RestartKey(id, "inspection", namespace)).map(PendingIntent::snapshot)
     }
 
 private suspend fun seedEveryExecutionPhase(storage: MutationJournalStorage) {
@@ -1473,10 +1697,10 @@ private suspend fun seedEveryExecutionPhase(storage: MutationJournalStorage) {
         seedClient(transaction, lastAllocatedSequence = 8L)
         seedExecution(transaction, 1L, StoredPhase.UNPREPARED)
         seedExecution(transaction, 2L, StoredPhase.READY)
-        seedExecution(transaction, 3L, StoredPhase.INFLIGHT)
-        seedExecution(transaction, 4L, StoredPhase.REFRESH_REQUIRED)
-        seedExecution(transaction, 5L, StoredPhase.ACKED)
-        seedExecution(transaction, 6L, StoredPhase.EFFECTS_PENDING)
+        seedExecution(transaction, 3L, StoredPhase.INFLIGHT, namespace = "inspection-3")
+        seedExecution(transaction, 4L, StoredPhase.REFRESH_REQUIRED, namespace = "inspection-4")
+        seedExecution(transaction, 5L, StoredPhase.ACKED, namespace = "inspection-5")
+        seedExecution(transaction, 6L, StoredPhase.EFFECTS_PENDING, namespace = "inspection-6")
         seedExecution(transaction, 7L, StoredPhase.PARKED)
         seedExecution(transaction, 8L, StoredPhase.RETIRED)
     }
@@ -1521,6 +1745,7 @@ private fun seedAcknowledgedIntent(
     clientId: String,
     sequence: Long,
     presence: MutationPresenceState,
+    retire: Boolean = false,
 ) {
     val mutationId = "$clientId-mutation-$sequence"
     val isPresent = presence == MutationPresenceState.PRESENT
@@ -1583,7 +1808,7 @@ private fun seedAcknowledgedIntent(
             receivedAt = 300L + sequence,
         ),
     )
-    transaction.advanceExecution(
+    val acknowledged =
         MutationExecutionRecord(
             clientId,
             sequence,
@@ -1593,8 +1818,23 @@ private fun seedAcknowledgedIntent(
             300L + sequence,
             null,
             null,
-        ),
-    )
+        )
+    transaction.advanceExecution(acknowledged)
+    if (retire) {
+        transaction.advanceExecution(acknowledged.copyPhase(StoredPhase.EFFECTS_PENDING))
+        transaction.advanceExecution(
+            MutationExecutionRecord(
+                clientId,
+                sequence,
+                StoredPhase.RETIRED,
+                1,
+                1,
+                300L + sequence,
+                null,
+                400L + sequence,
+            ),
+        )
+    }
 }
 
 private fun tombstone(
@@ -1848,13 +2088,14 @@ private fun seedExecution(
     transaction: MutationJournalTransaction,
     sequence: Long,
     target: StoredPhase,
+    namespace: String = "mutations",
 ) {
     transaction.insertIntent(
         recordVersion = 1,
         clientId = "client-0",
         clientSequence = sequence,
         mutationId = "mutation-$sequence",
-        namespace = "mutations",
+        namespace = namespace,
         canonicalId = "phase-$sequence",
         mutatorId = "upsert",
         mutatorVersion = 1,
@@ -1901,7 +2142,7 @@ private fun seedExecution(
         return
     }
 
-    val attempt = seededAttempt(sequence)
+    val attempt = seededAttempt(sequence, namespace)
     transaction.insertAttempt(attempt)
     execution =
         MutationExecutionRecord(
@@ -1994,12 +2235,15 @@ private fun seedExecution(
     )
 }
 
-private fun seededAttempt(sequence: Long): MutationAttemptRecord =
+private fun seededAttempt(
+    sequence: Long,
+    namespace: String = "mutations",
+): MutationAttemptRecord =
     MutationAttemptRecord(
         clientId = "client-0",
         clientSequence = sequence,
         generation = 1,
-        effectiveNamespace = "mutations",
+        effectiveNamespace = namespace,
         effectiveCanonicalId = "phase-$sequence",
         valueCodecVersion = 1,
         basePresence = MutationPresenceState.ABSENT,

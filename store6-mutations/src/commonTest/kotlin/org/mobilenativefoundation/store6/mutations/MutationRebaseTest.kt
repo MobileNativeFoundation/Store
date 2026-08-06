@@ -60,7 +60,12 @@ class MutationRebaseTest {
             val immutableRetry = storage.transaction { it.attempts("client-0").single() }
             sourceOfTruth.write(key, "refreshed")
 
-            val resumedServer = RebaseServer(online = true, firstAuthoritative = "authoritative")
+            val resumedServer =
+                RebaseServer(
+                    online = true,
+                    firstAuthoritative = "authoritative",
+                    retirementConfirmationCeiling = 0L,
+                )
             openStore(storage, sourceOfTruth, registry, resumedServer).use { reopened ->
                 val optimistic =
                     reopened.stream(key, Freshness.LocalOnly).first { result ->
@@ -129,7 +134,7 @@ class MutationRebaseTest {
             assertTrue(storage.transaction { it.attempts("client-0").isEmpty() })
             sourceOfTruth.write(key, "refreshed")
 
-            val resumedServer = RebaseServer(online = true)
+            val resumedServer = RebaseServer(online = true, retirementConfirmationCeiling = 0L)
             openStore(storage, sourceOfTruth, registry, resumedServer).use { reopened ->
                 val optimistic =
                     reopened.stream(key, Freshness.LocalOnly).first { result ->
@@ -188,6 +193,7 @@ class MutationRebaseTest {
 private class RebaseServer(
     private val online: Boolean,
     private val firstAuthoritative: String? = null,
+    private val retirementConfirmationCeiling: Long? = null,
 ) : MutationServer<MutationsTestKey, String> {
     val pushes = mutableListOf<MutationPush<MutationsTestKey, String>>()
 
@@ -213,7 +219,12 @@ private class RebaseServer(
     }
 
     override suspend fun retire(request: MutationRetirement): MutationRetirementAck =
-        MutationRetirementAck(request.retiredThroughSequence)
+        MutationRetirementAck(
+            minOf(
+                request.retiredThroughSequence,
+                retirementConfirmationCeiling ?: request.retiredThroughSequence,
+            ),
+        )
 }
 
 private data class RebasePushSnapshot(

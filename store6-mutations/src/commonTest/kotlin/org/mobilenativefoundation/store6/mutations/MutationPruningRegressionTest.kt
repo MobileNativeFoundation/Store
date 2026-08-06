@@ -39,7 +39,11 @@ class MutationPruningRegressionTest {
             val fixture = pruningFixture()
             val source = MutationsTestKey("provisional-ack")
             val canonical = MutationsTestKey("canonical-ack")
-            val server = CountingAckServer(canonical)
+            val server =
+                CountingAckServer(
+                    canonicalKey = canonical,
+                    retirementConfirmationCeiling = 0L,
+                )
             val adoption = CountingAdoptionHandle()
             val first = openPruningEngine(killedStorage, fixture.registry, server, adoption)
 
@@ -417,6 +421,7 @@ private fun openPruningEngine(
 
 private class CountingAckServer(
     private val canonicalKey: MutationsTestKey? = null,
+    private val retirementConfirmationCeiling: Long? = null,
 ) : MutationServer<MutationsTestKey, String> {
     var pushCount: Int = 0
         private set
@@ -433,7 +438,12 @@ private class CountingAckServer(
     }
 
     override suspend fun retire(request: MutationRetirement): MutationRetirementAck =
-        MutationRetirementAck(request.retiredThroughSequence)
+        MutationRetirementAck(
+            minOf(
+                request.retiredThroughSequence,
+                retirementConfirmationCeiling ?: request.retiredThroughSequence,
+            ),
+        )
 }
 
 private class CountingAdoptionHandle : StoreWriteHandle<MutationsTestKey, String> {

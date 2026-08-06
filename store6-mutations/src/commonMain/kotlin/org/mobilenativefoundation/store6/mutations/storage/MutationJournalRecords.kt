@@ -370,10 +370,13 @@ public class MutationKeyTombstoneRecord(
                     "SUPERSEDED tombstones require a complete successor and timestamp"
                 }
                 if (supersededByClientId == createdByClientId) {
-                    require(requireNotNull(supersededBySequence) > createdBySequence) {
-                        "a same-client superseding intent must have a later sequence"
+                    require(supersededBySequence != createdBySequence) {
+                        "a same-client superseding intent must be causally distinct"
                     }
                 }
+                // Same-client causal successors may carry a lower positive durable sequence. The
+                // storage transaction validates that narrow exception against the complete
+                // authority, acknowledgement, routing, effects, and retirement final state.
             }
         }
     }

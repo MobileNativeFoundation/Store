@@ -17,8 +17,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformWhile
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.core.Freshness
 import org.mobilenativefoundation.store6.core.Store
@@ -63,7 +61,6 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     public val keyEvents: Flow<KeyEvents>,
 ) : Store<K, V> by delegate {
     private val closed = MutableStateFlow(false)
-    private val drainPass = Mutex()
 
     /**
      * Observes retrieval state and values for the terminal canonical identity of [key] (D15a).
@@ -233,35 +230,37 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
      * Runs one idempotent, scheduler-agnostic foreground pass for the terminal canonical
      * identity of [key] (D12/D15a): the engine captures the unprojected confirmed base through
      * the ordered `status -> LocalOnly` loop and pushes the pending FIFO prefix once, with no
-     * retry, backoff, or parking. This pass never fetches. Push failure stops normally with the
-     * current intent pending; adoption failure propagates; an alias-protocol violation records a
-     * normalized `PROTOCOL` carrier and stops normally (023 owns the durable park transition).
-     * Terminal resolution makes one attempt and throws the sanctioned conversion-backed
-     * [StoreException] on failure. Drain passes are serialized store-wide; Issue 023 owns
-     * per-key scheduling and parallelism.
+     * retry or backoff. This pass never fetches. A terminal pre-transport identity, codec, or
+     * projection failure durably parks and removes the affected head; push failure remains
+     * retryable and stops normally; adoption failure propagates; an alias-protocol violation
+     * records a normalized `PROTOCOL` carrier until its later acknowledgement-validation rung.
+     * Terminal resolution makes one attempt and returns normally after parking an affected
+     * pre-ack head. Once transport becomes possible or uncertain, that durable execution owns
+     * its client namespace until it parks or retires: a keyed drain for another key in that
+     * namespace returns without transport. Different namespaces remain eligible to progress,
+     * and alias activation re-homes the owning pass before canonical adoption continues.
      */
     @ExperimentalStoreApi
     public suspend fun drain(key: K) {
-        drainPass.withLock {
-            checkOpen()
-            engine.drainKeyResolvedOrRecord(key)
-        }
+        checkOpen()
+        engine.drainKeyResolvedOrRecord(key) { checkOpen() }
     }
 
     /**
      * Runs one idempotent, scheduler-agnostic global foreground pass (D12): every durable
      * identity is enumerated from the journal and reconstructed through the required
      * [MutationKeyResolver] with exact-pair validation (D14). An identity that fails to resolve
-     * does not block the others. Global processing is deterministic by durable client sequence
-     * within an effective identity and does not promise cross-key order. Drain passes are
-     * serialized store-wide; Issue 023 owns scheduling and checkpoint flushing.
+     * parks its affected pre-ack head and does not block the others. Global processing is
+     * deterministic by durable client sequence within an effective identity and does not promise
+     * cross-key order. A post-transport owner resumes before another key in its client namespace;
+     * those nonowners wait for a later trigger, while every eligible different namespace remains
+     * able to progress. Without an owner, independent keys acquire authority by execution rather
+     * than by durable sequence.
      */
     @ExperimentalStoreApi
     public suspend fun drain() {
-        drainPass.withLock {
-            checkOpen()
-            engine.drain()
-        }
+        checkOpen()
+        engine.drain { checkOpen() }
     }
 
     /**
@@ -403,7 +402,11 @@ public fun <K : StoreKey, V : Any> mutationStore(
             bookkeeper = configuration.bookkeeper,
             sourceOfTruth = configuration.sourceOfTruth,
             baseReader = { key -> checkNotNull(boundDelegate).confirmedBaseOrNull(key) },
+            freshnessBarrier = { key -> checkNotNull(boundDelegate).completeFreshnessBarrier(key) },
             absentAdoption = { key -> checkNotNull(boundDelegate).clear(key) },
+            namespaceInvalidation = { namespace ->
+                checkNotNull(boundDelegate).invalidateNamespace(namespace)
+            },
             wallClock = configuration.wallClock ?: MutationsSystemWallClock,
         )
     val delegate =
@@ -419,6 +422,19 @@ public fun <K : StoreKey, V : Any> mutationStore(
         engine = engine,
         keyEvents = runtime.keyEvents,
     )
+}
+
+/**
+ * Completes the conflict freshness barrier without using its returned value as authoritative
+ * `theirs`. A server-confirmed deletion satisfies the barrier; every other failure propagates.
+ */
+private suspend fun <K : StoreKey, V : Any> Store<K, V>.completeFreshnessBarrier(key: K) {
+    try {
+        get(key, Freshness.MustBeFresh)
+        Unit
+    } catch (failure: StoreException) {
+        if (failure.error !is StoreError.Missing) throw failure
+    }
 }
 
 /**

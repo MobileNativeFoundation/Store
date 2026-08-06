@@ -273,24 +273,49 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
             }
         }
 
-        suspend fun inflightParkingStorage(): MutationJournalStorage =
+        suspend fun inflightParkingStorage(
+            withCompletedAttempt: Boolean = false,
+        ): MutationJournalStorage =
             createStorage().also { candidate ->
                 appendIntent(candidate, sequence = 1L)
                 prepareForPush(candidate, sequence = 1L)
+                if (withCompletedAttempt) {
+                    candidate.transaction { transaction ->
+                        transaction.advanceExecution(
+                            execution(
+                                sequence = 1L,
+                                phase = MutationExecutionPhase.READY,
+                                generation = 1,
+                                attemptCount = 1,
+                                lastAttemptAt = 30L,
+                            ),
+                        )
+                        transaction.advanceExecution(
+                            execution(
+                                sequence = 1L,
+                                phase = MutationExecutionPhase.INFLIGHT,
+                                generation = 1,
+                                attemptCount = 1,
+                                lastAttemptAt = 30L,
+                            ),
+                        )
+                    }
+                }
             }
 
         suspend fun parkInflight(
             candidate: MutationJournalStorage,
+            kind: MutationFailureKind,
             attemptCount: Int,
             lastAttemptAt: Long?,
-        ) {
+        ): MutationFailureRecord =
             candidate.transaction { transaction ->
                 val failure =
                     transaction.appendFailure(
                         clientId = CLIENT_ID,
                         clientSequence = 1L,
                         generation = 1,
-                        kind = MutationFailureKind.TRANSPORT,
+                        kind = kind,
                         detail = "inflight",
                         message = "terminal invocation failure",
                         occurredAt = 40L,
@@ -305,26 +330,68 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
                         activeFailureId = failure.failureId,
                     ),
                 )
+                failure
             }
+
+        listOf(MutationFailureKind.IDENTITY, MutationFailureKind.CODEC).forEach { kind ->
+            val candidate = inflightParkingStorage(withCompletedAttempt = true)
+            val failure =
+                parkInflight(
+                    candidate = candidate,
+                    kind = kind,
+                    attemptCount = 1,
+                    lastAttemptAt = 30L,
+                )
+            val parked = candidate.transaction { it.executions(CLIENT_ID).single() }
+            val activeFailure =
+                candidate.transaction { transaction ->
+                    transaction.failures(CLIENT_ID).single { it.failureId == parked.activeFailureId }
+                }
+            assertEquals(MutationExecutionPhase.PARKED, parked.phase)
+            assertEquals(1, parked.currentGeneration)
+            assertEquals(1, parked.attempt)
+            assertEquals(30L, parked.lastAttemptAt)
+            assertEquals(failure.failureId, parked.activeFailureId)
+            assertEquals(kind, activeFailure.kind)
         }
 
+        val changedTimestampStorage = inflightParkingStorage(withCompletedAttempt = true)
         assertFailsWith<IllegalArgumentException> {
             parkInflight(
-                candidate = inflightParkingStorage(),
+                candidate = changedTimestampStorage,
+                kind = MutationFailureKind.IDENTITY,
+                attemptCount = 1,
+                lastAttemptAt = 31L,
+            )
+        }
+        assertTrue(changedTimestampStorage.transaction { it.failures(CLIENT_ID).isEmpty() })
+
+        val unchangedTransportStorage = inflightParkingStorage()
+        assertFailsWith<IllegalArgumentException> {
+            parkInflight(
+                candidate = unchangedTransportStorage,
+                kind = MutationFailureKind.TRANSPORT,
                 attemptCount = 0,
                 lastAttemptAt = null,
             )
         }
+        assertTrue(unchangedTransportStorage.transaction { it.failures(CLIENT_ID).isEmpty() })
+
+        val skippedAttemptStorage = inflightParkingStorage()
         assertFailsWith<IllegalArgumentException> {
             parkInflight(
-                candidate = inflightParkingStorage(),
+                candidate = skippedAttemptStorage,
+                kind = MutationFailureKind.TRANSPORT,
                 attemptCount = 2,
                 lastAttemptAt = 40L,
             )
         }
+        assertTrue(skippedAttemptStorage.transaction { it.failures(CLIENT_ID).isEmpty() })
+
         val completedParkingStorage = inflightParkingStorage()
         parkInflight(
             candidate = completedParkingStorage,
+            kind = MutationFailureKind.TRANSPORT,
             attemptCount = 1,
             lastAttemptAt = 40L,
         )
@@ -392,6 +459,93 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
                 )
             }
         }
+        suspend fun assertGenerationContinuationRejected(
+            effectiveNamespace: String,
+            effectiveCanonicalId: String,
+            expectedMessage: String,
+        ) {
+            val failure =
+                assertFailsWith<IllegalArgumentException> {
+                    storage.transaction { transaction ->
+                        transaction.insertAttempt(
+                            attempt(
+                                sequence = 1L,
+                                generation = 2,
+                                effectiveNamespace = effectiveNamespace,
+                                effectiveCanonicalId = effectiveCanonicalId,
+                            ),
+                        )
+                        transaction.advanceExecution(
+                            execution(
+                                sequence = 1L,
+                                phase = MutationExecutionPhase.READY,
+                                generation = 2,
+                            ),
+                        )
+                    }
+                }
+            assertEquals(expectedMessage, failure.message)
+            storage.transaction { transaction ->
+                val persisted =
+                    transaction.executions(CLIENT_ID).single { it.clientSequence == 1L }
+                assertEquals(MutationExecutionPhase.REFRESH_REQUIRED, persisted.phase)
+                assertEquals(1, persisted.currentGeneration)
+                assertEquals(
+                    listOf(1),
+                    transaction.attempts(CLIENT_ID)
+                        .filter { it.clientSequence == 1L }
+                        .map { it.generation },
+                )
+            }
+        }
+
+        assertGenerationContinuationRejected(
+            effectiveNamespace = "items",
+            effectiveCanonicalId = "retargeted",
+            expectedMessage = "generation continuation must preserve exact effective identity",
+        )
+        assertGenerationContinuationRejected(
+            effectiveNamespace = "moved-items",
+            effectiveCanonicalId = "item-1",
+            expectedMessage = "generation continuation must preserve exact effective identity",
+        )
+
+        appendIntent(
+            storage = storage,
+            sequence = 2L,
+            namespace = "occupied-items",
+            canonicalId = "occupied-owner",
+        )
+        storage.transaction { transaction ->
+            transaction.insertAttempt(
+                attempt(
+                    sequence = 2L,
+                    generation = 1,
+                    effectiveNamespace = "occupied-items",
+                    effectiveCanonicalId = "occupied-owner",
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.READY,
+                    generation = 1,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+        }
+        assertGenerationContinuationRejected(
+            effectiveNamespace = "occupied-items",
+            effectiveCanonicalId = "item-1",
+            expectedMessage = "namespace authority already has an owner",
+        )
+
         storage.transaction { transaction ->
             transaction.insertAttempt(attempt(sequence = 1L, generation = 2))
             transaction.advanceExecution(
@@ -403,9 +557,22 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
             )
         }
 
-        val generationTwo = storage.transaction { it.executions(CLIENT_ID).single() }
+        val generationTwo =
+            storage.transaction {
+                it.executions(CLIENT_ID).single { execution -> execution.clientSequence == 1L }
+            }
         assertEquals(MutationExecutionPhase.READY, generationTwo.phase)
         assertEquals(2, generationTwo.currentGeneration)
+        val continuationAttempts =
+            storage.transaction {
+                it.attempts(CLIENT_ID)
+                    .filter { attempt -> attempt.clientSequence == 1L }
+                    .sortedBy { attempt -> attempt.generation }
+            }
+        assertEquals(
+            listOf("items" to "item-1", "items" to "item-1"),
+            continuationAttempts.map { it.effectiveNamespace to it.effectiveCanonicalId },
+        )
 
         storage.transaction { transaction ->
             val failure =
@@ -526,6 +693,203 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
                         lastAttemptAt = 40L,
                     ),
                 )
+            }
+        }
+
+        val namespaceOwnerStorage = createStorage()
+        appendIntent(
+            storage = namespaceOwnerStorage,
+            sequence = 1L,
+            canonicalId = "owner",
+        )
+        appendIntent(
+            storage = namespaceOwnerStorage,
+            sequence = 2L,
+            canonicalId = "blocked",
+        )
+        appendIntent(
+            storage = namespaceOwnerStorage,
+            sequence = 3L,
+            canonicalId = "after-retirement",
+        )
+        appendIntent(
+            storage = namespaceOwnerStorage,
+            sequence = 4L,
+            namespace = "other-items",
+            canonicalId = "independent",
+        )
+        namespaceOwnerStorage.transaction { transaction ->
+            listOf(
+                Triple(1L, "items", "owner"),
+                Triple(2L, "items", "blocked"),
+                Triple(3L, "items", "after-retirement"),
+                Triple(4L, "other-items", "independent"),
+            ).forEach { (sequence, namespace, canonicalId) ->
+                transaction.insertAttempt(
+                    attempt(
+                        sequence = sequence,
+                        generation = 1,
+                        effectiveNamespace = namespace,
+                        effectiveCanonicalId = canonicalId,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = sequence,
+                        phase = MutationExecutionPhase.READY,
+                        generation = 1,
+                    ),
+                )
+            }
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            namespaceOwnerStorage.transaction { transaction ->
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.INFLIGHT,
+                        generation = 1,
+                    ),
+                )
+            }
+        }
+        namespaceOwnerStorage.transaction { transaction ->
+            val phases =
+                transaction.executions(CLIENT_ID).associate { it.clientSequence to it.phase }
+            assertEquals(MutationExecutionPhase.INFLIGHT, phases.getValue(1L))
+            assertEquals(MutationExecutionPhase.READY, phases.getValue(2L))
+        }
+
+        namespaceOwnerStorage.transaction { transaction ->
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.READY,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 30L,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 30L,
+                ),
+            )
+        }
+        namespaceOwnerStorage.transaction { transaction ->
+            val failure =
+                transaction.appendFailure(
+                    clientId = CLIENT_ID,
+                    clientSequence = 1L,
+                    generation = 1,
+                    kind = MutationFailureKind.TRANSPORT,
+                    detail = "owner-release",
+                    message = "owner parked after transport",
+                    occurredAt = 40L,
+                )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.PARKED,
+                    generation = 1,
+                    attemptCount = 2,
+                    lastAttemptAt = 40L,
+                    activeFailureId = failure.failureId,
+                ),
+            )
+        }
+        namespaceOwnerStorage.transaction { transaction ->
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 4L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+        }
+        namespaceOwnerStorage.transaction { transaction ->
+            transaction.insertAck(sameIdentityAck(sequence = 2L, generation = 1))
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.ACKED,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 50L,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.EFFECTS_PENDING,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 50L,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 2L,
+                    phase = MutationExecutionPhase.RETIRED,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 50L,
+                    retiredAt = 60L,
+                ),
+            )
+        }
+        namespaceOwnerStorage.transaction { transaction ->
+            transaction.advanceExecution(
+                execution(
+                    sequence = 3L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+            val phases =
+                transaction.executions(CLIENT_ID).associate { it.clientSequence to it.phase }
+            assertEquals(MutationExecutionPhase.PARKED, phases.getValue(1L))
+            assertEquals(MutationExecutionPhase.RETIRED, phases.getValue(2L))
+            assertEquals(MutationExecutionPhase.INFLIGHT, phases.getValue(3L))
+            assertEquals(MutationExecutionPhase.INFLIGHT, phases.getValue(4L))
+        }
+
+        C8OwnerState.entries.forEach { ownerState ->
+            val candidate = c8OwnerPredicateStorage(ownerState)
+            assertFailsWith<IllegalArgumentException>(ownerState.name) {
+                candidate.transaction { transaction ->
+                    transaction.advanceExecution(
+                        execution(
+                            sequence = 2L,
+                            phase = MutationExecutionPhase.INFLIGHT,
+                            generation = 1,
+                        ),
+                    )
+                }
+            }
+            candidate.transaction { transaction ->
+                val executions = transaction.executions(CLIENT_ID).associateBy { it.clientSequence }
+                assertEquals(ownerState.phase, executions.getValue(1L).phase, ownerState.name)
+                assertEquals(MutationExecutionPhase.READY, executions.getValue(2L).phase, ownerState.name)
             }
         }
     }
@@ -950,6 +1314,45 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
         val persisted = storage.transaction { it.tombstones().single() }
         assertEquals(MutationTombstoneState.SUPERSEDED, persisted.state)
         assertEquals(9L, persisted.supersededBySequence)
+
+        val guardedLowerSuccessorStorage = createStorage()
+        guardedLowerSuccessorStorage.transaction { transaction ->
+            transaction.insertTombstone(
+                tombstone(
+                    sequence = 3L,
+                    canonicalId = "guarded-lower-successor",
+                ),
+            )
+            transaction.advanceTombstone(
+                tombstone(
+                    sequence = 3L,
+                    canonicalId = "guarded-lower-successor",
+                    state = MutationTombstoneState.ACTIVE,
+                    activatedAt = 40L,
+                ),
+            )
+        }
+        val unguardedLowerSuccessor =
+            tombstone(
+                sequence = 3L,
+                canonicalId = "guarded-lower-successor",
+                state = MutationTombstoneState.SUPERSEDED,
+                activatedAt = 40L,
+                supersededByClientId = CLIENT_ID,
+                supersededBySequence = 1L,
+                supersededAt = 50L,
+            )
+        assertFailsWith<IllegalArgumentException> {
+            guardedLowerSuccessorStorage.transaction { transaction ->
+                transaction.advanceTombstone(unguardedLowerSuccessor)
+            }
+        }
+        val guardedPredecessor = guardedLowerSuccessorStorage.transaction { it.tombstones().single() }
+        assertEquals(MutationTombstoneState.ACTIVE, guardedPredecessor.state)
+        assertEquals(40L, guardedPredecessor.activatedAt)
+        assertNull(guardedPredecessor.supersededByClientId)
+        assertNull(guardedPredecessor.supersededBySequence)
+        assertNull(guardedPredecessor.supersededAt)
     }
 
     @Test
@@ -1448,6 +1851,92 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
 
     @Test
     public fun ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(): TestResult = runTest {
+        val versionedStorage = createStorage()
+        appendIntent(versionedStorage, sequence = 1L)
+        versionedStorage.transaction { transaction ->
+            transaction.insertAttempt(
+                attempt(
+                    sequence = 1L,
+                    generation = 1,
+                    valueCodecVersion = 7,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.READY,
+                    generation = 1,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+        }
+        val currentVersionAck =
+            ack(
+                sequence = 1L,
+                generation = 1,
+                authoritative = byteArrayOf(9, 7),
+                valueCodecVersion = 9,
+            )
+        assertFailsWith<Rollback> {
+            versionedStorage.transaction { transaction ->
+                transaction.insertAck(currentVersionAck)
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 1L,
+                        phase = MutationExecutionPhase.ACKED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 50L,
+                    ),
+                )
+                throw Rollback()
+            }
+        }
+        versionedStorage.transaction { transaction ->
+            assertTrue(transaction.acks(CLIENT_ID).isEmpty())
+            assertEquals(MutationExecutionPhase.INFLIGHT, transaction.executions(CLIENT_ID).single().phase)
+        }
+
+        versionedStorage.transaction { transaction ->
+            transaction.insertAck(currentVersionAck)
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.ACKED,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 50L,
+                ),
+            )
+        }
+        versionedStorage.transaction { transaction ->
+            transaction.insertAck(currentVersionAck)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            versionedStorage.transaction { transaction ->
+                transaction.insertAck(
+                    ack(
+                        sequence = 1L,
+                        generation = 1,
+                        authoritative = byteArrayOf(9, 8),
+                        valueCodecVersion = 9,
+                    ),
+                )
+            }
+        }
+        reopenStorage(versionedStorage).transaction { transaction ->
+            val persisted = transaction.acks(CLIENT_ID).single()
+            assertEquals(9, persisted.valueCodecVersion)
+            assertContentEquals(byteArrayOf(9, 7), persisted.authoritativeBlob)
+            assertEquals(MutationExecutionPhase.ACKED, transaction.executions(CLIENT_ID).single().phase)
+        }
+
         val aliasStorage = createStorage()
         appendIntent(aliasStorage, sequence = 1L)
         prepareForPush(aliasStorage, sequence = 1L)
@@ -1694,6 +2183,80 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
             assertEquals(MutationTombstoneState.SUPERSEDED, byCreator.getValue(OLDER_CLIENT_ID).state)
             assertEquals(MutationTombstoneState.ACTIVE, byCreator.getValue(CLIENT_ID).state)
         }
+
+        CausalFinalizationFault.entries.forEach { fault ->
+            val candidate = causalLowerSuccessorStorage(fault)
+            val before = causalFinalizationSnapshot(candidate)
+            assertFailsWith<IllegalArgumentException>(fault.name) {
+                candidate.transaction { transaction ->
+                    finalizeCausalLowerSuccessor(transaction, fault)
+                }
+            }
+            assertEquals(before, causalFinalizationSnapshot(candidate), fault.name)
+        }
+
+        val causalStorage = causalLowerSuccessorStorage(fault = null)
+        causalStorage.transaction { transaction ->
+            finalizeCausalLowerSuccessor(transaction, fault = null)
+        }
+        val causalFinal = causalFinalizationSnapshot(causalStorage)
+        assertEquals(3L, causalFinal.retiredThroughSequence)
+        assertEquals(
+            MutationExecutionPhase.RETIRED,
+            causalFinal.executions.single { it.sequence == 1L }.phase,
+        )
+        assertEquals(
+            MutationAliasState.ACTIVE,
+            causalFinal.aliases.single { it.sourceCanonicalId == CAUSAL_SOURCE_ID }.state,
+        )
+        val supersededCausalTombstones =
+            causalFinal.tombstones
+                .filter { it.canonicalId == CAUSAL_MIDDLE_ID || it.canonicalId == CAUSAL_TARGET_ID }
+        assertEquals(2, supersededCausalTombstones.size)
+        supersededCausalTombstones.forEach { tombstone ->
+            assertEquals(MutationTombstoneState.SUPERSEDED, tombstone.state)
+            assertEquals(CLIENT_ID, tombstone.supersededByClientId)
+            assertEquals(1L, tombstone.supersededBySequence)
+            assertEquals(
+                if (tombstone.canonicalId == CAUSAL_MIDDLE_ID) 60L else 61L,
+                tombstone.activatedAt,
+            )
+        }
+
+        appendIntent(
+            storage = causalStorage,
+            sequence = 4L,
+            canonicalId = "post-causal-release",
+        )
+        causalStorage.transaction { transaction ->
+            transaction.insertAttempt(
+                attempt(
+                    sequence = 4L,
+                    generation = 1,
+                    effectiveCanonicalId = "post-causal-release",
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 4L,
+                    phase = MutationExecutionPhase.READY,
+                    generation = 1,
+                ),
+            )
+            transaction.advanceExecution(
+                execution(
+                    sequence = 4L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+        }
+        assertEquals(
+            MutationExecutionPhase.INFLIGHT,
+            causalStorage.transaction { transaction ->
+                transaction.executions(CLIENT_ID).single { it.clientSequence == 4L }.phase
+            },
+        )
     }
 
     @Test
@@ -1737,9 +2300,443 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
         }
     }
 
+    private enum class CausalFinalizationFault {
+        PREDECESSOR_NOT_ACTIVE,
+        SUCCESSOR_NOT_EFFECTS_PENDING,
+        ACK_NOT_PRESENT,
+        ACK_DOES_NOT_OWN_ALIAS,
+        EFFECT_PENDING,
+        ALIAS_NOT_ACTIVATED,
+        TERMINAL_MISSES_PREDECESSOR,
+        SUCCESSOR_NOT_RETIRED,
+        PREFIX_NOT_ADVANCED,
+        COLLAPSED_TOMBSTONE_NOT_SUPERSEDED,
+        ACTIVATION_TIMESTAMP_CHANGED,
+        SUCCESSOR_IDENTITY_MISMATCH,
+        SUCCESSOR_CLIENT_MISMATCH,
+    }
+
+    private data class CausalExecutionSnapshot(
+        val sequence: Long,
+        val phase: MutationExecutionPhase,
+        val attempt: Int,
+        val lastAttemptAt: Long?,
+        val retiredAt: Long?,
+    )
+
+    private data class CausalAliasSnapshot(
+        val sourceCanonicalId: String,
+        val targetCanonicalId: String,
+        val state: MutationAliasState,
+        val createdBySequence: Long,
+        val activatedAt: Long?,
+    )
+
+    private data class CausalTombstoneSnapshot(
+        val canonicalId: String,
+        val state: MutationTombstoneState,
+        val activatedAt: Long?,
+        val supersededByClientId: String?,
+        val supersededBySequence: Long?,
+        val supersededAt: Long?,
+    )
+
+    private data class CausalEffectSnapshot(
+        val index: Int,
+        val disposition: MutationEffectDisposition,
+        val completedAt: Long?,
+    )
+
+    private data class CausalFinalizationSnapshot(
+        val retiredThroughSequence: Long,
+        val executions: List<CausalExecutionSnapshot>,
+        val aliases: List<CausalAliasSnapshot>,
+        val tombstones: List<CausalTombstoneSnapshot>,
+        val effects: List<CausalEffectSnapshot>,
+    )
+
+    private suspend fun causalLowerSuccessorStorage(
+        fault: CausalFinalizationFault?,
+    ): MutationJournalStorage =
+        createStorage().also { storage ->
+            storage.transaction { transaction ->
+                transaction.insertClient(client())
+                transaction.advanceClient(client(lastAllocated = 3L))
+                listOf(
+                    Triple(1L, CAUSAL_SOURCE_ID, "source-mutation"),
+                    Triple(2L, CAUSAL_MIDDLE_ID, "middle-mutation"),
+                    Triple(3L, CAUSAL_TARGET_ID, "target-mutation"),
+                ).forEach { (sequence, canonicalId, mutationId) ->
+                    insertIntent(
+                        transaction = transaction,
+                        sequence = sequence,
+                        mutationId = mutationId,
+                        canonicalId = canonicalId,
+                    )
+                    transaction.insertExecution(execution(sequence = sequence))
+                }
+            }
+
+            storage.transaction { transaction ->
+                transaction.insertAttempt(
+                    attempt(
+                        sequence = 2L,
+                        generation = 1,
+                        effectiveCanonicalId = CAUSAL_MIDDLE_ID,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.READY,
+                        generation = 1,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.INFLIGHT,
+                        generation = 1,
+                    ),
+                )
+                transaction.insertAck(sameIdentityAck(sequence = 2L, generation = 1))
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.ACKED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 32L,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.EFFECTS_PENDING,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 32L,
+                    ),
+                )
+                transaction.insertAlias(
+                    alias(
+                        sourceId = CAUSAL_MIDDLE_ID,
+                        targetId = CAUSAL_TARGET_ID,
+                        sequence = 2L,
+                    ),
+                )
+                transaction.advanceAlias(
+                    alias(
+                        sourceId = CAUSAL_MIDDLE_ID,
+                        targetId = CAUSAL_TARGET_ID,
+                        sequence = 2L,
+                        state = MutationAliasState.ACTIVE,
+                        activatedAt = 42L,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 2L,
+                        phase = MutationExecutionPhase.RETIRED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 32L,
+                        retiredAt = 42L,
+                    ),
+                )
+            }
+
+            storage.transaction { transaction ->
+                transaction.insertAttempt(
+                    attempt(
+                        sequence = 3L,
+                        generation = 1,
+                        effectiveCanonicalId = CAUSAL_TARGET_ID,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 3L,
+                        phase = MutationExecutionPhase.READY,
+                        generation = 1,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 3L,
+                        phase = MutationExecutionPhase.INFLIGHT,
+                        generation = 1,
+                    ),
+                )
+                transaction.insertAck(absentAck(sequence = 3L, generation = 1))
+                listOf(CAUSAL_MIDDLE_ID, CAUSAL_TARGET_ID).forEachIndexed { index, canonicalId ->
+                    transaction.insertTombstone(
+                        tombstone(
+                            sequence = 3L,
+                            canonicalId = canonicalId,
+                            createdAt = 50L + index,
+                        ),
+                    )
+                    if (
+                        canonicalId != CAUSAL_TARGET_ID ||
+                        fault != CausalFinalizationFault.PREDECESSOR_NOT_ACTIVE
+                    ) {
+                        transaction.advanceTombstone(
+                            tombstone(
+                                sequence = 3L,
+                                canonicalId = canonicalId,
+                                state = MutationTombstoneState.ACTIVE,
+                                createdAt = 50L + index,
+                                activatedAt = 60L + index,
+                            ),
+                        )
+                    }
+                }
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 3L,
+                        phase = MutationExecutionPhase.ACKED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 33L,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 3L,
+                        phase = MutationExecutionPhase.EFFECTS_PENDING,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 33L,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 3L,
+                        phase = MutationExecutionPhase.RETIRED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 33L,
+                        retiredAt = 43L,
+                    ),
+                )
+            }
+
+            storage.transaction { transaction ->
+                val aliasTarget =
+                    if (fault == CausalFinalizationFault.TERMINAL_MISSES_PREDECESSOR) {
+                        CAUSAL_UNRELATED_ID
+                    } else {
+                        CAUSAL_MIDDLE_ID
+                    }
+                val acknowledgementTarget =
+                    if (fault == CausalFinalizationFault.ACK_DOES_NOT_OWN_ALIAS) {
+                        CAUSAL_UNRELATED_ID
+                    } else {
+                        aliasTarget
+                    }
+                transaction.insertAttempt(
+                    attempt(
+                        sequence = 1L,
+                        generation = 1,
+                        effectiveCanonicalId = CAUSAL_SOURCE_ID,
+                    ),
+                )
+                transaction.insertEffect(effect(sequence = 1L, index = 0))
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 1L,
+                        phase = MutationExecutionPhase.READY,
+                        generation = 1,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 1L,
+                        phase = MutationExecutionPhase.INFLIGHT,
+                        generation = 1,
+                    ),
+                )
+                if (fault == CausalFinalizationFault.ACK_NOT_PRESENT) {
+                    transaction.insertAck(absentAck(sequence = 1L, generation = 1))
+                } else {
+                    transaction.insertAck(
+                        ack(
+                            sequence = 1L,
+                            generation = 1,
+                            canonicalTargetId = acknowledgementTarget,
+                        ),
+                    )
+                }
+                transaction.insertAlias(
+                    alias(
+                        sourceId = CAUSAL_SOURCE_ID,
+                        targetId = aliasTarget,
+                        sequence = 1L,
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = 1L,
+                        phase = MutationExecutionPhase.ACKED,
+                        generation = 1,
+                        attemptCount = 1,
+                        lastAttemptAt = 31L,
+                    ),
+                )
+                if (fault != CausalFinalizationFault.SUCCESSOR_NOT_EFFECTS_PENDING) {
+                    transaction.advanceExecution(
+                        execution(
+                            sequence = 1L,
+                            phase = MutationExecutionPhase.EFFECTS_PENDING,
+                            generation = 1,
+                            attemptCount = 1,
+                            lastAttemptAt = 31L,
+                        ),
+                    )
+                }
+                if (fault != CausalFinalizationFault.EFFECT_PENDING) {
+                    transaction.advanceEffect(
+                        effect(
+                            sequence = 1L,
+                            index = 0,
+                            disposition = MutationEffectDisposition.APPLIED,
+                            completedAt = 65L,
+                        ),
+                    )
+                }
+            }
+        }
+
+    private fun finalizeCausalLowerSuccessor(
+        transaction: MutationJournalTransaction,
+        fault: CausalFinalizationFault?,
+    ) {
+        val aliasTarget =
+            transaction.aliases().single { it.sourceCanonicalId == CAUSAL_SOURCE_ID }.targetCanonicalId
+        if (fault != CausalFinalizationFault.ALIAS_NOT_ACTIVATED) {
+            transaction.advanceAlias(
+                alias(
+                    sourceId = CAUSAL_SOURCE_ID,
+                    targetId = aliasTarget,
+                    sequence = 1L,
+                    state = MutationAliasState.ACTIVE,
+                    activatedAt = 70L,
+                ),
+            )
+        }
+        if (fault != CausalFinalizationFault.SUCCESSOR_NOT_RETIRED) {
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.RETIRED,
+                    generation = 1,
+                    attemptCount = 1,
+                    lastAttemptAt = 31L,
+                    retiredAt = 70L,
+                ),
+            )
+        }
+        if (fault != CausalFinalizationFault.PREFIX_NOT_ADVANCED) {
+            transaction.advanceClient(client(lastAllocated = 3L, retiredThrough = 3L))
+        }
+        listOf(CAUSAL_TARGET_ID, CAUSAL_MIDDLE_ID).forEachIndexed { index, canonicalId ->
+            if (
+                canonicalId != CAUSAL_MIDDLE_ID ||
+                fault != CausalFinalizationFault.COLLAPSED_TOMBSTONE_NOT_SUPERSEDED
+            ) {
+                transaction.advanceTombstone(
+                    tombstone(
+                        sequence = 3L,
+                        canonicalId = canonicalId,
+                        state = MutationTombstoneState.SUPERSEDED,
+                        createdAt = if (canonicalId == CAUSAL_MIDDLE_ID) 50L else 51L,
+                        activatedAt =
+                            when {
+                                fault == CausalFinalizationFault.ACTIVATION_TIMESTAMP_CHANGED &&
+                                    canonicalId == CAUSAL_TARGET_ID -> 999L
+                                canonicalId == CAUSAL_MIDDLE_ID -> 60L
+                                else -> 61L
+                            },
+                        supersededByClientId =
+                            if (
+                                fault == CausalFinalizationFault.SUCCESSOR_CLIENT_MISMATCH &&
+                                index == 0
+                            ) {
+                                OLDER_CLIENT_ID
+                            } else {
+                                CLIENT_ID
+                            },
+                        supersededBySequence =
+                            if (
+                                fault == CausalFinalizationFault.SUCCESSOR_IDENTITY_MISMATCH &&
+                                index == 0
+                            ) {
+                                2L
+                            } else {
+                                1L
+                            },
+                        supersededAt = 70L,
+                    ),
+                )
+            }
+        }
+    }
+
+    private suspend fun causalFinalizationSnapshot(
+        storage: MutationJournalStorage,
+    ): CausalFinalizationSnapshot =
+        storage.transaction { transaction ->
+            CausalFinalizationSnapshot(
+                retiredThroughSequence =
+                    requireNotNull(transaction.client(CLIENT_ID)).retiredThroughSequence,
+                executions =
+                    transaction.executions(CLIENT_ID).map { execution ->
+                        CausalExecutionSnapshot(
+                            sequence = execution.clientSequence,
+                            phase = execution.phase,
+                            attempt = execution.attempt,
+                            lastAttemptAt = execution.lastAttemptAt,
+                            retiredAt = execution.retiredAt,
+                        )
+                    },
+                aliases =
+                    transaction.aliases().map { alias ->
+                        CausalAliasSnapshot(
+                            sourceCanonicalId = alias.sourceCanonicalId,
+                            targetCanonicalId = alias.targetCanonicalId,
+                            state = alias.state,
+                            createdBySequence = alias.createdBySequence,
+                            activatedAt = alias.activatedAt,
+                        )
+                    },
+                tombstones =
+                    transaction.tombstones().map { tombstone ->
+                        CausalTombstoneSnapshot(
+                            canonicalId = tombstone.canonicalId,
+                            state = tombstone.state,
+                            activatedAt = tombstone.activatedAt,
+                            supersededByClientId = tombstone.supersededByClientId,
+                            supersededBySequence = tombstone.supersededBySequence,
+                            supersededAt = tombstone.supersededAt,
+                        )
+                    },
+                effects =
+                    transaction.effects(CLIENT_ID).map { effect ->
+                        CausalEffectSnapshot(
+                            index = effect.effectIndex,
+                            disposition = effect.disposition,
+                            completedAt = effect.completedAt,
+                        )
+                    },
+            )
+        }
+
     private suspend fun appendIntent(
         storage: MutationJournalStorage,
         sequence: Long,
+        namespace: String = "items",
+        canonicalId: String = "item-$sequence",
     ): MutationIntentRecord =
         storage.transaction { transaction ->
             val current = transaction.client(CLIENT_ID)
@@ -1755,7 +2752,13 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
                     ),
                 )
             }
-            val intent = insertIntent(transaction, sequence = sequence)
+            val intent =
+                insertIntent(
+                    transaction = transaction,
+                    sequence = sequence,
+                    namespace = namespace,
+                    canonicalId = canonicalId,
+                )
             transaction.insertExecution(execution(sequence = sequence))
             intent
         }
@@ -1765,14 +2768,16 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
         sequence: Long,
         mutationId: String = "mutation-$sequence",
         args: ByteArray = byteArrayOf(1, 2, 3),
+        namespace: String = "items",
+        canonicalId: String = "item-$sequence",
     ): MutationIntentRecord =
         transaction.insertIntent(
             recordVersion = 1,
             clientId = CLIENT_ID,
             clientSequence = sequence,
             mutationId = mutationId,
-            namespace = "items",
-            canonicalId = "item-$sequence",
+            namespace = namespace,
+            canonicalId = canonicalId,
             mutatorId = "mutator",
             mutatorVersion = 1,
             argsBlob = args,
@@ -1805,6 +2810,116 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
                 ),
             )
         }
+    }
+
+    private suspend fun c8OwnerPredicateStorage(ownerState: C8OwnerState): MutationJournalStorage {
+        val storage = createStorage()
+        appendIntent(storage, sequence = 1L, canonicalId = "predicate-owner")
+        appendIntent(storage, sequence = 2L, canonicalId = "predicate-contender")
+        storage.transaction { transaction ->
+            listOf(1L, 2L).forEach { sequence ->
+                transaction.insertAttempt(
+                    attempt(
+                        sequence = sequence,
+                        generation = 1,
+                        effectiveCanonicalId =
+                            if (sequence == 1L) "predicate-owner" else "predicate-contender",
+                    ),
+                )
+                transaction.advanceExecution(
+                    execution(
+                        sequence = sequence,
+                        phase = MutationExecutionPhase.READY,
+                        generation = 1,
+                    ),
+                )
+            }
+            transaction.advanceExecution(
+                execution(
+                    sequence = 1L,
+                    phase = MutationExecutionPhase.INFLIGHT,
+                    generation = 1,
+                ),
+            )
+
+            when (ownerState) {
+                C8OwnerState.INFLIGHT -> Unit
+                C8OwnerState.RETRY_READY ->
+                    transaction.advanceExecution(
+                        execution(
+                            sequence = 1L,
+                            phase = MutationExecutionPhase.READY,
+                            generation = 1,
+                            attemptCount = 1,
+                            lastAttemptAt = 30L,
+                        ),
+                    )
+                C8OwnerState.REFRESH_REQUIRED,
+                C8OwnerState.NEXT_GENERATION_READY,
+                -> {
+                    transaction.recordConflictReceipt(
+                        attempt(
+                            sequence = 1L,
+                            generation = 1,
+                            effectiveCanonicalId = "predicate-owner",
+                            conflictMetaPresent = false,
+                            conflictReceivedAt = 40L,
+                        ),
+                    )
+                    transaction.advanceExecution(
+                        execution(
+                            sequence = 1L,
+                            phase = MutationExecutionPhase.REFRESH_REQUIRED,
+                            generation = 1,
+                            attemptCount = 1,
+                            lastAttemptAt = 40L,
+                        ),
+                    )
+                    if (ownerState == C8OwnerState.NEXT_GENERATION_READY) {
+                        transaction.insertAttempt(
+                            attempt(
+                                sequence = 1L,
+                                generation = 2,
+                                effectiveCanonicalId = "predicate-owner",
+                            ),
+                        )
+                        transaction.advanceExecution(
+                            execution(
+                                sequence = 1L,
+                                phase = MutationExecutionPhase.READY,
+                                generation = 2,
+                            ),
+                        )
+                    }
+                }
+                C8OwnerState.ACKED,
+                C8OwnerState.EFFECTS_PENDING,
+                -> {
+                    transaction.insertAck(sameIdentityAck(sequence = 1L, generation = 1))
+                    transaction.advanceExecution(
+                        execution(
+                            sequence = 1L,
+                            phase = MutationExecutionPhase.ACKED,
+                            generation = 1,
+                            attemptCount = 1,
+                            lastAttemptAt = 50L,
+                        ),
+                    )
+                    if (ownerState == C8OwnerState.EFFECTS_PENDING) {
+                        transaction.advanceExecution(
+                            execution(
+                                sequence = 1L,
+                                phase = MutationExecutionPhase.EFFECTS_PENDING,
+                                generation = 1,
+                                attemptCount = 1,
+                                lastAttemptAt = 50L,
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+        return storage
     }
 
     private suspend fun prepareConflict(
@@ -2031,7 +3146,9 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
     private fun attempt(
         sequence: Long,
         generation: Int,
+        effectiveNamespace: String = "items",
         effectiveCanonicalId: String = "item-$sequence",
+        valueCodecVersion: Int = 1,
         base: ByteArray = byteArrayOf(4),
         mine: ByteArray = byteArrayOf(6),
         preconditionMetaPresent: Boolean = false,
@@ -2048,9 +3165,9 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
             clientId = CLIENT_ID,
             clientSequence = sequence,
             generation = generation,
-            effectiveNamespace = "items",
+            effectiveNamespace = effectiveNamespace,
             effectiveCanonicalId = effectiveCanonicalId,
-            valueCodecVersion = 1,
+            valueCodecVersion = valueCodecVersion,
             basePresence = MutationPresenceState.PRESENT,
             baseBlob = base,
             minePresence = MutationPresenceState.PRESENT,
@@ -2071,7 +3188,10 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
         sequence: Long,
         generation: Int,
         authoritative: ByteArray = byteArrayOf(7),
+        valueCodecVersion: Int = 1,
         receivedAt: Long = 50L,
+        canonicalTargetNamespace: String = "items",
+        canonicalTargetId: String = "canonical-$sequence",
     ): MutationAckRecord =
         MutationAckRecord(
             clientId = CLIENT_ID,
@@ -2079,10 +3199,10 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
             generation = generation,
             authoritativePresence = MutationPresenceState.PRESENT,
             authoritativeBlob = authoritative,
-            valueCodecVersion = 1,
+            valueCodecVersion = valueCodecVersion,
             etag = "etag",
-            canonicalTargetNamespace = "items",
-            canonicalTargetId = "canonical-$sequence",
+            canonicalTargetNamespace = canonicalTargetNamespace,
+            canonicalTargetId = canonicalTargetId,
             receivedAt = receivedAt,
         )
 
@@ -2185,6 +3305,21 @@ public abstract class MutationJournalStorageContractKit : JournalStorageKillPoin
 
 private const val CLIENT_ID: String = "client"
 private const val OLDER_CLIENT_ID: String = "older-client"
+private const val CAUSAL_SOURCE_ID: String = "causal-source"
+private const val CAUSAL_MIDDLE_ID: String = "causal-middle"
+private const val CAUSAL_TARGET_ID: String = "causal-target"
+private const val CAUSAL_UNRELATED_ID: String = "causal-unrelated"
+
+private enum class C8OwnerState(
+    val phase: MutationExecutionPhase,
+) {
+    INFLIGHT(MutationExecutionPhase.INFLIGHT),
+    REFRESH_REQUIRED(MutationExecutionPhase.REFRESH_REQUIRED),
+    ACKED(MutationExecutionPhase.ACKED),
+    EFFECTS_PENDING(MutationExecutionPhase.EFFECTS_PENDING),
+    RETRY_READY(MutationExecutionPhase.READY),
+    NEXT_GENERATION_READY(MutationExecutionPhase.READY),
+}
 
 private class Rollback : RuntimeException()
 

@@ -9,6 +9,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.mutations.MutationFailureKind
+import org.mobilenativefoundation.store6.mutations.MutationPresenceState
 
 /**
  * Process-local default [MutationJournalStorage].
@@ -29,6 +30,7 @@ public class InMemoryMutationJournalStorage : MutationJournalStorage {
             val transaction = InMemoryTransaction(working)
             try {
                 val result = block(transaction)
+                transaction.validateFinalState()
                 transaction.close()
                 committed = working
                 result
@@ -43,6 +45,10 @@ private class InMemoryTransaction(
     private val state: JournalState,
 ) : MutationJournalTransaction {
     private var active: Boolean = true
+    private val clientTransitions: MutableList<ClientTransition> = mutableListOf()
+    private val executionTransitions: MutableList<ExecutionTransition> = mutableListOf()
+    private val aliasTransitions: MutableList<AliasTransition> = mutableListOf()
+    private val tombstoneTransitions: MutableList<TombstoneTransition> = mutableListOf()
 
     fun close() {
         active = false
@@ -163,6 +169,7 @@ private class InMemoryTransaction(
             record.serverConfirmedRetiredThroughSequence ==
                 previous.serverConfirmedRetiredThroughSequence,
         ) { "checkpoint confirmation advances only through confirmRetiredThrough" }
+        clientTransitions += ClientTransition(previous, record)
         state.clients[record.clientId] = record.freshCopy()
     }
 
@@ -266,27 +273,65 @@ private class InMemoryTransaction(
             "currentGeneration cannot regress"
         }
         require(record.attempt >= 0) { "attempt cannot be negative" }
-        requireExecutionTransition(previous, record)
+        val activeFailureKind =
+            if (record.phase == MutationExecutionPhase.PARKED) {
+                val activeFailureId = requireNotNull(record.activeFailureId)
+                val failure = requireNotNull(state.failures[activeFailureId]) {
+                    "PARKED requires its active failure row"
+                }
+                require(
+                    failure.clientId == record.clientId &&
+                        failure.clientSequence == record.clientSequence &&
+                        failure.generation == record.currentGeneration,
+                ) { "active failure identity does not match the execution" }
+                failure.kind
+            } else {
+                null
+            }
+        requireExecutionTransition(previous, record, activeFailureKind)
         if (record.currentGeneration > 0) {
             require(AttemptKey(record.clientId, record.clientSequence, record.currentGeneration) in state.attempts) {
                 "execution generation requires an immutable attempt row"
             }
         }
+        val generationContinuation =
+            previous.phase == MutationExecutionPhase.REFRESH_REQUIRED &&
+                record.phase == MutationExecutionPhase.READY &&
+                record.currentGeneration == previous.currentGeneration + 1
+        if (generationContinuation) {
+            val previousAttempt =
+                requireNotNull(
+                    state.attempts[
+                        AttemptKey(
+                            record.clientId,
+                            record.clientSequence,
+                            previous.currentGeneration,
+                        )
+                    ],
+                ) { "generation continuation requires the previous immutable attempt" }
+            val nextAttempt =
+                requireNotNull(
+                    state.attempts[
+                        AttemptKey(
+                            record.clientId,
+                            record.clientSequence,
+                            record.currentGeneration,
+                        )
+                    ],
+                ) { "generation continuation requires the next immutable attempt" }
+            require(isUniqueNamespaceOwner(previous)) {
+                "generation continuation requires the previous unique namespace owner"
+            }
+            requireNamespaceAuthorityAvailable(record)
+            require(
+                previousAttempt.effectiveNamespace == nextAttempt.effectiveNamespace &&
+                    previousAttempt.effectiveCanonicalId == nextAttempt.effectiveCanonicalId,
+            ) { "generation continuation must preserve exact effective identity" }
+        }
         if (record.phase == MutationExecutionPhase.ACKED) {
             require(AttemptKey(record.clientId, record.clientSequence, record.currentGeneration) in state.acks) {
                 "ACKED requires its matching acknowledgement"
             }
-        }
-        if (record.phase == MutationExecutionPhase.PARKED) {
-            val activeFailureId = requireNotNull(record.activeFailureId)
-            val failure = requireNotNull(state.failures[activeFailureId]) {
-                "PARKED requires its active failure row"
-            }
-            require(
-                failure.clientId == record.clientId &&
-                    failure.clientSequence == record.clientSequence &&
-                    failure.generation == record.currentGeneration,
-            ) { "active failure identity does not match the execution" }
         }
         if (record.phase == MutationExecutionPhase.RETIRED) {
             require(
@@ -297,6 +342,22 @@ private class InMemoryTransaction(
                 },
             ) { "an execution cannot retire with a pending effect" }
         }
+        if (
+            previous.phase == MutationExecutionPhase.READY &&
+            record.phase == MutationExecutionPhase.INFLIGHT
+        ) {
+            requireNamespaceAuthorityAvailable(record)
+        }
+        val wasUniqueNamespaceOwner =
+            previous.phase == MutationExecutionPhase.EFFECTS_PENDING &&
+                record.phase == MutationExecutionPhase.RETIRED &&
+                isUniqueNamespaceOwner(previous)
+        executionTransitions +=
+            ExecutionTransition(
+                previous = previous,
+                next = record,
+                wasUniqueNamespaceOwner = wasUniqueNamespaceOwner,
+            )
         state.executions[key] = record.freshCopy()
     }
 
@@ -333,9 +394,6 @@ private class InMemoryTransaction(
         val attemptKey = AttemptKey(record.clientId, record.clientSequence, record.generation)
         val attempt = requireNotNull(state.attempts[attemptKey]) {
             "acknowledgement requires its attempt generation"
-        }
-        require(record.valueCodecVersion == attempt.valueCodecVersion) {
-            "acknowledgement codec version must match its attempt"
         }
         if (record.canonicalTargetNamespace != null) {
             require(record.canonicalTargetNamespace == attempt.effectiveNamespace) {
@@ -427,6 +485,7 @@ private class InMemoryTransaction(
         require(
             previous.state == MutationAliasState.PENDING && record.state == MutationAliasState.ACTIVE,
         ) { "alias state can only advance PENDING to ACTIVE" }
+        aliasTransitions += AliasTransition(previous, record)
         state.aliases[key] = record.freshCopy()
     }
 
@@ -464,8 +523,14 @@ private class InMemoryTransaction(
             require(record.activatedAt == previous.activatedAt) {
                 "tombstone activation timestamp is immutable after activation"
             }
+            if (record.supersededByClientId == previous.createdByClientId) {
+                require(record.supersededBySequence != previous.createdBySequence) {
+                    "a same-client tombstone successor must be causally distinct"
+                }
+            }
         }
         requireNoOtherTombstoneInState(record, record.state, excluding = key)
+        tombstoneTransitions += TombstoneTransition(previous, record)
         state.tombstones[key] = record.freshCopy()
     }
 
@@ -510,6 +575,221 @@ private class InMemoryTransaction(
 
     private fun requireActive() {
         check(active) { "mutation journal transaction is no longer active" }
+    }
+
+    fun validateFinalState() {
+        requireActive()
+        val lowerSuccessors =
+            tombstoneTransitions.filter { transition -> transition.isSameClientLowerSuccessor() }
+        if (lowerSuccessors.isEmpty()) return
+
+        lowerSuccessors
+            .groupBy { transition ->
+                SuccessorKey(
+                    clientId = requireNotNull(transition.next.supersededByClientId),
+                    sequence = requireNotNull(transition.next.supersededBySequence),
+                )
+            }.forEach { (successor, predecessors) ->
+                validateCausalLowerSuccessor(successor, predecessors)
+            }
+    }
+
+    private fun validateCausalLowerSuccessor(
+        successor: SuccessorKey,
+        predecessors: List<TombstoneTransition>,
+    ) {
+        require(
+            predecessors.all { transition ->
+                transition.previous.state == MutationTombstoneState.ACTIVE &&
+                    transition.next.state == MutationTombstoneState.SUPERSEDED &&
+                    transition.previous.activatedAt == transition.next.activatedAt &&
+                    transition.next.supersededByClientId == successor.clientId &&
+                    transition.next.supersededBySequence == successor.sequence
+            },
+        ) { "a lower causal successor must preserve every ACTIVE predecessor exactly" }
+
+        val retirement =
+            executionTransitions.singleOrNull { transition ->
+                transition.previous.clientId == successor.clientId &&
+                    transition.previous.clientSequence == successor.sequence &&
+                    transition.previous.phase == MutationExecutionPhase.EFFECTS_PENDING &&
+                    transition.next.phase == MutationExecutionPhase.RETIRED
+            }
+        require(retirement != null && retirement.wasUniqueNamespaceOwner) {
+            "a lower causal successor must retire from unique EFFECTS_PENDING authority"
+        }
+
+        val successorExecution =
+            state.executions[IntentKey(successor.clientId, successor.sequence)]
+        require(
+            successorExecution != null &&
+                successorExecution.phase == MutationExecutionPhase.RETIRED &&
+                successorExecution.currentGeneration == retirement.previous.currentGeneration,
+        ) { "a lower causal successor must commit its exact RETIRED execution" }
+
+        val attemptKey =
+            AttemptKey(
+                clientId = successor.clientId,
+                sequence = successor.sequence,
+                generation = retirement.previous.currentGeneration,
+            )
+        val attempt = requireNotNull(state.attempts[attemptKey]) {
+            "a lower causal successor requires its exact attempt"
+        }
+        val acknowledgement = requireNotNull(state.acks[attemptKey]) {
+            "a lower causal successor requires its exact acknowledgement"
+        }
+        require(
+            acknowledgement.authoritativePresence == MutationPresenceState.PRESENT &&
+                acknowledgement.canonicalTargetNamespace != null &&
+                acknowledgement.canonicalTargetId != null,
+        ) { "a lower causal successor requires a PRESENT canonical acknowledgement" }
+        require(
+            state.effects.values.none { effect ->
+                effect.clientId == successor.clientId &&
+                    effect.clientSequence == successor.sequence &&
+                    effect.disposition == MutationEffectDisposition.PENDING
+            },
+        ) { "a lower causal successor cannot commit with a pending effect" }
+
+        val aliasTransition =
+            aliasTransitions.singleOrNull { transition ->
+                transition.previous.state == MutationAliasState.PENDING &&
+                    transition.next.state == MutationAliasState.ACTIVE &&
+                    transition.next.createdByClientId == successor.clientId &&
+                    transition.next.createdBySequence == successor.sequence &&
+                    transition.next.sourceNamespace == attempt.effectiveNamespace &&
+                    transition.next.sourceCanonicalId == attempt.effectiveCanonicalId &&
+                    transition.next.targetNamespace == acknowledgement.canonicalTargetNamespace &&
+                    transition.next.targetCanonicalId == acknowledgement.canonicalTargetId
+            }
+        require(aliasTransition != null) {
+            "a lower causal successor must activate its exact acknowledged PENDING alias"
+        }
+        val finalAlias =
+            state.aliases[
+                IdentityKey(
+                    namespace = aliasTransition.next.sourceNamespace,
+                    canonicalId = aliasTransition.next.sourceCanonicalId,
+                )
+            ]
+        require(finalAlias != null && finalAlias.sameValueAs(aliasTransition.next)) {
+            "a lower causal successor must commit its activated alias"
+        }
+
+        val route =
+            activeRouteFrom(
+                IdentityKey(attempt.effectiveNamespace, attempt.effectiveCanonicalId),
+            )
+        require(
+            predecessors.all { transition ->
+                IdentityKey(transition.previous.namespace, transition.previous.canonicalId) in route
+            },
+        ) { "a lower causal successor route must contain every predecessor" }
+
+        val collapsedTransitions =
+            tombstoneTransitions.filter { transition ->
+                transition.previous.state == MutationTombstoneState.ACTIVE &&
+                    IdentityKey(
+                        transition.previous.namespace,
+                        transition.previous.canonicalId,
+                    ) in route
+            }
+        require(
+            collapsedTransitions.all { transition ->
+                transition.next.state == MutationTombstoneState.SUPERSEDED &&
+                    transition.next.supersededByClientId == successor.clientId &&
+                    transition.next.supersededBySequence == successor.sequence &&
+                    transition.previous.activatedAt == transition.next.activatedAt &&
+                    state.tombstones[transition.next.key()]?.sameValueAs(transition.next) == true
+            },
+        ) { "every collapsed ACTIVE tombstone must name the exact causal successor" }
+        require(
+            state.tombstones.values.none { tombstone ->
+                tombstone.state == MutationTombstoneState.ACTIVE &&
+                    IdentityKey(tombstone.namespace, tombstone.canonicalId) in route
+            },
+        ) { "a lower causal successor must collapse every ACTIVE tombstone in its route" }
+
+        requireTruthfulPrefixAdvance(successor.clientId)
+        require(
+            state.executions.values.none { execution ->
+                execution.clientId == successor.clientId &&
+                    execution.ownsNamespaceAuthority() &&
+                    namespaceFor(execution) == attempt.effectiveNamespace
+            },
+        ) { "a lower causal successor must release namespace authority in the same commit" }
+    }
+
+    private fun requireTruthfulPrefixAdvance(clientId: String) {
+        val prefixTransitions =
+            clientTransitions.filter { transition ->
+                transition.previous.clientId == clientId &&
+                    transition.next.retiredThroughSequence >
+                    transition.previous.retiredThroughSequence
+            }
+        require(prefixTransitions.isNotEmpty()) {
+            "a lower causal successor must advance the client retirement prefix"
+        }
+        val startingPrefix = prefixTransitions.first().previous.retiredThroughSequence
+        val finalClient = requireNotNull(state.clients[clientId])
+        var truthfulPrefix = startingPrefix
+        while (truthfulPrefix < finalClient.lastAllocatedSequence) {
+            val next = state.executions[IntentKey(clientId, truthfulPrefix + 1L)] ?: break
+            if (next.phase != MutationExecutionPhase.RETIRED) break
+            truthfulPrefix += 1L
+        }
+        require(
+            finalClient.retiredThroughSequence > startingPrefix &&
+                finalClient.retiredThroughSequence == truthfulPrefix,
+        ) { "a lower causal successor requires an exact truthful retirement-prefix advance" }
+    }
+
+    private fun requireNamespaceAuthorityAvailable(candidate: MutationExecutionRecord) {
+        val namespace = namespaceFor(candidate)
+        require(
+            state.executions.values.none { execution ->
+                execution.clientId == candidate.clientId &&
+                    execution.clientSequence != candidate.clientSequence &&
+                    execution.ownsNamespaceAuthority() &&
+                    namespaceFor(execution) == namespace
+            },
+        ) { "namespace authority already has an owner" }
+    }
+
+    private fun isUniqueNamespaceOwner(candidate: MutationExecutionRecord): Boolean {
+        if (!candidate.ownsNamespaceAuthority()) return false
+        val namespace = namespaceFor(candidate)
+        val owners =
+            state.executions.values.filter { execution ->
+                execution.clientId == candidate.clientId &&
+                    execution.ownsNamespaceAuthority() &&
+                    namespaceFor(execution) == namespace
+            }
+        return owners.size == 1 &&
+            owners.single().clientSequence == candidate.clientSequence
+    }
+
+    private fun namespaceFor(execution: MutationExecutionRecord): String =
+        requireNotNull(
+            state.attempts[
+                AttemptKey(
+                    execution.clientId,
+                    execution.clientSequence,
+                    execution.currentGeneration,
+                )
+            ],
+        ) { "namespace authority requires the exact current attempt" }.effectiveNamespace
+
+    private fun activeRouteFrom(source: IdentityKey): Set<IdentityKey> {
+        val route = linkedSetOf<IdentityKey>()
+        var cursor = source
+        while (route.add(cursor)) {
+            val alias = state.aliases[cursor] ?: return route
+            if (alias.state != MutationAliasState.ACTIVE) return route
+            cursor = IdentityKey(alias.targetNamespace, alias.targetCanonicalId)
+        }
+        throw IllegalArgumentException("an active alias route cannot contain a cycle")
     }
 
     private fun wouldCreateAliasCycle(record: MutationKeyAliasRecord): Boolean {
@@ -606,9 +886,56 @@ private data class TombstoneKey(
     val createdBySequence: Long,
 )
 
+private data class SuccessorKey(
+    val clientId: String,
+    val sequence: Long,
+)
+
+private data class ClientTransition(
+    val previous: MutationClientRecord,
+    val next: MutationClientRecord,
+)
+
+private data class ExecutionTransition(
+    val previous: MutationExecutionRecord,
+    val next: MutationExecutionRecord,
+    val wasUniqueNamespaceOwner: Boolean,
+)
+
+private data class AliasTransition(
+    val previous: MutationKeyAliasRecord,
+    val next: MutationKeyAliasRecord,
+)
+
+private data class TombstoneTransition(
+    val previous: MutationKeyTombstoneRecord,
+    val next: MutationKeyTombstoneRecord,
+) {
+    fun isSameClientLowerSuccessor(): Boolean =
+        next.state == MutationTombstoneState.SUPERSEDED &&
+            next.supersededByClientId == previous.createdByClientId &&
+            requireNotNull(next.supersededBySequence) < previous.createdBySequence
+}
+
+private fun MutationExecutionRecord.ownsNamespaceAuthority(): Boolean =
+    when (phase) {
+        MutationExecutionPhase.INFLIGHT,
+        MutationExecutionPhase.REFRESH_REQUIRED,
+        MutationExecutionPhase.ACKED,
+        MutationExecutionPhase.EFFECTS_PENDING,
+        -> true
+
+        MutationExecutionPhase.READY -> attempt > 0 || currentGeneration > 1
+        MutationExecutionPhase.UNPREPARED,
+        MutationExecutionPhase.PARKED,
+        MutationExecutionPhase.RETIRED,
+        -> false
+    }
+
 private fun requireExecutionTransition(
     previous: MutationExecutionRecord,
     next: MutationExecutionRecord,
+    activeFailureKind: MutationFailureKind?,
 ) {
     require(previous.clientId == next.clientId && previous.clientSequence == next.clientSequence) {
         "execution identity is immutable"
@@ -679,7 +1006,18 @@ private fun requireExecutionTransition(
     require(legalPhaseEdge) { "illegal execution phase edge ${previous.phase} -> ${next.phase}" }
 
     if (!generationAdvanced) {
+        val preservesPreTransportAttemptFacts =
+            previous.phase == MutationExecutionPhase.INFLIGHT &&
+                next.phase == MutationExecutionPhase.PARKED &&
+                next.attempt == previous.attempt &&
+                next.lastAttemptAt == previous.lastAttemptAt &&
+                (
+                    activeFailureKind == MutationFailureKind.IDENTITY ||
+                        activeFailureKind == MutationFailureKind.CODEC
+                )
         when {
+            preservesPreTransportAttemptFacts -> Unit
+
             previous.phase == MutationExecutionPhase.INFLIGHT -> {
                 require(next.attempt == previous.attempt + 1) {
                     "a completed INFLIGHT transition advances the attempt count once"
