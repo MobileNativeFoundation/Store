@@ -315,8 +315,8 @@ open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
             val exception = assertIs<StoreException>(failure)
             val missing = assertIs<StoreError.Missing>(exception.error)
             assertEquals("1", missing.key.canonicalId())
-            assertTrue(exception.message!!.contains("test/1")) // FS-5: which key
-            assertTrue(exception.message!!.contains("clear")) // FS-5: what happened
+            assertTrue(exception.message!!.contains("test/1")) // which key
+            assertTrue(exception.message!!.contains("clear")) // what happened
 
             assertEquals("v2", store.get(TestKey("1"))) // fresh fetch, never "doomed-v1"
         } finally {
@@ -652,8 +652,8 @@ open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
 
                 store.clearNamespace(StoreNamespace("a"))
 
-                // 006 fenced-clear ruling: an already-active pipeline may queue one duplicate
-                // pre-clear Data frame. Drain it exactly; Loading then Missing must still follow.
+                // Fenced clear: an already-active pipeline may queue one duplicate pre-clear
+                // Data frame. Drain it exactly; Loading then Missing must still follow.
                 var frame = collector.awaitItem()
                 var queuedPreClearReplays = 0
                 while (frame !is StoreResult.Loading) {
@@ -821,8 +821,8 @@ open class StoreInvalidationConformanceTest : SourceOfTruthSubstitutionTest() {
     }
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default nests inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

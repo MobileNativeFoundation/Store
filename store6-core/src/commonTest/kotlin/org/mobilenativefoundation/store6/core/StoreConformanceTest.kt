@@ -32,13 +32,13 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
             val data = assertIs<StoreResult.Data<String>>(awaitItem())
             assertEquals("value-for-1", data.value)
             assertEquals(Origin.FETCHER, data.origin)
-            expectNoEvents() // live, not completed (FS-1)
+            expectNoEvents() // live, not completed
             cancelAndIgnoreRemainingEvents()
         }
         store.close()
     }
 
-    // (b1) fetcher throws -> stream emits Error and stays live (FS-5: stream never throws)
+    // (b1) fetcher throws -> stream emits Error and stays live (the stream never throws)
     @Test
     fun fetcherThrows_streamEmitsErrorAndStaysLive() = runTest {
         val store = testStore<TestKey, String> { fetcher { throw IllegalStateException("boom") } }
@@ -52,7 +52,7 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
         store.close()
     }
 
-    // (b2) fetcher throws -> get throws StoreException carrying StoreError.Fetch (FS-2/FS-5)
+    // (b2) fetcher throws -> get throws StoreException carrying StoreError.Fetch
     @Test
     fun fetcherThrows_getThrowsStoreException() = runTest {
         val store = testStore<TestKey, String> { fetcher { throw IllegalStateException("boom") } }
@@ -265,8 +265,8 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
     }
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default nests inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

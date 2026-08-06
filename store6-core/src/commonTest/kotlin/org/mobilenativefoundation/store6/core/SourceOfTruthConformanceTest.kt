@@ -350,7 +350,7 @@ class SourceOfTruthConformanceTest {
         store.close()
     }
 
-    // FS-6 + hydration: unknown provenance serves and triggers exactly one revalidation.
+    // Hydration: unknown provenance serves and triggers exactly one revalidation.
     @Test
     fun cachedOrFetch_hydratedRow_servesThenRevalidatesExactlyOnce() = runTest {
         var calls = 0
@@ -391,7 +391,7 @@ class SourceOfTruthConformanceTest {
         }
     }
 
-    // FS-1: persisted truth participates in startup before its revalidation can overwrite it.
+    // Persisted truth participates in startup before its revalidation can overwrite it.
     @Test
     fun cachedOrFetch_prePopulatedSot_streamServesSotBeforeRevalidation() = runTest {
         var calls = 0
@@ -485,8 +485,8 @@ class SourceOfTruthConformanceTest {
     }
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default nests inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

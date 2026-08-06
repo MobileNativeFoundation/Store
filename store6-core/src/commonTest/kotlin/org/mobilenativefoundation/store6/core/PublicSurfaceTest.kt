@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 
 class PublicSurfaceTest {
 
-    /** The FS-6 detector: an unstable canonicalId fails fast and names the fix. */
+    /** Detector fixture: an unstable canonicalId fails fast and names the fix. */
     private class UnstableKey : StoreKey {
         private var counter = 0
         override val namespace: StoreNamespace = StoreNamespace("unstable")

@@ -31,8 +31,8 @@ abstract class StoreRevalidationConformance : SourceOfTruthSubstitutionTest() {
                         notModifiedGate.await()
                         FetcherResult.NotModified("e1")
                     }
-                    // T2E ruling: a cold-baseline 304 commits ObsoleteRevalidation and legally
-                    // self-heals with exactly one replanned conditional fetch.
+                    // A cold-baseline 304 commits ObsoleteRevalidation and legally self-heals
+                    // with exactly one replanned conditional fetch.
                     3 -> FetcherResult.NotModified("e1")
                     else -> error("unexpected fetch call $calls")
                 }
@@ -99,8 +99,8 @@ abstract class StoreRevalidationConformance : SourceOfTruthSubstitutionTest() {
                         releaseNotModified.await()
                         FetcherResult.NotModified("e1")
                     }
-                    // T2E ruling: a cold-baseline 304 commits ObsoleteRevalidation and legally
-                    // self-heals with exactly one replanned conditional fetch.
+                    // A cold-baseline 304 commits ObsoleteRevalidation and legally self-heals
+                    // with exactly one replanned conditional fetch.
                     3 -> FetcherResult.NotModified("e1")
                     else -> error("unexpected fetch call $calls")
                 }
@@ -220,8 +220,8 @@ abstract class StoreRevalidationConformance : SourceOfTruthSubstitutionTest() {
 
 class StoreRevalidationConformanceTest : StoreRevalidationConformance()
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default nests inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

@@ -286,9 +286,9 @@ class KeyEnginePlanningTest {
         assertEquals(3, calls, "a later MustBeFresh demand must not reuse the old 304 owner")
     }
 
-    // T2E ruling (017 post-merge): a 304 that launched against a null residence baseline but
-    // finds residence present at commit is an obsolete launch snapshot, not an adapter-contract
-    // violation. It must classify ObsoleteRevalidation and self-heal by replanning once.
+    // A 304 that launched against a null residence baseline but finds residence present at
+    // commit is an obsolete launch snapshot, not an adapter-contract violation. It must
+    // classify ObsoleteRevalidation and self-heal by replanning once.
     @Test
     fun coldBaselineNotModified_hydratedBeforeCommit_classifiesObsoleteAndReplans() = runTest {
         val key = TestKey("cold-304-hydrated")

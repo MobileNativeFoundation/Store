@@ -11,7 +11,7 @@ internal data class ValueEnvelope<V : Any>(
     /**
      * Freshness metadata recorded when this value was committed, or `null` when provenance is
      * unknown (an external source-of-truth row or a hydrated pre-existing row). Null meta is the
-     * FS-6 conservative posture: the value reports `isStale = true`, age zero, and never
+     * conservative posture: the value reports `isStale = true`, age zero, and never
      * satisfies demand without a revalidation (see the null-meta planning rule).
      */
     val meta: StoreMeta?,
