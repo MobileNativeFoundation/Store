@@ -125,7 +125,7 @@ Proof-strength ceiling: this repo has no token/AST trivia-equivalence prover, so
 
 - Branch for the whole plan: `docs/alpha01-source-doc-cleanup` (created in Task 1).
 - Commit style: `docs(<module-scope>): <imperative summary>` (matches existing `feat(mutations):` / `test(core):` history).
-- Inventory file: `docs/superpowers/plans/2026-08-06-store6-doc-cleanup-inventory.md`, committed and updated by every task. Format: one table per module — columns `file:line | class (P1–P4/FP/Unverifiable) | action taken`.
+- Inventory file: `docs/superpowers/plans/2026-08-06-store6-doc-cleanup-inventory.md`, committed and updated by every task. Format: one table per module — columns `file:line | excerpt | class (P1–P4/FP/Unverifiable) | action taken`.
 
 ---
 
