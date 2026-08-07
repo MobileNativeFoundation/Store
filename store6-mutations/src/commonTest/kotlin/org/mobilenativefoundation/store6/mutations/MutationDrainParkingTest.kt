@@ -37,7 +37,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
-/** T2.2's complete pre-ack parking inventory. */
+/** The complete pre-ack parking inventory. */
 class MutationDrainParkingTest {
     @Test
     fun unresolvedPreAckIdentityParksWithoutBlockingOtherIdentities() = runTest {

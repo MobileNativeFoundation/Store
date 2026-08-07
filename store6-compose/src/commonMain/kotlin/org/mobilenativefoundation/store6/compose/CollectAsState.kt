@@ -27,9 +27,7 @@ import org.mobilenativefoundation.store6.core.seam.StoreResults
  * composition — [Store.stream] throws [IllegalStateException] inside the launched effect (the
  * stream is guarded both at call and at collection start); a collection cancelled by
  * [Store.close] ends as coroutine cancellation. The close message is engine-internal diagnostic
- * text, not ABI: these throws are characterized by type-only tests, never by message text.
- *
- * The seam this consumes is a FREEZE CANDIDATE, not frozen.
+ * text, not ABI.
  */
 @ExperimentalStoreApi
 @Composable
@@ -73,10 +71,10 @@ internal fun streamRestartKey(key: StoreKey, freshness: Freshness): Any =
 private fun freshnessToken(freshness: Freshness): Any =
     when (freshness) {
         is Freshness.MaxAge -> "MaxAge:${freshness.notOlderThan}"
-        // GUARD: every other landed Freshness is a `data object`, so instance identity IS a stable
-        // token. MaxAge is the sole plain class with identity equality and must be normalized by
-        // value. If core ever adds another non-singleton Freshness, add a branch for it here —
-        // otherwise a new-but-equal instance silently restarts collection on every recomposition,
-        // which is exactly the footgun the MaxAge branch exists to prevent.
+        // GUARD: every other `Freshness` variant is a `data object`, so instance identity IS a
+        // stable token. MaxAge is the sole plain class with identity equality and must be
+        // normalized by value. If core ever adds another non-singleton Freshness, add a branch
+        // for it here — otherwise a new-but-equal instance silently restarts collection on every
+        // recomposition, which is exactly the footgun the MaxAge branch exists to prevent.
         else -> freshness
     }

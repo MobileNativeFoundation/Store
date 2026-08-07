@@ -253,7 +253,7 @@ class TransitionTest {
         val result = transition(state, KeyEvent.SettleFetch(current))
 
         assertIs<FetchSlot.Idle>(result.state.fetch)
-        assertEquals(5L, result.state.staleEpoch) // the landed Initial-reset bug must not return
+        assertEquals(5L, result.state.staleEpoch) // the Initial-reset bug must not return
         assertEquals(2L, result.state.clearEpoch)
     }
 

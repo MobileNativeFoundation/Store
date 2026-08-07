@@ -79,10 +79,9 @@ public class StoreBuilder<K : StoreKey, V : Any> internal constructor() {
     /**
      * Configures a fetcher that returns the full [FetcherResult] vocabulary.
      *
-     * The name follows v5's `Fetcher.ofResult`. A second named function preserves the builder
-     * strategy and leaves the quickstart unchanged. The regular-interface [fetcher] overload
-     * cannot accept a lambda, so lambda-return-type inference remains unambiguous. The last
-     * registration wins across all three fetcher install points.
+     * The name follows v5's `Fetcher.ofResult`. The regular-interface [fetcher] overload cannot
+     * accept a lambda, so lambda-return-type inference remains unambiguous. The last registration
+     * wins across all three fetcher install points.
      *
      * @param fetch the function that returns a rich result for the supplied key
      */

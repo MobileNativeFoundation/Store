@@ -29,8 +29,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * Room commits the user value and freshness metadata as two non-atomic durable steps. A crash
  * between them, or a sidecar write failure absorbed by this seam, can leave a persisted value
  * without durable freshness metadata. Rehydration conservatively treats that value as
- * age-unknown/stale. A future `RoomSourceOfTruth.withTransaction` capability can make both writes
- * atomic without changing the bookkeeping seam.
+ * age-unknown/stale.
  *
  * [recordSuccess], [recordFailure], and [forget] absorb storage failures; [status] returns null for
  * unavailable storage or invalid sidecar data. Cooperative caller cancellation always propagates.

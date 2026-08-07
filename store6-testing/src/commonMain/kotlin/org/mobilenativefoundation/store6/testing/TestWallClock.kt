@@ -7,10 +7,7 @@ import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.core.seam.WallClock
 import kotlin.time.Duration
 
-/**
- * Controllable [WallClock]: time moves only when a test moves it. WallClock is a regular
- * interface (not a fun interface) — this is a plain override, no SAM conversion anywhere.
- */
+/** Controllable [WallClock]: time moves only when a test moves it. */
 @ExperimentalStoreApi
 @OptIn(DelicateStoreApi::class)
 public class TestWallClock(startEpochMillis: Long = 0L) : WallClock {

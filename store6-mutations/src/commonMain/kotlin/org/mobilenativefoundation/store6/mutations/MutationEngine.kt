@@ -1144,7 +1144,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                                 message = resolution.message,
                             )
                         } else {
-                            // Keep the landed no-head/later-owned posture. Only an affected
+                            // Keep the no-head/later-owned posture. Only an affected
                             // executable pre-ack row may create a durable terminal failure.
                             recordNormalizedFailure(
                                 kind = MutationFailureKind.IDENTITY,
@@ -2456,7 +2456,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         parkDurableFailure(identity, entry, previous, kind, detail, message)
     }
 
-    /** Rows 3/10: selector and merge failures retain their conflict-owned phase guard. */
+    /** Selector and merge failures retain their conflict-owned phase guard. */
     private suspend fun parkDurableConflictFailure(
         identity: KeyIdentity,
         entry: JournalEntry<V>,
@@ -3643,7 +3643,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         return commit
     }
 
-    /** C8-15 step 3: one cache replacement only after routing/membership is coherent. */
+    /** One cache replacement, only after routing/membership is coherent. */
     private fun publishDurableTombstoneReplacements(commit: DurableRetirementCommit) {
         if (commit.tombstoneReplacements.isNotEmpty()) {
             hydratedTombstones.replaceAllBy(
@@ -3655,7 +3655,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         }
     }
 
-    /** C8-15 step 4: process bookkeeping follows routing and tombstone publication. */
+    /** Process bookkeeping follows routing and tombstone publication. */
     private fun publishDurableRetirementAccounting(
         entry: JournalEntry<V>,
         commit: DurableRetirementCommit,
@@ -3764,12 +3764,12 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * The ordered base-capture loop. A present value accepts the
-     * first (pre-value) status metadata, which may match or lag but cannot lead the value under
-     * Store's commit ordering. On a missing value, status is read again and absence is accepted
-     * only when BOTH bracketing statuses carry no metadata; otherwise a concurrent
-     * fetch-deletion or key/namespace/all-clear window is open and the loop retries. The loop,
-     * not any single bracket, is the correctness mechanism.
+     * The ordered base-capture loop. A present value accepts the first (pre-value) status
+     * metadata, which may match or lag but cannot lead the value under Store's commit ordering.
+     * On a missing value, status is read again and absence is accepted only when BOTH bracketing
+     * statuses carry no metadata; otherwise a concurrent fetch-deletion or key/namespace/all-clear
+     * window is open and the loop retries. The loop, not any single bracket, is the correctness
+     * mechanism.
      */
     private suspend fun captureBase(key: K): CapturedBase<V> {
         while (true) {
@@ -3851,16 +3851,16 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     /**
      * The in-memory present adoption: validate the acknowledgement and its optional canonical
-     * target, then `apply -> confirmFresh` at the EFFECTIVE canonical key, then retire — and for
-     * a redirect, activate the alias inside the same `NonCancellable` accepted-state handoff
-     * that advances the mutation-owned alias revision.
+     * target, then `apply -> confirmFresh` at the EFFECTIVE canonical key, then retire — and for a
+     * redirect, activate the alias inside the same `NonCancellable` accepted-state handoff that
+     * advances the mutation-owned alias revision.
      *
-     * The authoritative value is rebuilt through the codec's copy boundaries before adoption so
-     * a server retaining its acknowledged object cannot mutate adopted state or the echo-forward
+     * The authoritative value is rebuilt through the codec's copy boundaries before adoption so a
+     * server retaining its acknowledged object cannot mutate adopted state or the echo-forward
      * base. Adoption failure propagates; the intent stays pending. An alias-protocol violation
      * (cross-namespace target, retarget, cycle, or a generation retry acknowledging a different
-     * canonical target) records one normalized `PROTOCOL` carrier, returns the intent to
-     * `READY`, performs no adoption, and returns null so the pass halts.
+     * canonical target) records one normalized `PROTOCOL` carrier, returns the intent to `READY`,
+     * performs no adoption, and returns null so the pass halts.
      */
     private suspend fun stageLegacyPresentAck(
         key: K,

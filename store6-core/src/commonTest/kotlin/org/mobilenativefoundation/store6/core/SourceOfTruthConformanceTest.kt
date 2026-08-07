@@ -335,7 +335,7 @@ class SourceOfTruthConformanceTest {
         }
     }
 
-    // FR-10: a pre-populated SoT serves without a fetch under LocalOnly.
+    // A pre-populated SoT serves without a fetch under LocalOnly.
     @Test
     fun localOnly_prePopulatedSot_getServesWithoutFetcher() = runTest {
         var calls = 0

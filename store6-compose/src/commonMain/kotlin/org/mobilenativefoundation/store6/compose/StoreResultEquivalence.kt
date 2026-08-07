@@ -15,8 +15,6 @@ import org.mobilenativefoundation.store6.core.StoreResult
  * merged except as identical instances — a State is a conflated container, so event-shaped
  * consumption of Revalidated/Error must collect the Flow. This exists because StoreResult types
  * have identity equality by design (no equals override).
- *
- * The seam these semantics are written against is a FREEZE CANDIDATE, not frozen.
  */
 @ExperimentalStoreApi
 public fun <V> storeResultMutationPolicy(

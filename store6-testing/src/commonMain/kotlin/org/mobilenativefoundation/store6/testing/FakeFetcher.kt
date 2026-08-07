@@ -60,8 +60,12 @@ public class FakeFetcher<K : StoreKey, V : Any> : Fetcher<K, V> {
     }
 }
 
+/** One recorded [FakeFetcher.fetch] call, appended in invocation order. */
 @ExperimentalStoreApi
 public class FakeFetcherInvocation(
+    /** The key the engine asked for. */
     public val key: StoreKey,
+
+    /** The conditional-request ETag, or null when the engine planned an unconditional fetch. */
     public val etag: String?,
 )

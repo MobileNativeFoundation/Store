@@ -14,11 +14,21 @@ import org.mobilenativefoundation.store6.core.StoreMeta
  */
 @ExperimentalStoreApi
 public class FreshnessContext(
+    /** Whether an in-memory resident value existed in the snapshot this plan is made from. */
     public val hasResidentValue: Boolean,
+
+    /** The resident value's recorded freshness metadata, or null when it has none or is absent. */
     public val meta: StoreMeta?,
+
+    /** Whether the resident value was committed before the stale epoch this plan runs against. */
     public val epochStale: Boolean,
+
+    /** The freshness policy of the read being planned. */
     public val freshness: Freshness,
+
+    /** The wall-clock reading captured for this plan, in Unix epoch milliseconds. */
     public val nowEpochMillis: Long,
+
     public val status: KeyStatus? = null,
 )
 

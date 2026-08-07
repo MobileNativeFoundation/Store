@@ -9,8 +9,6 @@ import org.mobilenativefoundation.store6.core.StoreKey
  * `sot is TransactionalSourceOfTruth`; the engine never assumes it and there is deliberately no
  * silent non-atomic default.
  *
- * `StoreWriteHandle.confirmFresh` alone is not an observation mechanism.
- *
  * @param K the key type used to locate a row
  * @param V the non-null row type
  */

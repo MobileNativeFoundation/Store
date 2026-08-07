@@ -398,8 +398,8 @@ class MutationRetirementTest {
     }
 
     /**
-     * R-0 rule 9: ordinary prune removes rows only at or below the persisted server-confirmed
-     * prefix; alias redirects and active or pending tombstone generations always survive.
+     * Ordinary prune removes rows only at or below the persisted server-confirmed prefix;
+     * alias redirects and active or pending tombstone generations always survive.
      */
     @Test
     fun pruningNeverExceedsServerConfirmedRetiredPrefix() = runTest {

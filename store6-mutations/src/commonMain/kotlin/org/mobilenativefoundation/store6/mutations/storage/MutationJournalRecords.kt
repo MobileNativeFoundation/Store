@@ -6,7 +6,14 @@ import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.mutations.MutationFailureKind
 import org.mobilenativefoundation.store6.mutations.MutationPresenceState
 
-/** Stable persisted execution-phase names. Storage implementations persist [name], never ordinal. */
+/**
+ * Stable persisted execution-phase names. Storage implementations persist [name], never ordinal.
+ *
+ * [PARKED] and [RETIRED] are the two terminal phases: a parked execution carries an active failure
+ * id and appears only in dead letters, and a retired one carries its retirement time and appears in
+ * neither inspection API. The six nonterminal phases are the durable form of the public
+ * [MutationPendingState] vocabulary, which documents the mapping.
+ */
 @ExperimentalStoreApi
 public enum class MutationExecutionPhase {
     UNPREPARED,

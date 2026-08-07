@@ -186,8 +186,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Marks the terminal canonical identity of [key] stale; one resolution attempt,
-     * throwing a `StoreResults.conversionError`-backed [StoreException] on failure.
+     * Marks the terminal canonical identity of [key] stale; one resolution attempt, throwing a
+     * `StoreResults.conversionError`-backed [StoreException] on failure.
      */
     override suspend fun invalidate(key: K) {
         checkOpen()
@@ -195,9 +195,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Destructively removes the value for the terminal canonical identity of [key]; one
-     * resolution attempt, throwing a `StoreResults.conversionError`-backed [StoreException] on
-     * failure.
+     * Destructively removes the value for the terminal canonical identity of [key]; one resolution
+     * attempt, throwing a `StoreResults.conversionError`-backed [StoreException] on failure.
      */
     override suspend fun clear(key: K) {
         checkOpen()
@@ -214,6 +213,11 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
      * at the effective identity so queued siblings merge by durable client sequence,
      * and a resolution failure throws the sanctioned `StoreResults.conversionError`-backed
      * [StoreException] without creating any intent.
+     *
+     * @return the opaque mutation id assigned at enqueue, correlating this intent with
+     * [pending], [pendingWrites], [deadLetters], and its [MutationIntentEvent]s
+     * @throws IllegalArgumentException if [ref] does not belong to the [MutatorRegistry] this
+     * store was created with
      */
     @ExperimentalStoreApi
     public suspend fun <A : Any> mutate(
@@ -367,6 +371,9 @@ private sealed interface FacadeStreamElement<out V> {
  * confirmed-absence adoption door close over the delegate through the same construction cycle
  * the write handle uses: the overlay must be installed at build time, so both lambdas are bound
  * before the delegate exists and first run only after it does.
+ *
+ * @throws IllegalArgumentException if [valueCodecVersion] is not positive, or if [configure]
+ * installs no `fetcher { }`, `fetcherOfResult { }`, or `fetcher(Fetcher)` door
  */
 @ExperimentalStoreApi
 public fun <K : StoreKey, V : Any> mutationStore(

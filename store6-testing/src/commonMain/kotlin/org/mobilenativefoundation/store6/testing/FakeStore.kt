@@ -64,6 +64,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @ExperimentalStoreApi
 @OptIn(DelicateStoreApi::class)
 public class FakeStore<K : StoreKey, V : Any>(
+    /** The clock every write time and age is measured against; advance it to age values. */
     public val wallClock: TestWallClock = TestWallClock(),
 ) : Store<K, V> {
     private data class Cell<V : Any>(
@@ -95,13 +96,22 @@ public class FakeStore<K : StoreKey, V : Any>(
     private val closed = MutableStateFlow(false)
     private val recorded = MutableStateFlow<List<FakeStoreInteraction>>(emptyList())
 
+    /** Every recorded [Store] call, in call order, since construction or the last clear. */
     public val interactions: List<FakeStoreInteraction>
         get() = recorded.value
 
+    /** Empties [interactions]; recording continues for later calls. */
     public fun clearInteractions() {
         recorded.value = emptyList()
     }
 
+    /**
+     * Seeds [key] with a resident [value] without consuming any scripted outcome.
+     *
+     * The write time is read from [wallClock], so [StoreResult.Data.age] is measured from the
+     * clock's current reading. [origin] and [isStale] are recorded verbatim on the seeded value.
+     * Active collectors of [key] receive the resulting Data frame.
+     */
     public fun setValue(
         key: K,
         value: V,
@@ -136,10 +146,24 @@ public class FakeStore<K : StoreKey, V : Any>(
         }
     }
 
+    /**
+     * Appends a scripted successful fetch to [key]'s FIFO queue.
+     *
+     * When demand consumes it the cell commits [value] with [Origin.FETCHER] at the current
+     * [wallClock] reading and clears staleness. Enqueueing alone emits nothing.
+     */
     public fun enqueueFetchValue(key: K, value: V) {
         enqueue(key, Scripted.Value(value))
     }
 
+    /**
+     * Appends a scripted fetch failure to [key]'s FIFO queue.
+     *
+     * When demand consumes it, [error] reaches a stream collector as a [StoreResult.Error] value
+     * carrying [servedStale]. A [get] with no resident value throws [error] as a [StoreException];
+     * a [get] that has residence returns the resident value instead. Either way the resident value
+     * and its staleness are left as they were.
+     */
     public fun enqueueFetchError(
         key: K,
         error: StoreError,
@@ -148,6 +172,13 @@ public class FakeStore<K : StoreKey, V : Any>(
         enqueue(key, Scripted.Failure(error, servedStale))
     }
 
+    /**
+     * Appends a scripted not-modified confirmation to [key]'s FIFO queue.
+     *
+     * Consuming it against a resident value refreshes the write time, clears staleness, and emits
+     * [StoreResult.Revalidated] carrying [age]. Consuming it with no resident value is an error on
+     * both channels instead ([StoreError.Missing]), since there is nothing to confirm.
+     */
     public fun enqueueFetchRevalidated(
         key: K,
         age: Duration = Duration.ZERO,
@@ -211,8 +242,8 @@ public class FakeStore<K : StoreKey, V : Any>(
         val cell = cells.value[idOf(key)]
         val resident = cell?.value
         if (resident != null) {
-            // Decision #37 SWR mirror: return stale residence and commit one queued outcome behind
-            // this read. The next read observes the committed refresh.
+            // Stale-while-revalidate mirror: return stale residence and commit one queued outcome
+            // behind this read. The next read observes the committed refresh.
             val head = cell.script.firstOrNull()
             if (cell.isStale && head != null) consumeIfStale(key, head)
             return resident
@@ -367,8 +398,8 @@ public class FakeStore<K : StoreKey, V : Any>(
 
     /**
      * Consumes the script head against a stale resident. This is the single demand-driven CAS
-     * consumption site for invalidated cells under Decision #37, called from stale [get] demand
-     * and from the stream collector loop for active or later stream demand.
+     * consumption site for invalidated cells, called from stale [get] demand and from the stream
+     * collector loop for active or later stream demand.
      */
     private fun consumeIfStale(key: K, expectedHead: Scripted<V>) {
         val id = idOf(key)

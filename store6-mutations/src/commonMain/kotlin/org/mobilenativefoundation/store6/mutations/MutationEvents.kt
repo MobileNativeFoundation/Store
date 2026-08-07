@@ -290,12 +290,11 @@ public class MutationCheckpointFailed internal constructor(
 /**
  * The internal advisory event bus backing `MutationStore.events`.
  *
- * A `MutableSharedFlow` configured with [BufferOverflow] is legal advisory plumbing; Channels and
- * actors are banned as protocols. Emission is [tryEmit]-only, so lifecycle work can
- * never block or suspend on telemetry: replay `0`, extra buffer capacity `64`, and
- * [BufferOverflow.DROP_OLDEST] make every emission complete immediately, dropping the oldest
- * buffered event under pressure. Dropping an event never changes state; within one
- * accepted-state handoff, lifecycle events are attempted only after the corresponding state
+ * A `MutableSharedFlow` configured with [BufferOverflow] carries the events. Emission is
+ * [tryEmit]-only, so lifecycle work can never block or suspend on telemetry: replay `0`, extra
+ * buffer capacity `64`, and [BufferOverflow.DROP_OLDEST] make every emission complete immediately,
+ * dropping the oldest buffered event under pressure. Dropping an event never changes state; within
+ * one accepted-state handoff, lifecycle events are attempted only after the corresponding state
  * becomes observable.
  */
 internal class MutationEventBus {

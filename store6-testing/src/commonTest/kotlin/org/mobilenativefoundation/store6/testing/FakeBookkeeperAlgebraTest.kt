@@ -25,7 +25,7 @@ class FakeBookkeeperAlgebraTest {
         bk.recordSuccess(keyA, meta)
         val cleared = assertNotNull(bk.status(keyA))
         assertEquals(0, cleared.consecutiveFailures)      // success resets the streak
-        assertNull(cleared.lastFailureAtEpochMillis)      // AND the timestamp (landed kit pin)
+        assertNull(cleared.lastFailureAtEpochMillis)      // AND the timestamp (kit pin)
     }
 
     @Test

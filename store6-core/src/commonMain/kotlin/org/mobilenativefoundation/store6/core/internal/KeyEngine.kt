@@ -115,7 +115,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
             extraBufferCapacity = 64,
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         ),
-    /** Null preserves the landed direct-residence path without projection allocations. */
+    /** Null preserves the direct-residence path without projection allocations. */
     private val overlay: Overlay<K, V>? = null,
     /** Deterministic direct-test gate after Pending and before invoking Overlay.apply. */
     private val beforeProjectionApplyTestGate: suspend (V?) -> Unit = {},
@@ -2132,7 +2132,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         events.tryEmit(KeyEvents.Deleted(key))
     }
 
-    /** Applies the landed clear transition while [stateLock] is held. */
+    /** Applies the clear transition while [stateLock] is held. */
     private fun applyClearTransitionLocked() {
         val result = transition(mutableState.value, KeyEvent.Clear)
         mutableState.value = result.state
@@ -4737,7 +4737,7 @@ internal class KeyEngine<K : StoreKey, V : Any>(
         return value
     }
 
-    /** Renders nullable metadata conservatively while retaining saturating landed age behavior. */
+    /** Renders nullable metadata conservatively while retaining saturating age behavior. */
     private fun toData(
         envelope: ValueEnvelope<V>,
         freshness: Freshness,

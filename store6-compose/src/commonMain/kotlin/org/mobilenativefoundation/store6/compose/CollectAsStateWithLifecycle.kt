@@ -28,8 +28,6 @@ import org.mobilenativefoundation.store6.core.seam.StoreResults
  * one) unless [lifecycleOwner] is passed explicitly. On targets with no UI host that populates
  * it — linuxX64, mingwX64 and the non-simulator Apple targets, in practice — pass
  * [lifecycleOwner] explicitly or use [collectAsState].
- *
- * The seam this consumes is a FREEZE CANDIDATE, not frozen.
  */
 @ExperimentalStoreApi
 @Composable

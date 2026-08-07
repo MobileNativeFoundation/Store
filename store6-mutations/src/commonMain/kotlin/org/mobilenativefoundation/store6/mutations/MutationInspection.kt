@@ -30,14 +30,31 @@ public enum class MutationPendingState {
 /** The broad, append-only classification of a normalized mutation failure. */
 @ExperimentalStoreApi
 public enum class MutationFailureKind {
+    /** The registered [MutationKeyResolver] returned null, threw, or returned a mismatched pair. */
     IDENTITY,
+
+    /** Stored argument or value bytes could not be decoded, or their mutator is not registered. */
     CODEC,
+
+    /** A registered projection function threw before transport. */
     PROJECTION,
+
+    /** The backend broke the acknowledgement, alias, or retirement-checkpoint protocol. */
     PROTOCOL,
+
+    /** A precondition conflict ended the intent: the policy threw, or the repeat bound was hit. */
     CONFLICT,
+
+    /** [MutationServer.push] or [MutationServer.retire] threw a non-cancellation failure. */
     TRANSPORT,
+
+    /** Writing a durable acknowledgement into the Store failed. */
     ADOPTION,
+
+    /** Applying a durable invalidation effect to its target failed. */
     EFFECT,
+
+    /** A journal-storage operation failed. */
     PERSISTENCE,
 }
 

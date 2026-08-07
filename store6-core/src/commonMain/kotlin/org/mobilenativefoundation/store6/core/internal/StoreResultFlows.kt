@@ -20,7 +20,7 @@ import org.mobilenativefoundation.store6.core.StoreResult
  * wins for each kind, and delivery order is the relative order of those latest occurrences.
  * When pending results drain before the next same-kind emission, every emission is delivered. A
  * blocked collector instead receives at least the latest pending result per kind. This realizes
- * an O(1)-per-collector bound and closes the lifecycle-signal bound.
+ * an O(1)-per-collector bound that covers lifecycle signals as well as data.
  *
  * A pathological fetch-error storm cannot grow a collector's buffer because the queue is
  * kind-bounded. This operator bounds delivery buffering only and adds or changes no engine retry

@@ -43,7 +43,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
-/** T5.5's durable invalidation executor and post-ack failure-containment contract. */
+/** The durable invalidation executor and post-ack failure-containment contract. */
 class MutationDrainInvalidationTest {
     @Test
     fun keyEffect_usesWriteHandleMarkStale() = runTest {

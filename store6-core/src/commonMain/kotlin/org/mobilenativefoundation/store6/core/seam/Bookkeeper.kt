@@ -102,10 +102,18 @@ public interface Bookkeeper {
  */
 @ExperimentalStoreApi
 public class KeyStatus(
+    /** Metadata from the latest recorded success, or null when none has been recorded. */
     public val meta: StoreMeta?,
+
+    /** The shared monotone sequence assigned to the latest success, or null when none exists. */
     public val lastSuccessSequence: Long?,
+
+    /** The time of the latest [Bookkeeper.recordFailure], null once a success clears it. */
     public val lastFailureAtEpochMillis: Long?,
+
+    /** Failures recorded since the latest success; zero once a success clears the streak. */
     public val consecutiveFailures: Int,
+
     /** Whether a key, namespace, or global stale sequence outranks this key's latest success. */
     public val durablyStale: Boolean,
 )

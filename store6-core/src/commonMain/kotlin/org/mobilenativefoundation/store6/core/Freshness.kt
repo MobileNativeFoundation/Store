@@ -46,7 +46,7 @@ public sealed interface Freshness {
      *
      * On a memory miss, the configured source of truth is probed once, so a pre-existing persisted
      * row is locally available data. The builder still requires a fetcher, but LocalOnly never
-     * invokes it; fetcher-less stores arrive with a later release (FR-10).
+     * invokes it.
      */
     public data object LocalOnly : Freshness
 }

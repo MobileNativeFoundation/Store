@@ -51,7 +51,8 @@ import kotlin.coroutines.CoroutineContext
  * Write/read round-trip law: after [write] returns normally, a fresh [reader] collection for the
  * same key first emits the written value. Constructor setup, mutation callbacks, and
  * [withTransaction] statements execute on the calling context with no internal dispatching;
- * reader query work uses [readContext], which defaults to [Dispatchers.Default].
+ * reader query work uses [readContext], which defaults to [Dispatchers.Default]. A null
+ * `wallClock` selects the adapter's own system clock.
  *
  * Present behavior supports synchronous [Transacter] implementations only. A [withTransaction]
  * block must complete without suspension and remain on its calling thread; a genuine suspension
