@@ -13,8 +13,7 @@ import org.mobilenativefoundation.store6.core.StoreResult
  * Consumed by the CI compose-stability gate. Strict tier: concrete core classes — the shipped
  * stability conf must make these stable (store6-core is not compiled with the compose compiler,
  * so without the conf every core type is external-unstable). Iface tier: interface/abstract-typed
- * parameters; the gate posture for these follows the T6 calibration ruling recorded in
- * docs/v6/decisions/store6-compose-packaging.md.
+ * parameters.
  */
 private fun consume(value: Any?) {
     check(value !== StabilityProbeMarker)

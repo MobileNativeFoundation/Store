@@ -21,7 +21,7 @@ import org.mobilenativefoundation.store6.core.store
 import org.mobilenativefoundation.store6.testing.FakeSourceOfTruth
 
 /**
- * METRIC-1: stream-emission overhead versus the raw SoT flow (NFR-8, TD-8, TEST-7).
+ * METRIC-1: stream-emission overhead versus the raw SoT flow.
  *
  * Both sides observe the SAME FakeSourceOfTruth class under the SAME write schedule, awaiting the
  * SAME epoch-unique sentinel. Within each timed invocation, before workload writes, every

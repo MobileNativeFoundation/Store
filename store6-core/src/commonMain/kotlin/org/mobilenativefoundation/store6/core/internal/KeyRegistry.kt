@@ -20,7 +20,7 @@ import org.mobilenativefoundation.store6.core.StoreKey
  * - Eviction destroys only derived state; durable truth lives in the source of truth and
  *   bookkeeper, so a recreated engine is semantically identical: hydration restamps freshness
  *   from the bookkeeper's persisted status. Total resident engines <= active references + maxIdle.
- * - Bulk sweeps retain each snapshotted engine for the action's duration, preserving the landed
+ * - Bulk sweeps retain each snapshotted engine for the action's duration, preserving the
  *   double-sweep-under-fence semantics: watermarks cover engines missed by a snapshot; an engine
  *   inserted between bulk-clear sweeps is included by purge or remains fenced until maintenance
  *   releases.

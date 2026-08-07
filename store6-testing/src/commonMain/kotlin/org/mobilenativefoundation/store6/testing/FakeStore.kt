@@ -482,8 +482,8 @@ public class FakeStore<K : StoreKey, V : Any>(
     }
 
     private companion object {
-        // Core keeps STORE_CLOSED_MESSAGE internal by design (FS-5 —
-        // diagnostics are review-gated text, not ABI). This literal is pinned by the close
+        // Core keeps STORE_CLOSED_MESSAGE internal by design (diagnostics are review-gated
+        // text, not ABI). This literal is pinned by the close
         // conformance tests here and by StoreCloseLifecycleTest in store6-core; change both
         // pins together if the message ever changes.
         private const val CLOSED_MESSAGE = "Store is closed."

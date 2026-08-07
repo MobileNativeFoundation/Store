@@ -123,7 +123,7 @@ public fun <K : StoreKey, V : Any, A : Any, S : Any> mutatorPuritySubject(
 }
 
 /**
- * Published TD-12 conformance kit for durable mutator projectors.
+ * Published conformance kit for durable mutator projectors.
  *
  * Extend this class in a consumer test source set and return a subject built by
  * [mutatorPuritySubject]. The inherited tests prove, over the supplied representative samples and

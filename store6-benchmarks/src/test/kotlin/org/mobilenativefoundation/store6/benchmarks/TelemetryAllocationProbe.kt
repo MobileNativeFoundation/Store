@@ -10,14 +10,14 @@ import java.lang.management.ManagementFactory
 import kotlin.test.Test
 
 /**
- * Allocation evidence for FS-10's measured-plus-structural zero-cost-when-unset claim — the
- * "allocation-count measurement" StoreTelemetryTest.kt:114 defers to this module. Reports
+ * Allocation evidence for the measured-plus-structural zero-cost-when-unset claim: this module
+ * performs the allocation-count measurement StoreTelemetryTest.kt:114 references. Reports
  * CALLER-THREAD allocated bytes/op on the resident-serve path for telemetry-unset vs
  * NoopTelemetry-configured stores.
  *
- * REPORT-ONLY by design: prints a table, asserts nothing numeric (thresholds are OQ-6/first-data
- * territory), and skips gracefully off HotSpot. Known scope limit, stated wherever the numbers
- * are quoted: the fetch-duration mark allocates on the ENGINE thread (KeyEngine.launchFetch), so
+ * REPORT-ONLY by design: prints a table, asserts nothing numeric (no threshold is defined yet), and
+ * skips gracefully off HotSpot. Known scope limit, stated wherever the numbers are quoted: the
+ * fetch-duration mark allocates on the ENGINE thread (KeyEngine.launchFetch), so
  * a caller-thread probe cannot see it — the JMH none-vs-noop timing deltas and the optional local
  * `-prof gc` run cover the full cross-thread path.
  */

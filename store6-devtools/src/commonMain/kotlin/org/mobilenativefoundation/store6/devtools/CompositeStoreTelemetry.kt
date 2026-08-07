@@ -12,10 +12,10 @@ import kotlin.time.Duration
  * Fans one [StoreTelemetry] installation out to several sinks in registration order.
  *
  * A logger and inspector monitor install as one builder line:
- * `telemetry(storeTelemetryOf(logger, monitor))`. This is FS-10's multiplex posture:
- * extension vocabularies and apps may share one application sink without adding methods to the
- * core interface. The constructor snapshots its caller-owned list. Each sink honors the seam's
- * never-throw contract; this class adds no guarding.
+ * `telemetry(storeTelemetryOf(logger, monitor))`. Extension vocabularies and apps may share one
+ * application sink without adding methods to the core interface. The constructor snapshots its
+ * caller-owned list. Each sink honors the seam's never-throw contract; this class adds no
+ * guarding.
  */
 @ExperimentalStoreApi
 @OptIn(DelicateStoreApi::class)

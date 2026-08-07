@@ -102,6 +102,6 @@ class StoreDevtoolsMonitorIntegrationTest {
     }
 }
 
-// Issue-017 convention: one file-private 25s runTest shadow, no nested wall-clock waits.
+// One file-private 25s runTest shadow, no nested wall-clock waits.
 private fun runTest(testBody: suspend TestScope.() -> Unit): TestResult =
     coroutineRunTest(timeout = 25.seconds, testBody = testBody)

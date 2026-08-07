@@ -12,7 +12,7 @@ import kotlin.time.Duration
 
 /**
  * Test-facing factories with test-friendly defaults; every member delegates to the seam's
- * [StoreResults] door (008 — the sanctioned construction path; StoreResult, StoreError, and
+ * [StoreResults] door (the sanctioned construction path; StoreResult, StoreError, and
  * StoreException constructors are internal). Covers all [StoreResult] states and StoreError
  * variants.
  */

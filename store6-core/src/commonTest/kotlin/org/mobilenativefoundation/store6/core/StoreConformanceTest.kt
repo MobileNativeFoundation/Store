@@ -86,7 +86,7 @@ open class StoreConformanceTest : SourceOfTruthSubstitutionTest() {
         store.close()
     }
 
-    // (d) pins get's posture: a resident value is served without a refetch
+    // (d) a resident value is served without a refetch
     @Test
     fun getAfterStreamCommitted_servesResidentValueWithoutRefetch() = runTest {
         var calls = 0

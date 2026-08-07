@@ -21,9 +21,10 @@ import org.mobilenativefoundation.store6.core.store
 import org.mobilenativefoundation.store6.testing.FakeSourceOfTruth
 
 /**
- * The measured half of FS-10's "zero cost when unset" (008's deferral; StoreTelemetryTest.kt:114).
+ * The measured half of the telemetry "zero cost when unset" claim; the allocation-count half is
+ * TelemetryAllocationProbe (see StoreTelemetryTest.kt:114).
  *
- * FS-10's evidence is measured plus structural, not a literal differential against a telemetry-free
+ * This evidence is measured plus structural, not a literal differential against a telemetry-free
  * engine. Structural inspection and tests establish that telemetry=none leaves the install point
  * null, each call site takes its null fast path, and KeyEngine.launchFetch allocates no
  * fetch-duration mark. telemetry=noop installs NoopTelemetry, so this benchmark estimates the

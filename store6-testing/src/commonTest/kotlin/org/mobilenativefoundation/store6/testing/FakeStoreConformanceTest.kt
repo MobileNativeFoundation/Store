@@ -80,8 +80,8 @@ class FakeStoreConformanceTest {
         val store = FakeStore<TestingKey, String>()
         val ex = assertFailsWith<StoreException> { store.get(key) }
         assertIs<StoreError.Missing>(ex.error)
-        assertTrue(ex.message!!.contains("test/1"))            // FS-5: which key
-        assertTrue(ex.message!!.contains("enqueueFetchValue"))  // FS-5: the fix
+        assertTrue(ex.message!!.contains("test/1"))            // which key
+        assertTrue(ex.message!!.contains("enqueueFetchValue"))  // the fix
         store.close()
     }
 
@@ -274,7 +274,7 @@ class FakeStoreConformanceTest {
         store.wallClock.advanceBy(2.minutes)
         store.stream(key).test {
             val data = assertIs<StoreResult.Data<String>>(awaitItem())
-            assertFalse(data.isStale)          // 304 cleared staleness (006 pin)
+            assertFalse(data.isStale)          // 304 cleared staleness
             assertEquals(2.minutes, data.age)  // age from the refreshed writtenAt
             cancelAndIgnoreRemainingEvents()
         }

@@ -28,7 +28,7 @@ class FakeFetcherIntegrationTest {
         val store = store<TestingKey, String> { fetcher(fetcher) }
         assertEquals("v1", store.get(key))                        // unconditional commit stores etag e1
         fetcher.enqueue(key, FetcherResult.NotModified(etag = "e1"))
-        assertEquals("v1", store.get(key, Freshness.MustBeFresh)) // 006 pin: MustBeFresh + resident etag ->
+        assertEquals("v1", store.get(key, Freshness.MustBeFresh)) // MustBeFresh + resident etag ->
                                                                   // FetchPlan.Conditional("e1"); 304 counts as fresh
         assertEquals(listOf(null, "e1"), fetcher.invocations.map { it.etag })
         store.close()

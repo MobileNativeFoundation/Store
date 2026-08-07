@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Conformance kit for [SourceOfTruth] implementations (TD-15). Extend it in your test source set,
+ * Conformance kit for [SourceOfTruth] implementations. Extend it in your test source set,
  * run your tests: every inherited @Test member executes on every target you compile.
  *
  * ```

@@ -51,7 +51,7 @@ class UserKey(val id: String) : StoreKey {
 
 data class User(val id: String, val name: String)
 
-/** Live knobs the demo screen mutates while the store keeps fetching (the 012 demo pattern). */
+/** Live knobs the demo screen mutates while the store keeps fetching. */
 class DemoControls {
     val latencyMillis = MutableStateFlow(1500L)
     val failFetches = MutableStateFlow(false)
