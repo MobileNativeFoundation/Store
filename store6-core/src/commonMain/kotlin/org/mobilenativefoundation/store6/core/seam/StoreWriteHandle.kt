@@ -45,8 +45,8 @@ public interface StoreWriteHandle<K : StoreKey, V : Any> {
      *
      * When residence exists, this records bookkeeping success, clears durable staleness like a
      * `304 Not Modified`, and refreshes resident metadata and its commit epoch. Active streams may
-     * observe one data re-emission with refreshed flags. With no resident value this does nothing:
-     * this call alone is not an observation mechanism.
+     * observe one data re-emission with refreshed flags. With no resident value this does nothing.
+     * This call alone is not an observation mechanism.
      */
     public suspend fun confirmFresh(
         key: K,

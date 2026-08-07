@@ -109,19 +109,19 @@ public abstract class JournalStorageKillPointScenarios {
         }
 
     /**
-     * R-0 rule 9: ordinary prune removes rows only at or below the persisted server-confirmed
-     * prefix; alias redirects and active or pending tombstone generations always survive.
+     * Ordinary prune removes rows only at or below the persisted server-confirmed prefix;
+     * alias redirects and active or pending tombstone generations always survive.
      */
     @Test
     public fun beforePrune_abortsBeforeDeleteAndClears(): TestResult =
         pruneKillPointScenario(JournalStorageKillPoint.BEFORE_PRUNE)
 
-    /** R-0 rule 9, exercised at the rollback side of the prune commit boundary. */
+    /** The same prune bound, exercised at the rollback side of the prune commit boundary. */
     @Test
     public fun beforePruneCommit_rollsBackAndClears(): TestResult =
         pruneKillPointScenario(JournalStorageKillPoint.BEFORE_PRUNE_COMMIT)
 
-    /** R-0 rule 9, exercised after the prune transaction has durably committed. */
+    /** The same prune bound, exercised after the prune transaction has durably committed. */
     @Test
     public fun afterPruneCommit_commitsAndClears(): TestResult =
         pruneKillPointScenario(JournalStorageKillPoint.AFTER_PRUNE_COMMIT)

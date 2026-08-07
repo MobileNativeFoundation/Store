@@ -328,7 +328,7 @@ class FakeStoreConformanceTest {
 
     @Test
     fun lifecycleFrames_surviveStateFlowConsumer() = runTest {
-        // Pins the dispatch pin: a stateIn consumer (the dominant ViewModel shape) observes
+        // Pins per-frame dispatch: a stateIn consumer (the dominant ViewModel shape) observes
         // every lifecycle frame — the StateFlow-conflation trap cannot swallow the
         // stale/refreshing frame. The eagerly-shared collector is ACTIVE demand, so it drives
         // consumption of the queued script after the stale frame.

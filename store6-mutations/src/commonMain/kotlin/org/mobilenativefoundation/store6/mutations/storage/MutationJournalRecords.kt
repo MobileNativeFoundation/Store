@@ -12,7 +12,8 @@ import org.mobilenativefoundation.store6.mutations.MutationPresenceState
  * [PARKED] and [RETIRED] are the two terminal phases: a parked execution carries an active failure
  * id and appears only in dead letters, and a retired one carries its retirement time and appears in
  * neither inspection API. The six nonterminal phases are the durable form of the public
- * [MutationPendingState] vocabulary, which documents the mapping.
+ * [org.mobilenativefoundation.store6.mutations.MutationPendingState] vocabulary, which documents
+ * the mapping.
  */
 @ExperimentalStoreApi
 public enum class MutationExecutionPhase {
@@ -114,12 +115,40 @@ public class MutationIntentRecord(
 @ExperimentalStoreApi
 public class MutationExecutionRecord(
     @ExperimentalStoreApi public val clientId: String,
+
+    /** The owning intent's durable per-client sequence; always positive. */
     @ExperimentalStoreApi public val clientSequence: Long,
     @ExperimentalStoreApi public val phase: MutationExecutionPhase,
+
+    /**
+     * The semantic generation this execution references; never negative. It is zero only in
+     * [MutationExecutionPhase.UNPREPARED] and in a [MutationExecutionPhase.PARKED] execution that
+     * never prepared one; every other phase references a prepared generation.
+     */
     @ExperimentalStoreApi public val currentGeneration: Int,
+
+    /**
+     * Completed network attempts for [currentGeneration]; never negative, and zero while
+     * [currentGeneration] is zero.
+     */
     @ExperimentalStoreApi public val attempt: Int,
+
+    /**
+     * When the latest network attempt completed, in Unix epoch milliseconds. Non-null exactly
+     * when [attempt] is nonzero.
+     */
     @ExperimentalStoreApi public val lastAttemptAt: Long?,
+
+    /**
+     * The [MutationFailureRecord.failureId] retained by a parked execution. Non-null exactly in
+     * [MutationExecutionPhase.PARKED].
+     */
     @ExperimentalStoreApi public val activeFailureId: Long?,
+
+    /**
+     * When this execution retired, in Unix epoch milliseconds. Non-null exactly in
+     * [MutationExecutionPhase.RETIRED].
+     */
     @ExperimentalStoreApi public val retiredAt: Long?,
 ) {
     init {

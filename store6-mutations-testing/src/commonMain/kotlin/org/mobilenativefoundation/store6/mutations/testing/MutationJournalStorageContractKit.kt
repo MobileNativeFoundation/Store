@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.seconds
  * instance (the in-memory restart analogue), while a persistent implementation returns a new
  * adapter over the same durable store.
  *
- * The kit enforces R-0's named phase rules rather than a false total ordering. In particular,
+ * The kit enforces the named phase rules rather than a false total ordering. In particular,
  * `INFLIGHT -> READY` is legal after a transport failure, and `REFRESH_REQUIRED` may advance to a
  * new immutable generation before returning to `READY`. `RETIRED` and `PARKED` are terminal;
  * `ACKED` and `EFFECTS_PENDING` never regress to a pre-ack phase.
