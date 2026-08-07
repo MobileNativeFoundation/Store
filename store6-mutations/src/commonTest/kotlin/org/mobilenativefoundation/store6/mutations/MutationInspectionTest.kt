@@ -22,18 +22,17 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * R1-14/R1-15's 021 slices: truthful pending/pendingWrites/deadLetters snapshots (D3) and the
- * normalized failure carrier's sanitization contract. 021 exercises inspection shapes only and
- * never fakes the durable scheduler: `REFRESHING` and `APPLYING_EFFECTS` have no 021 producer
- * (023's conflict pipeline and 022/023's effect execution own them) and are proven through the
- * frozen total mapping; the phases the in-memory pass truthfully produces are observed live.
- * Restart hydration is 022's; parking, declined/parked scheduling, and dead-letter production
- * are 023's `MutationDrainParkingTest`.
+ * Truthful pending/pendingWrites/deadLetters snapshots and the normalized failure carrier's
+ * sanitization contract. These tests exercise inspection shapes only and never fake the durable
+ * scheduler: `REFRESHING` and `APPLYING_EFFECTS` have no producer on the in-memory path and are
+ * proven through the frozen total mapping; the phases the in-memory pass truthfully produces are
+ * observed live. Restart hydration is covered by `MutationJournalContractTest`; parking,
+ * declined/parked scheduling, and dead-letter production by `MutationDrainParkingTest`.
  */
 class MutationInspectionTest {
     @Test
     fun pendingStates_coverEveryActiveExecutionPhase() = runTest {
-        // The ruled total mapping (D3, R-0 §3): every nonterminal active phase maps to exactly
+        // The total mapping: every nonterminal active phase maps to exactly
         // one public state; PARKED maps only to deadLetters() and RETIRED to neither API.
         assertEquals(
             listOf(
@@ -49,7 +48,7 @@ class MutationInspectionTest {
             MutationExecutionPhase.entries.map { phase -> phase to phase.toPendingStateOrNull() },
         )
 
-        // Live: the phases the 021 foreground pass truthfully produces are visible through
+        // Live: the phases the in-memory foreground pass truthfully produces are visible through
         // pending(): PENDING at enqueue, INFLIGHT while the push is suspended, ADOPTING inside
         // the write-handle adoption window, and removal after retirement.
         val mutation = InspectionRenameMutation()
@@ -138,7 +137,7 @@ class MutationInspectionTest {
 
             val rows = users.pendingWrites()
 
-            // All identities, durable client-sequence order, real enqueue stamps (D3).
+            // All identities, durable client-sequence order, real enqueue stamps.
             assertEquals(listOf(firstId, secondId, thirdId), rows.map(PendingIntent::mutationId))
             assertEquals(
                 listOf("snapshot-a", "snapshot-b", "snapshot-a"),
@@ -202,9 +201,9 @@ class MutationInspectionTest {
 
         engine.drain()
 
-        // Dead letters contain only durably PARKED executions (D3). 021 records the normalized
-        // in-memory carrier but never parks — parking is 023's transition over 022's rows — so
-        // the failed identity stays pending and the dead-letter list stays empty.
+        // Dead letters contain only durably PARKED executions. A codec-less engine records the
+        // normalized in-memory carrier but never parks, so the failed identity stays pending and
+        // the dead-letter list stays empty.
         assertEquals(emptyList(), engine.deadLetters())
         assertEquals(
             listOf(mutationId),
@@ -350,7 +349,7 @@ class MutationInspectionTest {
 
         engine.drain(key)
 
-        // Poison is the ephemeral exact-Throwable flow (D3); it is not a drain failure carrier,
+        // Poison is the ephemeral exact-Throwable flow; it is not a drain failure carrier,
         // and the projection throw records none.
         val poisoned = engine.poisoned.replayCache.single()
         assertEquals(mutationId, poisoned.mutationId)

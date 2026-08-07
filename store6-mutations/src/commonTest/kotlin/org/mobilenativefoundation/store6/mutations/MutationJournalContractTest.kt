@@ -902,7 +902,7 @@ class MutationJournalContractTest {
         val afterFailure = delegate.transaction { it.aliases().map(MutationKeyAliasRecord::snapshot) }
         assertEquals(MutationAliasState.PENDING, afterFailure.single { it.sourceId == "source" }.state)
         assertEquals(MutationAliasState.ACTIVE, afterFailure.single { it.sourceId == "canonical" }.state)
-        // Adoption already committed its ruled ACKED -> EFFECTS_PENDING boundary; the injected
+        // Adoption already committed its ACKED -> EFFECTS_PENDING boundary; the injected
         // RETIRED write failed inside the separate finalization transaction.
         assertEquals(
             StoredPhase.EFFECTS_PENDING,

@@ -51,29 +51,29 @@ private const val HYDRATION_FAILURE_DETAIL_VALUE_ACKED: String = "value-codec-ac
 private const val HYDRATION_FAILURE_DETAIL_MUTATOR_MISSING: String = "mutator-missing"
 private const val HYDRATION_FAILURE_DETAIL_ARGS: String = "args-codec"
 
-/** The single in-memory attempt generation every 021 push transmits; merges are 023's (D2). */
+/** The single attempt generation the in-memory path transmits; it never prepares a merge. */
 private const val IN_MEMORY_GENERATION: Int = 1
 
-/** Q-1's internal default exponential-backoff constants; no public policy door exists. */
+/** The internal default exponential-backoff constants; no public policy door exists. */
 private const val BACKOFF_BASE_MILLIS: Long = 1_000L
 private const val BACKOFF_CAP_MILLIS: Long = 300_000L
 
-/** Q-2's ratified trailing unchanged-conflict receipt bound. */
+/** The trailing unchanged-conflict receipt bound. */
 private const val CONFLICT_UNCHANGED_BOUND: Int = 3
 
-/** Stable machine detail for a resolver that returned null during global drain (D14). */
+/** Stable machine detail for a resolver that returned null during global drain. */
 internal const val DRAIN_FAILURE_DETAIL_RESOLVER_NULL: String = "resolver-null"
 
-/** Stable machine detail for a resolver whose returned pair mismatched the request (D14). */
+/** Stable machine detail for a resolver whose returned pair mismatched the request. */
 internal const val DRAIN_FAILURE_DETAIL_IDENTITY_MISMATCH: String = "resolver-identity-mismatch"
 
-/** Stable machine detail for a resolver that threw a non-cancellation failure (D14). */
+/** Stable machine detail for a resolver that threw a non-cancellation failure. */
 internal const val DRAIN_FAILURE_DETAIL_RESOLVER_THROW: String = "resolver-throw"
 
 /** Stable machine detail for a mutator projection that threw before transport. */
 internal const val DRAIN_FAILURE_DETAIL_PROJECTION_THROW: String = "projection-throw"
 
-/** Stable machine detail for a keyed drain whose aliased terminal key failed to resolve (D14). */
+/** Stable machine detail for a keyed drain whose aliased terminal key failed to resolve. */
 internal const val DRAIN_FAILURE_DETAIL_KEYED_TERMINAL_UNRESOLVED: String =
     "keyed-terminal-unresolved"
 
@@ -88,7 +88,7 @@ internal val MutationsSystemWallClock: WallClock =
     }
 
 /**
- * The outcome of one terminal-identity resolution attempt for a facade entry point (D14/D15a).
+ * The outcome of one terminal-identity resolution attempt for a facade entry point.
  *
  * [Resolved] carries the terminal `K` and its identity. [Failed] carries the attempted terminal
  * identity plus the sanctioned conversion message/cause pair: resolver null and identity
@@ -115,32 +115,31 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     private val registry: MutatorRegistry<K, V>,
     private val server: MutationServer<K, V>,
     private val journal: MutationJournal<V> = InMemoryMutationJournal(),
-    // D9: the exact Bookkeeper/SourceOfTruth instances installed in the delegated Store are
-    // retained here — ordered base capture reads [bookkeeper]; 024's transactional selection
-    // consumes both.
+    // The exact Bookkeeper/SourceOfTruth instances installed in the delegated Store are
+    // retained here; ordered base capture reads [bookkeeper].
     internal val bookkeeper: Bookkeeper = MutationBookkeeper(),
     internal val sourceOfTruth: SourceOfTruth<K, V> = MutationSourceOfTruth(),
-    // D14/D7/D2: retained factory inputs. The resolver is the global-drain correctness path;
-    // the value codec/version isolate every push and adoption behind defensive blob copies;
-    // conflicts is stored for 023. Defaults exist only for direct engine construction in
+    // Retained factory inputs. The resolver is the global-drain correctness path; the value
+    // codec/version isolate every push and adoption behind defensive blob copies; conflicts is
+    // stored for the conflict pipeline. Defaults exist only for direct engine construction in
     // module tests.
     internal val keyResolver: MutationKeyResolver<K> = MutationKeyResolver { null },
     internal val valueCodecVersion: Int = 1,
     internal val valueCodec: MutationCodec<V>? = null,
     internal val conflicts: MutationConflictRegistration<K, V>? = null,
-    // T4.4/T4.5 wiring: the factory binds the delegated Store's LocalOnly read and clear door
-    // through these lambdas after the delegate exists; direct engine tests bind their own.
+    // The factory binds the delegated Store's LocalOnly read and clear door through these
+    // lambdas after the delegate exists; direct engine tests bind their own.
     private val baseReader: suspend (K) -> V? = { null },
     private val freshnessBarrier: suspend (K) -> Unit = {},
     private val absentAdoption: suspend (K) -> Unit = {},
     // Stamps journal enqueue times and normalized failure times. The factory threads the
     // builder-retained clock or the mutations-owned system default.
     private val wallClock: WallClock = MutationsSystemWallClock,
-    // T3's internal-only deterministic seam. The default preserves production behavior; the
+    // An internal-only deterministic seam. The default preserves production behavior; the
     // focused backoff tests supply a seeded generator before eligibility policy is materialized.
     private val backoffRandom: Random = Random.Default,
-    // R-0 §1's stable installation identity, in-memory form: one fixed string per engine is the
-    // ruled 021 shape; 022 owns durable client rows.
+    // The stable installation identity: one fixed string per engine, persisted on the durable
+    // client row and stamped into every push, attempt, and failure.
     internal val clientId: String = "client-0",
     private val namespaceInvalidation: suspend (StoreNamespace) -> Unit = {},
 ) {
@@ -165,13 +164,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         )
     private lateinit var handle: StoreWriteHandle<K, V>
 
-    // In-memory effect snapshots captured before first push (D8/R-0 §7); never executed at 021.
+    // In-memory effect snapshots captured before first push; execution reads the durable rows.
     private val effectSnapshots = AtomicMutableMap<String, List<MutationEffectRecord>>()
     private val durableEffectRows = AtomicMutableMap<String, List<StoredEffectRecord>>()
     private val hydratedTombstones = AtomicMutableList<MutationKeyTombstoneRecord>()
 
-    // In-memory execution bookkeeping for truthful inspection (D3/R-0 §3). All of it is
-    // rewritten over durable records at 022/023.
+    // In-memory execution bookkeeping for truthful inspection. On a hydrated engine it is
+    // rebuilt from the durable records.
     private val phases = AtomicMutableMap<String, MutationExecutionPhase>()
     private val completedAttempts = AtomicMutableMap<String, Int>()
     private val drainFailures = AtomicMutableList<MutationFailure>()
@@ -194,16 +193,15 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     // MutationEnqueued publication complete in the same non-cancellable handoff.
     private val pendingEnqueuePublications = mutableSetOf<String>()
 
-    // D12/D14: the live key map is CACHE ONLY. Global drain's correctness path is the durable
-    // journal identity plus the resolver; every cache hit is revalidated against the exact pair
-    // before reuse and a drifted entry is discarded. Facade terminal-alias resolution shares
-    // this cache under the same revalidation rule (D15a: path compression may be cached but
-    // never replaces durable edges).
+    // The live key map is CACHE ONLY. Global drain's correctness path is the durable journal
+    // identity plus the resolver; every cache hit is revalidated against the exact pair before
+    // reuse and a drifted entry is discarded. Facade terminal-alias resolution shares this
+    // cache under the same revalidation rule: path compression may be cached but never
+    // replaces durable edges.
     private val liveKeys = MutableStateFlow<Map<KeyIdentity, K>>(emptyMap())
 
-    // D15a's in-memory normalized alias table: same-namespace full-pair redirects with
-    // PENDING/ACTIVE states plus generation-idempotency receipts. A same-process preview only;
-    // 022/023 rebuild routing over durable records.
+    // The in-memory normalized alias table fronting the durable edges: same-namespace
+    // full-pair redirects with PENDING/ACTIVE states plus generation-idempotency receipts.
     private val aliasRouter =
         InMemoryAliasRouter(
             storage =
@@ -214,8 +212,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                     ?: MutationRuntimeState<Any>(),
         )
 
-    // D14/D15a's lost-wakeup-free per-terminal-identity signals, both mutation-owned stateful
-    // monotonic counters:
+    // Lost-wakeup-free per-terminal-identity signals, both mutation-owned stateful monotonic
+    // counters:
     // - [aliasRevisionSignals] advances only inside the NonCancellable retirement/activation
     //   handoff of a redirect's source identity; a live facade stream re-resolves on a strictly
     //   newer value and swaps delegates.
@@ -228,7 +226,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     private val resolutionPulseSignals =
         MutableStateFlow<Map<KeyIdentity, MutableStateFlow<Long>>>(emptyMap())
 
-    // R-0 §1's contiguous locally retired prefix, in-memory form, advertised on pushes (D15a).
+    // The contiguous locally retired prefix, in-memory form, advertised on pushes.
     private val retirementState = MutableStateFlow(RetirementState())
     private var retiredThroughSequence: Long
         get() = retirementState.value.retiredThroughSequence
@@ -247,7 +245,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     internal val changes: SharedFlow<StoreKey> = signalSink.asSharedFlow()
     internal val poisoned: SharedFlow<PoisonedIntent> = poisonSink.asSharedFlow()
 
-    /** The advisory lifecycle bus republished by the facade; 023 owns causal emission. */
+    /** The advisory lifecycle bus republished by the facade. */
     internal val eventBus = MutationEventBus()
 
     /**
@@ -619,7 +617,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             "MutatorRef '${ref.id}' belongs to a different MutatorRegistry."
         }
         // Consumer resolution may suspend or re-enter this store, so it must remain outside the
-        // global enqueue/activation gate. D14 still gets exactly one resolution attempt.
+        // global enqueue/activation gate. It still gets exactly one resolution attempt.
         val resolvedKey = requireTerminalKey(key)
         val originalIdentity = key.identity()
         val (mutationId, effectiveKey, enqueuedEvent) =
@@ -699,12 +697,12 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * One idempotent keyed foreground pass (D12): captures the unprojected confirmed base through
-     * the ordered `status -> LocalOnly` loop, then pushes the pending FIFO prefix once with no
-     * retry or backoff. A ruled pre-ack codec/projection failure parks that head and continues its
-     * same-key suffix. A key without pending work is a no-op that reads nothing. The facade
-     * resolves the terminal alias identity before calling this (D15a); a mid-pass activation
-     * re-homes the pass to the canonical key and continues the sequence-merged prefix there.
+     * One idempotent keyed foreground pass: captures the unprojected confirmed base through the
+     * ordered `status -> LocalOnly` loop, then pushes the pending FIFO prefix once with no retry
+     * or backoff. A pre-ack codec/projection failure parks that head and continues its same-key
+     * suffix. A key without pending work is a no-op that reads nothing. The facade resolves the
+     * terminal alias identity before calling this; a mid-pass activation re-homes the pass to
+     * the canonical key and continues the sequence-merged prefix there.
      */
     internal suspend fun drain(
         key: K,
@@ -726,12 +724,12 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * One idempotent global foreground pass (D12): enumerates durable identities from the
-     * journal, reconstructs each `K` through the retained resolver with exact-pair validation
-     * (D14), and continues past identities that fail to resolve after parking exactly one owned
-     * durable pre-ack head (or retaining the precursor carrier when no such head exists). A
-     * sanctioned retryable post-ack failure retains its owner and does not block another
-     * namespace in this captured pass.
+     * One idempotent global foreground pass: enumerates durable identities from the journal,
+     * reconstructs each `K` through the retained resolver with exact-pair validation, and
+     * continues past identities that fail to resolve after parking exactly one owned durable
+     * pre-ack head (or retaining the precursor carrier when no such head exists). A sanctioned
+     * retryable post-ack failure retains its owner and does not block another namespace in this
+     * captured pass.
      * Processing is deterministic by durable client sequence within an identity and enumerates
      * a captured identity snapshot in first-enqueue order; no cross-key order is promised.
      */
@@ -754,9 +752,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * D12/D15b rows 16-17: flushes the current contiguous local retirement prefix without
-     * holding a mutation, identity, namespace, runtime-cache, or retirement lock across consumer
-     * transport. Confirmation commits before a separate prune transaction. Non-cancellation
+     * Flushes the current contiguous local retirement prefix without holding a mutation,
+     * identity, namespace, runtime-cache, or retirement lock across consumer transport. Confirmation commits before a separate prune transaction. Non-cancellation
      * failures are advisory client-scoped events only; they never create an intent failure row.
      */
     private suspend fun flushRetirementCheckpoint() {
@@ -891,16 +888,15 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         )
     }
 
-    /** D12/D14: drops every cached resolution so the next global drain must reconstruct. */
+    /** Drops every cached resolution so the next global drain must reconstruct. */
     internal fun clearLiveKeyCache() {
         liveKeys.value = emptyMap()
     }
 
     /**
-     * The normalized in-memory drain failure carriers recorded so far (D3/D14/D15a in 021 form):
-     * resolver `IDENTITY` failures and alias `PROTOCOL` failures. No original `Throwable` or
-     * `StoreError` is retained; 022/023 own the durable failure rows and the parking these
-     * carriers preview.
+     * The normalized in-memory drain failure carriers recorded so far: resolver `IDENTITY`
+     * failures and alias `PROTOCOL` failures. No original `Throwable` or `StoreError` is
+     * retained.
      */
     internal fun drainFailuresForInspection(): List<MutationFailure> = drainFailures.toList()
 
@@ -909,7 +905,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         return pendingForIdentity(key.identity())
     }
 
-    /** Snapshot terminal routing and rows together in durable client-sequence order (D3/D15a). */
+    /** Snapshot terminal routing and rows together in durable client-sequence order. */
     internal fun pendingForIdentity(identity: KeyIdentity): List<PendingIntent> {
         val cache = journal as? StorageBackedMutationJournal<V>
         if (cache == null) {
@@ -923,7 +919,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Snapshot rows for every durable identity in durable client-sequence order (D3): the
+     * Snapshot rows for every durable identity in durable client-sequence order: the
      * per-client sequence is the FIFO and watermark unit, so the global view sorts by it.
      */
     internal suspend fun pendingWrites(): List<PendingIntent> {
@@ -943,9 +939,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Durably parked intents only (D3). Always empty at 021: parking is 023's transition over
-     * 022's durable rows, and the walking skeleton never fakes it. The normalized failure
-     * carrier those rows will hold is already real — see [drainFailuresForInspection].
+     * Durably parked intents only, ordered by park time. The in-memory precursor carriers are
+     * [drainFailuresForInspection].
      */
     internal suspend fun deadLetters(): List<DeadLetter> {
         ensureHydrated()
@@ -964,15 +959,15 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     // -----------------------------------------------------------------------------------------
-    // Canonical alias routing doors used by the facade (D14/D15a).
+    // Canonical alias routing doors used by the facade.
     // -----------------------------------------------------------------------------------------
 
-    /** The terminal identity for [identity] under the active alias edges (D15a). */
+    /** The terminal identity for [identity] under the active alias edges. */
     internal fun terminalIdentityOf(identity: KeyIdentity): KeyIdentity =
         aliasRouter.terminalOf(identity)
 
     /**
-     * D15a's mutation-owned stateful alias revision for [identity]. It advances synchronously
+     * The mutation-owned stateful alias revision for [identity]. It advances synchronously
      * inside the NonCancellable retirement/activation handoff of a redirect whose source is
      * [identity]; a live facade stream re-resolves on a strictly newer value.
      */
@@ -980,7 +975,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         aliasRevisionSignal(identity)
 
     /**
-     * D14's mutation-owned stateful resolution pulse for [identity]. It advances on alias
+     * The mutation-owned stateful resolution pulse for [identity]. It advances on alias
      * activation and on every explicit non-stream facade/drain resolution attempt-or-success;
      * a facade stream waiting after a resolver failure retries on a strictly newer value and a
      * stream's own attempt never advances it.
@@ -993,7 +988,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         resolutionPulseSignal(identity).subscriptionCount.value
 
     /**
-     * One terminal-identity resolution attempt for a facade entry point (D14/D15a): the given
+     * One terminal-identity resolution attempt for a facade entry point: the given
      * key IS the terminal key when no active alias redirects its identity — the resolver is
      * never consulted on that happy path. An aliased identity reuses the exact-pair-revalidated
      * live cache or reconstructs the terminal `K` through the retained resolver with
@@ -1049,7 +1044,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * The suspending-facade resolution door (D14): one attempt, then the sanctioned
+     * The suspending-facade resolution door: one attempt, then the sanctioned
      * `StoreResults.exception(StoreResults.conversionError(message, cause), cause)` on failure.
      * The attempt-or-success advances the identity's resolution pulse so live streams waiting on
      * that identity wake and retry.
@@ -1068,7 +1063,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * The keyed-drain resolution door (D14): a failed terminal resolution parks one owned durable
+     * The keyed-drain resolution door: a failed terminal resolution parks one owned durable
      * pre-ack head and returns normally. A codec-less engine, a missing head, or a later-owned head
      * preserves the normalized precursor carrier. The attempt-or-success advances the identity's
      * resolution pulse exactly like every non-stream facade attempt.
@@ -1262,12 +1257,12 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     private fun publicStateOf(mutationId: String): MutationPendingState =
         (phases[mutationId] ?: MutationExecutionPhase.UNPREPARED).toPendingStateOrNull()
-            // A journalled row can never be PARKED or RETIRED at 021; PENDING is the total
-            // mapping's only legal fallback for an unobserved phase.
+            // A journalled row can never be PARKED or RETIRED; PENDING is the total mapping's
+            // only legal fallback for an unobserved phase.
             ?: MutationPendingState.PENDING
 
     /**
-     * D14's exact-pair resolution for global drain. Cache hits are revalidated verbatim before
+     * The exact-pair resolution for global drain. Cache hits are revalidated verbatim before
      * reuse; non-cancellation failures return a structured normalized carrier so the caller can
      * park an owned durable pre-ack head or preserve the in-memory precursor. The original
      * throwable is never persisted. `CancellationException` is always rethrown.
@@ -1418,13 +1413,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * its metadata is re-read from the retained bookkeeper, where confirmation has already been
      * recorded and therefore cannot lead the adopted value.
      *
-     * Alias interaction (D15a): the pass drains the durable-client-sequence prefix that existed
+     * Alias interaction: the pass drains the durable-client-sequence prefix that existed
      * when it started, selecting the lowest pending sequence at the CURRENT effective identity
      * each step. When a Present acknowledgement's redirect activates mid-pass, the pass re-homes
      * to the canonical key and continues the sequence-merged siblings there. An acknowledgement
      * that fails alias-protocol validation records one normalized `PROTOCOL` carrier, returns
      * the intent to `READY` with a completed-attempt fact, performs no adoption, and halts this
-     * key's pass; 023 owns the durable park transition that halt previews.
+     * key's pass.
      */
     private suspend fun drainGlobalIdentity(
         initialIdentity: KeyIdentity,
@@ -1453,7 +1448,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                     return@withIdentity
                 }
 
-                // Q-4: eligibility is checked while holding the effective-identity lease and
+                // Eligibility is checked while holding the effective-identity lease and
                 // before resolver work. The selected entry carries this pass's single jitter
                 // draw into the resolved path.
                 val head =
@@ -1648,7 +1643,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             drainIdentityDurable(key, lockKey, sequenceBound, overrideBackoff, initialEntry)
         }
 
-    /** Protected 021 path for direct, codec-less engine constructions in module tests. */
+    /** The path taken by direct, codec-less engine constructions in module tests. */
     private suspend fun drainIdentityLegacy(
         key: K,
         lockKey: K,
@@ -1727,7 +1722,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                     server.push(push)
                 } catch (failure: Throwable) {
                     // Transport cancellation is not failure: INFLIGHT stays intact and the next
-                    // pass replays the same immutable generation (D2). Only a non-cancellation
+                    // pass replays the same immutable generation. Only a non-cancellation
                     // failure records a completed-attempt fact and returns to READY.
                     if (failure is CancellationException) throw failure
                     completedAttempts[entry.mutationId] =
@@ -1905,7 +1900,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             val attempt = requireNotNull(durableAttempts[entry.mutationId])
             val push = buildPushFromDurableAttempt(currentKey, entry, attempt)
             val execution = requireNotNull(durableExecutions[entry.mutationId])
-            // Q-5: completed durable attempts + 1; an INFLIGHT replay re-emits the same ordinal.
+            // Completed durable attempts + 1; an INFLIGHT replay re-emits the same ordinal.
             eventBus.tryEmit(
                 MutationAttempted(
                     mutationId = push.mutationId,
@@ -2173,8 +2168,9 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     /**
      * Records one completed server conflict. Ordinary receipts advance to REFRESH_REQUIRED with no
-     * failure row. Q-2 derives its trailing run from immutable attempts after this receipt is
-     * visible in the same transaction and parks atomically on the third unchanged pair.
+     * failure row. The trailing unchanged run is derived from immutable attempts after this
+     * receipt is visible in the same transaction, and parks atomically on the third unchanged
+     * pair.
      */
     private suspend fun recordDurableConflict(
         entry: JournalEntry<V>,
@@ -2738,13 +2734,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             parkDurableAckProtocolFailure(identity, entry, rejection)
             DurableAckReceiptOutcome.PARKED
         } else {
-            // Cross-namespace acknowledgement rejection retains its separately ruled posture.
+            // A cross-namespace rejection deliberately halts without parking.
             recordDurableProtocolFailure(entry, rejection)
             DurableAckReceiptOutcome.HALTED
         }
     }
 
-    /** Row 18: one PROTOCOL failure and the completed INFLIGHT attempt park atomically. */
+    /** One PROTOCOL failure and the completed INFLIGHT attempt park atomically. */
     private suspend fun parkDurableAckProtocolFailure(
         identity: KeyIdentity,
         entry: JournalEntry<V>,
@@ -3339,7 +3335,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Row 11: atomically skips every pending effect, retires from REFRESH_REQUIRED, and advances
+     * Atomically skips every pending effect, retires from REFRESH_REQUIRED, and advances
      * the contiguous local prefix. The durable commit and complete projection handoff are one
      * cancellation-safe operation; no acknowledgement, alias, tombstone, or invalidation runs.
      */
@@ -3523,7 +3519,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         }
     }
 
-    /** Commits R-0 rule 6's adoption advance independently of retirement finalization. */
+    /** Commits the adoption advance independently of retirement finalization. */
     private suspend fun persistDurableEffectsPending(entry: JournalEntry<V>) {
         val durable = requireNotNull(durableJournal)
         val previous = requireNotNull(durableExecutions[entry.mutationId])
@@ -3692,7 +3688,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     /**
      * The lowest pending durable client sequence at [identity] within this pass's enqueue bound:
      * the pass drains the prefix that existed when it started and never chases intents enqueued
-     * behind it (D12). Ties (direct journal appends in module tests use the default sequence)
+     * behind it. Ties (direct journal appends in module tests use the default sequence)
      * keep first-append order.
      */
     private suspend fun nextEligibleHead(
@@ -3733,8 +3729,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         }
 
     /**
-     * Q-1/Q-4 eligibility derived only from durable D6 facts at pass time. READY and
-     * REFRESH_REQUIRED share the same schedule; every other phase is immediately eligible.
+     * Eligibility derived only from durable facts at pass time. READY and REFRESH_REQUIRED
+     * share the same schedule; every other phase is immediately eligible.
      * Jitter is uniform over the inclusive `[0, computed]` interval, drawn once by the caller's
      * entry selection for this pass, and never persisted.
      */
@@ -3767,7 +3763,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * The ordered base-capture loop (Shared invariants; R1-18). A present value accepts the
+     * The ordered base-capture loop. A present value accepts the
      * first (pre-value) status metadata, which may match or lag but cannot lead the value under
      * Store's commit ordering. On a missing value, status is read again and absence is accepted
      * only when BOTH bracketing statuses carry no metadata; otherwise a concurrent
@@ -3804,7 +3800,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         return try {
             val result = registration.project(base, entry.args)
             if (result == null) {
-                // D13: a null projector result means decline only — passthrough in projection,
+                // A null projector result means decline only — passthrough in projection,
                 // halt of the same-key suffix in drain, never a deletion.
                 ProjectionOutcome(value = base, advanced = false, failure = null)
             } else {
@@ -3812,7 +3808,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
             }
         } catch (failure: Throwable) {
             // Containment swallows everything including CancellationException: a rethrow out of
-            // Overlay.apply terminalizes the key's projected streams permanently (008 contract).
+            // Overlay.apply terminalizes the key's projected streams permanently.
             poisonSink.tryEmit(
                 PoisonedIntent(
                     mutationId = entry.mutationId,
@@ -3825,7 +3821,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Builds the immutable in-memory attempt generation (D2, R-0 §4): stable client identity and
+     * Builds the immutable in-memory attempt generation: stable client identity and
      * sequence, the advertised contiguous retired prefix, generation-scoped deterministic
      * idempotency key, the retained value-codec version, and base/mine rebuilt through the
      * codec's defensive-copy boundaries so a mutating server cannot alter reconstruction.
@@ -3853,11 +3849,10 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         )
 
     /**
-     * D13/D15a's present adoption: validate the acknowledgement and its optional canonical
+     * The in-memory present adoption: validate the acknowledgement and its optional canonical
      * target, then `apply -> confirmFresh` at the EFFECTIVE canonical key, then retire — and for
      * a redirect, activate the alias inside the same `NonCancellable` accepted-state handoff
-     * that advances the mutation-owned alias revision (D15a steps 1/3/5, in-memory analog; the
-     * durable steps 2 and 4 are 022/023's).
+     * that advances the mutation-owned alias revision.
      *
      * The authoritative value is rebuilt through the codec's copy boundaries before adoption so
      * a server retaining its acknowledged object cannot mutate adopted state or the echo-forward
@@ -3930,7 +3925,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                 )
             }
         } catch (failure: Throwable) {
-            // The codec-less 021 preview retries by retransmitting the same generation. Retain
+            // The codec-less path retries by retransmitting the same generation. Retain
             // the alias receipt, but discard only this in-process adoption cursor so the next
             // foreground pass reaches the server and revalidates the acknowledged target.
             legacyPendingPresentAcks.remove(entry.mutationId)
@@ -3944,11 +3939,10 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * D13's absent adoption: the acknowledged state is recorded, confirmed absence is adopted
+     * The absent adoption: the acknowledged state is recorded, confirmed absence is adopted
      * through the bound `Store.clear` door, and only then does the intent retire and signal.
      * The sealed [MutationAbsentAck] carries no canonical key, so rekey-on-deletion is
-     * unrepresentable (D15a). Issue 022 lands tombstone storage and hydration; the ack/clear and
-     * activation transitions remain 023/024-owned.
+     * unrepresentable.
      */
     private suspend fun adoptAbsent(
         key: K,
@@ -3971,14 +3965,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * D15a step 5's in-memory analog, one accepted-state handoff (Shared invariants): inside a
+     * One accepted-state handoff: inside a
      * single `NonCancellable` block the intent retires, the redirect activates, the source's
      * queued siblings re-home to the canonical identity (merged by durable client sequence —
      * selection is sequence-ordered, so physical order is not authority), the canonical `K` is
      * cached, and the mutation-owned alias revision and resolution pulses advance synchronously
      * BEFORE the compatibility `Overlay.changes` signals are emitted. Caller cancellation after
-     * the in-memory commit therefore cannot strand a live provisional stream. Durable
-     * transactional coordination is 024's (R1-23); restart rehydration is 022's.
+     * the in-memory commit therefore cannot strand a live provisional stream.
      */
     private suspend fun retireAndActivateAlias(
         sourceKey: K,
@@ -4020,7 +4013,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         }
     }
 
-    /** Advances the in-memory contiguous retired prefix (D15a); gaps hold the high-water. */
+    /** Advances the in-memory contiguous retired prefix; gaps hold the high-water. */
     private suspend fun recordRetiredSequence(clientSequence: Long) {
         retirementPass.withLock {
             if (clientSequence <= retiredThroughSequence) return@withLock
@@ -4032,9 +4025,9 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Captures the intent's normalized invalidation-effect snapshot before its first push
-     * (D8/R-0 §7). A throwing `stales` function is contained exactly like a throwing projector —
-     * ephemeral poison, no transport — and halts this key's pass. 021 never executes effects.
+     * Captures the intent's normalized invalidation-effect snapshot before its first push. A
+     * throwing `stales` function is contained exactly like a throwing projector — ephemeral
+     * poison, no transport — and halts this key's pass.
      */
     private fun captureEffects(
         key: K,
@@ -4064,7 +4057,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         }
     }
 
-    /** The captured (never executed) effect snapshot for a mutation; 022 owns durability. */
+    /** The captured in-memory effect snapshot; the durable rows are [durableEffectsSnapshot]. */
     internal fun capturedEffectsSnapshot(mutationId: String): List<MutationEffectRecord>? =
         effectSnapshots[mutationId]
 
@@ -4093,7 +4086,7 @@ internal class MutationEngine<K : StoreKey, V : Any>(
         return codec.decodeCopied(valueCodecVersion, codec.encodeCopied(value))
     }
 
-    /** A library-owned immutable snapshot of captured metadata fields (D2). */
+    /** A library-owned immutable snapshot of captured metadata fields. */
     private fun snapshotMeta(meta: StoreMeta?): StoreMeta? =
         meta?.let { captured ->
             CapturedMetaSnapshot(

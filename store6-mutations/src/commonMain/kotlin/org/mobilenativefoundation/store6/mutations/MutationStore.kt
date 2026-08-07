@@ -35,17 +35,16 @@ import org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneR
 
 /**
  * Narrows a [Store] to journalled mutation writes while preserving Store reads and maintenance,
- * and routes every key-taking operation through the canonical alias table (D15a).
+ * and routes every key-taking operation through the canonical alias table.
  *
- * PROVISIONAL pending Issue 021: this facade deliberately withholds the raw engine write handle.
- * Calling `runtime()` on it returns `null`; [keyEvents] is re-published so advisory access survives
- * that narrowing, and it gains no `Rekeyed` variant. [close] marks the facade closed before
- * closing its delegate, and mutation operations then fail with Store's exact closed-store
- * contract.
+ * This facade deliberately withholds the raw engine write handle. Calling `runtime()` on it
+ * returns `null`; [keyEvents] is re-published so advisory access survives that narrowing, and it
+ * gains no `Rekeyed` variant. [close] marks the facade closed before closing its delegate, and
+ * mutation operations then fail with Store's exact closed-store contract.
  *
- * Canonical routing (D14/D15a): every key-taking method resolves the terminal identity of its
- * key before delegating — a key whose identity no active alias redirects IS terminal and is used
- * as given, without consulting the resolver. For an aliased identity the retained
+ * Canonical routing: every key-taking method resolves the terminal identity of its key before
+ * delegating — a key whose identity no active alias redirects IS terminal and is used as given,
+ * without consulting the resolver. For an aliased identity the retained
  * [MutationKeyResolver] reconstructs the canonical `K` (exact-pair validated); the suspending
  * methods make ONE resolution attempt and throw a `StoreResults.conversionError`-backed
  * [StoreException] on failure, while [stream] emits the sanctioned conversion error and stays
@@ -63,9 +62,9 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     private val closed = MutableStateFlow(false)
 
     /**
-     * Observes retrieval state and values for the terminal canonical identity of [key] (D15a).
+     * Observes retrieval state and values for the terminal canonical identity of [key].
      *
-     * Alias liveness contract (D14): before resolving, the stream snapshots the mutation-owned
+     * Alias liveness contract: before resolving, the stream snapshots the mutation-owned
      * stateful revision for the terminal identity. On resolver null, throw, or identity mismatch
      * it emits exactly one `StoreResults.error(StoreResults.conversionError(message, cause),
      * servedStale = false)`, never delegates to the stale source key, never completes, and
@@ -93,7 +92,7 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
                 val terminal = engine.terminalIdentityOf(key.identity())
                 val aliasRevisions = engine.aliasRevision(terminal)
                 val resolutionPulses = engine.resolutionPulse(terminal)
-                // D14: snapshot the mutation-owned stateful signals BEFORE resolving so an
+                // Snapshot the mutation-owned stateful signals BEFORE resolving so an
                 // activation or facade attempt landing mid-resolution can never be lost.
                 val aliasSnapshot = aliasRevisions.value
                 val pulseSnapshot = resolutionPulses.value
@@ -174,9 +173,9 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
         }
 
     /**
-     * Returns the value for the terminal canonical identity of [key] (D15a); one resolution
-     * attempt, throwing a `StoreResults.conversionError`-backed [StoreException] on failure
-     * (D14). This read is never projected by the overlay; overlays apply only to [stream].
+     * Returns the value for the terminal canonical identity of [key]; one resolution attempt,
+     * throwing a `StoreResults.conversionError`-backed [StoreException] on failure. This read
+     * is never projected by the overlay; overlays apply only to [stream].
      */
     override suspend fun get(
         key: K,
@@ -187,8 +186,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Marks the terminal canonical identity of [key] stale (D15a); one resolution attempt,
-     * throwing a `StoreResults.conversionError`-backed [StoreException] on failure (D14).
+     * Marks the terminal canonical identity of [key] stale; one resolution attempt,
+     * throwing a `StoreResults.conversionError`-backed [StoreException] on failure.
      */
     override suspend fun invalidate(key: K) {
         checkOpen()
@@ -196,9 +195,9 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Destructively removes the value for the terminal canonical identity of [key] (D15a); one
+     * Destructively removes the value for the terminal canonical identity of [key]; one
      * resolution attempt, throwing a `StoreResults.conversionError`-backed [StoreException] on
-     * failure (D14).
+     * failure.
      */
     override suspend fun clear(key: K) {
         checkOpen()
@@ -206,13 +205,13 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     // invalidateNamespace, invalidateAll, clearNamespace, and clearAll need no key and delegate
-    // directly through `Store by delegate` (D14: namespace/all operations delegate directly).
+    // directly through `Store by delegate`.
 
     /**
      * Appends one typed intent to the journal and signals optimistic reprojection.
      *
-     * The terminal canonical identity is resolved BEFORE the append (D14/D15a): the intent is
-     * journalled at the effective identity so queued siblings merge by durable client sequence,
+     * The terminal canonical identity is resolved BEFORE the append: the intent is journalled
+     * at the effective identity so queued siblings merge by durable client sequence,
      * and a resolution failure throws the sanctioned `StoreResults.conversionError`-backed
      * [StoreException] without creating any intent.
      */
@@ -228,8 +227,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
 
     /**
      * Runs one idempotent, scheduler-agnostic foreground pass for the terminal canonical
-     * identity of [key] (D12/D15a): the engine captures the unprojected confirmed base through
-     * the ordered `status -> LocalOnly` loop and pushes the pending FIFO prefix once, with no
+     * identity of [key]: the engine captures the unprojected confirmed base through the ordered
+     * `status -> LocalOnly` loop and pushes the pending FIFO prefix once, with no
      * retry or backoff. This pass never fetches. A terminal pre-transport identity, codec, or
      * projection failure durably parks and removes the affected head; push failure remains
      * retryable and stops normally; adoption failure propagates; an alias-protocol violation
@@ -247,9 +246,9 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Runs one idempotent, scheduler-agnostic global foreground pass (D12): every durable
-     * identity is enumerated from the journal and reconstructed through the required
-     * [MutationKeyResolver] with exact-pair validation (D14). An identity that fails to resolve
+     * Runs one idempotent, scheduler-agnostic global foreground pass: every durable identity
+     * is enumerated from the journal and reconstructed through the required
+     * [MutationKeyResolver] with exact-pair validation. An identity that fails to resolve
      * parks its affected pre-ack head and does not block the others. Global processing is
      * deterministic by durable client sequence within an effective identity and does not promise
      * cross-key order. A post-transport owner resumes before another key in its client namespace;
@@ -267,7 +266,7 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
      * Returns the current pending intents for the terminal canonical identity of [key] in
      * durable client-sequence FIFO order.
      *
-     * Aliases are followed as durable identity pairs only (D14): this inspection never
+     * Aliases are followed as durable identity pairs only: this inspection never
      * reconstructs a `K`, never consults the resolver, and therefore cannot fail on an
      * unresolvable canonical key.
      */
@@ -280,7 +279,7 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
 
     /**
      * Returns a truthful snapshot of every nonterminal active intent across all durable
-     * identities, in durable client-sequence order (D3). Retired history never appears.
+     * identities, in durable client-sequence order. Retired history never appears.
      */
     @ExperimentalStoreApi
     public suspend fun pendingWrites(): List<PendingIntent> {
@@ -289,9 +288,8 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
     }
 
     /**
-     * Returns the durably parked intents (D3). Dead letters contain only `PARKED` entries;
-     * retired history never appears and post-acknowledgement work never parks. At 021 this list
-     * is always empty: parking is produced by Issue 023 over Issue 022's durable rows.
+     * Returns the durably parked intents. Dead letters contain only `PARKED` entries;
+     * retired history never appears and post-acknowledgement work never parks.
      */
     @ExperimentalStoreApi
     public suspend fun deadLetters(): List<DeadLetter> {
@@ -305,19 +303,19 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
         get() = engine.poisoned
 
     /**
-     * Read-only, in-process advisory lifecycle events (D4): replay `0`, extra buffer capacity
+     * Read-only, in-process advisory lifecycle events: replay `0`, extra buffer capacity
      * `64`, overflow `DROP_OLDEST`, non-blocking emission. Never a drain, acknowledgement, retry,
-     * or settlement protocol; durable truth remains inspection. Issue 023 owns causal emission.
+     * or settlement protocol; durable truth remains inspection.
      */
     @ExperimentalStoreApi
     public val events: SharedFlow<MutationEvent>
         get() = engine.eventBus.events
 
-    /** The exact Bookkeeper the engine retained (D9); test/022/024 verification door. */
+    /** The exact Bookkeeper the engine retained; the verification door for retention tests. */
     internal val bookkeeperRetainedByEngine: Bookkeeper
         get() = engine.bookkeeper
 
-    /** The exact SourceOfTruth the engine retained (D9); test/022/024 verification door. */
+    /** The exact SourceOfTruth the engine retained; the verification door for retention tests. */
     internal val sourceOfTruthRetainedByEngine: SourceOfTruth<K, V>
         get() = engine.sourceOfTruth
 
@@ -331,9 +329,9 @@ public class MutationStore<K : StoreKey, V : Any> internal constructor(
         engine.tombstoneSnapshot(KeyIdentity(namespace, canonicalId))
 
     override fun close() {
-        // The stateful transition wakes any stream suspended on a resolver-retry subscription
-        // (D14): the waiter observes the closed signal, cancels promptly, and its `first`
-        // releases the retry subscription.
+        // The stateful transition wakes any stream suspended on a resolver-retry subscription:
+        // the waiter observes the closed signal, cancels promptly, and its `first` releases the
+        // retry subscription.
         closed.value = true
         delegate.close()
     }
@@ -359,17 +357,16 @@ private sealed interface FacadeStreamElement<out V> {
 /**
  * Builds a Store whose sole overlay is the mutation engine and returns its narrowed facade.
  *
- * The ruled entry point (D1): restart behavior is compile-time required — the registry, server,
+ * This is the entry point: restart behavior is compile-time required — the registry, server,
  * key resolver, and value codec/version are factory inputs, and optional Store configuration
  * lives on [MutationStoreBuilder], which exposes no overlay door. The retained
  * [SourceOfTruth]/[Bookkeeper] selections (or mutations-owned defaults) are installed in the
- * delegated Store AND retained by the engine, so Issue 024's transactional decorator can select
- * and report its path instead of silently discovering an inaccessible core default (D9). The
- * delegate runtime is captured exactly once, its write handle is bound privately, and neither
- * runtime nor handle is exposed. The engine's confirmed-base reader and confirmed-absence
- * adoption door close over the delegate through the same construction cycle the write handle
- * uses: the overlay must be installed at build time, so both lambdas are bound before the
- * delegate exists and first run only after it does.
+ * delegated Store AND retained by the engine, so the selection is never an inaccessible core
+ * default. The delegate runtime is captured exactly once, its write handle is bound privately,
+ * and neither runtime nor handle is exposed. The engine's confirmed-base reader and
+ * confirmed-absence adoption door close over the delegate through the same construction cycle
+ * the write handle uses: the overlay must be installed at build time, so both lambdas are bound
+ * before the delegate exists and first run only after it does.
  */
 @ExperimentalStoreApi
 public fun <K : StoreKey, V : Any> mutationStore(

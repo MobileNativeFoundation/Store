@@ -18,14 +18,13 @@ import kotlin.time.Duration.Companion.seconds
 
 class MutationsWiringSpikeTest {
     /**
-     * Successor to `lastOverlayRegistrationWins` (T4.3's ruled compile-time posture).
+     * Successor to `lastOverlayRegistrationWins`.
      *
-     * The landed spike proved core's last-overlay-registration-wins through core's public
-     * overlay door. Under D9/D11 that door does not exist on [MutationStoreBuilder], so the
-     * engine overlay installed by the factory is always the sole and last registration —
-     * displacement is superseded by compile-time absence. R1-13's dump audit proves the
-     * ABI-level absence; this spike proves the engine projection layer stays live through a
-     * fully-configured builder.
+     * That spike proved core's last-overlay-registration-wins through core's public overlay
+     * door. No such door exists on [MutationStoreBuilder], so the engine overlay installed by
+     * the factory is always the sole and last registration — displacement is superseded by
+     * compile-time absence. `MutationApiSurfaceTest` proves the ABI-level absence; this spike
+     * proves the engine projection layer stays live through a fully-configured builder.
      */
     @Test
     fun engineOverlay_isSoleProjectionLayer_noBuilderDoorCanDisplaceIt() = runTest {

@@ -33,20 +33,20 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * R1-01/R1-11/R1-12/R1-13/R1-24 builder and factory forwarding contract (T4.3).
+ * The builder and factory forwarding contract.
  *
- * The ruled `MutationStoreBuilder` mirrors core's optional doors, exposes no overlay door, and
- * retains the exact selected-or-default Bookkeeper and SourceOfTruth for both the delegated core
- * Store and the mutation engine (D9). ABI absence of an overlay setter, runtime, and write-handle
- * exposure is proved by the jvmTest dump test
+ * `MutationStoreBuilder` mirrors core's optional doors, exposes no overlay door, and retains the
+ * exact selected-or-default Bookkeeper and SourceOfTruth for both the delegated core Store and
+ * the mutation engine. ABI absence of an overlay setter, runtime, and write-handle exposure is
+ * proved by the jvmTest dump test
  * (`MutationApiSurfaceTest.apiDumpContainsNoOverlaySetterRuntimeOrWriteHandleExposure`) plus
- * `:store6-mutations:apiCheck` (R1-13); this common suite proves the doors' forwarding behavior.
+ * `:store6-mutations:apiCheck`; this common suite proves the doors' forwarding behavior.
  */
 class MutationStoreBuilderTest {
     @Test
     fun factory_requiresRegistryServerResolverAndValueCodec() = runTest {
-        // D1: registry, server, keyResolver, valueCodecVersion, and valueCodec are required
-        // factory parameters, never builder doors. The named-argument call pins the ruled
+        // registry, server, keyResolver, valueCodecVersion, and valueCodec are required
+        // factory parameters, never builder doors. The named-argument call pins the exact
         // spelling; a functional read and mutate prove each required input reached the store.
         val mutators = testMutators()
         val store =
@@ -85,7 +85,7 @@ class MutationStoreBuilderTest {
             // Store side: the fetch commit recorded success into the caller's exact instance.
             val status = assertNotNull(bookkeeper.status(key))
             assertNotNull(status.meta)
-            // Engine side: the mutation engine retained the caller's exact instance (D9).
+            // Engine side: the mutation engine retained the caller's exact instance.
             assertSame(bookkeeper, store.bookkeeperRetainedByEngine)
         } finally {
             store.close()
@@ -126,7 +126,7 @@ class MutationStoreBuilderTest {
             assertEquals("confirmed", store.get(key))
             // Store side: the engine persisted the fetched value through the caller's instance.
             assertEquals("confirmed", sourceOfTruth.reader(key).first())
-            // Engine side: the mutation engine retained the caller's exact instance (D9/024).
+            // Engine side: the mutation engine retained the caller's exact instance.
             assertSame(sourceOfTruth, store.sourceOfTruthRetainedByEngine)
         } finally {
             store.close()
@@ -200,11 +200,11 @@ class MutationStoreBuilderTest {
             // bookkeeper and persistence doors: exact instances on the Store path...
             assertNotNull(bookkeeper.status(key))
             assertEquals("confirmed", sourceOfTruth.reader(key).first())
-            // ...and the same exact instances retained for the engine (D9).
+            // ...and the same exact instances retained for the engine.
             assertSame(bookkeeper, store.bookkeeperRetainedByEngine)
             assertSame(sourceOfTruth, store.sourceOfTruthRetainedByEngine)
-            // conflicts door (D2): surface and registration validation land at 021; nothing
-            // registered here executes before 023's pipeline, even with a pending mutation.
+            // conflicts door: nothing registered here runs for a merely pending mutation. The
+            // selector runs when a drain prepares a generation, the merge only on a conflict.
             assertEquals(0, preconditionInvocations)
             assertEquals(0, mergeInvocations)
         } finally {
@@ -284,7 +284,7 @@ class MutationStoreBuilderTest {
 
     @Test
     fun keyEvents_isExactDelegateRuntimeFlow() = runTest {
-        // R1-24: the facade re-exposes the delegate runtime's advisory flow unchanged. The
+        // The facade re-exposes the delegate runtime's advisory flow unchanged. The
         // factory captures `runtime.keyEvents` exactly once; aliasing adds no `Rekeyed` variant
         // (KeyEvents constructors are core-internal, so this module cannot mint one), and the
         // flow retains the core lifecycle contract: it never completes, even after close.
@@ -308,8 +308,8 @@ class MutationStoreBuilderTest {
 
     @Test
     fun pendingMutation_projectsThroughEngineOverlay_withoutPublicOverlayDoor() = runTest {
-        // The builder has no overlay door (compile-time absence; ABI proof is R1-13's dump
-        // test). The engine overlay installed by the factory is therefore the sole projection
+        // The builder has no overlay door (compile-time absence; the ABI proof is the jvmTest
+        // dump test). The engine overlay installed by the factory is therefore the sole projection
         // layer, and pending mutations project with OVERLAY origin through the facade.
         val mutators = testMutators()
         val store =
@@ -345,7 +345,7 @@ private object StringMutationCodec : MutationCodec<String> {
     ): String = bytes.decodeToString()
 }
 
-/** Minimal ruled two-method server: acknowledges this client's value and confirms retirement. */
+/** Minimal two-method server: acknowledges this client's value and confirms retirement. */
 private class BuilderRecordingMutationServer : MutationServer<MutationsTestKey, String> {
     override suspend fun push(
         request: MutationPush<MutationsTestKey, String>,

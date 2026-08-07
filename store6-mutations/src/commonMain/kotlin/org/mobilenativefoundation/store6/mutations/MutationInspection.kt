@@ -12,7 +12,7 @@ public enum class MutationPresenceState {
 }
 
 /**
- * The total public mapping of every nonterminal active execution phase (D3).
+ * The total public mapping of every nonterminal active execution phase.
  *
  * `UNPREPARED`/`READY` map to [PENDING], `INFLIGHT` to [INFLIGHT], `REFRESH_REQUIRED` to
  * [REFRESHING], `ACKED` to [ADOPTING], and `EFFECTS_PENDING` to [APPLYING_EFFECTS]. Parked
@@ -27,7 +27,7 @@ public enum class MutationPendingState {
     APPLYING_EFFECTS,
 }
 
-/** The broad, append-only classification of a normalized mutation failure (R-0 §6). */
+/** The broad, append-only classification of a normalized mutation failure. */
 @ExperimentalStoreApi
 public enum class MutationFailureKind {
     IDENTITY,
@@ -42,7 +42,7 @@ public enum class MutationFailureKind {
 }
 
 /**
- * A normalized, restart-safe failure record (D3).
+ * A normalized, restart-safe failure record.
  *
  * A raw `StoreError` or `Throwable` is never persisted and never carried here. Sanitization
  * contract: [detail] is at most 128 UTF-8 bytes and [message] at most 1,024 UTF-8 bytes, each
@@ -125,7 +125,7 @@ private fun truncateUtf8AtCodePointBoundary(
 }
 
 /**
- * A truthful snapshot of one nonterminal active intent (D3).
+ * A truthful snapshot of one nonterminal active intent.
  *
  * Snapshots are durable-identity carriers: they expose the identity pair rather than a
  * reconstructed `K`, so inspection needs no resolver.
@@ -162,7 +162,7 @@ public class PendingIntent internal constructor(
 )
 
 /**
- * A durably parked intent (D3). Dead letters contain only parked entries; parking is legal only
+ * A durably parked intent. Dead letters contain only parked entries; parking is legal only
  * before a successful acknowledgement is durably recorded, and a parked sequence never re-enters
  * the executable FIFO.
  */
@@ -202,7 +202,7 @@ public class DeadLetter internal constructor(
 )
 
 /**
- * An ephemeral projection-failure report carrying the exact local `Throwable` (D3).
+ * An ephemeral projection-failure report carrying the exact local `Throwable`.
  *
  * The same throw parks the row with a normalized durable `PROJECTION` failure; the throwable
  * itself never crosses restart.

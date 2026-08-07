@@ -12,9 +12,9 @@ import org.mobilenativefoundation.store6.core.StoreNamespace
  *
  * [Present] carries a confirmed or projected value; [Absent] is confirmed or projected
  * non-existence. A projector returning a nullable `MutationPresence<V>?` uses `null` to mean
- * exactly one thing: decline this intent. Deletion is never spelled `null`; it is [Absent]
- * (D13). Push, acknowledgement, conflict, attempt, and adoption carriers contain non-null
- * presence, never a nullable `V`.
+ * exactly one thing: decline this intent. Deletion is never spelled `null`; it is [Absent].
+ * Push, acknowledgement, conflict, attempt, and adoption carriers contain non-null presence,
+ * never a nullable `V`.
  *
  * Consumers construct presence directly (upsert arguments, conflict `Retry(presence)`), so both
  * variants have public constructors.
@@ -45,7 +45,7 @@ public sealed interface MutationPresence<out V : Any> {
  * Durable key identity is exactly `(namespace.value, canonicalId())`. Hashes, object identity,
  * and key class are never durable identity. The library alone constructs identities; a resolver
  * reconstructs the convenience `K` from this exact pair and the engine validates both returned
- * components verbatim (D14).
+ * components verbatim.
  */
 @ExperimentalStoreApi
 public class MutationKeyIdentity internal constructor(
@@ -81,7 +81,7 @@ public fun interface MutationKeyResolver<K : StoreKey> {
  * encoded array before durable retention and passes a fresh copy into every [decode], so consumer
  * code can never mutate a stored retry generation. [decode] receives the persisted version, which
  * may be older than the currently registered one; format changes append a version and old
- * decoders remain until the corresponding rows are safely retired and pruned (D7).
+ * decoders remain until the corresponding rows are safely retired and pruned.
  */
 @ExperimentalStoreApi
 public interface MutationCodec<T : Any> {
@@ -108,7 +108,7 @@ internal fun <T : Any> MutationCodec<T>.decodeCopied(version: Int, bytes: ByteAr
     decode(version, bytes.copyOf())
 
 /**
- * The result of a pure registered invalidation function `(key, args) -> StaleSet<K>` (D8).
+ * The result of a pure registered invalidation function `(key, args) -> StaleSet<K>`.
  *
  * The library copies, normalizes to full identity pairs, deduplicates, and sorts the returned
  * sets before persisting one immutable effect record per key or namespace. The function must be
@@ -126,7 +126,7 @@ public class StaleSet<K : StoreKey> public constructor(
 )
 
 /**
- * The library-owned capture carrier handed to the optional precondition selector (D2).
+ * The library-owned capture carrier handed to the optional precondition selector.
  *
  * It exists before any transport request: it carries the ordered-capture result and has no
  * selected `baseMeta` and no transport door. The selector receives only this candidate — never a
@@ -166,7 +166,7 @@ public class MutationPreconditionCandidate<K : StoreKey, V : Any> internal const
 )
 
 /**
- * The immutable, library-built transport request for one attempt generation (D2).
+ * The immutable, library-built transport request for one attempt generation.
  *
  * [identity] alone selects the backend entity and feeds preconditions and idempotency. [key] is
  * process-local adapter context; fields beyond its already-validated namespace and canonical id
@@ -237,7 +237,7 @@ public class MutationPush<K : StoreKey, V : Any> internal constructor(
 )
 
 /**
- * The application-owned mutation transport (D2, D15b).
+ * The application-owned mutation transport.
  *
  * Implementations own deterministic wire encoding of the library-built carriers. A precondition
  * conflict is signalled only through the callable public core door:
@@ -259,7 +259,7 @@ public interface MutationServer<K : StoreKey, V : Any> {
      * `CancellationException` is rethrown by the library and leaves the in-flight generation
      * intact for exact replay.
      *
-     * Backend coherence obligation for confirmed deletion (D13), certified by returning
+     * Backend coherence obligation for confirmed deletion, certified by returning
      * [MutationAbsentAck]: Every fetch begun after an Absent acknowledgement returns
      * `FetcherResult.Deleted`. Tombstones stop journal replay; they do not mask a backend that
      * violates this contract.
@@ -269,7 +269,7 @@ public interface MutationServer<K : StoreKey, V : Any> {
 
     /**
      * Confirms a monotonic retirement checkpoint so the backend can bound idempotency-receipt
-     * retention (D15b).
+     * retention.
      *
      * The returned [MutationRetirementAck.confirmedThroughSequence] must be monotonic and cannot
      * exceed [MutationRetirement.retiredThroughSequence]; the library validates both properties
@@ -282,11 +282,11 @@ public interface MutationServer<K : StoreKey, V : Any> {
 }
 
 /**
- * The backend's acknowledgement of one pushed generation (D13).
+ * The backend's acknowledgement of one pushed generation.
  *
  * The sealed variants make a canonical target on confirmed absence unrepresentable: only
  * [MutationPresentAck] can carry a canonical key. Consumers construct the legal variants; the
- * library alone constructs pushes, retirements, identities, inspection rows, and failures (D11).
+ * library alone constructs pushes, retirements, identities, inspection rows, and failures.
  */
 @ExperimentalStoreApi
 public sealed interface MutationAck<out K : StoreKey, out V : Any> {
@@ -300,7 +300,7 @@ public sealed interface MutationAck<out K : StoreKey, out V : Any> {
  *
  * [canonicalKey] optionally redirects a provisional identity to its same-namespace canonical
  * identity; `null` means the identity is unchanged. A retry of one generation idempotency key
- * must return the same canonical target or the intent parks as a protocol violation (D15a).
+ * must return the same canonical target or the intent parks as a protocol violation.
  */
 @ExperimentalStoreApi
 public class MutationPresentAck<K : StoreKey, V : Any> public constructor(
@@ -319,7 +319,7 @@ public class MutationPresentAck<K : StoreKey, V : Any> public constructor(
 /**
  * A confirmed absent outcome, adopted through the delegated Store's `clear(key)`.
  *
- * Backend coherence obligation (D13): Every fetch begun after an Absent acknowledgement returns
+ * Backend coherence obligation: Every fetch begun after an Absent acknowledgement returns
  * `FetcherResult.Deleted`. Tombstones stop journal replay; they do not mask a backend that
  * violates this contract. This variant deliberately has no canonical key, so rekey-on-deletion
  * is unrepresentable in alpha01.
@@ -331,7 +331,7 @@ public class MutationAbsentAck<K : StoreKey, V : Any> public constructor(
 ) : MutationAck<K, V>
 
 /**
- * The library-built retirement checkpoint request (D15b).
+ * The library-built retirement checkpoint request.
  *
  * A checkpoint confirms only the current contiguous retired prefix; it never advances across
  * parked or active work.
@@ -348,7 +348,7 @@ public class MutationRetirement internal constructor(
 )
 
 /**
- * The consumer-built confirmation of a retirement checkpoint (D15b).
+ * The consumer-built confirmation of a retirement checkpoint.
  *
  * Confirmation is monotonic and cannot exceed its request; the library validates both before
  * persisting the server-confirmed prefix, so this carrier stays plain.
@@ -365,7 +365,7 @@ public class MutationRetirementAck public constructor(
  * [MutationServer.retire] response, so the public carriers stay plain data.
  *
  * Rejects a confirmation above the requested prefix and any regression below the previously
- * persisted server-confirmed prefix. Returns the validated new confirmed prefix. Issue 023
+ * persisted server-confirmed prefix. Returns the validated new confirmed prefix. The engine
  * normalizes the thrown failure as `MutationFailureKind.PROTOCOL`.
  */
 internal fun validateRetirementAck(
@@ -385,7 +385,7 @@ internal fun validateRetirementAck(
 }
 
 /**
- * Library-side exact-pair resolution validation (D14): the engine calls this on every resolver
+ * Library-side exact-pair resolution validation: the engine calls this on every resolver
  * result before any transport or adoption work.
  *
  * Resolver null and identity mismatch fail with `cause == null`; the original resolver context
@@ -409,7 +409,7 @@ internal fun <K : StoreKey> requireResolvedKey(
 }
 
 /**
- * The explicit outcome of a consumer merge hook after a precondition conflict (D2).
+ * The explicit outcome of a consumer merge hook after a precondition conflict.
  *
  * [Retry] persists a new generation before transmission; [ServerWins] retires the intent without
  * another push. Without an installed merge, server-wins is the non-removable terminal.

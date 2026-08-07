@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 class MutatorSugarTest {
-    // T4.2 bullet: the generic registration owns apply, decline, and delete outcomes distinctly.
+    // The generic registration owns apply, decline, and delete outcomes distinctly.
     @Test
     fun genericMutator_appliesDeclinesAndDeletesDistinctly() = runTest {
         lateinit var generic: MutatorRef<MutationsTestKey, String, String>
@@ -51,7 +51,6 @@ class MutatorSugarTest {
         )
     }
 
-    // R1-06.
     @Test
     fun update_desugarsToGenericProjector() = runTest {
         lateinit var rename: MutatorRef<MutationsTestKey, String, String>
@@ -74,7 +73,6 @@ class MutatorSugarTest {
         assertEquals("base-renamed", assertIs<MutationPresence.Present<String>>(projected).value)
     }
 
-    // R1-06.
     @Test
     fun updateOverAbsent_declinesWithoutAttempt() = runTest {
         lateinit var rename: MutatorRef<MutationsTestKey, String, String>
@@ -90,12 +88,11 @@ class MutatorSugarTest {
             }
         val registration = registry.registrations.getValue(rename.id)
 
-        // Null is the decline signal (D13): the declined head never becomes an attempt and never
+        // Null is the decline signal: the declined head never becomes an attempt and never
         // means deletion. Engine-level no-attempt scheduling is exercised by the drain tests.
         assertNull(registration.project(MutationPresence.Absent, "-renamed"))
     }
 
-    // R1-06.
     @Test
     fun create_ignoresConfirmedBase() = runTest {
         lateinit var draft: MutatorRef<MutationsTestKey, String, String>
@@ -118,7 +115,6 @@ class MutatorSugarTest {
         assertEquals("created:note", assertIs<MutationPresence.Present<String>>(overAbsent).value)
     }
 
-    // R1-06.
     @Test
     fun delete_usesFixedUnitCodecAndProducesDrainableAbsent() = runTest {
         lateinit var remove: MutatorRef<MutationsTestKey, String, Unit>
@@ -143,7 +139,6 @@ class MutatorSugarTest {
         assertTrue(registration.encodeArgs(Unit).isEmpty())
     }
 
-    // R1-06.
     @Test
     fun upsert_receivesExplicitPresence() = runTest {
         val receivedBases = mutableListOf<MutationPresence<String>>()
@@ -176,7 +171,6 @@ class MutatorSugarTest {
         assertEquals("second", assertIs<MutationPresence.Present<String>>(overPresent).value)
     }
 
-    // R1-04.
     @Test
     fun argsCodec_receivesRegisteredVersionAndDefensiveCopy() = runTest {
         val codec = SugarRecordingCodec()
@@ -210,7 +204,6 @@ class MutatorSugarTest {
         assertContentEquals("payload".encodeToByteArray(), stored)
     }
 
-    // R1-04.
     @Test
     fun delete_usesModuleUnitCodecV1AndZeroBytes_withoutCallerCodec() = runTest {
         // Compile-level: the delete sugar's signature accepts neither a version nor a codec.
@@ -227,7 +220,7 @@ class MutatorSugarTest {
         assertContentEquals(ByteArray(0), encoded)
         assertEquals(Unit, registration.decodeArgs(1, ByteArray(0)))
 
-        // Any other durable pair is a codec violation for Issue 022 to normalize as CODEC.
+        // Any other durable pair is a codec violation the engine normalizes as CODEC.
         assertFailsWith<IllegalArgumentException> {
             registration.decodeArgs(2, ByteArray(0))
         }

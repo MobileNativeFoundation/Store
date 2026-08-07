@@ -7,10 +7,10 @@ import org.mobilenativefoundation.store6.mutations.MutationFailureKind
 /**
  * Durable mutation-journal storage seam.
  *
- * R-0 freezes the nine logical records represented in this package. Implementations persist enum
- * names, never ordinals; store every time as Unix epoch milliseconds; copy every byte array on
- * entry and delivery; and preserve the transition, uniqueness, ordering, and pruning rules
- * enforced by the testing contract kit.
+ * This package freezes nine logical records. Implementations persist enum names, never ordinals;
+ * store every time as Unix epoch milliseconds; copy every byte array on entry and delivery; and
+ * preserve the transition, uniqueness, ordering, and pruning rules enforced by the testing
+ * contract kit.
  *
  * [transaction] is the single generic unit-of-work door. Normal return commits every operation;
  * any thrown [Throwable], including cancellation, commits none and propagates unchanged. The
@@ -101,7 +101,7 @@ public interface MutationJournalTransaction {
     public fun insertExecution(record: MutationExecutionRecord)
 
     /**
-     * Applies a ruled execution-state transition.
+     * Applies an execution-state transition.
      *
      * The first `READY -> INFLIGHT` transition acquires the derived durable authority for the
      * exact attempt's `(clientId, effectiveNamespace)`. Another execution may not acquire that

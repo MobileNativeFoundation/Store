@@ -10,7 +10,7 @@ import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.core.StoreMeta
 
 /**
- * Read-only, in-process advisory mutation telemetry (D4).
+ * Read-only, in-process advisory mutation telemetry.
  *
  * Delivery is best-effort: replay `0`, extra buffer capacity `64`, oldest dropped on overflow,
  * emitted with non-blocking `tryEmit` only. Events may drop under pressure, a new collector
@@ -242,7 +242,7 @@ public class MutationRetired internal constructor(
 ) : MutationIntentEvent
 
 /**
- * A validated and persisted retirement-checkpoint receipt (D12, D15b). Client-scoped: checkpoint
+ * A validated and persisted retirement-checkpoint receipt. Client-scoped: checkpoint
  * events intentionally do not fabricate a mutation id, key identity, or generation after all
  * mutations have retired.
  */
@@ -265,7 +265,7 @@ public class MutationCheckpointConfirmed internal constructor(
 ) : MutationEvent
 
 /**
- * A non-cancellation checkpoint transport, protocol, or persistence failure (D12). Client-scoped
+ * A non-cancellation checkpoint transport, protocol, or persistence failure. Client-scoped
  * and ephemeral: it creates no intent-owned failure row and invents no retired mutation
  * identity.
  */
@@ -290,8 +290,8 @@ public class MutationCheckpointFailed internal constructor(
 /**
  * The internal advisory event bus backing `MutationStore.events`.
  *
- * TD-8 note: a `MutableSharedFlow` configured with [BufferOverflow] is legal advisory plumbing;
- * Channels and actors are banned as protocols. Emission is [tryEmit]-only, so lifecycle work can
+ * A `MutableSharedFlow` configured with [BufferOverflow] is legal advisory plumbing; Channels and
+ * actors are banned as protocols. Emission is [tryEmit]-only, so lifecycle work can
  * never block or suspend on telemetry: replay `0`, extra buffer capacity `64`, and
  * [BufferOverflow.DROP_OLDEST] make every emission complete immediately, dropping the oldest
  * buffered event under pressure. Dropping an event never changes state; within one

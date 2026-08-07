@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 class MutationEventSurfaceTest {
-    // R1-22: the non-generic sealed algebra exposes the exact ruled stable fields for both the
+    // The non-generic sealed algebra exposes the exact stable fields for both the
     // intent-scoped and client-scoped variants.
     @Test
     fun eventAlgebra_exposesIntentAndClientScopedStableFields() = runTest {
@@ -162,7 +162,7 @@ class MutationEventSurfaceTest {
         assertEquals(9L, checkpointFailed.requestedThroughSequence)
         assertSame(failure, checkpointFailed.failure)
 
-        // Sealed exhaustiveness over the event root needs exactly the three ruled branches.
+        // Sealed exhaustiveness over the event root needs exactly three branches.
         val allEvents: List<MutationEvent> = intentEvents + checkpointConfirmed + checkpointFailed
         val described =
             allEvents.map { event ->
@@ -175,7 +175,7 @@ class MutationEventSurfaceTest {
         assertEquals(List(10) { "intent" } + "checkpoint-confirmed" + "checkpoint-failed", described)
     }
 
-    // R1-22: checkpoint events are client-scoped and never fabricate a mutation identity.
+    // Checkpoint events are client-scoped and never fabricate a mutation identity.
     @Test
     fun checkpointEventsCannotBeCastToIntentEvents() = runTest {
         val failure =
@@ -206,7 +206,7 @@ class MutationEventSurfaceTest {
         assertNull(failed as? MutationIntentEvent)
     }
 
-    // R1-22: the facade property is a read-only advisory SharedFlow backed by a non-blocking
+    // The facade property is a read-only advisory SharedFlow backed by a non-blocking
     // bounded bus; it is never a drain, acknowledgement, retry, or settlement protocol.
     @Test
     fun events_isReadOnlyAdvisorySharedFlow_notDrainProtocol() = runTest {

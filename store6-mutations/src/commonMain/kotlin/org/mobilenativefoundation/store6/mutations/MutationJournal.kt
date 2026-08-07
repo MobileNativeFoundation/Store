@@ -31,17 +31,15 @@ internal data class KeyIdentity(
 
 internal fun StoreKey.identity(): KeyIdentity = KeyIdentity(namespace.value, canonicalId())
 
-/** R-0 §7's effect kind, in-memory form; 022 owns the durable stable names. */
+/** The in-memory invalidation-effect kind; durable names are `storage.MutationEffectKind`. */
 internal enum class MutationEffectRecordKind {
     KEY,
     NAMESPACE,
 }
 
 /**
- * One normalized in-memory invalidation-effect target (R-0 §7's immutable snapshot shape).
- *
- * 021 captures these before first push and never executes them; execution, dispositions, and
- * durability are 022/023/024's.
+ * One normalized in-memory invalidation-effect target: an immutable snapshot captured before the
+ * intent's first push.
  */
 internal data class MutationEffectRecord(
     val kind: MutationEffectRecordKind,
@@ -51,7 +49,7 @@ internal data class MutationEffectRecord(
 
 /**
  * Copies, normalizes, deduplicates, and sorts a consumer [StaleSet] into immutable effect
- * records (D8): every key is normalized to its full identity pair; ordering is namespace effects
+ * records: every key is normalized to its full identity pair; ordering is namespace effects
  * first, then key effects, each sorted by namespace then canonical id. Equal inputs produce
  * structurally equal outputs.
  */
@@ -84,13 +82,8 @@ internal fun <K : StoreKey> normalizedMutationEffects(
 }
 
 /**
- * R-0 §3's execution phase vocabulary, in-memory form; 022 owns the durable stable names.
- *
- * At 021 the engine's foreground pass truthfully produces only `UNPREPARED`, `READY`,
- * `INFLIGHT`, and `ACKED` (plus removal on retirement). `REFRESH_REQUIRED` needs 023's conflict
- * pipeline, `EFFECTS_PENDING` needs 022/023's effect execution, and `PARKED` needs 023's parking
- * transaction — none of which 021 fakes. The total public mapping is nevertheless frozen here so
- * inspection shapes are proven against the ruled vocabulary (D3, R-0 §3).
+ * The execution phase vocabulary in its in-memory form; the durable stable names are
+ * `storage.MutationExecutionPhase`.
  */
 internal enum class MutationExecutionPhase {
     UNPREPARED,
@@ -104,7 +97,7 @@ internal enum class MutationExecutionPhase {
 }
 
 /**
- * D3's total public mapping. `PARKED` maps only to `deadLetters()` and `RETIRED` to neither
+ * The total public mapping. `PARKED` maps only to `deadLetters()` and `RETIRED` to neither
  * inspection API, so both return null here; every nonterminal active phase maps to exactly one
  * [MutationPendingState].
  */
@@ -124,8 +117,8 @@ internal fun MutationExecutionPhase.toPendingStateOrNull(): MutationPendingState
 
 /**
  * One journalled intent. [clientSequence] is the durable per-client FIFO/watermark unit and
- * [createdAtEpochMillis] the durable enqueue stamp (R-0 §2); the engine allocates both at
- * enqueue. Defaults exist only for direct journal construction in module tests.
+ * [createdAtEpochMillis] the durable enqueue stamp; the engine allocates both at enqueue.
+ * Defaults exist only for direct journal construction in module tests.
  */
 internal class JournalEntry<V : Any>(
     val mutationId: String,
@@ -182,7 +175,7 @@ internal interface MutationJournal<V : Any> {
     fun pendingSnapshot(key: KeyIdentity): List<JournalEntry<V>>
 
     /**
-     * The durable identities that currently hold pending intents, in first-enqueue order (D12):
+     * The durable identities that currently hold pending intents, in first-enqueue order:
      * global drain enumerates these and reconstructs each `K` through the resolver; a live key
      * map is never this method's substitute.
      */
@@ -207,7 +200,7 @@ internal class DurableJournalSnapshot(
  *
  * Synchronous overlay reads use the cache; every accepted append first commits the immutable
  * intent and its initial execution row to [storage], then publishes the same entry to the cache.
- * T2.4 hydrates this cache and owns the remaining execution-state persistence.
+ * The engine hydrates this cache from [storage] on first use.
  */
 internal open class StorageBackedMutationJournal<V : Any>(
     internal val storage: MutationJournalStorage,
@@ -434,29 +427,29 @@ internal open class StorageBackedMutationJournal<V : Any>(
     }
 }
 
-/** The 021-compatible default journal, now implemented by the public in-memory storage seam. */
+/** The default journal, implemented by the public in-memory storage seam. */
 internal class InMemoryMutationJournal<V : Any> :
     StorageBackedMutationJournal<V>(storage = InMemoryMutationJournalStorage())
 
 // ---------------------------------------------------------------------------------------------
-// Cache-fronted canonical alias routing (D15a).
+// Cache-fronted canonical alias routing.
 // ---------------------------------------------------------------------------------------------
 
-/** Stable machine detail for a canonical target in a different namespace (D15a). */
+/** Stable machine detail for a canonical target in a different namespace. */
 internal const val ALIAS_FAILURE_DETAIL_CROSS_NAMESPACE: String = "alias-cross-namespace"
 
-/** Stable machine detail for a second canonical target claimed for an aliased source (D15a). */
+/** Stable machine detail for a second canonical target claimed for an aliased source. */
 internal const val ALIAS_FAILURE_DETAIL_RETARGET: String = "alias-retarget"
 
-/** Stable machine detail for a canonical target whose chain reaches back to its source (D15a). */
+/** Stable machine detail for a canonical target whose chain reaches back to its source. */
 internal const val ALIAS_FAILURE_DETAIL_CYCLE: String = "alias-cycle"
 
-/** Stable machine detail for a generation retry acknowledging a different canonical target (D15a). */
+/** Stable machine detail for a generation retry acknowledging a different canonical target. */
 internal const val ALIAS_FAILURE_DETAIL_RETRY_TARGET_MISMATCH: String =
     "alias-retry-target-mismatch"
 
 /**
- * The lifecycle of one alias edge (D15a): `PENDING` between validated acknowledgement receipt and
+ * The lifecycle of one alias edge: `PENDING` between validated acknowledgement receipt and
  * retirement, `ACTIVE` from the retirement/activation step onward. Routing follows only `ACTIVE`
  * edges; a `PENDING` edge already pins its source against retarget and its idempotency receipt
  * against a mismatched retry.
@@ -466,7 +459,7 @@ internal enum class AliasEdgeState {
     ACTIVE,
 }
 
-/** One normalized same-namespace full-pair redirect: source identity to target identity (D15a). */
+/** One normalized same-namespace full-pair redirect: source identity to target identity. */
 internal data class AliasEdge(
     val source: KeyIdentity,
     val target: KeyIdentity,
@@ -513,7 +506,7 @@ internal fun terminalIdentity(
     }
 }
 
-/** The outcome of validating one acknowledged canonical target at ack receipt (D15a). */
+/** The outcome of validating one acknowledged canonical target at ack receipt. */
 internal sealed interface AliasAdmission {
     /**
      * The acknowledgement is legal. [redirect] is the pending-or-existing edge for a real
@@ -537,25 +530,20 @@ internal sealed interface AliasAdmission {
 /**
  * Cache-fronted alias adapter: normalized same-namespace full-pair redirects with
  * `PENDING`/`ACTIVE` states, transitive terminal resolution, and generation-idempotency receipt
- * tracking (D15a normative rules; D14 facade routing).
+ * tracking.
  *
  * PENDING and ACTIVE changes commit through [storage] before this synchronous routing cache is
  * published. Restart hydration restores both states without advancing an advisory revision.
- * Tombstone storage/hydration is modeled separately; tombstone activation orchestration and
- * transactional retirement composition remain later slices. Deferred proofs: 022
- * `MutationJournalContractTest.kt::aliasEdgesAndActivation_roundTripAcrossRestart`; 023
- * `MutationAckOrchestrationTest.kt::ackAliasActivationRebasesQueuedSourceAndTargetSiblings`.
- * Tombstone generations and high-water interaction are R1-21's 022/023/024 tests; 021 records
- * no tombstones.
+ * Tombstone state is modeled separately from alias edges.
  */
 internal class InMemoryAliasRouter(
     private val storage: MutationJournalStorage = InMemoryMutationJournalStorage(),
     private val runtimeState: MutationRuntimeState<*> = MutationRuntimeState<Any>(),
 ) {
-    // D15a: a retry of one generation idempotency key must return the same canonical target.
+    // A retry of one generation idempotency key must return the same canonical target.
     // The receipt records the EFFECTIVE canonical identity (the source itself when the ack
     // carried no target or a self-alias), so a retry that flips between "unchanged" and a real
-    // redirect is also a protocol failure. 022 owns the durable receipt row.
+    // redirect is also a protocol failure.
     private val effectiveTargetsByIdempotencyKey = mutableMapOf<String, KeyIdentity>()
 
     /** Clears process-only retry receipts after the shared durable snapshot is installed. */
@@ -564,11 +552,10 @@ internal class InMemoryAliasRouter(
     }
 
     /**
-     * Resolves the terminal identity for [identity] by following `ACTIVE` edges transitively
-     * (D15a: chains resolve transitively). Cycles are unrepresentable by construction — [admit]
-     * rejects them — so the walk guard is defensive only. Callers may cache the resolved
-     * terminal `K`, but durable edges remain the authority (path compression never replaces
-     * them).
+     * Resolves the terminal identity for [identity] by following `ACTIVE` edges transitively.
+     * Cycles are unrepresentable by construction — [admit] rejects them — so the walk guard is
+     * defensive only. Callers may cache the resolved terminal `K`, but durable edges remain the
+     * authority (path compression never replaces them).
      */
     fun terminalOf(identity: KeyIdentity): KeyIdentity {
         return terminalIdentity(identity, runtimeState.aliasesSnapshot())
@@ -576,9 +563,9 @@ internal class InMemoryAliasRouter(
 
     /**
      * Validates one acknowledged canonical target at ack receipt and prepares, but does not
-     * persist or publish, an optional pending redirect edge (D15a):
-     * cross-namespace targets are rejected; a receipt mismatch for [idempotencyKey] is rejected;
-     * a null or self target is an admitted no-op; a duplicate equal edge is idempotent; a
+     * persist or publish, an optional pending redirect edge: cross-namespace targets are
+     * rejected; a receipt mismatch for [idempotencyKey] is rejected; a null or self target is an
+     * admitted no-op; a duplicate equal edge is idempotent; a
      * different target for an already-aliased source is a retarget rejection; a target whose
      * active-or-pending chain reaches back to [source] is a cycle rejection.
      */
@@ -695,9 +682,9 @@ internal class InMemoryAliasRouter(
     }
 
     /**
-     * Activates the redirect for [source] (D15a step 5's in-memory analog). Activation is
-     * idempotent; the caller performs it inside the `NonCancellable` retirement handoff and then
-     * synchronously advances the mutation-owned alias revision.
+     * Activates the redirect for [source]. Activation is idempotent; the caller performs it
+     * inside the `NonCancellable` retirement handoff and then synchronously advances the
+     * mutation-owned alias revision.
      */
     suspend fun activate(
         source: KeyIdentity,

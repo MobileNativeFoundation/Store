@@ -41,17 +41,18 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * R1-20/R1-24/R1-09's 021 slice: the same-process canonical alias facade (D15a) and the D14
- * facade conversion-error/liveness contract. Everything here exercises the in-memory preview —
- * normalized full-pair redirects, sequence-merged sibling re-homing, the lost-wakeup-free
- * per-terminal-identity revision signals, and explicit keyed facade routing.
+ * The same-process canonical alias facade and the facade conversion-error/liveness contract.
+ * Everything here exercises the in-memory preview — normalized full-pair redirects,
+ * sequence-merged sibling re-homing, the lost-wakeup-free per-terminal-identity revision
+ * signals, and explicit keyed facade routing.
  *
- * The durable model is deliberately absent (022–024). Deferred proofs recorded, not faked:
- * - 022 `MutationJournalContractTest.kt::aliasEdgesAndActivation_roundTripAcrossRestart`
- * - 023 `MutationAckOrchestrationTest.kt::ackAliasActivationRebasesQueuedSourceAndTargetSiblings`
- * - 023 `MutationConflictTest.kt::serverWinsCancellationAfterCommit_stillPublishesOverlayRevision`
- * - 023 `MutationDrainParkingTest.kt::parkingCancellationAfterCommit_stillPublishesOverlayRevisionAndRebasesSuffix`
- * - 023 parks the alias-protocol violations that halt with a normalized `PROTOCOL` carrier here.
+ * The durable model is deliberately out of scope here and is proven elsewhere:
+ * - `MutationJournalContractTest.kt::aliasEdgesAndActivation_roundTripAcrossRestart`
+ * - `MutationAckOrchestrationTest.kt::ackAliasActivationRebasesQueuedSourceAndTargetSiblings`
+ * - `MutationConflictTest.kt::serverWinsCancellationAfterCommit_stillPublishesOverlayRevision`
+ * - `MutationDrainParkingTest.kt::parkingCancellationAfterCommit_stillPublishesOverlayRevisionAndRebasesSuffix`
+ * - `MutationDrainParkingTest` also covers the durable parks for the alias-protocol violations
+ *   that halt with a normalized `PROTOCOL` carrier here.
  */
 class MutationAliasFacadeTest {
     @Test
@@ -66,7 +67,7 @@ class MutationAliasFacadeTest {
         try {
             // Sequences 1 and 2 queue at the provisional identity, 3 at the canonical target:
             // after the head's redirect activates, the canonical queue must flush 2 then 3 —
-            // queued siblings from source and target merge by durable client sequence (D15a).
+            // queued siblings from source and target merge by durable client sequence.
             users.mutate(provisional, mutations.rename, "draft")
             users.mutate(provisional, mutations.append, "+p")
             users.mutate(canonical, mutations.append, "+c")
@@ -112,7 +113,7 @@ class MutationAliasFacadeTest {
 
                 users.mutate(provisional, mutations.rename, "draft")
                 // OVERLAY is the pending-write affordance: the provisional frame is fresh by
-                // definition, not stale (ruling: pending UI keys on origin == OVERLAY).
+                // definition, not stale: pending UI keys on origin == OVERLAY.
                 val optimistic = awaitOverlayValue("draft")
                 assertEquals(Origin.OVERLAY, optimistic.origin)
                 assertFalse(optimistic.isStale)
@@ -120,7 +121,7 @@ class MutationAliasFacadeTest {
                 users.drain(provisional)
 
                 // The live provisional stream re-resolves on the alias-revision bump and swaps
-                // to delegate.stream(canonical) (D15a): the confirmed canonical frame arrives
+                // to delegate.stream(canonical): the confirmed canonical frame arrives
                 // with a non-overlay origin and no refetch of the provisional identity.
                 val confirmed = awaitNonOverlayValue("draft")
                 assertTrue(
@@ -220,8 +221,8 @@ class MutationAliasFacadeTest {
         }
 
         // Duplicate equal edge: a retry of the SAME generation acknowledging the SAME canonical
-        // target reuses the pending edge — idempotent, no protocol failure. (In-memory only: the
-        // durable ACKED-never-repushed rule is 022/023's; this preview replays the generation.)
+        // target reuses the pending edge — idempotent, no protocol failure. (In-memory only:
+        // the durable path never repushes an ACKED generation; this preview replays it.)
         val duplicateBackend = FakeBackend()
         duplicateBackend.redirectEcho("temp-2" to "real-2")
         val handle = ScriptableWriteHandle()
@@ -282,7 +283,7 @@ class MutationAliasFacadeTest {
             )
 
             // Every keyed operation on the original provisional key now resolves through the
-            // chain to the terminal identity (D15a: chains resolve transitively).
+            // chain to the terminal identity: chains resolve transitively.
             assertEquals("draft+x", users.get(provisional))
             val queuedId = users.mutate(provisional, mutations.append, "+y")
             val row = users.pendingWrites().single()
@@ -790,7 +791,7 @@ class MutationAliasFacadeTest {
 
             users.stream(provisional).test {
                 // Exactly one sanctioned conversion error: live, no delegation to the stale
-                // source key, no completion (D14).
+                // source key, no completion.
                 val error = assertIs<StoreResult.Error>(awaitItem())
                 val conversion = assertIs<StoreError.Conversion>(error.error)
                 assertSame(boom, conversion.cause)
@@ -854,7 +855,7 @@ class MutationAliasFacadeTest {
             resolverFailure = boom
 
             // One resolution attempt each; the sanctioned conversion-backed exception retains
-            // the thrown cause in the immediate public exception only (D14).
+            // the thrown cause in the immediate public exception only.
             val fromGet = assertFailsWith<StoreException> { users.get(provisional) }
             assertIs<StoreError.Conversion>(fromGet.error)
             assertSame(boom, fromGet.cause)
@@ -862,9 +863,9 @@ class MutationAliasFacadeTest {
             val fromInvalidate = assertFailsWith<StoreException> { users.invalidate(provisional) }
             assertIs<StoreError.Conversion>(fromInvalidate.error)
 
-            // Keyed drain sits in D14's park-not-throw camp: an unresolvable pre-ack terminal
-            // records the normalized IDENTITY carrier and returns normally (023 converts these
-            // halts into durable parks).
+            // Keyed drain parks rather than throws: an unresolvable pre-ack terminal records
+            // the normalized IDENTITY carrier and returns normally. The durable engine converts
+            // such a halt into a park.
             val failuresBeforeDrain = harness.engine.drainFailuresForInspection().size
             users.drain(provisional)
             val drainFailure = harness.engine.drainFailuresForInspection().last()
@@ -872,7 +873,7 @@ class MutationAliasFacadeTest {
             assertEquals(MutationFailureKind.IDENTITY, drainFailure.kind)
             assertEquals(DRAIN_FAILURE_DETAIL_KEYED_TERMINAL_UNRESOLVED, drainFailure.detail)
 
-            // Resolver null has no cause (D14).
+            // Resolver null has no cause.
             resolverFailure = null
             resolveToNull = true
             val fromClear = assertFailsWith<StoreException> { users.clear(provisional) }
@@ -908,7 +909,7 @@ class MutationAliasFacadeTest {
             harness.engine.clearLiveKeyCache()
             resolverFailure = IllegalStateException("canonical lookup offline")
 
-            // mutate resolves BEFORE the append: failure creates no intent anywhere (D14).
+            // mutate resolves BEFORE the append: failure creates no intent anywhere.
             val failure =
                 assertFailsWith<StoreException> {
                     users.mutate(provisional, mutations.append, "+never")
@@ -948,7 +949,7 @@ class MutationAliasFacadeTest {
             harness.engine.clearLiveKeyCache()
 
             // pending(P) follows the alias as durable identity pairs only: no K is
-            // reconstructed, so a dead resolver cannot fail this inspection (D14).
+            // reconstructed, so a dead resolver cannot fail this inspection.
             val rows = users.pending(provisional)
             assertEquals(listOf(queuedId), rows.map(PendingIntent::mutationId))
             assertEquals("real-1", rows.single().canonicalId)
@@ -1019,8 +1020,8 @@ class MutationAliasFacadeTest {
 
                 // The in-memory commit and the stateful revision handoff completed BEFORE the
                 // suspended emission: the alias is active and the revision is published even
-                // though the drain caller is about to be cancelled (D15a step 5; Shared
-                // invariants' accepted-state handoff).
+                // though the drain caller is about to be cancelled: the accepted-state handoff
+                // completes under NonCancellable.
                 assertEquals(
                     canonical.identity(),
                     engine.terminalIdentityOf(provisional.identity()),
@@ -1332,9 +1333,9 @@ class MutationAliasFacadeTest {
     }
 
     /**
-     * R1-09's alias-facing ack-variant rule, standalone: a retry of one generation idempotency
-     * key must return the same canonical target or the intent halts as a protocol violation
-     * (D15a). The staging mirrors the retry-mismatch arm of
+     * The alias-facing ack-variant rule, standalone: a retry of one generation idempotency
+     * key must return the same canonical target or the intent halts as a protocol violation.
+     * The staging mirrors the retry-mismatch arm of
      * [cycleRetargetAndRetryMismatchAreProtocolFailures] with the ack-variant assertions.
      */
     @Test
@@ -1510,7 +1511,7 @@ private class AliasMutationSet {
 
 /**
  * Scripts echo acknowledgements whose canonical key redirects each listed provisional id to its
- * canonical id (D15a); every other key acknowledges with an unchanged identity.
+ * canonical id; every other key acknowledges with an unchanged identity.
  */
 private fun FakeBackend.redirectEcho(vararg redirects: Pair<String, String>) {
     val table = redirects.toMap()
@@ -1523,7 +1524,7 @@ private fun FakeBackend.redirectEcho(vararg redirects: Pair<String, String>) {
     }
 }
 
-/** The ruled public entry point, used where no engine door is needed. */
+/** The public entry point, used where no engine door is needed. */
 private fun aliasMutationStore(
     registry: MutatorRegistry<MutationsTestKey, String>,
     backend: FakeBackend,
@@ -1807,8 +1808,8 @@ private suspend fun ReceiveTurbine<StoreResult<String>>.awaitNonOverlayValue(
     }
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default would nest inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

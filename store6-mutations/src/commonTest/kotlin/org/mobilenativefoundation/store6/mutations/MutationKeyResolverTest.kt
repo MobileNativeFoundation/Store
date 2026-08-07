@@ -20,10 +20,11 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * R1-02's 021 slice: the required resolver is global drain's correctness path (D14). Every test
- * drives the engine's own resolution — cache cleared where reconstruction must be forced — and
- * proves exact-pair validation happens before any transport work. Durable parking of an
- * unresolved pre-ack identity is 023's `MutationDrainParkingTest`; restart hydration is 022's.
+ * The required resolver is global drain's correctness path. Every test drives the engine's own
+ * resolution — cache cleared where reconstruction must be forced — and proves exact-pair
+ * validation happens before any transport work. Durable parking of an unresolved pre-ack
+ * identity is covered by `MutationDrainParkingTest`, restart hydration by
+ * `MutationJournalContractTest`.
  */
 class MutationKeyResolverTest {
     @Test

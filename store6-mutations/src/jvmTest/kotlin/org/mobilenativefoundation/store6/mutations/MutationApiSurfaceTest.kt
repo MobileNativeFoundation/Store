@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
- * R1-13: the committed KLib declaration exposes the ruled `MutationJournalStorage` seam, but no
+ * The committed KLib declaration exposes the `MutationJournalStorage` seam, but no
  * overlay setter, no [org.mobilenativefoundation.store6.core.seam.StoreRuntime], no
  * [org.mobilenativefoundation.store6.core.seam.StoreWriteHandle], no core `StoreBuilder` door
  * through `mutationStore`, and no SQLDelight driver or `Transacter` type — the narrowed-facade

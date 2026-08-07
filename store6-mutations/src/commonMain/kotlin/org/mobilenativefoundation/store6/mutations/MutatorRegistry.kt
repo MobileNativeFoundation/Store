@@ -7,14 +7,14 @@ import org.mobilenativefoundation.store6.core.StoreKey
 
 internal class MutatorRegistryOwnership
 
-/** The fixed args-codec version used by every `delete` registration (D7). */
+/** The fixed args-codec version used by every `delete` registration. */
 internal const val MUTATION_DELETE_ARGS_VERSION: Int = 1
 
 /**
- * The one deliberate args-codec specialization (D7): Store6 owns the `delete` codec at fixed
+ * The one deliberate args-codec specialization: Store6 owns the `delete` codec at fixed
  * version 1, and its encoding is exactly an empty byte array. Durable delete rows with another
  * args version or non-empty args bytes are a `CODEC` failure; this codec rejects them at decode
- * so Issue 022 can normalize the throw.
+ * so the engine normalizes the throw into a `CODEC` failure record.
  */
 internal object MutationUnitArgsCodec : MutationCodec<Unit> {
     override fun encode(value: Unit): ByteArray = ByteArray(0)
@@ -35,9 +35,7 @@ internal object MutationUnitArgsCodec : MutationCodec<Unit> {
 /**
  * A typed reference to a registered durable mutator.
  *
- * The three type parameters keep key, value, and args compile-time bound at Kotlin call sites;
- * R-2a records the experimental-tier waiver and requires a revisit at the first graduation
- * review.
+ * The three type parameters keep key, value, and args compile-time bound at Kotlin call sites.
  */
 @ExperimentalStoreApi
 public class MutatorRef<K : StoreKey, V : Any, A : Any> internal constructor(
@@ -77,7 +75,7 @@ internal class MutatorRegistration<K : StoreKey, V : Any>(
         args: Any,
     ): StaleSet<K> = stalesErased(key, args)
 
-    /** Projects [base] through the registered mutator; `null` means decline only (D13). */
+    /** Projects [base] through the registered mutator; `null` means decline only. */
     internal fun project(
         base: MutationPresence<V>,
         args: Any,
@@ -97,7 +95,7 @@ public class MutatorRegistry<K : StoreKey, V : Any> internal constructor(
 )
 
 /**
- * Registers typed durable mutators (D1, D7, D13).
+ * Registers typed durable mutators.
  *
  * Every registration is durable and named: no call-site closure becomes a durable intent. Each
  * non-delete mutator supplies an explicit args version and [MutationCodec]; `delete` is the one
@@ -116,12 +114,12 @@ public class MutatorRegistryBuilder<K : StoreKey, V : Any> internal constructor(
      * [project] runs synchronously inside Store's Overlay application and may be invoked
      * repeatedly or concurrently for different keys. It must be a pure, deterministic,
      * non-blocking function of `(base, args)`, and it must not call back into Store. Returning
-     * `null` means exactly "decline this intent" (D13); a declined head remains pending and
+     * `null` means exactly "decline this intent"; a declined head remains pending and
      * blocks only its same-effective-key suffix. Deletion is [MutationPresence.Absent], never
      * `null`. A thrown failure is contained, reported through `MutationStore.poisoned`, and
      * parks the row with a normalized `PROJECTION` failure.
      *
-     * [stales] is the pure declarative invalidation function (D8): equal inputs must produce
+     * [stales] is the pure declarative invalidation function: equal inputs must produce
      * structurally equal [StaleSet]s. Its result is copied, normalized, deduplicated, and sorted
      * into immutable effect records before the intent's first push.
      *
@@ -162,7 +160,7 @@ public class MutatorRegistryBuilder<K : StoreKey, V : Any> internal constructor(
 
     /**
      * Registers an update mutator: [project] transforms an existing value, and the registration
-     * declines when the confirmed base is [MutationPresence.Absent] (D1/D13).
+     * declines when the confirmed base is [MutationPresence.Absent].
      */
     @ExperimentalStoreApi
     public fun <A : Any> update(
@@ -181,7 +179,7 @@ public class MutatorRegistryBuilder<K : StoreKey, V : Any> internal constructor(
 
     /**
      * Registers a create mutator: [project] builds the new value from args alone and the
-     * confirmed base is ignored (D1).
+     * confirmed base is ignored.
      */
     @ExperimentalStoreApi
     public fun <A : Any> create(
@@ -196,9 +194,9 @@ public class MutatorRegistryBuilder<K : StoreKey, V : Any> internal constructor(
         }
 
     /**
-     * Registers a delete mutator: it always applies [MutationPresence.Absent] and is drainable
-     * (D1/D13). It accepts neither a version nor a codec; Store6 owns the fixed version-1 Unit
-     * codec whose encoding is exactly zero bytes (D7).
+     * Registers a delete mutator: it always applies [MutationPresence.Absent] and is drainable.
+     * It accepts neither a version nor a codec; Store6 owns the fixed version-1 Unit codec whose
+     * encoding is exactly zero bytes.
      */
     @ExperimentalStoreApi
     public fun delete(
@@ -211,7 +209,7 @@ public class MutatorRegistryBuilder<K : StoreKey, V : Any> internal constructor(
 
     /**
      * Registers an upsert mutator: [project] receives the explicit confirmed
-     * [MutationPresence] and must return a presence — it cannot decline (D1/D13).
+     * [MutationPresence] and must return a presence — it cannot decline.
      */
     @ExperimentalStoreApi
     public fun <A : Any> upsert(

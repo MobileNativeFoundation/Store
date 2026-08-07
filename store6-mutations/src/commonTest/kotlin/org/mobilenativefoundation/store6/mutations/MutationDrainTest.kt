@@ -29,10 +29,11 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * R1-17's 021 slice: `drain(key)` and `drain()` are idempotent, scheduler-agnostic foreground
- * passes (D12) and the resolver — not any live key map — is global drain's correctness path
- * (D14). Restart enumeration is 022's `MutationJournalContractTest`; parked-identity
- * continuation, retryable post-ack continuation, and the one-attempt-per-phase rule are 023's.
+ * `drain(key)` and `drain()` are idempotent, scheduler-agnostic foreground passes, and the
+ * resolver — not any live key map — is global drain's correctness path. Restart enumeration is
+ * covered by `MutationJournalContractTest`; parked-identity continuation, retryable post-ack
+ * continuation, and the one-attempt-per-phase rule by `MutationDrainParkingTest` and
+ * `MutationDrainResumabilityMatrixTest`.
  */
 class MutationDrainTest {
     @Test
@@ -254,7 +255,7 @@ class MutationDrainTest {
         engine.bind(DrainNoopHandle)
         val declined = MutationsTestKey("declined-key")
         val healthy = MutationsTestKey("healthy-key")
-        // `update` over a stably absent base declines (D13): the head stays PENDING and blocks
+        // `update` over a stably absent base declines: the head stays PENDING and blocks
         // only its own same-effective-key suffix.
         val declinedHead = engine.mutate(declined, strictUpdate, "never-applies")
         val blockedSuffix = engine.mutate(declined, rename, "blocked-behind-decline")

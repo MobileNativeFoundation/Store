@@ -18,8 +18,8 @@ import org.mobilenativefoundation.store6.core.StoreResult
 import org.mobilenativefoundation.store6.core.seam.FetcherResult
 
 /**
- * The module's single test key. The namespace parameter exists for the alias-facade tests
- * (D15a): a canonical target in another namespace must be constructible so cross-namespace
+ * The module's single test key. The namespace parameter exists for the alias-facade tests:
+ * a canonical target in another namespace must be constructible so cross-namespace
  * rejection and full-pair (not canonical-id) routing are provable; every other test keeps the
  * default `mutations` namespace.
  */
@@ -30,7 +30,7 @@ internal class MutationsTestKey(
     override fun canonicalId(): String = id
 }
 
-/** Exact-pair resolver for the module's single-namespace test key (D14). */
+/** Exact-pair resolver for the module's single-namespace test key. */
 internal object MutationsTestKeyResolver : MutationKeyResolver<MutationsTestKey> {
     override suspend fun resolve(identity: MutationKeyIdentity): MutationsTestKey? =
         if (identity.namespace == "mutations") MutationsTestKey(identity.canonicalId) else null
@@ -89,8 +89,8 @@ internal fun <A : Any> typedStales(
  * take the test's server reads and writes offline together. [pushBehavior] remains scriptable
  * for present-projection acknowledgements and failures using the `(key, value)` shape the
  * walking-skeleton tests script against — including a [MutationPresentAck] whose `canonicalKey`
- * redirects a provisional identity (D15a); [absentPushBehavior] scripts Absent-projection pushes
- * separately (D13: delete is drainable and its `mine` is `Absent`). A returned
+ * redirects a provisional identity; [absentPushBehavior] scripts Absent-projection pushes
+ * separately (delete is drainable and its `mine` is `Absent`). A returned
  * [MutationAbsentAck] marks the entity deleted: the confirmed value is dropped and every fetch
  * begun afterwards observes [FetcherResult.Deleted] through [loadResult] — the backend
  * coherence obligation the ack certifies. Acknowledged state lands under the EFFECTIVE identity:
@@ -165,7 +165,7 @@ internal class FakeBackend(
     /**
      * The rich-result fetch door. The result is snapshotted at entry — a fetch "begins" when it
      * reaches the backend — so a gated in-flight fetch keeps its pre-gate snapshot even when a
-     * deletion is acknowledged while it waits (D13's begun-after semantics).
+     * deletion is acknowledged while it waits, matching the ack's begun-after semantics.
      */
     internal suspend fun loadResult(key: MutationsTestKey): FetcherResult<String> {
         fetchCount += 1
@@ -230,7 +230,7 @@ internal class FakeBackend(
                     effectivePushApplications += idempotencyKey
                     when (ack) {
                         is MutationPresentAck -> {
-                            // D15a: a canonical redirect means the entity's authoritative row IS the
+                            // A canonical redirect means the entity's authoritative row IS the
                             // canonical identity; the acknowledged value lands there.
                             val effectiveIdentity = (ack.canonicalKey ?: request.key).identity()
                             confirmed[effectiveIdentity] = ack.authoritative

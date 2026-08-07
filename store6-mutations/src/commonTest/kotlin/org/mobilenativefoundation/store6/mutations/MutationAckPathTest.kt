@@ -225,7 +225,7 @@ class MutationAckPathTest {
         assertEquals(listOf("apply", "confirmFresh", "retire"), events)
     }
 
-    // R1-05: the sealed Present variant adopts through apply -> confirmFresh, then retires; the
+    // The sealed Present variant adopts through apply -> confirmFresh, then retires; the
     // accepted-state key-change signal follows the completed retirement.
     @Test
     fun presentAck_appliesConfirmsFreshThenRetires() = runTest {
@@ -286,8 +286,8 @@ class MutationAckPathTest {
         assertSame(key, engine.changes.replayCache.single())
     }
 
-    // R1-05: the sealed Absent variant adopts through the bound clear door, then retires; the
-    // variant's type has no canonical key, so rekey-on-deletion is unrepresentable (D13/D15a).
+    // The sealed Absent variant adopts through the bound clear door, then retires; the
+    // variant's type has no canonical key, so rekey-on-deletion is unrepresentable.
     @Test
     fun absentAck_clearsThenRetires_andHasNoCanonicalKey() = runTest {
         val events = mutableListOf<String>()
@@ -386,9 +386,9 @@ class MutationAckPathTest {
         assertEquals(emptyList(), engine.pending(absentKey))
     }
 
-    // Plan T4.5: a fetch that was in flight before the Absent acknowledgement may legally return
-    // its pre-ack snapshot; every fetch BEGUN AFTER the acknowledgement returns
-    // FetcherResult.Deleted (D13's backend coherence obligation, certified by MutationAbsentAck).
+    // A fetch that was in flight before the Absent acknowledgement may legally return its
+    // pre-ack snapshot; every fetch BEGUN AFTER the acknowledgement returns
+    // FetcherResult.Deleted — the backend coherence obligation MutationAbsentAck certifies.
     @Test
     fun absentAckWithPreAckInflightFetch_thenPostAckRefetchReturnsDeleted() = runTest {
         lateinit var deleteRef: MutatorRef<MutationsTestKey, String, Unit>
@@ -441,8 +441,8 @@ class MutationAckPathTest {
             assertSame(MutationPresence.Absent, backend.receivedPushes.single().mine)
             assertEquals(emptyList(), users.pending(key))
             // Post-ack refetch: begun after the Absent acknowledgement, the backend returns
-            // FetcherResult.Deleted and the waiter observes Missing (D13's coherence
-            // obligation, certified by MutationAbsentAck).
+            // FetcherResult.Deleted and the waiter observes Missing — the coherence
+            // obligation MutationAbsentAck certifies.
             val failure =
                 assertFailsWith<StoreException> {
                     users.get(key, Freshness.MustBeFresh)
@@ -454,7 +454,7 @@ class MutationAckPathTest {
         }
     }
 
-    // R1-18: present capture reads bookkeeping status BEFORE the LocalOnly value, and the
+    // Present capture reads bookkeeping status BEFORE the LocalOnly value, and the
     // captured metadata is the pre-value snapshot — it may match or lag the value but can never
     // lead it under Store's commit ordering.
     @Test
@@ -500,7 +500,7 @@ class MutationAckPathTest {
         assertEquals("first", meta.etag)
     }
 
-    // R1-18: absence is accepted only from the exact loop status -> LocalOnly Missing -> status
+    // Absence is accepted only from the exact loop status -> LocalOnly Missing -> status
     // with BOTH bracketing statuses carrying no metadata.
     @Test
     fun stableAbsentCapture_requiresBothBracketingStatusesWithoutMetadata() = runTest {
@@ -571,7 +571,7 @@ class MutationAckPathTest {
         )
     }
 
-    // R1-18: a FetcherResult.Deleted window — the destructive clear that forgets freshness —
+    // A FetcherResult.Deleted window — the destructive clear that forgets freshness —
     // cannot make a mid-window read pass for stable absence; the loop rejects the bracket whose
     // leading status still carried metadata and re-reads. The post-ack facade-level Deleted flow
     // is proven by absentAckWithPreAckInflightFetch_thenPostAckRefetchReturnsDeleted.
@@ -582,7 +582,7 @@ class MutationAckPathTest {
         }
     }
 
-    // R1-18: a Store.clear(key) window shares the loop, not only the facade interlock.
+    // A Store.clear(key) window shares the loop, not only the facade interlock.
     @Test
     fun keyClearCannotCreateFalseStableAbsence() = runTest {
         assertWindowCannotCreateFalseStableAbsence { bookkeeper, key ->
@@ -888,7 +888,7 @@ class MutationAckPathTest {
     }
 
     // Supersedes the walking skeleton's absent-halt (drainOnce_nullPrefixStopsAndLeaves
-    // DeleteAndCreatePending): under the ruled D13, delete is drainable — a projected Absent
+    // DeleteAndCreatePending): delete is drainable — a projected Absent
     // pushes with mine = Absent, the Absent acknowledgement adopts through clear, and a queued
     // create then re-creates over confirmed absence.
     @Test
@@ -1325,8 +1325,8 @@ private suspend fun ReceiveTurbine<StoreResult<String>>.awaitConfirmedValue(
     }
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default would nest inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

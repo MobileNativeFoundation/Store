@@ -8,11 +8,11 @@ import org.mobilenativefoundation.store6.core.seam.SourceOfTruth
 import org.mobilenativefoundation.store6.testing.SourceOfTruthContractKit
 
 /**
- * R1-12: certifies the mutations-owned default [MutationSourceOfTruth] against the read-only
- * store6-testing contract kit (D9: the default may not reuse core's inaccessible internal
- * implementation, and may not weaken reader liveness or mutation exception atomicity).
+ * Certifies the mutations-owned default [MutationSourceOfTruth] against the read-only
+ * store6-testing contract kit: the default may not reuse core's inaccessible internal
+ * implementation, and may not weaken reader liveness or mutation exception atomicity.
  *
- * Every inherited kit member is a binding R1-12 test contract and runs on every compiled target:
+ * Every inherited kit member is a binding test contract and runs on every compiled target:
  * `readerStaysLiveAcrossDelete`, `readerFirstEmissionIsCurrentValue`,
  * `readerFirstEmissionIsNullWhenAbsent`, `deleteEmitsNull`, `readerNeverCompletesNormally`,
  * `readerStaysLiveAcrossThreeDeleteCycles`, `equalValueRewriteEmits`, `writeIsVisibleToLateReader`,

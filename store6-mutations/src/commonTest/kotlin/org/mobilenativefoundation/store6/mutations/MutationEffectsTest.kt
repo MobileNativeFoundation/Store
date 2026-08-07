@@ -137,7 +137,7 @@ class MutationEffectsTest {
         engine.drain(key)
 
         // The push happened, the intent retired, and the snapshot was captured before transport;
-        // no effect executed (021 has no execution machinery — 022/023 own it).
+        // no effect executed (a codec-less engine has no durable effect rows to execute).
         assertEquals(listOf("pending"), backend.pushedValues)
         assertEquals(emptyList(), engine.pending(key))
         assertEquals(

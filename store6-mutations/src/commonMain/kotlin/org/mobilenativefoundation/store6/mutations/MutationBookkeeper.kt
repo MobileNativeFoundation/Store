@@ -18,7 +18,7 @@ import org.mobilenativefoundation.store6.core.seam.KeyStatus
  *
  * The factory forwards this exact instance to both the delegated core Store and the mutation
  * engine so mutation metadata capture reads the same authority the Store updates; core's
- * inaccessible internal default is never substituted (D9). Certified against
+ * inaccessible internal default is never substituted. Certified against
  * `BookkeeperContractKit`:
  *
  * - Identity derives exclusively from `(namespace.value, canonicalId())`; object identity and

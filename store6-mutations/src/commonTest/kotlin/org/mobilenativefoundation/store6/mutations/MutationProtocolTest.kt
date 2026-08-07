@@ -27,8 +27,8 @@ import kotlin.test.fail
 import kotlin.time.Duration.Companion.seconds
 
 class MutationProtocolTest {
-    // R1-01 (021 slice): the server signature receives the complete library-built carrier for a
-    // registered mutator. The end-to-end factory flow is strengthened at T4.3/T4.5.
+    // The server signature receives the complete library-built carrier for a registered
+    // mutator.
     @Test
     fun serverReceivesLibraryBuiltPushWithCompleteRegisteredMutatorCarrier() = runTest {
         lateinit var append: MutatorRef<MutationsTestKey, String, String>
@@ -78,7 +78,6 @@ class MutationProtocolTest {
         assertEquals("base-mine", projectedMine.value)
     }
 
-    // R1-03.
     @Test
     fun valueCodecRoundTrip_preservesPresentBaseMineAndAck() = runTest {
         val codec = RecordingStringCodec()
@@ -100,7 +99,6 @@ class MutationProtocolTest {
         assertEquals("authoritative-value", ack.authoritative)
     }
 
-    // R1-03.
     @Test
     fun decodeReceivesPersistedValueCodecVersion() = runTest {
         val codec = RecordingStringCodec()
@@ -116,7 +114,6 @@ class MutationProtocolTest {
         assertEquals(7, codec.lastDecodeVersion)
     }
 
-    // R1-03.
     @Test
     fun valueCodecBuffers_areDefensivelyCopiedAtEncodeAndDecodeBoundaries() = runTest {
         val codec = RecordingStringCodec()
@@ -139,7 +136,7 @@ class MutationProtocolTest {
         assertContentEquals("payload".encodeToByteArray(), stored)
     }
 
-    // R1-05: presence, never nullable V, crosses push/candidate/ack carriers.
+    // Presence, never nullable V, crosses push/candidate/ack carriers.
     @Test
     fun pushBaseAndMine_neverUseNullableValue() = runTest {
         // Compile-level: these property references type-check only while the carrier fields are
@@ -171,7 +168,6 @@ class MutationProtocolTest {
         assertIs<MutationPresence.Present<String>>(push.mine)
     }
 
-    // R1-08.
     @Test
     fun pushExposesCompleteFrozenGenerationAndAuthoritativeIdentity() = runTest {
         val meta = TestMeta(writtenAtEpochMillis = 42L, etag = "etag-precondition")
@@ -198,7 +194,7 @@ class MutationProtocolTest {
         assertEquals("etag-precondition", push.baseMeta?.etag)
     }
 
-    // R1-08: identity is the sole server-authoritative address; the resolved key is
+    // Identity is the sole server-authoritative address; the resolved key is
     // process-local adapter context whose non-identity representation may vary across retries.
     @Test
     fun pushIdentity_staysStable_whenResolvedKeyRepresentationChanges() = runTest {
@@ -233,8 +229,8 @@ class MutationProtocolTest {
         assertEquals(firstRetry.idempotencyKey, secondRetry.idempotencyKey)
     }
 
-    // R1-08 (021 slice): the exact-pair validation the engine runs before transport; D14 fixes
-    // cause == null for mismatch. The engine-path proof is strengthened at T4.4/T4.5.
+    // The exact-pair validation the engine runs before transport; cause == null for a
+    // mismatch.
     @Test
     fun resolverIdentityMismatch_failsBeforeTransport() = runTest {
         val identity = MutationKeyIdentity(namespace = "mutations", canonicalId = "expected")
@@ -252,11 +248,10 @@ class MutationProtocolTest {
         assertTrue(server.retirements.isEmpty())
     }
 
-    // R1-08, strengthened to the engine path at T4.5 (Surface NOTES §3.11): the ENGINE rebuilds
-    // every retry of one semantic generation from defensively copied blobs. A server that
-    // mutates the delivered base/mine carrier cannot alter the next reconstruction, and the
-    // shared base instance the engine read stays untouched. Durable INFLIGHT exact-replay is
-    // R1-08's 023 proof.
+    // The ENGINE rebuilds every retry of one semantic generation from defensively copied
+    // blobs. A server that mutates the delivered base/mine carrier cannot alter the next
+    // reconstruction, and the shared base instance the engine read stays untouched. Durable
+    // INFLIGHT exact-replay is proven by `MutationDrainResumabilityMatrixTest`.
     @Test
     fun semanticRetry_rebuildsEveryPushFieldFromDefensiveCopies() = runTest {
         lateinit var rename: MutatorRef<MutationsTestKey, MutableValue, String>
@@ -324,7 +319,7 @@ class MutationProtocolTest {
         assertEquals(5, codec.lastDecodeVersion)
     }
 
-    // R1-08 adjunct (T4.5): the acknowledged authoritative value is rebuilt through the codec's
+    // The acknowledged authoritative value is rebuilt through the codec's
     // copy boundaries before adoption and echo-forward, so a server retaining its acknowledged
     // object cannot mutate adopted state or a later push's base.
     @Test
@@ -396,7 +391,7 @@ class MutationProtocolTest {
         )
     }
 
-    // R1-09: the sealed variants make a canonical target on confirmed absence unrepresentable.
+    // The sealed variants make a canonical target on confirmed absence unrepresentable.
     @Test
     fun absentAckHasNoCanonicalKeyAndPresentAckMayRekey() = runTest {
         val rekeyed =
@@ -425,7 +420,7 @@ class MutationProtocolTest {
         }
     }
 
-    // R1-10: library-side monotonic validation keeps the consumer-built carrier plain.
+    // Library-side monotonic validation keeps the consumer-built carrier plain.
     @Test
     fun retirementAckRejectsRegressionAndPrefixAboveRequest() = runTest {
         val request = MutationRetirement(clientId = "client-1", retiredThroughSequence = 10L)
@@ -467,7 +462,7 @@ class MutationProtocolTest {
         )
     }
 
-    // R1-19 (021 slice): the capture candidate carries immutable captured metadata and nothing
+    // The capture candidate carries immutable captured metadata and nothing
     // else — no selected baseMeta and no transport door. Any reference to `candidate.baseMeta`
     // or a push/server member does not compile.
     @Test
@@ -507,7 +502,7 @@ class MutationProtocolTest {
         assertNull(withoutMeta.capturedMeta)
     }
 
-    // R1-18 adjunct (carrier-level; the ordered-capture behavioral tests are T4.5's).
+    // Carrier-level only; the ordered-capture behavioral tests live in `MutationAckPathTest`.
     @Test
     fun absentBaseIsExistencePreconditionNotUnconditionalWrite() = runTest {
         val push =
@@ -522,7 +517,7 @@ class MutationProtocolTest {
         assertNull(push.baseMeta)
     }
 
-    // T4.1 bullet: stable public enums expose the exact ruled value sets.
+    // Stable public enums expose their exact value sets.
     @Test
     fun stablePublicEnums_exposeExactRuledValueSets() = runTest {
         assertEquals(
@@ -542,7 +537,7 @@ class MutationProtocolTest {
         )
     }
 
-    // T4.1 bullet: the normalized failure carries no raw cause and honours the byte budgets.
+    // The normalized failure carries no raw cause and honours the byte budgets.
     @Test
     fun normalizedFailure_carriesNoRawCauseAndHonoursSanitizationContract() = runTest {
         val cause = IllegalStateException("boom at the transport boundary")
