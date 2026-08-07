@@ -519,6 +519,7 @@ Class counts: **P1 171 · P2 2 · P3 60 · P4 31 · FP 6 · Unverifiable 0** (27
 | `store6-mutations/src/commonTest/kotlin/org/mobilenativefoundation/store6/mutations/MutatorSugarTest.kt:230` | // Any other durable pair is a codec violation for Issue 022 to normalize as CODEC. | P4 | P4: `a codec violation for Issue 022 to normalize as CODEC` -> `a codec violation the engine normalizes as CODEC`. Verified: `MutationEngine.classifyHydrationCodecFailure`. |
 | `store6-mutations/src/jvmTest/kotlin/org/mobilenativefoundation/store6/mutations/MutationApiSurfaceTest.kt:9` | * R1-13: the committed KLib declaration exposes the ruled `MutationJournalStorage` seam, but no | P1 | P1: deleted `R1-13`, `ruled`; the sentence is otherwise unchanged. |
 | `store6-mutations/src/jvmTest/kotlin/org/mobilenativefoundation/store6/mutations/MutationApiSurfaceTest.kt:29` | "Committed KLib dump is missing the ruled MutationJournalStorage seam.", | FP | FP / out-of-charter: `"Committed KLib dump is missing the ruled MutationJournalStorage seam."` is an assertion-message string literal (executable content). Left unedited; classify-only pattern, so it may remain. |
+| `store6-mutations/src/jvmTest/kotlin/org/mobilenativefoundation/store6/mutations/MutationApiSurfaceTest.kt:70` | "Committed KLib dump differs from the da72d908 T0.3 baseline: $dumpSha256", | FP | Executable string literal (API-surface baseline pin), out of doc-pass charter; investigated at Task 4, ratified at Task 8. The referent (`da72d908` git-commit prefix, `T0.3` baseline label) sits inside an `assertTrue(...)` failure-message string in executable test code, git-blamed to commit `da72d9088187180124bc71aae94e0b0b336cf905` (pre-dating this branch's base `801b8e8`). Same class as the `:29` row above and the two `AC-4` `error(...)`-message FPs recorded for this module. Matched only by Task 8's extended referent-family check (`\bT[0-9]\.[0-9]\b`); no earlier sweep (v1, v2, or the ruling pattern) sees it. Left unedited. |
 
 Notes carried out of this pass:
 
@@ -736,7 +737,7 @@ Fix classes applied: Missing / Stale / Contradictory / Misleading / Unnecessary.
 | `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/MutationStore.kt:219` | `MutationStore.mutate` | Missing | The function returns `String` and the KDoc never says what it is. `MutationEngine.mutate` returns `mutationId` (`MutationEngine.kt:686`), the same opaque id documented on `PendingIntent.mutationId` and every `MutationIntentEvent`. `MutationEngine.kt:616-618` also throws `IllegalArgumentException` for a `MutatorRef` from another registry. | Fixed: added `@return` for the mutation id and `@throws IllegalArgumentException` for the foreign-registry ref. |
 | `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/MutationEvents.kt:294` | `MutationEventBus` (named extra 4) | Unnecessary | "Channels and actors are banned as protocols" asserts a prohibition with no stated rationale and no code referent; the sentence that follows ("Emission is [tryEmit]-only, so lifecycle work can never block or suspend on telemetry…") already carries the whole contract, pinned by `MutationEventBus.tryEmit` (`MutationEvents.kt:313`) and the `replay = 0 / extraBufferCapacity = 64 / DROP_OLDEST` construction at `:303-307`. | Fixed: dropped the prohibition clause, kept the mechanism sentence ("A `MutableSharedFlow` configured with [BufferOverflow] carries the events."). |
 | `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/storage/MutationJournalRecords.kt:11` | `MutationExecutionPhase` (8 enum entries) | Missing | No per-entry documentation. Six of the eight already have a published meaning through `MutationPendingState`'s mapping KDoc (`MutationInspection.kt:17-19`); the two terminal ones are pinned by `MutationExecutionRecord`'s init block (`MutationJournalRecords.kt:130-135`: `activeFailureId` exists exactly in `PARKED`, `retiredAt` exactly in `RETIRED`). | Fixed: added one paragraph naming the two terminal phases and pointing the six nonterminal ones at the `MutationPendingState` mapping. No per-entry prose invented. |
-| `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/storage/MutationJournalRecords.kt:54,78,108,146,218,258,282,307,330` | the nine durable record classes (92 public properties) | Missing | Every record class carries a one-line class KDoc and then declares its properties with no documentation at all (only `argsBlob`, `baseBlob`, `mineBlob`, `authoritativeBlob` — the copying accessors — were documented). A storage implementer cannot derive `idempotencyRoot`, `advertisedRetiredThroughSequence`, `activeFailureId`, `preconditionMetaPresent`/`preconditionWrittenAt`, `recordVersion`, or `rowId` from the names. | **Fixed in part (6 of 92), remainder recorded.** Review correctly noted that `MutationExecutionRecord`'s `init` block already pins six fields, so no verification work was outstanding for them: `clientSequence` (`:126` positive), `currentGeneration` (`:127` non-negative, `:143-147` zero only in `UNPREPARED` or a never-prepared `PARKED`), `attempt` (`:128` non-negative, `:132-136` zero while the generation is zero), `lastAttemptAt` (`:129-131` non-null exactly when `attempt` is nonzero), `activeFailureId` (`:137-139` non-null exactly in `PARKED`; the value is a `MutationFailureRecord.failureId`, pinned by `MutationEngine.kt:2243,:2518,:2781`), and `retiredAt` (`:140-142` non-null exactly in `RETIRED`). One KDoc line each was written from those pins; times are Unix epoch milliseconds per `MutationJournalStorage`'s own contract. The remaining 81 properties stay deferred, and the deferral is now narrower and honest: they are the fields whose contracts are **not** pinned by an `init` `require` — `idempotencyRoot`, `advertisedRetiredThroughSequence`, `recordVersion`, `rowId`, the alias/tombstone provenance fields, and the precondition/conflict receipt fields, each of which needs its engine or storage write site read before a claim can be made. Compile-enforced cross-field invariants and the per-operation rules on `MutationJournalStorage` remain the mitigation. Remediation for a follow-up: one line per remaining property, pinned to the call site that writes it. |
+| `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/storage/MutationJournalRecords.kt:54,78,108,146,218,258,282,307,330` | the nine durable record classes (92 public properties) | Missing | Every record class carries a one-line class KDoc and then declares its properties with no documentation at all (only `argsBlob`, `baseBlob`, `mineBlob`, `authoritativeBlob` — the copying accessors — were documented). A storage implementer cannot derive `idempotencyRoot`, `advertisedRetiredThroughSequence`, `activeFailureId`, `preconditionMetaPresent`/`preconditionWrittenAt`, `recordVersion`, or `rowId` from the names. | **Fixed in part (10 of 92 documented: 4 pre-existing blob-accessor properties — `argsBlob`, `baseBlob`, `mineBlob`, `authoritativeBlob` — plus 6 fixed in this pass), remainder recorded.** Review correctly noted that `MutationExecutionRecord`'s `init` block already pins six fields, so no verification work was outstanding for them: `clientSequence` (`:126` positive), `currentGeneration` (`:127` non-negative, `:143-147` zero only in `UNPREPARED` or a never-prepared `PARKED`), `attempt` (`:128` non-negative, `:132-136` zero while the generation is zero), `lastAttemptAt` (`:129-131` non-null exactly when `attempt` is nonzero), `activeFailureId` (`:137-139` non-null exactly in `PARKED`; the value is a `MutationFailureRecord.failureId`, pinned by `MutationEngine.kt:2243,:2518,:2781`), and `retiredAt` (`:140-142` non-null exactly in `RETIRED`). One KDoc line each was written from those pins; times are Unix epoch milliseconds per `MutationJournalStorage`'s own contract. The remaining 82 properties stay deferred, and the deferral is now narrower and honest: they are the fields whose contracts are **not** pinned by an `init` `require` — `idempotencyRoot`, `advertisedRetiredThroughSequence`, `recordVersion`, `rowId`, the alias/tombstone provenance fields, and the precondition/conflict receipt fields, each of which needs its engine or storage write site read before a claim can be made. Compile-enforced cross-field invariants and the per-operation rules on `MutationJournalStorage` remain the mitigation. Remediation for a follow-up: one line per remaining property, pinned to the call site that writes it. **[Task 8 correction, mechanical recount]** Two earlier figures for this row's documented-property count were wrong: this task's Task 7 narrative said "11 are now documented" (a summation error — never reconciled against the 4 pre-existing + 6 new = 10 actually named above) and a Task 8 controller-resolution draft guessed "6" (reading only the newly-fixed count as the total, missing the 4 pre-existing blob accessors). Task 8 mechanically re-derived the count directly from the file: for every `public val` (92 total), walk backward over blank/pure-annotation lines to the nearest substantive line and call the property documented iff that line ends in `*/`. Result: exactly 10 documented (`argsBlob`, `MutationExecutionRecord.clientSequence`, `currentGeneration`, `attempt`, `lastAttemptAt`, `activeFailureId`, `retiredAt`, `baseBlob`, `mineBlob`, `authoritativeBlob`), 82 undocumented. 92 − 10 = 82, confirming the "remaining 82" above. |
 | `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/MutationEngine.kt:2459,3646,3658` | internal `parkDurableConflictFailure`, cache-replacement and bookkeeping helpers | Stale | `Rows 3/10:` and `C8-15 step 3:` / `C8-15 step 4:` are internal design-table referents naming a document absent from the tree. They match neither Detection sweep v1 nor Sweep v2 (`C8-15` is not `C-\d{2}`; `Rows 3/10` is not `row-7/8`), so Tasks 4 and 3b could not see them. Same family as every P1/P4 hit already removed. | Fixed: deleted the tag prefixes; the sentences are otherwise unchanged and self-contained. Outside the public-declaration charter (these are internal members) but in `commonMain` of an audited module, so recorded and repaired here rather than left for Task 8. |
 | `store6-mutations/src/commonMain/kotlin/org/mobilenativefoundation/store6/mutations/MutationEngine.kt:3767`, `:3853` | `captureBase`, `stageLegacyPresentAck` (named extra 5) | Unnecessary | Ragged wrapping left by Task 4's rewrite: `:3767` fills 65 of ~96 columns and `:3770` fills 83, against a file convention of 95-100 (`MutationEngine.kt` comment-line mode is 95-97). | Fixed: re-wrapped both KDoc blocks to the file convention. Words unchanged — verified by comparing whitespace-normalized text before and after. |
 | `store6-mutations/src/commonTest/.../MutationRetirementTest.kt:401`; `MutationPruningRegressionTest.kt:130`; `MutationDrainInvalidationTest.kt:46`; `MutationDrainParkingTest.kt:40` | test-fixture KDoc | Stale | `R-0 rule 9:` (×2), `T5.5's`, and `T2.2's` are internal design-document and test-plan referents naming documents absent from the tree. None matches Detection sweep v1 or Sweep v2, so Task 4's module gate could not see them. | Fixed: deleted the referent prefixes; each sentence is otherwise unchanged and self-contained (`Ordinary prune removes rows only at or below…`, `The durable invalidation executor and…`, `The complete pre-ack parking inventory.`). Outside the public-declaration charter; recorded and repaired under the Tasks 2-6 P1 rule. |
@@ -824,7 +825,7 @@ Counted by class over the 41 rows actually present in the tables above (`Missing
 
 Per-module row counts (10 / 13 / 10 / 1 / 1 / 4 / 2) also sum to 41; the two tables agree.
 
-**Declaration accounting** (rows are not declarations). The fixes revised the documentation of **51 public declarations**: 9 `MutationFailureKind` constants; 6 `MutationExecutionRecord` properties; 5 `FreshnessContext` properties; 4 `KeyStatus` properties; 7 `FakeStore` members; 3 `FakeFetcherInvocation` declarations; 3 `store6-compose` entry points; and one each for `MutationExecutionPhase`, `mutationStore`, `MutationStore.mutate`, `MutationStore.invalidate`, `MutationStore.clear`, `Freshness.LocalOnly`, `StoreBuilder.fetcherOfResult`, `StoreWriteHandle.confirmFresh`, `TransactionalSourceOfTruth`, `RoomBookkeeper`, `SqlDelightSourceOfTruth`, `FakeStoreInteraction`, `TestStoreMeta`, `TestWallClock`. A further **92 declarations** are named by the two recorded-unfixed `Missing` rows: 11 `StoreResults` factories and 81 still-undocumented properties across the nine journal record classes (that file holds 92 public properties, of which 11 are now documented). The remaining **485** carried documentation that met the checklist without change — that is the honest `Sufficient` figure (628 − 51 − 92), replacing the earlier 595, which was derived by subtracting row counts from declaration counts and was wrong.
+**Declaration accounting** (rows are not declarations). The fixes revised the documentation of **51 public declarations**: 9 `MutationFailureKind` constants; 6 `MutationExecutionRecord` properties; 5 `FreshnessContext` properties; 4 `KeyStatus` properties; 7 `FakeStore` members; 3 `FakeFetcherInvocation` declarations; 3 `store6-compose` entry points; and one each for `MutationExecutionPhase`, `mutationStore`, `MutationStore.mutate`, `MutationStore.invalidate`, `MutationStore.clear`, `Freshness.LocalOnly`, `StoreBuilder.fetcherOfResult`, `StoreWriteHandle.confirmFresh`, `TransactionalSourceOfTruth`, `RoomBookkeeper`, `SqlDelightSourceOfTruth`, `FakeStoreInteraction`, `TestStoreMeta`, `TestWallClock`. A further **93 declarations** are named by the two recorded-unfixed `Missing` rows: 11 `StoreResults` factories and 82 still-undocumented properties across the nine journal record classes (that file holds 92 public properties, of which 10 are documented — 4 pre-existing blob-accessor properties plus 6 fixed in this pass; see the Task 8 correction on that row above). The remaining **484** carried documentation that met the checklist without change — that is the honest `Sufficient` figure (628 − 51 − 93), replacing both the earlier 595 (derived by subtracting row counts from declaration counts, wrong) and an interim 485 (used the row's uncorrected 81/11 figures).
 
 **Scope note on rows outside the public-declaration charter.** Thirteen of the 41 rows do not sit on a public declaration: three on internal or private `commonMain` members, seven in `commonTest` fixtures, one in the `store6-compose-demo` module, one in `store6-mutations-testing`, and one cross-module FP row. All but the FP row are the internal-referent family Tasks 2-6 removed, and all survived because their wording matches neither Detection sweep v1 nor Sweep v2 (`FR-\d+`, `R-0 rule N`, `C8-15`, `Rows 3/10`, `T5.5`, `T2.2`, `Decision #37`, `#37 pin`, `phase0 item 36`, `landed`). They were repaired rather than left, because Task 8's gate runs the same two sweeps that already miss them. Every one is a comment-only deletion of a referent prefix with the surrounding sentence unchanged. A follow-up should widen the sweep families rather than rely on reading.
 
@@ -833,5 +834,128 @@ Per-module row counts (10 / 13 / 10 / 1 / 1 / 4 / 2) also sum to 41; the two tab
 
 ## Task 8 — Final gate, Dokka proof, completion report
 
-Reserved for Task 8's completion report (files reviewed/changed, evidence used per kept-contract claim, commands run and results, unresolved `Unverifiable` rows, claims deleted for lack of evidence, proof strength statement). Not populated by Task 1.
+### Full sweep gate (all patterns, `store6-*/src`)
+
+Sweep v1 hard, Sweep v2 hard, both classify-only patterns (`ruling|ruled|adopted shape|erratum` and
+`\b0(0[1-9]|1[0-9]|2[0-9])\b|\bR[0-9]\b|\bT2E\b`), and the extended referent-family check
+(`\bFR-[0-9]+\b|\bR-0\b|\bC8-15\b|Decision #|phase0|\bT[0-9]\.[0-9]\b|\blanded\b`) all run to their
+required state: **zero unrecorded hits.** Every survivor cross-checks against an inventory FP row —
+the `MutationApiSurfaceTest.kt:70` row above is the one addition this task made, ratifying a Task
+4 finding that had never been carried into the tables. The permitted-survivor set, confirmed
+closed: the `User("42", "Matt")` test fixture (`UserViewModelSampleTest.kt:45,49`), the two `AC-4`
+`error(...)`-message string literals (`MutationRestartWalkingTest.kt:100`,
+`SqlDelightMutationRestartWalkingTest.kt:131`), the `landed.origin` local variable
+(`MutationAckPathTest.kt:71-72`), and the `da72d908 T0.3` SHA-baseline string
+(`MutationApiSurfaceTest.kt:70`).
+
+## Completion report
+
+### (a) Commits on this branch
+
+`git log --oneline 801b8e8..HEAD` (newest first):
+
+```
+4feef22 docs: address Task 7 review findings; clear remaining known referents
+144b90e docs: interface KDoc audit fixes for alpha01 artifacts
+8c84c16 docs: clear internal references from testing, devtools, and test sources
+d3ee926 docs(adapters): remove internal references from room, sqldelight, compose, mutations-sqldelight
+5cb26f4 docs(mutations): restate conflict-repeat bound on merge door; wrap fix
+47ff4c2 docs(mutations): make KDoc contracts self-contained, drop internal issue references
+1d1607a docs(core): clear design-doc referents surfaced by widened sweep
+b93a795 docs: amend plan with Sweep v2 and Task 3b (execution amendment A1)
+77ef2c2 docs(core): remove internal issue and design-doc references from KDoc
+2bf3e5f docs: remove internal sign-off stamp from freeze-candidate KDoc
+c25c01d docs: record inventory 4-column format in plan
+3f236c5 docs: add source-doc cleanup inventory baseline
+```
+
+Plus this task's own commit (below).
+
+### (b) Files changed
+
+`git diff 801b8e8...HEAD --stat` summary: **113 files changed, 1960 insertions(+), 753
+deletions(-)**. Scoped to the disclosure/quality-pass surface (`store6-*/src`, shell-glob-expanded
+pathspec — see the pathspec note under (c)): **111 files changed, 747 insertions(+), 753
+deletions(-)**. The remaining 2 files outside that scope are the plan document and this inventory
+file itself, both under `docs/superpowers/plans/`.
+
+### (c) Gate and verification commands run, with results
+
+| Command | Result |
+| --- | --- |
+| `grep -rEn 'TD-[0-9]+\|RISK-[0-9]+\|STORE-[0-9]+\|FS-[0-9]+\|RD-[0-9]+\|\(D[0-9]+[a-z]?\)\|[Ii]ssue [0-9]{2,3}\|PROVISIONAL\|pending [Ii]ssue\|PR #[0-9]+\|linear\.app\|\bMatt\b\|signs? off\|sign-off' --include='*.kt' --exclude-dir=build store6-*/src` (Sweep v1 hard) | 2 hits, both the recorded `User("42","Matt")` FP. Zero unrecorded. |
+| `grep -rEn 'engine-design\|design §\|§[0-9]+\|\bTEST-[0-9]+\b\|\bC-[0-9]{2}\b\|\bAC-[0-9]+\b\|\bOQ-[0-9]+\b\|\brow-7/8\b' --include='*.kt' --exclude-dir=build store6-*/src` (Sweep v2 hard) | 2 hits, both recorded `AC-4` `error(...)`-message FPs. Zero unrecorded. |
+| `grep -rEn 'ruling\|ruled\|adopted shape\|erratum' --include='*.kt' --exclude-dir=build store6-*/src` (classify-only v1) | 1 hit, recorded FP (`MutationApiSurfaceTest.kt:29`). |
+| `grep -rEn '\b0(0[1-9]\|1[0-9]\|2[0-9])\b\|\bR[0-9]\b\|\bT2E\b' --include='*.kt' --exclude-dir=build store6-*/src` (classify-only v2) | 5 hits, all recorded FPs (byte-budget numbers, protected string literals). |
+| `grep -rEn '\bFR-[0-9]+\b\|\bR-0\b\|\bC8-15\b\|Decision #\|phase0\|\bT[0-9]\.[0-9]\b\|\blanded\b' --include='*.kt' --exclude-dir=build store6-*/src` (extended referent check) | 3 hits: 2 `landed.origin`, 1 `da72d908 T0.3` — now both recorded FPs (see above). |
+| `./gradlew apiCheck ktlintCheck spotlessCheck` | `BUILD SUCCESSFUL` (584 actionable tasks: 64 executed, 520 up-to-date). **Caveat:** `ktlintCheck` and `spotlessCheck` are no-ops for `store6-*` modules — the executed-task log shows ktlint/spotless tasks only for the legacy modules (`cache`, `core`, `multicast`, `rx2`, `store`); root `build.gradle.kts` returns early for `store6-*`. This command proves the legacy modules only. Formatting assurance for `store6-*` rests on per-task hunk review (see below), not this command. |
+| `./gradlew :store6-core:dokkaHtml :store6-mutations:dokkaHtml :store6-testing:dokkaHtml :store6-room:dokkaHtml :store6-sqldelight:dokkaHtml :store6-compose:dokkaHtml` | **Unavailable — no such tasks.** Dokka link proof unavailable: the Dokka plugin is applied only to legacy modules (`KotlinMultiplatformConventionPlugin` calls `pluginManager.apply("org.jetbrains.dokka")`); `Store6Conventions` (`configureStore6Module()`, shared by every `store6-*` module) never applies it, so no `dokkaHtml` task exists for any store6-* module — pre-existing (this branch changed no build files: `git diff 801b8e8...HEAD --stat -- '*build.gradle.kts' 'tooling/**'` is empty; the plugin wiring last changed at `69db1ea`/`8c4fc68`, both pre-branch). KDoc link integrity instead rests on per-task manual link verification, including one FQN link correction made during the pass: `MutationJournalRecords.kt:15`'s `[MutationPendingState]` did not resolve (the file's package is `…mutations.storage`, the type lives in the parent package `…mutations`, not imported there — Dokka would render it as plain text) and was fully qualified as `[org.mobilenativefoundation.store6.mutations.MutationPendingState]`, matching the FQN pattern already used at `FakeStoreInteraction.kt:9`. The controller is flagging Dokka wiring for `store6-*` modules as a separate follow-up task outside this branch. |
+| `git diff 801b8e8...HEAD -- store6-*/src` (mechanical hunk check) | 1500 changed (`+`/`-`) lines; 1480 mechanically comment/KDoc/blank, 20 flagged as trailing inline comments (code precedes `//`), all 20 read by eye and confirmed: the executable statement is byte-identical before/after, only the referent tag after `//` changed. **All 1500 changed lines are comment/KDoc-only.** (Note: the literally-quoted pathspec `'store6-*/src'` is a no-op under this git's default glob-pathspec semantics — `*` triggers fnmatch full-path matching, and no path is literally named e.g. `store6-core/src`; the shell-expanded form `store6-*/src`, the same mechanism the sweep `grep` commands already use, and the explicit `:(glob)store6-*/src/**` form both return the expected 111/1500-line diff.) |
+| `git diff 801b8e8...HEAD --stat -- '*/api'` and `-- store6-*/api` | Empty both ways. API dumps byte-identical to base. |
+
+### (d) Known residues (unchanged, protected content — recorded, not edited)
+
+- **Three protected-content FP string literals** (assertion/error-message text inside executable
+  test code, out of the doc-pass charter): `error("The AC-4 LocalOnly scenario must not fetch")`
+  (`MutationRestartWalkingTest.kt:100`), `error("The SQLDelight AC-4 LocalOnly scenario must not
+  fetch")` (`SqlDelightMutationRestartWalkingTest.kt:131`), and now formally the fourth of this
+  family, `"Committed KLib dump differs from the da72d908 T0.3 baseline: $dumpSha256"`
+  (`MutationApiSurfaceTest.kt:70`, ratified this task).
+- **`landed.origin`** (`MutationAckPathTest.kt:71-72`) — a local variable name; `landed` is an
+  identifier, protected regardless of the word it happens to spell.
+- **Internal shorthand inside test IDENTIFIERS** (function/class names, not comments or strings —
+  out of this doc-pass's charter, which covers comments and KDoc): e.g.
+  `builderForwardsEveryRuledConfigurationDoor`, `stablePublicEnums_exposeExactRuledValueSets`
+  (`MutationStoreBuilderTest.kt`/`MutationApiSurfaceTest.kt` test method names), and
+  `mutation023Banned`/`mutation023Violations` (`MutationApiSurfaceTest.kt` local vals). Renaming
+  identifiers is out of scope for a comment/KDoc cleanup pass and was never attempted.
+- **The pre-existing `MutationJournalLincheckTest` flake**, change-independence proven twice:
+  SHA-256-identical `.class` files across the pristine and changed trees at Task 4 (`git stash`,
+  rebuild, hash all 16 `MutationJournalLincheckTest*`/`LincheckRecordFactory` class files —
+  identical both trees), and a second pristine-base reproduction at Task 7 (stash the entire
+  change set, rerun the single test against `8c84c16`, identical `LincheckAssertionError: The
+  execution has hung` failure in `inMemoryJournalTransactions_areLinearizable`). The diff touches
+  neither `MutationJournalLincheckTest.kt` nor `InMemoryMutationJournalStorage.kt`. This task's own
+  comment-only diff proof (mechanical hunk check, (c) above) plus the identical `api/` dumps
+  independently corroborate: nothing in this branch could have caused or changed this flake.
+
+### (e) Unresolved rows
+
+- **`Unverifiable` rows: zero**, across every table in this inventory (Task 1 baseline, Task 3b,
+  Task 4, and Task 7's class totals each report `Unverifiable 0`). No contract claim in the entire
+  pass fell back to "keep meaning unchanged, mark Unverifiable" — every claim kept was verified
+  against code or a test, and every claim that could not be verified was deleted per the P3/P4
+  rules rather than kept unresolved.
+- **Recorded-unfixed audit findings** (Task 7, "recorded, not fixed" or outside the fix-class
+  vocabulary):
+  - `StoreResults.kt:16-27` — 11 factory functions, `Missing (minor)`, recorded not fixed (adding
+    per-factory KDoc would restate names/types already one Dokka hop away — judged Unnecessary
+    under this audit's own standard).
+  - `MutationJournalRecords.kt` — 82 of 92 durable-record properties remain undocumented,
+    `Missing`, fixed in part (see the corrected row above); each remaining property needs its
+    engine or storage write site read before a documentation claim can be made.
+  - `FakeStore.kt:271-273` (`close()`) — `Duplicated` (repeats the class KDoc verbatim in
+    meaning); not one of this audit's fix classes, no change.
+  - `StoreResults.kt:13,17-27` and `Store.kt:138,156` — column-width formatting outliers; not a
+    documentation-content class, no change (reflowing executable declarations would breach the
+    comment-only hunk boundary).
+
+### (f) Proof strength
+
+**Repository checks plus hunk review.** No mechanical token/AST trivia-equivalence prover exists in
+this repository — the strongest claim this pass can make, and the only one made here, is that
+`apiCheck` passes, all `api/` dumps are byte-identical, and every changed line in `store6-*/src`
+was mechanically classified as comment/KDoc/blank or else read and judged by eye (20/1500 lines,
+all confirmed clean). This is not a mechanically-proven claim of pure comment-only change; it is
+repository checks (apiCheck, empty api/ diff) plus human/agent hunk review at every task boundary
+and again at this final gate.
+
+### (g) ktlint/spotless no-op caveat
+
+`ktlintCheck` and `spotlessCheck` both report `BUILD SUCCESSFUL`, but neither exercises any
+`store6-*` module: the root `build.gradle.kts` returns early for `store6-*` modules before wiring
+ktlint/spotless tasks onto them, so both commands verify only the legacy modules (`cache`, `core`,
+`multicast`, `rx2`, `store`). Formatting assurance for the `store6-*` changes in this branch rests
+entirely on the per-task hunk-review discipline recorded throughout this inventory, plus the final
+mechanical hunk check in (c) above — not on any automated formatter run.
 
