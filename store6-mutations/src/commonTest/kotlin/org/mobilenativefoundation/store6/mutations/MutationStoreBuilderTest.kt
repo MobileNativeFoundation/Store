@@ -45,7 +45,7 @@ import kotlin.time.Duration.Companion.seconds
 class MutationStoreBuilderTest {
     @Test
     fun factory_requiresRegistryServerResolverAndValueCodec() = runTest {
-        // registry, server, keyResolver, valueCodecVersion, and valueCodec are required
+        // The registry, server, keyResolver, valueCodecVersion, and valueCodec are required
         // factory parameters, never builder doors. The named-argument call pins the exact
         // spelling; a functional read and mutate prove each required input reached the store.
         val mutators = testMutators()

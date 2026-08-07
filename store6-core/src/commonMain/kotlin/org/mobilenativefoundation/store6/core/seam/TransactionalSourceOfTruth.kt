@@ -5,9 +5,9 @@ import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 import org.mobilenativefoundation.store6.core.StoreKey
 
 /**
- * Optional atomicity capability for a [SourceOfTruth]. Detectable via
- * `sot is TransactionalSourceOfTruth`; the engine never assumes it and there is deliberately no
- * silent non-atomic default.
+ * Optional atomicity capability for a [SourceOfTruth]. Detectable via `sot is
+ * TransactionalSourceOfTruth`; the engine never assumes it and there is deliberately no silent
+ * non-atomic default.
  *
  * @param K the key type used to locate a row
  * @param V the non-null row type

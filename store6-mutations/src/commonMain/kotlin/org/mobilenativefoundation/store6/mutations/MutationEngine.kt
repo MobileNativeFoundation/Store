@@ -51,7 +51,7 @@ private const val HYDRATION_FAILURE_DETAIL_VALUE_ACKED: String = "value-codec-ac
 private const val HYDRATION_FAILURE_DETAIL_MUTATOR_MISSING: String = "mutator-missing"
 private const val HYDRATION_FAILURE_DETAIL_ARGS: String = "args-codec"
 
-/** The single attempt generation the in-memory path transmits; it never prepares a merge. */
+/** The single attempt generation the codec-less path transmits; it never prepares a merge. */
 private const val IN_MEMORY_GENERATION: Int = 1
 
 /** The internal default exponential-backoff constants; no public policy door exists. */
@@ -729,9 +729,9 @@ internal class MutationEngine<K : StoreKey, V : Any>(
      * continues past identities that fail to resolve after parking exactly one owned durable
      * pre-ack head (or retaining the precursor carrier when no such head exists). A sanctioned
      * retryable post-ack failure retains its owner and does not block another namespace in this
-     * captured pass.
-     * Processing is deterministic by durable client sequence within an identity and enumerates
-     * a captured identity snapshot in first-enqueue order; no cross-key order is promised.
+     * captured pass. Processing is deterministic by durable client sequence within an identity
+     * and enumerates a captured identity snapshot in first-enqueue order; no cross-key order is
+     * promised.
      */
     internal suspend fun drain(ensureOpen: () -> Unit = {}) {
         ensureHydrated()
@@ -940,8 +940,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * Durably parked intents only, ordered by park time. The in-memory precursor carriers are
-     * [drainFailuresForInspection].
+     * Durably parked intents only, ordered by park time. The in-memory failure carriers are
+     * exposed by [drainFailuresForInspection].
      */
     internal suspend fun deadLetters(): List<DeadLetter> {
         ensureHydrated()
@@ -1144,8 +1144,8 @@ internal class MutationEngine<K : StoreKey, V : Any>(
                                 message = resolution.message,
                             )
                         } else {
-                            // Keep the no-head/later-owned posture. Only an affected
-                            // executable pre-ack row may create a durable terminal failure.
+                            // Keep the no-head/later-owned posture. Only an affected executable
+                            // pre-ack row may create a durable terminal failure.
                             recordNormalizedFailure(
                                 kind = MutationFailureKind.IDENTITY,
                                 detail = DRAIN_FAILURE_DETAIL_KEYED_TERMINAL_UNRESOLVED,
@@ -3966,13 +3966,13 @@ internal class MutationEngine<K : StoreKey, V : Any>(
     }
 
     /**
-     * One accepted-state handoff: inside a
-     * single `NonCancellable` block the intent retires, the redirect activates, the source's
-     * queued siblings re-home to the canonical identity (merged by durable client sequence —
-     * selection is sequence-ordered, so physical order is not authority), the canonical `K` is
-     * cached, and the mutation-owned alias revision and resolution pulses advance synchronously
-     * BEFORE the compatibility `Overlay.changes` signals are emitted. Caller cancellation after
-     * the in-memory commit therefore cannot strand a live provisional stream.
+     * One accepted-state handoff: inside a single `NonCancellable` block the intent retires, the
+     * redirect activates, the source's queued siblings re-home to the canonical identity (merged
+     * by durable client sequence — selection is sequence-ordered, so physical order is not
+     * authority), the canonical `K` is cached, and the mutation-owned alias revision and
+     * resolution pulses advance synchronously BEFORE the compatibility `Overlay.changes` signals
+     * are emitted. Caller cancellation after the in-memory commit therefore cannot strand a live
+     * provisional stream.
      */
     private suspend fun retireAndActivateAlias(
         sourceKey: K,

@@ -565,9 +565,9 @@ internal class InMemoryAliasRouter(
      * Validates one acknowledged canonical target at ack receipt and prepares, but does not
      * persist or publish, an optional pending redirect edge: cross-namespace targets are
      * rejected; a receipt mismatch for [idempotencyKey] is rejected; a null or self target is an
-     * admitted no-op; a duplicate equal edge is idempotent; a
-     * different target for an already-aliased source is a retarget rejection; a target whose
-     * active-or-pending chain reaches back to [source] is a cycle rejection.
+     * admitted no-op; a duplicate equal edge is idempotent; a different target for an
+     * already-aliased source is a retarget rejection; a target whose active-or-pending chain
+     * reaches back to [source] is a cycle rejection.
      */
     suspend fun admit(
         source: KeyIdentity,

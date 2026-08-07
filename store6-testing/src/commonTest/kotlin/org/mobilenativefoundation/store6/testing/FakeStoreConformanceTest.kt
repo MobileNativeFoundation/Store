@@ -23,8 +23,8 @@ import kotlin.time.Duration.Companion.minutes
  * |---|---|
  * | Applicable | Cold-stream sequence, value/error channels, replay, resident serve, one-time
  * script consumption, stale-get SWR, demand-deferred invalidation, clear transitions,
- * Revalidated cycles, namespace isolation, close semantics, clock-derived age, and lifecycle-frame
- * survival through StateFlow/stateIn. |
+ * Revalidated cycles, namespace isolation, close semantics, clock-derived age, and
+ * lifecycle-frame survival through StateFlow/stateIn. |
  * | Engine-only | Fetch cancellation and non-cooperative fetchers, freshness-policy matrices,
  * dispatcher contention, backpressure conflation, overlay projection, key events, and runtime
  * access. Test those by composing the seam fakes into a real store. |

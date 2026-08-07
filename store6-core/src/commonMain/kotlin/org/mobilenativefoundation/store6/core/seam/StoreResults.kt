@@ -9,9 +9,7 @@ import org.mobilenativefoundation.store6.core.StoreMeta
 import org.mobilenativefoundation.store6.core.StoreResult
 import kotlin.time.Duration
 
-/**
- * StoreResults is the sanctioned construction door for extensions, fakes, and tests; internal constructors remain internal.
- */
+/** StoreResults is the sanctioned construction door for extensions, fakes, and tests; internal constructors remain internal. */
 @ExperimentalStoreApi
 public object StoreResults {
     public fun loading(): StoreResult.Loading = StoreResult.Loading()

@@ -29,12 +29,11 @@ public class FreshnessContext(
     /** The wall-clock reading captured for this plan, in Unix epoch milliseconds. */
     public val nowEpochMillis: Long,
 
+    /** The durable bookkeeping posture captured before the corresponding engine-state snapshot. */
     public val status: KeyStatus? = null,
 )
 
-/**
- * Selects the fetch plan for one coherent [FreshnessContext].
- */
+/** Selects the fetch plan for one coherent [FreshnessContext]. */
 @ExperimentalStoreApi
 @SubclassOptInRequired(DelicateStoreApi::class)
 public interface FreshnessValidator {
@@ -42,9 +41,7 @@ public interface FreshnessValidator {
     public fun plan(context: FreshnessContext): FetchPlan
 }
 
-/**
- * Fetch action selected by a [FreshnessValidator].
- */
+/** Fetch action selected by a [FreshnessValidator]. */
 @ExperimentalStoreApi
 public sealed interface FetchPlan {
     /**
@@ -53,16 +50,12 @@ public sealed interface FetchPlan {
      */
     public data object Skip : FetchPlan
 
-    /**
-     * Performs an unconditional fetch and optionally serves the resident value while it runs.
-     */
+    /** Performs an unconditional fetch and optionally serves the resident value while it runs. */
     public class Fetch(
         public val servesResidentWhileFetching: Boolean,
     ) : FetchPlan
 
-    /**
-     * Performs a conditional fetch for [etag] and optionally serves residence while it runs.
-     */
+    /** Performs a conditional fetch for [etag] and optionally serves residence while it runs. */
     public class Conditional(
         public val etag: String,
         public val servesResidentWhileFetching: Boolean,

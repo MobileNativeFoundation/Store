@@ -34,8 +34,7 @@ public fun <V> storeResultMutationPolicy(
  * never lost." This operator is stricter still: it never supersedes lifecycle results at all —
  * only exact structural Data duplicates are dropped. Age is excluded from the comparison (see
  * [storeResultMutationPolicy]). This is a store6-compose convenience for stateIn/ViewModel
- * consumers; the engine's operator rule (conflateLatestData as its single custom operator)
- * governs store6-core, not this module.
+ * consumers; `conflateLatestData` governs store6-core's own stream, not this module.
  */
 @ExperimentalStoreApi
 public fun <V> Flow<StoreResult<V>>.skipEqualData(

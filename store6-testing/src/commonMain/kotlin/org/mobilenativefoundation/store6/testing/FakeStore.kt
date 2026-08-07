@@ -38,12 +38,12 @@ import kotlin.time.Duration.Companion.milliseconds
  * Missing on both channels.
  *
  * Invalidation is a stale-mark only and never consumes a script. A stale Data frame reports
- * `refreshing` from whether a script is currently
- * pending. Scripted staleness is consumed at the next demand from an active collector, a later
- * stream after its stale snapshot, or behind a stale [get] read. One CAS consumption site allows at
- * most one winner across concurrent collectors. With no demand, the queued outcome is retained;
- * with no queued outcome, the stale frame has `refreshing=false` and no synthetic error. There is
- * no invalidate divergence from the engine's demand-deferred posture.
+ * `refreshing` from whether a script is currently pending. Scripted staleness is consumed at the
+ * next demand from an active collector, a later stream after its stale snapshot, or behind a
+ * stale [get] read. One CAS consumption site allows at most one winner across concurrent
+ * collectors. With no demand, the queued outcome is retained; with no queued outcome, the stale
+ * frame has `refreshing=false` and no synthetic error. There is no invalidate divergence from the
+ * engine's demand-deferred posture.
  *
  * Clear drops residence, emits Loading to active collectors, and retains the script for later
  * demand. Namespace and global operations sweep resident keys. Durable watermarks are deliberately
@@ -299,9 +299,7 @@ public class FakeStore<K : StoreKey, V : Any>(
         cells.value.keys.forEach(::clearCell)
     }
 
-    /**
-     * Closes this fake synchronously and idempotently.
-     */
+    /** Closes this fake synchronously and idempotently. */
     override fun close() {
         if (!closed.compareAndSet(expect = false, update = true)) return
         record(FakeStoreInteraction.Close)
@@ -513,10 +511,10 @@ public class FakeStore<K : StoreKey, V : Any>(
     }
 
     private companion object {
-        // Core keeps STORE_CLOSED_MESSAGE internal by design (diagnostics are review-gated
-        // text, not ABI). This literal is pinned by the close
-        // conformance tests here and by StoreCloseLifecycleTest in store6-core; change both
-        // pins together if the message ever changes.
+        // Core keeps STORE_CLOSED_MESSAGE internal by design (diagnostics are review-gated text,
+        // not ABI). This literal is pinned by the close conformance tests here and by
+        // StoreCloseLifecycleTest in store6-core; change both pins together if the message ever
+        // changes.
         private const val CLOSED_MESSAGE = "Store is closed."
     }
 }
