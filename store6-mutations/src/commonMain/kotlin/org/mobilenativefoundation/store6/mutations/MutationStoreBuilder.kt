@@ -240,6 +240,10 @@ public class MutationConflictBuilder<K : StoreKey, V : Any> internal constructor
      * [MutationConflictResolution.ServerWins] explicitly. When no merge is installed, server-wins
      * is the non-removable terminal.
      *
+     * Retrying is bounded: on the third consecutive conflict receipt carrying identical server
+     * metadata, the intent parks with a normalized `CONFLICT` failure instead of preparing
+     * another generation. A merge that throws parks the intent as well.
+     *
      * @param merge the pure policy applied to the captured base, this client's value, and the
      * recaptured authoritative value
      */

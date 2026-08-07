@@ -753,8 +753,9 @@ internal class MutationEngine<K : StoreKey, V : Any>(
 
     /**
      * Flushes the current contiguous local retirement prefix without holding a mutation,
-     * identity, namespace, runtime-cache, or retirement lock across consumer transport. Confirmation commits before a separate prune transaction. Non-cancellation
-     * failures are advisory client-scoped events only; they never create an intent failure row.
+     * identity, namespace, runtime-cache, or retirement lock across consumer transport.
+     * Confirmation commits before a separate prune transaction. Non-cancellation failures are
+     * advisory client-scoped events only; they never create an intent failure row.
      */
     private suspend fun flushRetirementCheckpoint() {
         val durable = durableJournal ?: return
