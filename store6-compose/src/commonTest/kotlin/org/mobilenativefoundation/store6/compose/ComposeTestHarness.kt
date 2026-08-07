@@ -27,8 +27,7 @@ private object UnitApplier : AbstractApplier<Unit>(Unit) {
 
 /**
  * Drives a composition entirely from the test scheduler: no wall clock, no `Dispatchers.Default`
- * hop, no nested `withTimeout` (issue-017 test-runtime discipline). Every frame is pumped
- * explicitly through [advanceFrame].
+ * hop, no nested `withTimeout`. Every frame is pumped explicitly through [advanceFrame].
  */
 internal class ComposeHost(private val scope: TestScope, private val clock: BroadcastFrameClock) {
     fun advanceFrame() {
@@ -64,6 +63,6 @@ internal fun runComposeTest(
     }
 }
 
-// Issue-017 convention: one file-private 25s runTest shadow, no nested wall-clock waits.
+// One file-private 25s runTest shadow, no nested wall-clock waits.
 private fun runTest(testBody: suspend TestScope.() -> Unit): TestResult =
     coroutineRunTest(timeout = 25.seconds, testBody = testBody)

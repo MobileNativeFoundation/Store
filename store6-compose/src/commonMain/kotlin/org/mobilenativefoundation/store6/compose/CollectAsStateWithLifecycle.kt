@@ -21,8 +21,8 @@ import org.mobilenativefoundation.store6.core.seam.StoreResults
  * Lifecycle-gated [collectAsState]: collection runs only at or above [minActiveState] via
  * [repeatOnLifecycle], retains the last result while stopped, and re-collects [Store.stream]
  * from scratch on re-entry (the engine re-emits the current snapshot first, so the State
- * catches up without a Loading reset). Under the landed issue-007 bounded registry a paused
- * collection releases its engine refcount; a quiescent idle engine may be evicted (LRU, default
+ * catches up without a Loading reset). Under the bounded key registry a paused collection
+ * releases its engine refcount; a quiescent idle engine may be evicted (LRU, default
  * `maxIdleKeys` 128) and is transparently rebuilt on re-entry — no API-visible difference.
  * Requires a populated [LocalLifecycleOwner] (any CMP UI host or Android component provides
  * one) unless [lifecycleOwner] is passed explicitly. On targets with no UI host that populates

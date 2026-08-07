@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
  * mutation has applied its final row or absence and published the matching notification; a
  * mutation that throws has not been applied.
  *
- * Every user-row mutation and its matching TD-6 metadata mutation execute in one [Transacter]
+ * Every user-row mutation and its matching metadata mutation execute in one [Transacter]
  * transaction, closing the durable user-row/sidecar atomicity boundary. The supplied query and
  * mutation callbacks must use the same [SqlDriver] passed to this adapter so user rows, their
  * transaction, and the sidecar remain coherent.

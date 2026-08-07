@@ -19,7 +19,7 @@ import org.mobilenativefoundation.store6.core.seam.KeyStatus
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Durable Room [Bookkeeper] backed by the adapter-owned TD-6 sidecar.
+ * Durable Room [Bookkeeper] backed by the adapter-owned sidecar.
  *
  * Identity is exclusively `(namespace.value, canonicalId())`. One allocator persisted at
  * `store6.sequence` supplies the durable sequence shared by successes, per-key stale marks,

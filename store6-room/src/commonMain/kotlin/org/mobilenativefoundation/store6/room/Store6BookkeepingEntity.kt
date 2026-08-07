@@ -5,7 +5,7 @@ import androidx.room3.Entity
 import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 
 /**
- * Adapter-owned TD-6 bookkeeping sidecar.
+ * Adapter-owned bookkeeping sidecar.
  *
  * Include this entity and [Store6WatermarkEntity] in the user's Room database, add an abstract
  * [Store6BookkeeperDao] accessor, and migrate existing databases with

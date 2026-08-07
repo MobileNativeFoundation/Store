@@ -5,7 +5,7 @@ import androidx.sqlite.execSQL
 import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 
 /**
- * Migration SQL for the adapter-owned TD-6 sidecar.
+ * Migration SQL for the adapter-owned sidecar.
  *
  * When adding these tables to an existing Room database, bump its version by 1 and call
  * [createTables] from the migration.

@@ -29,15 +29,15 @@ public fun <V> storeResultMutationPolicy(
 /**
  * Drops structurally-equal consecutive [StoreResult.Data] frames; every lifecycle result
  * (Loading, Revalidated, Error) always passes, and no result is ever dropped in favor of a
- * different kind. This mirrors the engine's `conflateLatestData` discipline as landed by the
- * issue-007 OQ-1 ruling — same-kind latest-wins, never merged across kinds — whose public
- * contract reads: "Revalidated is a lifecycle signal: `conflateLatestData` never conflates it
- * away in favor of another kind; for a blocked collector a newer `Revalidated` supersedes an
- * older queued one, so the kind itself is never lost." This operator is stricter still: it never
- * supersedes lifecycle results at all — only exact structural Data duplicates are dropped. Age
- * is excluded from the comparison (see [storeResultMutationPolicy]). This is a store6-compose
- * convenience for stateIn/ViewModel consumers; the engine's TD-8 operator rule
- * (conflateLatestData as its single custom operator) governs store6-core, not this module.
+ * different kind. This mirrors the engine's `conflateLatestData` discipline — same-kind
+ * latest-wins, never merged across kinds — whose public contract reads: "Revalidated is a
+ * lifecycle signal: `conflateLatestData` never conflates it away in favor of another kind; for a
+ * blocked collector a newer `Revalidated` supersedes an older queued one, so the kind itself is
+ * never lost." This operator is stricter still: it never supersedes lifecycle results at all —
+ * only exact structural Data duplicates are dropped. Age is excluded from the comparison (see
+ * [storeResultMutationPolicy]). This is a store6-compose convenience for stateIn/ViewModel
+ * consumers; the engine's operator rule (conflateLatestData as its single custom operator)
+ * governs store6-core, not this module.
  */
 @ExperimentalStoreApi
 public fun <V> Flow<StoreResult<V>>.skipEqualData(

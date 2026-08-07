@@ -11,7 +11,7 @@ import org.mobilenativefoundation.store6.core.StoreMeta
 import org.mobilenativefoundation.store6.core.seam.KeyStatus
 
 /**
- * Adapter-owned durable sidecar (TD-6). Four tables are created and versioned by the adapter in
+ * Adapter-owned durable sidecar. Four tables are created and versioned by the adapter in
  * the user's database with zero user schema changes. SQLite `user_version` is never touched
  * because it belongs to the user's own schema. Present behavior is schema v1; the migration
  * ladder exists but has no steps yet.

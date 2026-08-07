@@ -53,7 +53,7 @@ internal class RoomStoreSubstitutionConformanceTest {
     private val keyB = RoomKitKey(users, "b")
     private val otherNamespaceKey = RoomKitKey(teams, "a")
 
-    /** FS-1 / AC-1: a cold public Store stream persists its fetched value through Room. */
+    /** A cold public Store stream persists its fetched value through Room. */
     @Test
     fun coldStream_loadingThenFetcherData_rowPersisted(): TestResult = runTest {
         val database = createTestDatabase()
@@ -84,7 +84,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-6: a fresh durable row and sidecar let a new Store skip fetching. */
+    /** A fresh durable row and sidecar let a new Store skip fetching. */
     @Test
     fun secondStoreOverSameDatabase_servesSotWithoutFetch(): TestResult = runTest {
         val database = createTestDatabase()
@@ -108,7 +108,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-6: disk hydration refetches unconditionally, then same-engine ETag reuse is conditional. */
+    /** Disk hydration refetches unconditionally, then same-engine ETag reuse is conditional. */
     @Test
     fun durableEtag_roundTrips_asConditionalFetch_revalidated(): TestResult = runTest {
         val database = createTestDatabase()
@@ -186,7 +186,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-4 / TD-2: a namespace watermark survives Store replacement and forces a refetch. */
+    /** A namespace watermark survives Store replacement and forces a refetch. */
     @Test
     fun invalidateNamespace_survivesRestart_forcesRefetch(): TestResult = runTest {
         val database = createTestDatabase()
@@ -241,7 +241,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-4: clear removes both the user row and its durable freshness record. */
+    /** Clear removes both the user row and its durable freshness record. */
     @Test
     fun clear_deletesRowAndForgetsBookkeeping(): TestResult = runTest {
         val database = createTestDatabase()
@@ -271,7 +271,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-4: clearNamespace runs the user delete and sweeps matching durable metadata only. */
+    /** clearNamespace runs the user delete and sweeps matching durable metadata only. */
     @Test
     fun clearNamespace_runsUserStatementAndSweeps(): TestResult = runTest {
         val database = createTestDatabase()
@@ -304,7 +304,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-1 / FS-5: StaleIfError serves residence, reports failure, and remains causal-live. */
+    /** StaleIfError serves residence, reports failure, and remains causal-live. */
     @Test
     fun staleIfError_servesStaleAndErrorStaysLive(): TestResult = runTest {
         val database = createTestDatabase()
@@ -375,7 +375,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FR-10 / FS-3: a remote deletion cannot satisfy MustBeFresh on a missing row. */
+    /** A remote deletion cannot satisfy MustBeFresh on a missing row. */
     @Test
     fun mustBeFresh_missingRow_throwsStoreException(): TestResult = runTest {
         val database = createTestDatabase()
@@ -397,7 +397,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FR-10 / FS-3: LocalOnly hydrates a user-seeded Room row without fetching. */
+    /** LocalOnly hydrates a user-seeded Room row without fetching. */
     @Test
     fun localOnly_servesSeededRowWithoutFetch(): TestResult = runTest {
         val database = createTestDatabase()
@@ -414,7 +414,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** AC-2-lite: concurrent public gets share one cold-key fetch. */
+    /** Concurrent public gets share one cold-key fetch. */
     @Test
     fun concurrentGets_singleFlight(): TestResult = runTest {
         val database = createTestDatabase()
@@ -463,7 +463,7 @@ internal class RoomStoreSubstitutionConformanceTest {
         }
     }
 
-    /** FS-3: MaxAge uses durable write time after Store replacement and withholds stale data. */
+    /** MaxAge uses durable write time after Store replacement and withholds stale data. */
     @Test
     fun maxAge_refetchesWhenDurableMetaTooOld(): TestResult = runTest {
         val database = createTestDatabase()
@@ -616,8 +616,8 @@ private suspend fun Store<*, *>.closeAndSettleForTest() {
     close()
 }
 
-// 017 residual-deadline repair: Turbine's 3s default nested inside the 25s shadow; raise the
-// Turbine deadline above the shadow so runTest provides the only effective timeout (D0, PR #15).
+// Turbine's 3s default nested inside the 25s shadow; raise the Turbine deadline above the
+// shadow so runTest provides the only effective timeout.
 private val TEST_TIMEOUT = 25.seconds
 private val TURBINE_DEADLINE = 30.seconds // strictly > TEST_TIMEOUT: the shadow must fire first
 

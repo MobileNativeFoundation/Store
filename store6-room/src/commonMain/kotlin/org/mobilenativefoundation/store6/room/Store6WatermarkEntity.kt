@@ -6,7 +6,7 @@ import androidx.room3.PrimaryKey
 import org.mobilenativefoundation.store6.core.ExperimentalStoreApi
 
 /**
- * Adapter-owned TD-6 watermark row.
+ * Adapter-owned watermark row.
  *
  * See [Store6BookkeepingEntity] for the required database inclusion and migration rules.
  */

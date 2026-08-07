@@ -18,7 +18,7 @@ import kotlinx.coroutines.test.runTest as coroutineRunTest
 /**
  * Type-only characterization of the closed-store behavior the composables inherit, asserted at the
  * exact `Store.stream` seam they call. The close message is engine-internal diagnostic text, not
- * ABI (OQ-3), so no message text is asserted here.
+ * ABI, so no message text is asserted here.
  */
 class ClosedStoreBehaviorTest {
     private class TestKey(val id: String) : StoreKey {
@@ -63,6 +63,6 @@ class ClosedStoreBehaviorTest {
     }
 }
 
-// Issue-017 convention: one file-private 25s runTest shadow, no nested wall-clock waits.
+// One file-private 25s runTest shadow, no nested wall-clock waits.
 private fun runTest(testBody: suspend TestScope.() -> Unit): TestResult =
     coroutineRunTest(timeout = 25.seconds, testBody = testBody)

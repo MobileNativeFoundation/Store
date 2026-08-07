@@ -203,11 +203,10 @@ private class RoomEchoTransactionFrame(
  * sequential in their owning coroutine. Queued top-level mutations wait without retaining a Room
  * writer.
  *
- * When [withTransaction] wraps nested writes for the future TD-11 mutations decorator, nested
- * mutations enlist in the outer transaction and remain invisible to readers until the outer
- * transaction commits. A rollback publishes no value. Multiple same-key writes in one outer
- * transaction coalesce to its final committed value, so readers never observe a transient nested
- * value that did not exist outside the transaction.
+ * When [withTransaction] wraps nested writes, nested mutations enlist in the outer transaction
+ * and remain invisible to readers until the outer transaction commits. A rollback publishes no
+ * value. Multiple same-key writes in one outer transaction coalesce to its final committed value,
+ * so readers never observe a transient nested value that did not exist outside the transaction.
  */
 @ExperimentalStoreApi
 public class RoomSourceOfTruth<K : StoreKey, V : Any>(
