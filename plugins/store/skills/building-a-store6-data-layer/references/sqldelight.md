@@ -1,4 +1,4 @@
-# store6-sqldelight
+# sqldelight
 
 Every spelling below is verified against Store `main` @ `6790606d`. Package `org.mobilenativefoundation.store6.sqldelight`. Both adapters are `@ExperimentalStoreApi` — callers need `@OptIn(ExperimentalStoreApi::class)`.
 

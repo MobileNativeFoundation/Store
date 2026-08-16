@@ -1,4 +1,4 @@
-# store6-compose
+# compose
 
 Every spelling below is verified against Store `main` @ `6790606d`. Package `org.mobilenativefoundation.store6.compose`. Callers need `@OptIn(ExperimentalStoreApi::class)`.
 
@@ -53,7 +53,7 @@ Structural compare on `Data`: `origin`, `isStale`, `refreshing`, `value` — **`
 
 ## Stability conf
 
-Copy the shipped snippet (`store6-compose/stability/store6-stability.conf`) into the **app** module as `store6-stability.conf`:
+Copy the shipped snippet (`compose/stability/store6-stability.conf`) into the **app** module as `store6-stability.conf`:
 
 ```
 org.mobilenativefoundation.store6.core.*

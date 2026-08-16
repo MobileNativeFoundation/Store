@@ -225,14 +225,14 @@ fun Project.configureDokka() {
                 url("https://kotlinlang.org/api/kotlinx.coroutines/")
                 packageListUrl("https://kotlinlang.org/api/kotlinx.coroutines/package-list")
             }
-            if (project.name == "store6-mutations") {
-                externalDocumentationLinks.register("store6-core") {
-                    url("https://store.mobilenativefoundation.org/reference/store6-core/")
+            if (project.name == "mutations") {
+                externalDocumentationLinks.register("core") {
+                    url("https://store.mobilenativefoundation.org/reference/core/")
                     packageListUrl.set(
                         rootProject
-                            .project(":store6-core")
+                            .project(":core")
                             .layout.buildDirectory
-                            .file("dokka/html/store6-core/package-list")
+                            .file("dokka/html/core/package-list")
                             .map { it.asFile.toURI() },
                     )
                 }
@@ -246,9 +246,9 @@ fun Project.configureDokka() {
         }
     }
 
-    if (project.name == "store6-mutations") {
+    if (project.name == "mutations") {
         tasks.named("dokkaGeneratePublicationHtml").configure {
-            dependsOn(":store6-core:dokkaGeneratePublicationHtml")
+            dependsOn(":core:dokkaGeneratePublicationHtml")
         }
     }
     tasks.register("dokkaHtml") {

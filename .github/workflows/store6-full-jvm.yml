@@ -32,14 +32,14 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run the FULL mutations JVM suite (Lincheck included)
-        run: ./gradlew :store6-mutations:jvmTest -Pstore6.fullJvmSuite --stacktrace
+        run: ./gradlew :mutations:jvmTest -Pstore6.fullJvmSuite --stacktrace
 
       - name: Census — no suite may be lost
         shell: bash
         run: |
           set -euo pipefail
-          expected=$(find store6-mutations/src/commonTest store6-mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ')
-          executed=$(find store6-mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          expected=$(find mutations/src/commonTest mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ')
+          executed=$(find mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
           echo "expected=${expected} executed=${executed}"
           [ "${expected}" -eq "${executed}" ]
 
@@ -49,8 +49,8 @@ jobs:
         with:
           name: full-jvm-results-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            store6-mutations/build/test-results/**/*.xml
-            store6-mutations/build/reports/tests/**
+            mutations/build/test-results/**/*.xml
+            mutations/build/reports/tests/**
           if-no-files-found: warn
           retention-days: 14
 

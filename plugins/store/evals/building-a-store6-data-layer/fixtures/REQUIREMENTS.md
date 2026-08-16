@@ -1,7 +1,7 @@
 # Atlas — user/session data layer requirements
 
 Kotlin Multiplatform app: `shared/` (KMP), `app/` (Android, Compose), `iosApp/` (Swift via SKIE).
-Build a shared data layer for user profiles and the auth session. `store6-core` and `store6-room`
+Build a shared data layer for user profiles and the auth session. `core` and `room`
 are on the classpath; packages live under `org.mobilenativefoundation.store6.*`.
 
 1. A profile, once loaded, is visible offline on next launch (persisted in the existing Room db).

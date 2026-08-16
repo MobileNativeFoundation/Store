@@ -59,12 +59,12 @@ private val volatileVersionLine =
  * Per-project configuration for the Swift dump lanes.
  *
  * Every property has a core-valued convention so the two existing core lanes
- * (store6-swift-dumps/objc and store6-swift-dumps/skie) apply the plugins without configuration
- * and keep byte-identical task wiring. New lanes (store6-swift-dumps/mutations-objc and
+ * (swift-dumps/objc and swift-dumps/skie) apply the plugins without configuration
+ * and keep byte-identical task wiring. New lanes (swift-dumps/mutations-objc and
  * mutations-skie) override all identity properties explicitly.
  */
 abstract class SwiftDumpExtension {
-    /** Reviewed surface module name, e.g. "store6-core" or "store6-mutations". */
+    /** Reviewed surface module name, e.g. "core" or "mutations". */
     abstract val surfaceName: Property<String>
 
     /** Framework base name, e.g. "Store6Core", "Store6CoreSkie", "Store6Mutations". */
@@ -78,7 +78,7 @@ abstract class SwiftDumpExtension {
 
     /**
      * Committed dump directory, relative to the root project,
-     * e.g. "store6-core/api/swift/objc". Convention: "<surfaceName>/api/swift/<objc|skie>".
+     * e.g. "core/api/swift/objc". Convention: "<surfaceName>/api/swift/<objc|skie>".
      */
     abstract val committedDumpPath: Property<String>
 }
@@ -238,7 +238,7 @@ class Store6ObjcSwiftDumpPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
             val dump = extensions.create(SWIFT_DUMP_EXTENSION_NAME, SwiftDumpExtension::class.java)
-            dump.surfaceName.convention("store6-core")
+            dump.surfaceName.convention("core")
             dump.frameworkName.convention("Store6Core")
             dump.outputHeaderName.convention(dump.frameworkName.map { "$it.h" })
             dump.outputSwiftName.convention(dump.frameworkName.map { "$it.swift" })
@@ -297,7 +297,7 @@ class Store6SkieSwiftDumpPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
             val dump = extensions.create(SWIFT_DUMP_EXTENSION_NAME, SwiftDumpExtension::class.java)
-            dump.surfaceName.convention("store6-core")
+            dump.surfaceName.convention("core")
             dump.frameworkName.convention("Store6CoreSkie")
             dump.outputHeaderName.convention(dump.frameworkName.map { "$it.h" })
             dump.outputSwiftName.convention(dump.frameworkName.map { "$it.swift" })

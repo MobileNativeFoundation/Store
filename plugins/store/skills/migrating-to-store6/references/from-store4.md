@@ -11,7 +11,7 @@ Store 5 added `MutableStore`, `Validator`, fallback mechanisms, write-conflict r
 | Store 4-era responsibility | Store 6 path |
 | --- | --- |
 | Fetcher | `fetcher { }`, `fetcherOfResult { }`, or the experimental seam `Fetcher` |
-| Persister / SourceOfTruth | The persistence seam or a `store6-room`/`store6-sqldelight` adapter |
+| Persister / SourceOfTruth | The persistence seam or a `room`/`sqldelight` adapter |
 | Converter | No direct analog. Conversion lives in fetcher and persistence callbacks |
 | Read sites | `get(key, freshness)` for a point read, `stream(key, freshness)` for an ongoing flow |
 

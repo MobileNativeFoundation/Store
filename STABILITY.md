@@ -2,21 +2,21 @@
 
 ## 1. What this document is
 
-What each `store6-*` artifact promises, how an API is allowed to change, how often we ship, and how
+What each Store 6 artifact promises, how an API is allowed to change, how often we ship, and how
 you can verify all of it from a released tag. Where a promise is not yet earned, this document says
 so rather than rounding up.
 
 It is also the standing answer to [#570][570] on binary compatibility and [#534][534] on a published
 roadmap.
 
-Scope: the `store6-*` artifacts, effective with the 6.0.0-alpha01 release. Store 5 continues under
+Scope: the Store 6 artifacts, effective with the 6.0.0-alpha01 release. Store 5 continues under
 its own coordinates, and [§6](#6-migrating-from-store-5) covers living with both.
 
 ## 2. API tiers
 
 <a id="tiers"></a>
 
-Store 6 uses three opt-in markers. Each is a real annotation in `store6-core`, and the meaning below
+Store 6 uses three opt-in markers. Each is a real annotation in `core`, and the meaning below
 is the one carried in its own KDoc.
 
 | Marker | Means |
@@ -44,17 +44,17 @@ Group coordinates are unchanged: `org.mobilenativefoundation.store`. Packages ar
 
 | Artifact | Tier | In 6.0.0-alpha01 |
 |---|---|---|
-| `store6-core` | Stable-track. The API is **not frozen** until the beta01 freeze candidate. | alpha01 |
-| `store6-testing` | Experimental (`@ExperimentalStoreApi`) — every public declaration in the artifact carries the marker today. | alpha01 |
-| `store6-sqldelight` | Experimental adapter (`@ExperimentalStoreApi`). Graduates to stable at 6.0.0, having run the contract kit throughout the alpha line. | alpha01, may slip one alpha |
-| `store6-room` | Experimental adapter, same graduation. | alpha01, may slip one alpha |
-| `store6-compose` | Experimental adapter, same graduation. | alpha01, may slip one alpha |
-| `store6-mutations` | **Experimental, separate artifact — every public symbol is `@ExperimentalStoreApi`.** See [§8](#mutations). | alpha01 |
-| `store6-bom` | Version alignment only; no API surface of its own. | alpha01 |
-| `store6-devtools` | Experimental (`@ExperimentalStoreApi`). | alpha02 (target) |
-| `store6-devtools-inspector` | Experimental (`@ExperimentalStoreApi`). | alpha02 (target) |
+| `core` | Stable-track. The API is **not frozen** until the beta01 freeze candidate. | alpha01 |
+| `testing` | Experimental (`@ExperimentalStoreApi`) — every public declaration in the artifact carries the marker today. | alpha01 |
+| `sqldelight` | Experimental adapter (`@ExperimentalStoreApi`). Graduates to stable at 6.0.0, having run the contract kit throughout the alpha line. | alpha01, may slip one alpha |
+| `room` | Experimental adapter, same graduation. | alpha01, may slip one alpha |
+| `compose` | Experimental adapter, same graduation. | alpha01, may slip one alpha |
+| `mutations` | **Experimental, separate artifact — every public symbol is `@ExperimentalStoreApi`.** See [§8](#mutations). | alpha01 |
+| `bom` | Version alignment only; no API surface of its own. | alpha01 |
+| `devtools` | Experimental (`@ExperimentalStoreApi`). | alpha02 (target) |
+| `devtools-inspector` | Experimental (`@ExperimentalStoreApi`). | alpha02 (target) |
 
-Inside `store6-core`, the `org.mobilenativefoundation.store6.core.seam` package — the 13 files you
+Inside `core`, the `org.mobilenativefoundation.store6.core.seam` package — the 13 files you
 implement to plug in your own fetcher, source of truth, bookkeeper, clock, telemetry, or overlay —
 is a **freeze candidate, not frozen.** Today these types are `@ExperimentalStoreApi`, so
 implementing one is an explicit opt-in; that is the exception §2 names, and it is why the seam sits
@@ -67,8 +67,8 @@ its test matrix are green; if that work misses beta01, those two ship `@Experime
 outside the frozen tier and the rest of core freezes on schedule. CI enforces the 13-file list on
 every pull request, so the seam cannot grow quietly.
 
-Promised: `store6-store5-interop`, tracking to 6.0.0 and not in the alpha01 line, and
-`store6-paging-androidx`, which joins the line in the first release it is green for. An artifact
+Promised: `store5-interop`, tracking to 6.0.0 and not in the alpha01 line, and
+`paging-androidx`, which joins the line in the first release it is green for. An artifact
 that misses a train gets its target release named here. It does not get dropped silently.
 
 ## 4. Deprecation cycle
@@ -103,10 +103,11 @@ The public roadmap is at [ROADMAP.md](./ROADMAP.md).
 
 ## 6. Migrating from Store 5
 
-`store5.*` and `store6.*` coordinates live **side by side for the whole 6.x major**. You can depend
-on both in one build and migrate a screen at a time. There is no flag day.
+Store 5 and Store 6 artifacts live **side by side for the whole 6.x major** in
+`org.mobilenativefoundation.store`. You can depend on both in one build and migrate a screen at a
+time. There is no flag day.
 
-`store6-store5-interop` is supported for all of 6.x. The 5→6 and 4→6 migration guides are launch
+`store5-interop` is supported for all of 6.x. The 5→6 and 4→6 migration guides are launch
 gates for 6.0.0 — they block GA, they are not follow-ups.
 
 ## 7. How stability is verified
@@ -115,20 +116,20 @@ gates for 6.0.0 — they block GA, they are not follow-ups.
 
 Every claim in this document is checkable from a released tag.
 
-- **`explicitApi()` strict** on every `store6-*` library module. Nothing becomes public by omission.
+- **`explicitApi()` strict** on every Store 6 library module. Nothing becomes public by omission.
 - **Binary-compatibility-validator (0.17.0) with klib validation enabled.** Each module commits a
-  JVM `.api` dump and a `.klib.api` dump — for example `store6-core/api/jvm/store6-core.api` and
-  `store6-core/api/store6-core.klib.api`. The check runs as part of `build` on every pull request,
+  JVM `.api` dump and a `.klib.api` dump — for example `core/api/jvm/core.api` and
+  `core/api/core.klib.api`. The check runs as part of `build` on every pull request,
   so an unintended ABI change fails CI before review.
 - **Generated-Swift dumps diffed on every pull request** across the supported bridges — Obj-C export
-  and SKIE today (`store6-core/api/swift/objc`, `store6-core/api/swift/skie`). The bridge set follows
+  and SKIE today (`core/api/swift/objc`, `core/api/swift/skie`). The bridge set follows
   the Swift Export disposition recorded at the alpha01 cut, so read this as a commitment to the
   mechanism rather than to a fixed list of lanes.
 - **ABI dumps are committed at every released tag**, so the surface of any release is diffable from
   the repository without resolving artifacts.
 - **The conformance suite is public documentation of what is guaranteed.** The behaviors this
   library promises are named tests you can read:
-  [`store6-core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/`](store6-core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/)
+  [`core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/`](core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/)
   (`*ConformanceTest.kt`). When a release closes one of your issues, the notes link the test, not a
   bullet point.
 
@@ -136,7 +137,7 @@ Every claim in this document is checkable from a released tag.
 
 <a id="mutations"></a>
 
-`store6-mutations` is in the alpha01 floor, not the may-slip list: an app that writes should not
+`mutations` is in the alpha01 floor, not the may-slip list: an app that writes should not
 have to wait for a later alpha. Three things about it are worth stating plainly.
 
 ### (a) The tier
@@ -201,7 +202,7 @@ point read of committed truth. If you need to observe your own optimistic write,
 The `store6` line requires **Kotlin 2.3**, raised only in minor releases and with notice.
 
 The floor is what the published artifacts actually imply, not an aspiration: every published
-`store6-core` variant — JVM, Android, JS, wasmJs, and each native target — declares
+`core` variant — JVM, Android, JS, wasmJs, and each native target — declares
 `org.jetbrains.kotlin:kotlin-stdlib:2.3.20`, and the build sets no `apiVersion` or `languageVersion`
 compatibility pin that would lower it. Room 3 is what drove the toolchain here.
 

@@ -15,40 +15,40 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "Store5"
 
-include ':store6-core'
-include ':store6-quickstart'
-include ':store6-swift-dumps-objc'
-project(':store6-swift-dumps-objc').projectDir = file('store6-swift-dumps/objc')
-include ':store6-swift-dumps-skie'
-project(':store6-swift-dumps-skie').projectDir = file('store6-swift-dumps/skie')
-include ':store6-swift-dumps-mutations-objc'
-project(':store6-swift-dumps-mutations-objc').projectDir = file('store6-swift-dumps/mutations-objc')
-include ':store6-swift-dumps-mutations-skie'
-project(':store6-swift-dumps-mutations-skie').projectDir = file('store6-swift-dumps/mutations-skie')
-include ':store6-extension-probe'
-include ':store6-testing'
-include ':store6-sqldelight'
-include ':store6-sqldelight-sample'
-project(':store6-sqldelight-sample').projectDir = file('store6-sqldelight/sample')
-include ':store6-compose'
-include ':store6-compose-demo'
-include ':store6-room'
-include ':store6-room-sample'
-project(':store6-room-sample').projectDir = file('store6-room/sample')
-include ':store6-paging-androidx'
-include ':store6-paging-androidx-sample'
-project(':store6-paging-androidx-sample').projectDir = file('store6-paging-androidx/sample')
-include ':store6-graphql'
-include ':store6-graphql-sample'
-project(':store6-graphql-sample').projectDir = file('store6-graphql/sample')
-include ':store6-realtime'
-include ':store6-realtime-sample'
-project(':store6-realtime-sample').projectDir = file('store6-realtime/sample')
-include ':store6-benchmarks'
-include ':store6-devtools'
-include ':store6-devtools-inspector'
-include ':store6-devtools-demo'
-include ':store6-mutations'
-include ':store6-mutations-quickstart'
-include ':store6-mutations-testing'
-include ':store6-mutations-sqldelight'
+include ':core'
+include ':quickstart'
+include ':swift-dumps-objc'
+project(':swift-dumps-objc').projectDir = file('swift-dumps/objc')
+include ':swift-dumps-skie'
+project(':swift-dumps-skie').projectDir = file('swift-dumps/skie')
+include ':swift-dumps-mutations-objc'
+project(':swift-dumps-mutations-objc').projectDir = file('swift-dumps/mutations-objc')
+include ':swift-dumps-mutations-skie'
+project(':swift-dumps-mutations-skie').projectDir = file('swift-dumps/mutations-skie')
+include ':extension-probe'
+include ':testing'
+include ':sqldelight'
+include ':sqldelight-sample'
+project(':sqldelight-sample').projectDir = file('sqldelight/sample')
+include ':compose'
+include ':compose-demo'
+include ':room'
+include ':room-sample'
+project(':room-sample').projectDir = file('room/sample')
+include ':paging-androidx'
+include ':paging-androidx-sample'
+project(':paging-androidx-sample').projectDir = file('paging-androidx/sample')
+include ':graphql'
+include ':graphql-sample'
+project(':graphql-sample').projectDir = file('graphql/sample')
+include ':realtime'
+include ':realtime-sample'
+project(':realtime-sample').projectDir = file('realtime/sample')
+include ':benchmarks'
+include ':devtools'
+include ':devtools-inspector'
+include ':devtools-demo'
+include ':mutations'
+include ':mutations-quickstart'
+include ':mutations-testing'
+include ':mutations-sqldelight'

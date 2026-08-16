@@ -32,7 +32,7 @@ val store = store<UserKey, User> {
 | `Fetcher.of { }` | `fetcher { key -> value }` (success-or-throw sugar) |
 | `Fetcher.ofResult { }` | `fetcherOfResult { key -> FetcherResult }` with the full result vocabulary: `Success(value, etag)`, `Error(cause)`, `NotModified(etag)` (emits `Revalidated`), `Deleted` (clears without refetch) |
 | Fallback fetcher chains | No engine support. Store performs zero retries and no fallback chain. Compose them inside your fetcher. |
-| `sourceOfTruth = SourceOfTruth.of(reader, writer, delete, deleteAll)` | `persistence(sot)` where `sot` implements the seam interface `SourceOfTruth<K, V>` (`reader(key): Flow<V?>`, `write(key, value)`, `delete(key)`, `deleteNamespace(namespace)`, `deleteAll()`). `persistence` and the interface are `@ExperimentalStoreApi`, and implementing the interface additionally requires `DelicateStoreApi` opt-in. Prefer the `store6-room`/`store6-sqldelight` adapters. |
+| `sourceOfTruth = SourceOfTruth.of(reader, writer, delete, deleteAll)` | `persistence(sot)` where `sot` implements the seam interface `SourceOfTruth<K, V>` (`reader(key): Flow<V?>`, `write(key, value)`, `delete(key)`, `deleteNamespace(namespace)`, `deleteAll()`). `persistence` and the interface are `@ExperimentalStoreApi`, and implementing the interface additionally requires `DelicateStoreApi` opt-in. Prefer the `room`/`sqldelight` adapters. |
 | `validator(Validator.by { ... })` | No per-item validity hook. Use per-call `Freshness` (usually `MaxAge`) plus `invalidate*`. The experimental `FreshnessValidator` seam is a read planner, not a validity check. |
 | `scope(...)` | No counterpart. The store owns its lifecycle. Release it with `close()`. After close, operations fail with `IllegalStateException("Store is closed.")`. |
 | `cachePolicy(...)` / `disableCache()` | No TTL cache policy. `maxIdleKeys(count)` (default 128) bounds quiescent per-key engine residency, and `0` destroys each engine at quiescence. Eviction discards derived state only. Durable rows, stale marks, and watermarks survive. |
@@ -155,7 +155,7 @@ class UserKey(val id: String) : StoreKey {
 }
 
 // Implementing the seam requires both opt-ins. Validate custom implementations with the
-// store6-testing contract kit; prefer the store6-room/store6-sqldelight adapters when the app
+// testing contract kit; prefer the room/sqldelight adapters when the app
 // already has a database.
 @OptIn(ExperimentalStoreApi::class, DelicateStoreApi::class)
 private class UserDaoSourceOfTruth(private val dao: UserDao) : SourceOfTruth<UserKey, User> {

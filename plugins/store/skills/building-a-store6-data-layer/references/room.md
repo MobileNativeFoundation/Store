@@ -1,4 +1,4 @@
-# Room 3 (`store6-room`)
+# Room 3 (`room`)
 
 Sidecar schema + DAO wiring. Spellings below match Store `main` @ `6790606d`.
 
@@ -27,8 +27,8 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.mobilenativefoundation.store:store6-core:<version>")
-    implementation("org.mobilenativefoundation.store:store6-room:<version>")
+    implementation("org.mobilenativefoundation.store:core:<version>")
+    implementation("org.mobilenativefoundation.store:room:<version>")
     ksp("androidx.room3:room3-compiler:3.0.0")
 }
 ```
@@ -142,4 +142,4 @@ Room.databaseBuilder<AppDatabase>(name = path)
 
 ## Testing
 
-Validate custom seams with `store6-testing` (`SourceOfTruthContractKit`, `BookkeeperContractKit`) at the same `<version>`.
+Validate custom seams with `testing` (`SourceOfTruthContractKit`, `BookkeeperContractKit`) at the same `<version>`.

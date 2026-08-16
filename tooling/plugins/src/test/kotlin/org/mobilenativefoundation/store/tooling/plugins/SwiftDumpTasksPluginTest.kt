@@ -65,19 +65,19 @@ class SwiftDumpTasksPluginTest {
     @Test
     fun objcProject_usesConfiguredFrameworkOutputAndCommittedDirectory() {
         val root = rootProject()
-        val project = childProject(root, "store6-swift-dumps-mutations-objc")
+        val project = childProject(root, "swift-dumps-mutations-objc")
         project.plugins.apply(Store6ObjcSwiftDumpPlugin::class.java)
         project.extensions.getByType(SwiftDumpExtension::class.java).apply {
-            surfaceName.set("store6-mutations")
+            surfaceName.set("mutations")
             frameworkName.set("Store6Mutations")
             outputHeaderName.set("Store6Mutations.h")
-            committedDumpPath.set("store6-mutations/api/swift/objc")
+            committedDumpPath.set("mutations/api/swift/objc")
         }
 
         val generate = project.tasks.getByName("generateSwiftDump") as GenerateObjcSwiftDumpTask
         assertEquals("Store6 verification", generate.group)
         assertEquals(
-            "Generates the sanitized Obj-C export dump for store6-mutations.",
+            "Generates the sanitized Obj-C export dump for mutations.",
             generate.description,
         )
         assertEquals(
@@ -89,27 +89,27 @@ class SwiftDumpTasksPluginTest {
 
         val refresh = project.tasks.getByName("refreshSwiftDump") as Sync
         assertEquals(
-            "Refreshes the committed Obj-C export dump for store6-mutations.",
+            "Refreshes the committed Obj-C export dump for mutations.",
             refresh.description,
         )
         assertEquals(
-            project.expectedCommittedDirectory("store6-mutations/api/swift/objc"),
+            project.expectedCommittedDirectory("mutations/api/swift/objc"),
             refresh.destinationDir,
         )
 
         val check = project.tasks.getByName("checkSwiftDump") as CheckSwiftDumpTask
         assertEquals(
-            "Checks the committed Obj-C export dump for store6-mutations.",
+            "Checks the committed Obj-C export dump for mutations.",
             check.description,
         )
         assertEquals(project.expectedStagedDirectory(), check.generatedDirectory.get().asFile)
         assertEquals(
-            project.expectedCommittedDirectory("store6-mutations/api/swift/objc"),
+            project.expectedCommittedDirectory("mutations/api/swift/objc"),
             check.committedDirectory.get().asFile,
         )
         assertEquals(
-            "Obj-C export dump for store6-mutations has drifted from " +
-                "store6-mutations/api/swift/objc. " +
+            "Obj-C export dump for mutations has drifted from " +
+                "mutations/api/swift/objc. " +
                 "Run ./gradlew refreshSwiftDumps and commit the result.",
             check.failureMessage.get(),
         )
@@ -122,19 +122,19 @@ class SwiftDumpTasksPluginTest {
     @Test
     fun skieProject_usesConfiguredFrameworkOutputsAndCommittedDirectory() {
         val root = rootProject()
-        val project = childProject(root, "store6-swift-dumps-mutations-skie")
+        val project = childProject(root, "swift-dumps-mutations-skie")
         project.plugins.apply(Store6SkieSwiftDumpPlugin::class.java)
         project.extensions.getByType(SwiftDumpExtension::class.java).apply {
-            surfaceName.set("store6-mutations")
+            surfaceName.set("mutations")
             frameworkName.set("Store6MutationsSkie")
             outputHeaderName.set("Store6MutationsSkie.h")
             outputSwiftName.set("Store6MutationsSkie.swift")
-            committedDumpPath.set("store6-mutations/api/swift/skie")
+            committedDumpPath.set("mutations/api/swift/skie")
         }
 
         val validate = project.tasks.getByName("validateSkieSwiftLayout") as ValidateSkieSwiftLayoutTask
         assertEquals(
-            "Validates the pinned SKIE-generated Swift layout for store6-mutations.",
+            "Validates the pinned SKIE-generated Swift layout for mutations.",
             validate.description,
         )
         assertEquals(
@@ -145,7 +145,7 @@ class SwiftDumpTasksPluginTest {
         val generate = project.tasks.getByName("generateSwiftDump") as GenerateSkieSwiftDumpTask
         assertEquals("Store6 verification", generate.group)
         assertEquals(
-            "Generates the sanitized SKIE dump for store6-mutations.",
+            "Generates the sanitized SKIE dump for mutations.",
             generate.description,
         )
         assertEquals(
@@ -158,26 +158,26 @@ class SwiftDumpTasksPluginTest {
 
         val refresh = project.tasks.getByName("refreshSwiftDump") as Sync
         assertEquals(
-            "Refreshes the committed SKIE dump for store6-mutations.",
+            "Refreshes the committed SKIE dump for mutations.",
             refresh.description,
         )
         assertEquals(
-            project.expectedCommittedDirectory("store6-mutations/api/swift/skie"),
+            project.expectedCommittedDirectory("mutations/api/swift/skie"),
             refresh.destinationDir,
         )
 
         val check = project.tasks.getByName("checkSwiftDump") as CheckSwiftDumpTask
         assertEquals(
-            "Checks the committed SKIE dump for store6-mutations.",
+            "Checks the committed SKIE dump for mutations.",
             check.description,
         )
         assertEquals(
-            project.expectedCommittedDirectory("store6-mutations/api/swift/skie"),
+            project.expectedCommittedDirectory("mutations/api/swift/skie"),
             check.committedDirectory.get().asFile,
         )
         assertEquals(
-            "SKIE dump for store6-mutations has drifted from " +
-                "store6-mutations/api/swift/skie. " +
+            "SKIE dump for mutations has drifted from " +
+                "mutations/api/swift/skie. " +
                 "Run ./gradlew refreshSwiftDumps and commit the result.",
             check.failureMessage.get(),
         )
@@ -193,14 +193,14 @@ class SwiftDumpTasksPluginTest {
     fun coreDefaults_remainByteEquivalent() {
         val root = rootProject()
 
-        // --- ObjC lane, no configuration (mirrors store6-swift-dumps/objc) ---
-        val objc = childProject(root, "store6-swift-dumps-objc")
+        // --- ObjC lane, no configuration (mirrors swift-dumps/objc) ---
+        val objc = childProject(root, "swift-dumps-objc")
         objc.plugins.apply(Store6ObjcSwiftDumpPlugin::class.java)
 
         val objcGenerate = objc.tasks.getByName("generateSwiftDump") as GenerateObjcSwiftDumpTask
         assertEquals("Store6 verification", objcGenerate.group)
         assertEquals(
-            "Generates the sanitized Obj-C export dump for store6-core.",
+            "Generates the sanitized Obj-C export dump for core.",
             objcGenerate.description,
         )
         assertEquals(objc.expectedLinkedHeader("Store6Core"), objcGenerate.linkedHeader.get().asFile)
@@ -210,39 +210,39 @@ class SwiftDumpTasksPluginTest {
         val objcRefresh = objc.tasks.getByName("refreshSwiftDump") as Sync
         assertEquals("Store6 verification", objcRefresh.group)
         assertEquals(
-            "Refreshes the committed Obj-C export dump for store6-core.",
+            "Refreshes the committed Obj-C export dump for core.",
             objcRefresh.description,
         )
         assertEquals(
-            objc.expectedCommittedDirectory("store6-core/api/swift/objc"),
+            objc.expectedCommittedDirectory("core/api/swift/objc"),
             objcRefresh.destinationDir,
         )
 
         val objcCheck = objc.tasks.getByName("checkSwiftDump") as CheckSwiftDumpTask
         assertEquals("Store6 verification", objcCheck.group)
         assertEquals(
-            "Checks the committed Obj-C export dump for store6-core.",
+            "Checks the committed Obj-C export dump for core.",
             objcCheck.description,
         )
         assertEquals(objc.expectedStagedDirectory(), objcCheck.generatedDirectory.get().asFile)
         assertEquals(
-            objc.expectedCommittedDirectory("store6-core/api/swift/objc"),
+            objc.expectedCommittedDirectory("core/api/swift/objc"),
             objcCheck.committedDirectory.get().asFile,
         )
         assertEquals(
-            "Obj-C export dump for store6-core has drifted from store6-core/api/swift/objc. " +
+            "Obj-C export dump for core has drifted from core/api/swift/objc. " +
                 "Run ./gradlew refreshSwiftDumps and commit the result.",
             objcCheck.failureMessage.get(),
         )
 
-        // --- SKIE lane, no configuration (mirrors store6-swift-dumps/skie) ---
-        val skie = childProject(root, "store6-swift-dumps-skie")
+        // --- SKIE lane, no configuration (mirrors swift-dumps/skie) ---
+        val skie = childProject(root, "swift-dumps-skie")
         skie.plugins.apply(Store6SkieSwiftDumpPlugin::class.java)
 
         val skieValidate = skie.tasks.getByName("validateSkieSwiftLayout") as ValidateSkieSwiftLayoutTask
         assertEquals("Store6 verification", skieValidate.group)
         assertEquals(
-            "Validates the pinned SKIE-generated Swift layout for store6-core.",
+            "Validates the pinned SKIE-generated Swift layout for core.",
             skieValidate.description,
         )
         assertEquals(
@@ -260,7 +260,7 @@ class SwiftDumpTasksPluginTest {
         val skieGenerate = skie.tasks.getByName("generateSwiftDump") as GenerateSkieSwiftDumpTask
         assertEquals("Store6 verification", skieGenerate.group)
         assertEquals(
-            "Generates the sanitized SKIE dump for store6-core.",
+            "Generates the sanitized SKIE dump for core.",
             skieGenerate.description,
         )
         assertEquals(
@@ -278,27 +278,27 @@ class SwiftDumpTasksPluginTest {
         val skieRefresh = skie.tasks.getByName("refreshSwiftDump") as Sync
         assertEquals("Store6 verification", skieRefresh.group)
         assertEquals(
-            "Refreshes the committed SKIE dump for store6-core.",
+            "Refreshes the committed SKIE dump for core.",
             skieRefresh.description,
         )
         assertEquals(
-            skie.expectedCommittedDirectory("store6-core/api/swift/skie"),
+            skie.expectedCommittedDirectory("core/api/swift/skie"),
             skieRefresh.destinationDir,
         )
 
         val skieCheck = skie.tasks.getByName("checkSwiftDump") as CheckSwiftDumpTask
         assertEquals("Store6 verification", skieCheck.group)
         assertEquals(
-            "Checks the committed SKIE dump for store6-core.",
+            "Checks the committed SKIE dump for core.",
             skieCheck.description,
         )
         assertEquals(skie.expectedStagedDirectory(), skieCheck.generatedDirectory.get().asFile)
         assertEquals(
-            skie.expectedCommittedDirectory("store6-core/api/swift/skie"),
+            skie.expectedCommittedDirectory("core/api/swift/skie"),
             skieCheck.committedDirectory.get().asFile,
         )
         assertEquals(
-            "SKIE dump for store6-core has drifted from store6-core/api/swift/skie. " +
+            "SKIE dump for core has drifted from core/api/swift/skie. " +
                 "Run ./gradlew refreshSwiftDumps and commit the result.",
             skieCheck.failureMessage.get(),
         )

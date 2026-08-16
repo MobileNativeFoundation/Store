@@ -1,0 +1,798 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:mutations>
+final enum class org.mobilenativefoundation.store6.mutations.storage/MutationAliasState : kotlin/Enum<org.mobilenativefoundation.store6.mutations.storage/MutationAliasState> { // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState|null[0]
+    enum entry ACTIVE // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.ACTIVE|null[0]
+    enum entry PENDING // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.PENDING|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.storage/MutationAliasState> // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationAliasState // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.storage/MutationAliasState> // org.mobilenativefoundation.store6.mutations.storage/MutationAliasState.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition : kotlin/Enum<org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition> { // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition|null[0]
+    enum entry APPLIED // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.APPLIED|null[0]
+    enum entry PENDING // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.PENDING|null[0]
+    enum entry SKIPPED // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.SKIPPED|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition> // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition> // org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind : kotlin/Enum<org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind> { // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind|null[0]
+    enum entry KEY // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.KEY|null[0]
+    enum entry NAMESPACE // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.NAMESPACE|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind> // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind> // org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase : kotlin/Enum<org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase> { // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase|null[0]
+    enum entry ACKED // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.ACKED|null[0]
+    enum entry EFFECTS_PENDING // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.EFFECTS_PENDING|null[0]
+    enum entry INFLIGHT // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.INFLIGHT|null[0]
+    enum entry PARKED // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.PARKED|null[0]
+    enum entry READY // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.READY|null[0]
+    enum entry REFRESH_REQUIRED // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.REFRESH_REQUIRED|null[0]
+    enum entry RETIRED // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.RETIRED|null[0]
+    enum entry UNPREPARED // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.UNPREPARED|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase> // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase> // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState : kotlin/Enum<org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState> { // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState|null[0]
+    enum entry ACTIVE // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.ACTIVE|null[0]
+    enum entry PENDING // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.PENDING|null[0]
+    enum entry SUPERSEDED // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.SUPERSEDED|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState> // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState> // org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations/MutationFailureKind : kotlin/Enum<org.mobilenativefoundation.store6.mutations/MutationFailureKind> { // org.mobilenativefoundation.store6.mutations/MutationFailureKind|null[0]
+    enum entry ADOPTION // org.mobilenativefoundation.store6.mutations/MutationFailureKind.ADOPTION|null[0]
+    enum entry CODEC // org.mobilenativefoundation.store6.mutations/MutationFailureKind.CODEC|null[0]
+    enum entry CONFLICT // org.mobilenativefoundation.store6.mutations/MutationFailureKind.CONFLICT|null[0]
+    enum entry EFFECT // org.mobilenativefoundation.store6.mutations/MutationFailureKind.EFFECT|null[0]
+    enum entry IDENTITY // org.mobilenativefoundation.store6.mutations/MutationFailureKind.IDENTITY|null[0]
+    enum entry PERSISTENCE // org.mobilenativefoundation.store6.mutations/MutationFailureKind.PERSISTENCE|null[0]
+    enum entry PROJECTION // org.mobilenativefoundation.store6.mutations/MutationFailureKind.PROJECTION|null[0]
+    enum entry PROTOCOL // org.mobilenativefoundation.store6.mutations/MutationFailureKind.PROTOCOL|null[0]
+    enum entry TRANSPORT // org.mobilenativefoundation.store6.mutations/MutationFailureKind.TRANSPORT|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations/MutationFailureKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations/MutationFailureKind> // org.mobilenativefoundation.store6.mutations/MutationFailureKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations/MutationFailureKind // org.mobilenativefoundation.store6.mutations/MutationFailureKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations/MutationFailureKind> // org.mobilenativefoundation.store6.mutations/MutationFailureKind.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations/MutationPendingState : kotlin/Enum<org.mobilenativefoundation.store6.mutations/MutationPendingState> { // org.mobilenativefoundation.store6.mutations/MutationPendingState|null[0]
+    enum entry ADOPTING // org.mobilenativefoundation.store6.mutations/MutationPendingState.ADOPTING|null[0]
+    enum entry APPLYING_EFFECTS // org.mobilenativefoundation.store6.mutations/MutationPendingState.APPLYING_EFFECTS|null[0]
+    enum entry INFLIGHT // org.mobilenativefoundation.store6.mutations/MutationPendingState.INFLIGHT|null[0]
+    enum entry PENDING // org.mobilenativefoundation.store6.mutations/MutationPendingState.PENDING|null[0]
+    enum entry REFRESHING // org.mobilenativefoundation.store6.mutations/MutationPendingState.REFRESHING|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations/MutationPendingState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations/MutationPendingState> // org.mobilenativefoundation.store6.mutations/MutationPendingState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations/MutationPendingState // org.mobilenativefoundation.store6.mutations/MutationPendingState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations/MutationPendingState> // org.mobilenativefoundation.store6.mutations/MutationPendingState.values|values#static(){}[0]
+}
+
+final enum class org.mobilenativefoundation.store6.mutations/MutationPresenceState : kotlin/Enum<org.mobilenativefoundation.store6.mutations/MutationPresenceState> { // org.mobilenativefoundation.store6.mutations/MutationPresenceState|null[0]
+    enum entry ABSENT // org.mobilenativefoundation.store6.mutations/MutationPresenceState.ABSENT|null[0]
+    enum entry PRESENT // org.mobilenativefoundation.store6.mutations/MutationPresenceState.PRESENT|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations/MutationPresenceState.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations/MutationPresenceState> // org.mobilenativefoundation.store6.mutations/MutationPresenceState.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations/MutationPresenceState.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations/MutationPresenceState> // org.mobilenativefoundation.store6.mutations/MutationPresenceState.values|values#static(){}[0]
+}
+
+abstract fun interface <#A: org.mobilenativefoundation.store6.core/StoreKey> org.mobilenativefoundation.store6.mutations/MutationKeyResolver { // org.mobilenativefoundation.store6.mutations/MutationKeyResolver|null[0]
+    abstract suspend fun resolve(org.mobilenativefoundation.store6.mutations/MutationKeyIdentity): #A? // org.mobilenativefoundation.store6.mutations/MutationKeyResolver.resolve|resolve(org.mobilenativefoundation.store6.mutations.MutationKeyIdentity){}[0]
+}
+
+abstract interface <#A: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationCodec { // org.mobilenativefoundation.store6.mutations/MutationCodec|null[0]
+    abstract fun decode(kotlin/Int, kotlin/ByteArray): #A // org.mobilenativefoundation.store6.mutations/MutationCodec.decode|decode(kotlin.Int;kotlin.ByteArray){}[0]
+    abstract fun encode(#A): kotlin/ByteArray // org.mobilenativefoundation.store6.mutations/MutationCodec.encode|encode(1:0){}[0]
+}
+
+abstract interface <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationServer { // org.mobilenativefoundation.store6.mutations/MutationServer|null[0]
+    abstract suspend fun push(org.mobilenativefoundation.store6.mutations/MutationPush<#A, #B>): org.mobilenativefoundation.store6.mutations/MutationAck<#A, #B> // org.mobilenativefoundation.store6.mutations/MutationServer.push|push(org.mobilenativefoundation.store6.mutations.MutationPush<1:0,1:1>){}[0]
+    abstract suspend fun retire(org.mobilenativefoundation.store6.mutations/MutationRetirement): org.mobilenativefoundation.store6.mutations/MutationRetirementAck // org.mobilenativefoundation.store6.mutations/MutationServer.retire|retire(org.mobilenativefoundation.store6.mutations.MutationRetirement){}[0]
+}
+
+abstract interface org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage { // org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage|null[0]
+    abstract suspend fun <#A1: kotlin/Any?> transaction(kotlin/Function1<org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction, #A1>): #A1 // org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage.transaction|transaction(kotlin.Function1<org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction,0:0>){0§<kotlin.Any?>}[0]
+}
+
+abstract interface org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction { // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction|null[0]
+    abstract fun acks(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.acks|acks(kotlin.String){}[0]
+    abstract fun advanceAlias(org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.advanceAlias|advanceAlias(org.mobilenativefoundation.store6.mutations.storage.MutationKeyAliasRecord){}[0]
+    abstract fun advanceClient(org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.advanceClient|advanceClient(org.mobilenativefoundation.store6.mutations.storage.MutationClientRecord){}[0]
+    abstract fun advanceEffect(org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.advanceEffect|advanceEffect(org.mobilenativefoundation.store6.mutations.storage.MutationEffectRecord){}[0]
+    abstract fun advanceExecution(org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.advanceExecution|advanceExecution(org.mobilenativefoundation.store6.mutations.storage.MutationExecutionRecord){}[0]
+    abstract fun advanceTombstone(org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.advanceTombstone|advanceTombstone(org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneRecord){}[0]
+    abstract fun aliases(): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.aliases|aliases(){}[0]
+    abstract fun appendFailure(kotlin/String, kotlin/Long, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationFailureKind, kotlin/String, kotlin/String, kotlin/Long): org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.appendFailure|appendFailure(kotlin.String;kotlin.Long;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationFailureKind;kotlin.String;kotlin.String;kotlin.Long){}[0]
+    abstract fun attempts(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.attempts|attempts(kotlin.String){}[0]
+    abstract fun client(kotlin/String): org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord? // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.client|client(kotlin.String){}[0]
+    abstract fun confirmRetiredThrough(kotlin/String, kotlin/Long, kotlin/Long): org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.confirmRetiredThrough|confirmRetiredThrough(kotlin.String;kotlin.Long;kotlin.Long){}[0]
+    abstract fun effects(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.effects|effects(kotlin.String){}[0]
+    abstract fun executions(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.executions|executions(kotlin.String){}[0]
+    abstract fun failures(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.failures|failures(kotlin.String){}[0]
+    abstract fun insertAck(org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertAck|insertAck(org.mobilenativefoundation.store6.mutations.storage.MutationAckRecord){}[0]
+    abstract fun insertAlias(org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertAlias|insertAlias(org.mobilenativefoundation.store6.mutations.storage.MutationKeyAliasRecord){}[0]
+    abstract fun insertAttempt(org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertAttempt|insertAttempt(org.mobilenativefoundation.store6.mutations.storage.MutationAttemptRecord){}[0]
+    abstract fun insertClient(org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertClient|insertClient(org.mobilenativefoundation.store6.mutations.storage.MutationClientRecord){}[0]
+    abstract fun insertEffect(org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertEffect|insertEffect(org.mobilenativefoundation.store6.mutations.storage.MutationEffectRecord){}[0]
+    abstract fun insertExecution(org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertExecution|insertExecution(org.mobilenativefoundation.store6.mutations.storage.MutationExecutionRecord){}[0]
+    abstract fun insertIntent(kotlin/Int, kotlin/String, kotlin/Long, kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray, kotlin/String, kotlin/Long): org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertIntent|insertIntent(kotlin.Int;kotlin.String;kotlin.Long;kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.ByteArray;kotlin.String;kotlin.Long){}[0]
+    abstract fun insertTombstone(org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.insertTombstone|insertTombstone(org.mobilenativefoundation.store6.mutations.storage.MutationKeyTombstoneRecord){}[0]
+    abstract fun intents(kotlin/String): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.intents|intents(kotlin.String){}[0]
+    abstract fun prune(kotlin/String, kotlin/Long) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.prune|prune(kotlin.String;kotlin.Long){}[0]
+    abstract fun recordConflictReceipt(org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord) // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.recordConflictReceipt|recordConflictReceipt(org.mobilenativefoundation.store6.mutations.storage.MutationAttemptRecord){}[0]
+    abstract fun tombstones(): kotlin.collections/List<org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord> // org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction.tombstones|tombstones(){}[0]
+}
+
+sealed interface <#A: out kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationConflictResolution { // org.mobilenativefoundation.store6.mutations/MutationConflictResolution|null[0]
+    final class <#A1: kotlin/Any> Retry : org.mobilenativefoundation.store6.mutations/MutationConflictResolution<#A1> { // org.mobilenativefoundation.store6.mutations/MutationConflictResolution.Retry|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.mutations/MutationPresence<#A1>) // org.mobilenativefoundation.store6.mutations/MutationConflictResolution.Retry.<init>|<init>(org.mobilenativefoundation.store6.mutations.MutationPresence<1:0>){}[0]
+
+        final val value // org.mobilenativefoundation.store6.mutations/MutationConflictResolution.Retry.value|{}value[0]
+            final fun <get-value>(): org.mobilenativefoundation.store6.mutations/MutationPresence<#A1> // org.mobilenativefoundation.store6.mutations/MutationConflictResolution.Retry.value.<get-value>|<get-value>(){}[0]
+    }
+
+    final object ServerWins : org.mobilenativefoundation.store6.mutations/MutationConflictResolution<kotlin/Nothing> // org.mobilenativefoundation.store6.mutations/MutationConflictResolution.ServerWins|null[0]
+}
+
+sealed interface <#A: out kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationPresence { // org.mobilenativefoundation.store6.mutations/MutationPresence|null[0]
+    final class <#A1: kotlin/Any> Present : org.mobilenativefoundation.store6.mutations/MutationPresence<#A1> { // org.mobilenativefoundation.store6.mutations/MutationPresence.Present|null[0]
+        constructor <init>(#A1) // org.mobilenativefoundation.store6.mutations/MutationPresence.Present.<init>|<init>(1:0){}[0]
+
+        final val value // org.mobilenativefoundation.store6.mutations/MutationPresence.Present.value|{}value[0]
+            final fun <get-value>(): #A1 // org.mobilenativefoundation.store6.mutations/MutationPresence.Present.value.<get-value>|<get-value>(){}[0]
+    }
+
+    final object Absent : org.mobilenativefoundation.store6.mutations/MutationPresence<kotlin/Nothing> // org.mobilenativefoundation.store6.mutations/MutationPresence.Absent|null[0]
+}
+
+sealed interface <#A: out org.mobilenativefoundation.store6.core/StoreKey, #B: out kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationAck { // org.mobilenativefoundation.store6.mutations/MutationAck|null[0]
+    abstract val etag // org.mobilenativefoundation.store6.mutations/MutationAck.etag|{}etag[0]
+        abstract fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations/MutationAck.etag.<get-etag>|<get-etag>(){}[0]
+}
+
+sealed interface org.mobilenativefoundation.store6.mutations/MutationEvent { // org.mobilenativefoundation.store6.mutations/MutationEvent|null[0]
+    abstract val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationEvent.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        abstract fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationEvent.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+sealed interface org.mobilenativefoundation.store6.mutations/MutationIntentEvent : org.mobilenativefoundation.store6.mutations/MutationEvent { // org.mobilenativefoundation.store6.mutations/MutationIntentEvent|null[0]
+    abstract val identity // org.mobilenativefoundation.store6.mutations/MutationIntentEvent.identity|{}identity[0]
+        abstract fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationIntentEvent.identity.<get-identity>|<get-identity>(){}[0]
+    abstract val mutationId // org.mobilenativefoundation.store6.mutations/MutationIntentEvent.mutationId|{}mutationId[0]
+        abstract fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationIntentEvent.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRef { // org.mobilenativefoundation.store6.mutations/MutatorRef|null[0]
+    final val id // org.mobilenativefoundation.store6.mutations/MutatorRef.id|{}id[0]
+        final fun <get-id>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutatorRef.id.<get-id>|<get-id>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationAbsentAck : org.mobilenativefoundation.store6.mutations/MutationAck<#A, #B> { // org.mobilenativefoundation.store6.mutations/MutationAbsentAck|null[0]
+    constructor <init>(kotlin/String?) // org.mobilenativefoundation.store6.mutations/MutationAbsentAck.<init>|<init>(kotlin.String?){}[0]
+
+    final val etag // org.mobilenativefoundation.store6.mutations/MutationAbsentAck.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations/MutationAbsentAck.etag.<get-etag>|<get-etag>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationConflictBuilder { // org.mobilenativefoundation.store6.mutations/MutationConflictBuilder|null[0]
+    final fun merge(kotlin/Function3<org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, org.mobilenativefoundation.store6.mutations/MutationConflictResolution<#B>>) // org.mobilenativefoundation.store6.mutations/MutationConflictBuilder.merge|merge(kotlin.Function3<org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>,org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>,org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>,org.mobilenativefoundation.store6.mutations.MutationConflictResolution<1:1>>){}[0]
+    final fun precondition(kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate<#A, #B>, org.mobilenativefoundation.store6.core/StoreMeta?>) // org.mobilenativefoundation.store6.mutations/MutationConflictBuilder.precondition|precondition(kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutationPreconditionCandidate<1:0,1:1>,org.mobilenativefoundation.store6.core.StoreMeta?>){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate { // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate|null[0]
+    final val base // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.base|{}base[0]
+        final fun <get-base>(): org.mobilenativefoundation.store6.mutations/MutationPresence<#B> // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.base.<get-base>|<get-base>(){}[0]
+    final val capturedMeta // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.capturedMeta|{}capturedMeta[0]
+        final fun <get-capturedMeta>(): org.mobilenativefoundation.store6.core/StoreMeta? // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.capturedMeta.<get-capturedMeta>|<get-capturedMeta>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.identity.<get-identity>|<get-identity>(){}[0]
+    final val key // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.key|{}key[0]
+        final fun <get-key>(): #A // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.key.<get-key>|<get-key>(){}[0]
+    final val mine // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.mine|{}mine[0]
+        final fun <get-mine>(): org.mobilenativefoundation.store6.mutations/MutationPresence<#B> // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.mine.<get-mine>|<get-mine>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationPreconditionCandidate.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationPresentAck : org.mobilenativefoundation.store6.mutations/MutationAck<#A, #B> { // org.mobilenativefoundation.store6.mutations/MutationPresentAck|null[0]
+    constructor <init>(#B, kotlin/String?, #A?) // org.mobilenativefoundation.store6.mutations/MutationPresentAck.<init>|<init>(1:1;kotlin.String?;1:0?){}[0]
+
+    final val authoritative // org.mobilenativefoundation.store6.mutations/MutationPresentAck.authoritative|{}authoritative[0]
+        final fun <get-authoritative>(): #B // org.mobilenativefoundation.store6.mutations/MutationPresentAck.authoritative.<get-authoritative>|<get-authoritative>(){}[0]
+    final val canonicalKey // org.mobilenativefoundation.store6.mutations/MutationPresentAck.canonicalKey|{}canonicalKey[0]
+        final fun <get-canonicalKey>(): #A? // org.mobilenativefoundation.store6.mutations/MutationPresentAck.canonicalKey.<get-canonicalKey>|<get-canonicalKey>(){}[0]
+    final val etag // org.mobilenativefoundation.store6.mutations/MutationPresentAck.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations/MutationPresentAck.etag.<get-etag>|<get-etag>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationPush { // org.mobilenativefoundation.store6.mutations/MutationPush|null[0]
+    final val base // org.mobilenativefoundation.store6.mutations/MutationPush.base|{}base[0]
+        final fun <get-base>(): org.mobilenativefoundation.store6.mutations/MutationPresence<#B> // org.mobilenativefoundation.store6.mutations/MutationPush.base.<get-base>|<get-base>(){}[0]
+    final val baseMeta // org.mobilenativefoundation.store6.mutations/MutationPush.baseMeta|{}baseMeta[0]
+        final fun <get-baseMeta>(): org.mobilenativefoundation.store6.core/StoreMeta? // org.mobilenativefoundation.store6.mutations/MutationPush.baseMeta.<get-baseMeta>|<get-baseMeta>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations/MutationPush.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationPush.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations/MutationPush.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationPush.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationPush.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationPush.generation.<get-generation>|<get-generation>(){}[0]
+    final val idempotencyKey // org.mobilenativefoundation.store6.mutations/MutationPush.idempotencyKey|{}idempotencyKey[0]
+        final fun <get-idempotencyKey>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationPush.idempotencyKey.<get-idempotencyKey>|<get-idempotencyKey>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationPush.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationPush.identity.<get-identity>|<get-identity>(){}[0]
+    final val key // org.mobilenativefoundation.store6.mutations/MutationPush.key|{}key[0]
+        final fun <get-key>(): #A // org.mobilenativefoundation.store6.mutations/MutationPush.key.<get-key>|<get-key>(){}[0]
+    final val mine // org.mobilenativefoundation.store6.mutations/MutationPush.mine|{}mine[0]
+        final fun <get-mine>(): org.mobilenativefoundation.store6.mutations/MutationPresence<#B> // org.mobilenativefoundation.store6.mutations/MutationPush.mine.<get-mine>|<get-mine>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationPush.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationPush.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val retiredThroughSequence // org.mobilenativefoundation.store6.mutations/MutationPush.retiredThroughSequence|{}retiredThroughSequence[0]
+        final fun <get-retiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationPush.retiredThroughSequence.<get-retiredThroughSequence>|<get-retiredThroughSequence>(){}[0]
+    final val valueCodecVersion // org.mobilenativefoundation.store6.mutations/MutationPush.valueCodecVersion|{}valueCodecVersion[0]
+        final fun <get-valueCodecVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationPush.valueCodecVersion.<get-valueCodecVersion>|<get-valueCodecVersion>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationStore : org.mobilenativefoundation.store6.core/Store<#A, #B> { // org.mobilenativefoundation.store6.mutations/MutationStore|null[0]
+    final val events // org.mobilenativefoundation.store6.mutations/MutationStore.events|{}events[0]
+        final fun <get-events>(): kotlinx.coroutines.flow/SharedFlow<org.mobilenativefoundation.store6.mutations/MutationEvent> // org.mobilenativefoundation.store6.mutations/MutationStore.events.<get-events>|<get-events>(){}[0]
+    final val keyEvents // org.mobilenativefoundation.store6.mutations/MutationStore.keyEvents|{}keyEvents[0]
+        final fun <get-keyEvents>(): kotlinx.coroutines.flow/Flow<org.mobilenativefoundation.store6.core.seam/KeyEvents> // org.mobilenativefoundation.store6.mutations/MutationStore.keyEvents.<get-keyEvents>|<get-keyEvents>(){}[0]
+    final val poisoned // org.mobilenativefoundation.store6.mutations/MutationStore.poisoned|{}poisoned[0]
+        final fun <get-poisoned>(): kotlinx.coroutines.flow/SharedFlow<org.mobilenativefoundation.store6.mutations/PoisonedIntent> // org.mobilenativefoundation.store6.mutations/MutationStore.poisoned.<get-poisoned>|<get-poisoned>(){}[0]
+
+    final fun close() // org.mobilenativefoundation.store6.mutations/MutationStore.close|close(){}[0]
+    final fun stream(#A, org.mobilenativefoundation.store6.core/Freshness): kotlinx.coroutines.flow/Flow<org.mobilenativefoundation.store6.core/StoreResult<#B>> // org.mobilenativefoundation.store6.mutations/MutationStore.stream|stream(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun <#A1: kotlin/Any> mutate(#A, org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1>, #A1): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationStore.mutate|mutate(1:0;org.mobilenativefoundation.store6.mutations.MutatorRef<1:0,1:1,0:0>;0:0){0§<kotlin.Any>}[0]
+    final suspend fun clear(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.clear|clear(1:0){}[0]
+    final suspend fun clearAll() // org.mobilenativefoundation.store6.mutations/MutationStore.clearAll|clearAll(){}[0]
+    final suspend fun clearNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.mutations/MutationStore.clearNamespace|clearNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun deadLetters(): kotlin.collections/List<org.mobilenativefoundation.store6.mutations/DeadLetter> // org.mobilenativefoundation.store6.mutations/MutationStore.deadLetters|deadLetters(){}[0]
+    final suspend fun drain(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.drain|drain(1:0){}[0]
+    final suspend fun drain() // org.mobilenativefoundation.store6.mutations/MutationStore.drain|drain(){}[0]
+    final suspend fun get(#A, org.mobilenativefoundation.store6.core/Freshness): #B // org.mobilenativefoundation.store6.mutations/MutationStore.get|get(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun invalidate(#A) // org.mobilenativefoundation.store6.mutations/MutationStore.invalidate|invalidate(1:0){}[0]
+    final suspend fun invalidateAll() // org.mobilenativefoundation.store6.mutations/MutationStore.invalidateAll|invalidateAll(){}[0]
+    final suspend fun invalidateNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.mutations/MutationStore.invalidateNamespace|invalidateNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun pending(#A): kotlin.collections/List<org.mobilenativefoundation.store6.mutations/PendingIntent> // org.mobilenativefoundation.store6.mutations/MutationStore.pending|pending(1:0){}[0]
+    final suspend fun pendingWrites(): kotlin.collections/List<org.mobilenativefoundation.store6.mutations/PendingIntent> // org.mobilenativefoundation.store6.mutations/MutationStore.pendingWrites|pendingWrites(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutationStoreBuilder { // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder|null[0]
+    final fun bookkeeper(org.mobilenativefoundation.store6.core.seam/Bookkeeper) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.bookkeeper|bookkeeper(org.mobilenativefoundation.store6.core.seam.Bookkeeper){}[0]
+    final fun conflicts(kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutationConflictBuilder<#A, #B>, kotlin/Unit>) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.conflicts|conflicts(kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutationConflictBuilder<1:0,1:1>,kotlin.Unit>){}[0]
+    final fun fetcher(kotlin.coroutines/SuspendFunction1<#A, #B>) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.fetcher|fetcher(kotlin.coroutines.SuspendFunction1<1:0,1:1>){}[0]
+    final fun fetcher(org.mobilenativefoundation.store6.core.seam/Fetcher<#A, #B>) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.fetcher|fetcher(org.mobilenativefoundation.store6.core.seam.Fetcher<1:0,1:1>){}[0]
+    final fun fetcherOfResult(kotlin.coroutines/SuspendFunction1<#A, org.mobilenativefoundation.store6.core.seam/FetcherResult<#B>>) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.fetcherOfResult|fetcherOfResult(kotlin.coroutines.SuspendFunction1<1:0,org.mobilenativefoundation.store6.core.seam.FetcherResult<1:1>>){}[0]
+    final fun freshnessValidator(org.mobilenativefoundation.store6.core.seam/FreshnessValidator) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.freshnessValidator|freshnessValidator(org.mobilenativefoundation.store6.core.seam.FreshnessValidator){}[0]
+    final fun journalStorage(org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.journalStorage|journalStorage(org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage){}[0]
+    final fun maxIdleKeys(kotlin/Int) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.maxIdleKeys|maxIdleKeys(kotlin.Int){}[0]
+    final fun persistence(org.mobilenativefoundation.store6.core.seam/SourceOfTruth<#A, #B>) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.persistence|persistence(org.mobilenativefoundation.store6.core.seam.SourceOfTruth<1:0,1:1>){}[0]
+    final fun telemetry(org.mobilenativefoundation.store6.core.seam/StoreTelemetry) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.telemetry|telemetry(org.mobilenativefoundation.store6.core.seam.StoreTelemetry){}[0]
+    final fun wallClock(org.mobilenativefoundation.store6.core.seam/WallClock) // org.mobilenativefoundation.store6.mutations/MutationStoreBuilder.wallClock|wallClock(org.mobilenativefoundation.store6.core.seam.WallClock){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRegistry // org.mobilenativefoundation.store6.mutations/MutatorRegistry|null[0]
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder { // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder|null[0]
+    final fun <#A1: kotlin/Any> create(kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#A1>, kotlin/Function2<#A, #A1, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>, kotlin/Function1<#A1, #B>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.create|create(kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:0>;kotlin.Function2<1:0,0:0,org.mobilenativefoundation.store6.mutations.StaleSet<1:0>>;kotlin.Function1<0:0,1:1>){0§<kotlin.Any>}[0]
+    final fun <#A1: kotlin/Any> mutator(kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#A1>, kotlin/Function2<#A, #A1, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>, kotlin/Function2<org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, #A1, org.mobilenativefoundation.store6.mutations/MutationPresence<#B>?>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.mutator|mutator(kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:0>;kotlin.Function2<1:0,0:0,org.mobilenativefoundation.store6.mutations.StaleSet<1:0>>;kotlin.Function2<org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>,0:0,org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>?>){0§<kotlin.Any>}[0]
+    final fun <#A1: kotlin/Any> update(kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#A1>, kotlin/Function2<#A, #A1, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>, kotlin/Function2<#B, #A1, #B>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.update|update(kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:0>;kotlin.Function2<1:0,0:0,org.mobilenativefoundation.store6.mutations.StaleSet<1:0>>;kotlin.Function2<1:1,0:0,1:1>){0§<kotlin.Any>}[0]
+    final fun <#A1: kotlin/Any> upsert(kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#A1>, kotlin/Function2<#A, #A1, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>, kotlin/Function2<org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, #A1, org.mobilenativefoundation.store6.mutations/MutationPresence<#B>>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #A1> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.upsert|upsert(kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:0>;kotlin.Function2<1:0,0:0,org.mobilenativefoundation.store6.mutations.StaleSet<1:0>>;kotlin.Function2<org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>,0:0,org.mobilenativefoundation.store6.mutations.MutationPresence<1:1>>){0§<kotlin.Any>}[0]
+    final fun delete(kotlin/String, kotlin/Function2<#A, kotlin/Unit, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, kotlin/Unit> // org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder.delete|delete(kotlin.String;kotlin.Function2<1:0,kotlin.Unit,org.mobilenativefoundation.store6.mutations.StaleSet<1:0>>){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey> org.mobilenativefoundation.store6.mutations/StaleSet { // org.mobilenativefoundation.store6.mutations/StaleSet|null[0]
+    constructor <init>(kotlin.collections/Set<#A>, kotlin.collections/Set<org.mobilenativefoundation.store6.core/StoreNamespace>) // org.mobilenativefoundation.store6.mutations/StaleSet.<init>|<init>(kotlin.collections.Set<1:0>;kotlin.collections.Set<org.mobilenativefoundation.store6.core.StoreNamespace>){}[0]
+
+    final val keys // org.mobilenativefoundation.store6.mutations/StaleSet.keys|{}keys[0]
+        final fun <get-keys>(): kotlin.collections/Set<#A> // org.mobilenativefoundation.store6.mutations/StaleSet.keys.<get-keys>|<get-keys>(){}[0]
+    final val namespaces // org.mobilenativefoundation.store6.mutations/StaleSet.namespaces|{}namespaces[0]
+        final fun <get-namespaces>(): kotlin.collections/Set<org.mobilenativefoundation.store6.core/StoreNamespace> // org.mobilenativefoundation.store6.mutations/StaleSet.namespaces.<get-namespaces>|<get-namespaces>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/InMemoryMutationJournalStorage : org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage { // org.mobilenativefoundation.store6.mutations.storage/InMemoryMutationJournalStorage|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.mutations.storage/InMemoryMutationJournalStorage.<init>|<init>(){}[0]
+
+    final suspend fun <#A1: kotlin/Any?> transaction(kotlin/Function1<org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction, #A1>): #A1 // org.mobilenativefoundation.store6.mutations.storage/InMemoryMutationJournalStorage.transaction|transaction(kotlin.Function1<org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction,0:0>){0§<kotlin.Any?>}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationPresenceState, kotlin/ByteArray?, kotlin/Int, kotlin/String?, kotlin/String?, kotlin/String?, kotlin/Long) // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationPresenceState;kotlin.ByteArray?;kotlin.Int;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.Long){}[0]
+
+    final val authoritativeBlob // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.authoritativeBlob|{}authoritativeBlob[0]
+        final fun <get-authoritativeBlob>(): kotlin/ByteArray? // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.authoritativeBlob.<get-authoritativeBlob>|<get-authoritativeBlob>(){}[0]
+    final val authoritativePresence // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.authoritativePresence|{}authoritativePresence[0]
+        final fun <get-authoritativePresence>(): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.authoritativePresence.<get-authoritativePresence>|<get-authoritativePresence>(){}[0]
+    final val canonicalTargetId // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.canonicalTargetId|{}canonicalTargetId[0]
+        final fun <get-canonicalTargetId>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.canonicalTargetId.<get-canonicalTargetId>|<get-canonicalTargetId>(){}[0]
+    final val canonicalTargetNamespace // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.canonicalTargetNamespace|{}canonicalTargetNamespace[0]
+        final fun <get-canonicalTargetNamespace>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.canonicalTargetNamespace.<get-canonicalTargetNamespace>|<get-canonicalTargetNamespace>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val etag // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.etag.<get-etag>|<get-etag>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.generation.<get-generation>|<get-generation>(){}[0]
+    final val receivedAt // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.receivedAt|{}receivedAt[0]
+        final fun <get-receivedAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.receivedAt.<get-receivedAt>|<get-receivedAt>(){}[0]
+    final val valueCodecVersion // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.valueCodecVersion|{}valueCodecVersion[0]
+        final fun <get-valueCodecVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationAckRecord.valueCodecVersion.<get-valueCodecVersion>|<get-valueCodecVersion>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Int, kotlin/String, kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationPresenceState, kotlin/ByteArray?, org.mobilenativefoundation.store6.mutations/MutationPresenceState, kotlin/ByteArray?, kotlin/Boolean, kotlin/Long?, kotlin/String?, kotlin/Long, kotlin/String, kotlin/Long, kotlin/Boolean?, kotlin/Long?, kotlin/String?, kotlin/Long?) // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Int;kotlin.String;kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationPresenceState;kotlin.ByteArray?;org.mobilenativefoundation.store6.mutations.MutationPresenceState;kotlin.ByteArray?;kotlin.Boolean;kotlin.Long?;kotlin.String?;kotlin.Long;kotlin.String;kotlin.Long;kotlin.Boolean?;kotlin.Long?;kotlin.String?;kotlin.Long?){}[0]
+
+    final val advertisedRetiredThroughSequence // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.advertisedRetiredThroughSequence|{}advertisedRetiredThroughSequence[0]
+        final fun <get-advertisedRetiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.advertisedRetiredThroughSequence.<get-advertisedRetiredThroughSequence>|<get-advertisedRetiredThroughSequence>(){}[0]
+    final val baseBlob // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.baseBlob|{}baseBlob[0]
+        final fun <get-baseBlob>(): kotlin/ByteArray? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.baseBlob.<get-baseBlob>|<get-baseBlob>(){}[0]
+    final val basePresence // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.basePresence|{}basePresence[0]
+        final fun <get-basePresence>(): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.basePresence.<get-basePresence>|<get-basePresence>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val conflictEtag // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictEtag|{}conflictEtag[0]
+        final fun <get-conflictEtag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictEtag.<get-conflictEtag>|<get-conflictEtag>(){}[0]
+    final val conflictMetaPresent // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictMetaPresent|{}conflictMetaPresent[0]
+        final fun <get-conflictMetaPresent>(): kotlin/Boolean? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictMetaPresent.<get-conflictMetaPresent>|<get-conflictMetaPresent>(){}[0]
+    final val conflictReceivedAt // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictReceivedAt|{}conflictReceivedAt[0]
+        final fun <get-conflictReceivedAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictReceivedAt.<get-conflictReceivedAt>|<get-conflictReceivedAt>(){}[0]
+    final val conflictWrittenAt // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictWrittenAt|{}conflictWrittenAt[0]
+        final fun <get-conflictWrittenAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.conflictWrittenAt.<get-conflictWrittenAt>|<get-conflictWrittenAt>(){}[0]
+    final val effectiveCanonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.effectiveCanonicalId|{}effectiveCanonicalId[0]
+        final fun <get-effectiveCanonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.effectiveCanonicalId.<get-effectiveCanonicalId>|<get-effectiveCanonicalId>(){}[0]
+    final val effectiveNamespace // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.effectiveNamespace|{}effectiveNamespace[0]
+        final fun <get-effectiveNamespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.effectiveNamespace.<get-effectiveNamespace>|<get-effectiveNamespace>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.generation.<get-generation>|<get-generation>(){}[0]
+    final val generationIdempotencyKey // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.generationIdempotencyKey|{}generationIdempotencyKey[0]
+        final fun <get-generationIdempotencyKey>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.generationIdempotencyKey.<get-generationIdempotencyKey>|<get-generationIdempotencyKey>(){}[0]
+    final val mineBlob // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.mineBlob|{}mineBlob[0]
+        final fun <get-mineBlob>(): kotlin/ByteArray? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.mineBlob.<get-mineBlob>|<get-mineBlob>(){}[0]
+    final val minePresence // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.minePresence|{}minePresence[0]
+        final fun <get-minePresence>(): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.minePresence.<get-minePresence>|<get-minePresence>(){}[0]
+    final val preconditionEtag // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionEtag|{}preconditionEtag[0]
+        final fun <get-preconditionEtag>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionEtag.<get-preconditionEtag>|<get-preconditionEtag>(){}[0]
+    final val preconditionMetaPresent // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionMetaPresent|{}preconditionMetaPresent[0]
+        final fun <get-preconditionMetaPresent>(): kotlin/Boolean // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionMetaPresent.<get-preconditionMetaPresent>|<get-preconditionMetaPresent>(){}[0]
+    final val preconditionWrittenAt // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionWrittenAt|{}preconditionWrittenAt[0]
+        final fun <get-preconditionWrittenAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preconditionWrittenAt.<get-preconditionWrittenAt>|<get-preconditionWrittenAt>(){}[0]
+    final val preparedAt // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preparedAt|{}preparedAt[0]
+        final fun <get-preparedAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.preparedAt.<get-preparedAt>|<get-preparedAt>(){}[0]
+    final val valueCodecVersion // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.valueCodecVersion|{}valueCodecVersion[0]
+        final fun <get-valueCodecVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationAttemptRecord.valueCodecVersion.<get-valueCodecVersion>|<get-valueCodecVersion>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord|null[0]
+    constructor <init>(kotlin/Int, kotlin/String, kotlin/Long, kotlin/Long, kotlin/Long, kotlin/Long) // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.<init>|<init>(kotlin.Int;kotlin.String;kotlin.Long;kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val createdAt // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val lastAllocatedSequence // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.lastAllocatedSequence|{}lastAllocatedSequence[0]
+        final fun <get-lastAllocatedSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.lastAllocatedSequence.<get-lastAllocatedSequence>|<get-lastAllocatedSequence>(){}[0]
+    final val recordVersion // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.recordVersion|{}recordVersion[0]
+        final fun <get-recordVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.recordVersion.<get-recordVersion>|<get-recordVersion>(){}[0]
+    final val retiredThroughSequence // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.retiredThroughSequence|{}retiredThroughSequence[0]
+        final fun <get-retiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.retiredThroughSequence.<get-retiredThroughSequence>|<get-retiredThroughSequence>(){}[0]
+    final val serverConfirmedRetiredThroughSequence // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.serverConfirmedRetiredThroughSequence|{}serverConfirmedRetiredThroughSequence[0]
+        final fun <get-serverConfirmedRetiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationClientRecord.serverConfirmedRetiredThroughSequence.<get-serverConfirmedRetiredThroughSequence>|<get-serverConfirmedRetiredThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, kotlin/Int, org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind, kotlin/String, kotlin/String?, kotlin/Long, org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition, kotlin/Long?) // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.<init>|<init>(kotlin.String;kotlin.Long;kotlin.Int;org.mobilenativefoundation.store6.mutations.storage.MutationEffectKind;kotlin.String;kotlin.String?;kotlin.Long;org.mobilenativefoundation.store6.mutations.storage.MutationEffectDisposition;kotlin.Long?){}[0]
+
+    final val canonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val completedAt // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.completedAt|{}completedAt[0]
+        final fun <get-completedAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.completedAt.<get-completedAt>|<get-completedAt>(){}[0]
+    final val createdAt // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val disposition // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.disposition|{}disposition[0]
+        final fun <get-disposition>(): org.mobilenativefoundation.store6.mutations.storage/MutationEffectDisposition // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.disposition.<get-disposition>|<get-disposition>(){}[0]
+    final val effectIndex // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.effectIndex|{}effectIndex[0]
+        final fun <get-effectIndex>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.effectIndex.<get-effectIndex>|<get-effectIndex>(){}[0]
+    final val kind // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.kind|{}kind[0]
+        final fun <get-kind>(): org.mobilenativefoundation.store6.mutations.storage/MutationEffectKind // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.kind.<get-kind>|<get-kind>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationEffectRecord.namespace.<get-namespace>|<get-namespace>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/Long, org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase, kotlin/Int, kotlin/Int, kotlin/Long?, kotlin/Long?, kotlin/Long?) // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.<init>|<init>(kotlin.String;kotlin.Long;org.mobilenativefoundation.store6.mutations.storage.MutationExecutionPhase;kotlin.Int;kotlin.Int;kotlin.Long?;kotlin.Long?;kotlin.Long?){}[0]
+
+    final val activeFailureId // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.activeFailureId|{}activeFailureId[0]
+        final fun <get-activeFailureId>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.activeFailureId.<get-activeFailureId>|<get-activeFailureId>(){}[0]
+    final val attempt // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.attempt|{}attempt[0]
+        final fun <get-attempt>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.attempt.<get-attempt>|<get-attempt>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val currentGeneration // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.currentGeneration|{}currentGeneration[0]
+        final fun <get-currentGeneration>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.currentGeneration.<get-currentGeneration>|<get-currentGeneration>(){}[0]
+    final val lastAttemptAt // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.lastAttemptAt|{}lastAttemptAt[0]
+        final fun <get-lastAttemptAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.lastAttemptAt.<get-lastAttemptAt>|<get-lastAttemptAt>(){}[0]
+    final val phase // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.phase|{}phase[0]
+        final fun <get-phase>(): org.mobilenativefoundation.store6.mutations.storage/MutationExecutionPhase // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.phase.<get-phase>|<get-phase>(){}[0]
+    final val retiredAt // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.retiredAt|{}retiredAt[0]
+        final fun <get-retiredAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationExecutionRecord.retiredAt.<get-retiredAt>|<get-retiredAt>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord|null[0]
+    constructor <init>(kotlin/Long, kotlin/String, kotlin/Long, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationFailureKind, kotlin/String, kotlin/String, kotlin/Long) // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.<init>|<init>(kotlin.Long;kotlin.String;kotlin.Long;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationFailureKind;kotlin.String;kotlin.String;kotlin.Long){}[0]
+
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val detail // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.detail|{}detail[0]
+        final fun <get-detail>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.detail.<get-detail>|<get-detail>(){}[0]
+    final val failureId // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.failureId|{}failureId[0]
+        final fun <get-failureId>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.failureId.<get-failureId>|<get-failureId>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.generation.<get-generation>|<get-generation>(){}[0]
+    final val kind // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.kind|{}kind[0]
+        final fun <get-kind>(): org.mobilenativefoundation.store6.mutations/MutationFailureKind // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.kind.<get-kind>|<get-kind>(){}[0]
+    final val message // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.message|{}message[0]
+        final fun <get-message>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.message.<get-message>|<get-message>(){}[0]
+    final val occurredAt // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.occurredAt|{}occurredAt[0]
+        final fun <get-occurredAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationFailureRecord.occurredAt.<get-occurredAt>|<get-occurredAt>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord|null[0]
+    constructor <init>(kotlin/Long, kotlin/Int, kotlin/String, kotlin/Long, kotlin/String, kotlin/String, kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray, kotlin/String, kotlin/Long) // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.<init>|<init>(kotlin.Long;kotlin.Int;kotlin.String;kotlin.Long;kotlin.String;kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.ByteArray;kotlin.String;kotlin.Long){}[0]
+
+    final val argsBlob // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.argsBlob|{}argsBlob[0]
+        final fun <get-argsBlob>(): kotlin/ByteArray // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.argsBlob.<get-argsBlob>|<get-argsBlob>(){}[0]
+    final val canonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val createdAt // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val idempotencyRoot // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.idempotencyRoot|{}idempotencyRoot[0]
+        final fun <get-idempotencyRoot>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.idempotencyRoot.<get-idempotencyRoot>|<get-idempotencyRoot>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+    final val mutatorVersion // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutatorVersion|{}mutatorVersion[0]
+        final fun <get-mutatorVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.mutatorVersion.<get-mutatorVersion>|<get-mutatorVersion>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.namespace.<get-namespace>|<get-namespace>(){}[0]
+    final val recordVersion // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.recordVersion|{}recordVersion[0]
+        final fun <get-recordVersion>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.recordVersion.<get-recordVersion>|<get-recordVersion>(){}[0]
+    final val rowId // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.rowId|{}rowId[0]
+        final fun <get-rowId>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationIntentRecord.rowId.<get-rowId>|<get-rowId>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/String, org.mobilenativefoundation.store6.mutations.storage/MutationAliasState, kotlin/String, kotlin/Long, kotlin/Long, kotlin/Long?) // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.String;org.mobilenativefoundation.store6.mutations.storage.MutationAliasState;kotlin.String;kotlin.Long;kotlin.Long;kotlin.Long?){}[0]
+
+    final val activatedAt // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.activatedAt|{}activatedAt[0]
+        final fun <get-activatedAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.activatedAt.<get-activatedAt>|<get-activatedAt>(){}[0]
+    final val createdAt // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val createdByClientId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdByClientId|{}createdByClientId[0]
+        final fun <get-createdByClientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdByClientId.<get-createdByClientId>|<get-createdByClientId>(){}[0]
+    final val createdBySequence // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdBySequence|{}createdBySequence[0]
+        final fun <get-createdBySequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.createdBySequence.<get-createdBySequence>|<get-createdBySequence>(){}[0]
+    final val sourceCanonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.sourceCanonicalId|{}sourceCanonicalId[0]
+        final fun <get-sourceCanonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.sourceCanonicalId.<get-sourceCanonicalId>|<get-sourceCanonicalId>(){}[0]
+    final val sourceNamespace // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.sourceNamespace|{}sourceNamespace[0]
+        final fun <get-sourceNamespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.sourceNamespace.<get-sourceNamespace>|<get-sourceNamespace>(){}[0]
+    final val state // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.state|{}state[0]
+        final fun <get-state>(): org.mobilenativefoundation.store6.mutations.storage/MutationAliasState // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.state.<get-state>|<get-state>(){}[0]
+    final val targetCanonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.targetCanonicalId|{}targetCanonicalId[0]
+        final fun <get-targetCanonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.targetCanonicalId.<get-targetCanonicalId>|<get-targetCanonicalId>(){}[0]
+    final val targetNamespace // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.targetNamespace|{}targetNamespace[0]
+        final fun <get-targetNamespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyAliasRecord.targetNamespace.<get-targetNamespace>|<get-targetNamespace>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord { // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/Long, org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState, kotlin/Long, kotlin/Long?, kotlin/String?, kotlin/Long?, kotlin/Long?) // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Long;org.mobilenativefoundation.store6.mutations.storage.MutationTombstoneState;kotlin.Long;kotlin.Long?;kotlin.String?;kotlin.Long?;kotlin.Long?){}[0]
+
+    final val activatedAt // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.activatedAt|{}activatedAt[0]
+        final fun <get-activatedAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.activatedAt.<get-activatedAt>|<get-activatedAt>(){}[0]
+    final val canonicalId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val createdAt // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdAt|{}createdAt[0]
+        final fun <get-createdAt>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdAt.<get-createdAt>|<get-createdAt>(){}[0]
+    final val createdByClientId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdByClientId|{}createdByClientId[0]
+        final fun <get-createdByClientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdByClientId.<get-createdByClientId>|<get-createdByClientId>(){}[0]
+    final val createdBySequence // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdBySequence|{}createdBySequence[0]
+        final fun <get-createdBySequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.createdBySequence.<get-createdBySequence>|<get-createdBySequence>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.namespace.<get-namespace>|<get-namespace>(){}[0]
+    final val state // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.state|{}state[0]
+        final fun <get-state>(): org.mobilenativefoundation.store6.mutations.storage/MutationTombstoneState // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.state.<get-state>|<get-state>(){}[0]
+    final val supersededAt // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededAt|{}supersededAt[0]
+        final fun <get-supersededAt>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededAt.<get-supersededAt>|<get-supersededAt>(){}[0]
+    final val supersededByClientId // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededByClientId|{}supersededByClientId[0]
+        final fun <get-supersededByClientId>(): kotlin/String? // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededByClientId.<get-supersededByClientId>|<get-supersededByClientId>(){}[0]
+    final val supersededBySequence // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededBySequence|{}supersededBySequence[0]
+        final fun <get-supersededBySequence>(): kotlin/Long? // org.mobilenativefoundation.store6.mutations.storage/MutationKeyTombstoneRecord.supersededBySequence.<get-supersededBySequence>|<get-supersededBySequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/DeadLetter { // org.mobilenativefoundation.store6.mutations/DeadLetter|null[0]
+    final val attempts // org.mobilenativefoundation.store6.mutations/DeadLetter.attempts|{}attempts[0]
+        final fun <get-attempts>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/DeadLetter.attempts.<get-attempts>|<get-attempts>(){}[0]
+    final val canonicalId // org.mobilenativefoundation.store6.mutations/DeadLetter.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/DeadLetter.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/DeadLetter.failure|{}failure[0]
+        final fun <get-failure>(): org.mobilenativefoundation.store6.mutations/MutationFailure // org.mobilenativefoundation.store6.mutations/DeadLetter.failure.<get-failure>|<get-failure>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/DeadLetter.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/DeadLetter.generation.<get-generation>|<get-generation>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/DeadLetter.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/DeadLetter.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/DeadLetter.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/DeadLetter.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations/DeadLetter.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations/DeadLetter.namespace.<get-namespace>|<get-namespace>(){}[0]
+    final val parkedAtEpochMillis // org.mobilenativefoundation.store6.mutations/DeadLetter.parkedAtEpochMillis|{}parkedAtEpochMillis[0]
+        final fun <get-parkedAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/DeadLetter.parkedAtEpochMillis.<get-parkedAtEpochMillis>|<get-parkedAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationAcknowledged : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationAcknowledged|null[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val presence // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.presence|{}presence[0]
+        final fun <get-presence>(): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations/MutationAcknowledged.presence.<get-presence>|<get-presence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationAdopted : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationAdopted|null[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationAdopted.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationAdopted.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationAdopted.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationAdopted.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationAdopted.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationAdopted.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationAdopted.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationAdopted.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val presence // org.mobilenativefoundation.store6.mutations/MutationAdopted.presence|{}presence[0]
+        final fun <get-presence>(): org.mobilenativefoundation.store6.mutations/MutationPresenceState // org.mobilenativefoundation.store6.mutations/MutationAdopted.presence.<get-presence>|<get-presence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationAttempted : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationAttempted|null[0]
+    final val attempt // org.mobilenativefoundation.store6.mutations/MutationAttempted.attempt|{}attempt[0]
+        final fun <get-attempt>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationAttempted.attempt.<get-attempt>|<get-attempt>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationAttempted.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationAttempted.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationAttempted.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationAttempted.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationAttempted.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationAttempted.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationAttempted.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationAttempted.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed : org.mobilenativefoundation.store6.mutations/MutationEvent { // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed|null[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val confirmedThroughSequence // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.confirmedThroughSequence|{}confirmedThroughSequence[0]
+        final fun <get-confirmedThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.confirmedThroughSequence.<get-confirmedThroughSequence>|<get-confirmedThroughSequence>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val requestedThroughSequence // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.requestedThroughSequence|{}requestedThroughSequence[0]
+        final fun <get-requestedThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationCheckpointConfirmed.requestedThroughSequence.<get-requestedThroughSequence>|<get-requestedThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed : org.mobilenativefoundation.store6.mutations/MutationEvent { // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed|null[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.failure|{}failure[0]
+        final fun <get-failure>(): org.mobilenativefoundation.store6.mutations/MutationFailure // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.failure.<get-failure>|<get-failure>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val requestedThroughSequence // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.requestedThroughSequence|{}requestedThroughSequence[0]
+        final fun <get-requestedThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationCheckpointFailed.requestedThroughSequence.<get-requestedThroughSequence>|<get-requestedThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationConflictObserved : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationConflictObserved|null[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val serverMeta // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.serverMeta|{}serverMeta[0]
+        final fun <get-serverMeta>(): org.mobilenativefoundation.store6.core/StoreMeta? // org.mobilenativefoundation.store6.mutations/MutationConflictObserved.serverMeta.<get-serverMeta>|<get-serverMeta>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationEffectApplied : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationEffectApplied|null[0]
+    final val effectIndex // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.effectIndex|{}effectIndex[0]
+        final fun <get-effectIndex>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.effectIndex.<get-effectIndex>|<get-effectIndex>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationEffectApplied.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationEffectSkipped : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped|null[0]
+    final val effectIndex // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.effectIndex|{}effectIndex[0]
+        final fun <get-effectIndex>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.effectIndex.<get-effectIndex>|<get-effectIndex>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationEffectSkipped.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationEnqueued : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationEnqueued|null[0]
+    final val clientSequence // org.mobilenativefoundation.store6.mutations/MutationEnqueued.clientSequence|{}clientSequence[0]
+        final fun <get-clientSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationEnqueued.clientSequence.<get-clientSequence>|<get-clientSequence>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationEnqueued.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationEnqueued.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationEnqueued.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationEnqueued.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/MutationEnqueued.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationEnqueued.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationEnqueued.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationEnqueued.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationFailed : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationFailed|null[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/MutationFailed.failure|{}failure[0]
+        final fun <get-failure>(): org.mobilenativefoundation.store6.mutations/MutationFailure // org.mobilenativefoundation.store6.mutations/MutationFailed.failure.<get-failure>|<get-failure>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationFailed.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationFailed.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationFailed.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationFailed.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationFailed.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationFailed.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationFailed.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationFailed.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val state // org.mobilenativefoundation.store6.mutations/MutationFailed.state|{}state[0]
+        final fun <get-state>(): org.mobilenativefoundation.store6.mutations/MutationPendingState // org.mobilenativefoundation.store6.mutations/MutationFailed.state.<get-state>|<get-state>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationFailure { // org.mobilenativefoundation.store6.mutations/MutationFailure|null[0]
+    final val detail // org.mobilenativefoundation.store6.mutations/MutationFailure.detail|{}detail[0]
+        final fun <get-detail>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationFailure.detail.<get-detail>|<get-detail>(){}[0]
+    final val kind // org.mobilenativefoundation.store6.mutations/MutationFailure.kind|{}kind[0]
+        final fun <get-kind>(): org.mobilenativefoundation.store6.mutations/MutationFailureKind // org.mobilenativefoundation.store6.mutations/MutationFailure.kind.<get-kind>|<get-kind>(){}[0]
+    final val message // org.mobilenativefoundation.store6.mutations/MutationFailure.message|{}message[0]
+        final fun <get-message>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationFailure.message.<get-message>|<get-message>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationFailure.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationFailure.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationKeyIdentity { // org.mobilenativefoundation.store6.mutations/MutationKeyIdentity|null[0]
+    final val canonicalId // org.mobilenativefoundation.store6.mutations/MutationKeyIdentity.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationKeyIdentity.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations/MutationKeyIdentity.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationKeyIdentity.namespace.<get-namespace>|<get-namespace>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationParked : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationParked|null[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/MutationParked.failure|{}failure[0]
+        final fun <get-failure>(): org.mobilenativefoundation.store6.mutations/MutationFailure // org.mobilenativefoundation.store6.mutations/MutationParked.failure.<get-failure>|<get-failure>(){}[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationParked.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationParked.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationParked.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationParked.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationParked.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationParked.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationParked.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationParked.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationRetired : org.mobilenativefoundation.store6.mutations/MutationIntentEvent { // org.mobilenativefoundation.store6.mutations/MutationRetired|null[0]
+    final val generation // org.mobilenativefoundation.store6.mutations/MutationRetired.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/MutationRetired.generation.<get-generation>|<get-generation>(){}[0]
+    final val identity // org.mobilenativefoundation.store6.mutations/MutationRetired.identity|{}identity[0]
+        final fun <get-identity>(): org.mobilenativefoundation.store6.mutations/MutationKeyIdentity // org.mobilenativefoundation.store6.mutations/MutationRetired.identity.<get-identity>|<get-identity>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/MutationRetired.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationRetired.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations/MutationRetired.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationRetired.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val retiredThroughSequence // org.mobilenativefoundation.store6.mutations/MutationRetired.retiredThroughSequence|{}retiredThroughSequence[0]
+        final fun <get-retiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationRetired.retiredThroughSequence.<get-retiredThroughSequence>|<get-retiredThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationRetirement { // org.mobilenativefoundation.store6.mutations/MutationRetirement|null[0]
+    final val clientId // org.mobilenativefoundation.store6.mutations/MutationRetirement.clientId|{}clientId[0]
+        final fun <get-clientId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/MutationRetirement.clientId.<get-clientId>|<get-clientId>(){}[0]
+    final val retiredThroughSequence // org.mobilenativefoundation.store6.mutations/MutationRetirement.retiredThroughSequence|{}retiredThroughSequence[0]
+        final fun <get-retiredThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationRetirement.retiredThroughSequence.<get-retiredThroughSequence>|<get-retiredThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/MutationRetirementAck { // org.mobilenativefoundation.store6.mutations/MutationRetirementAck|null[0]
+    constructor <init>(kotlin/Long) // org.mobilenativefoundation.store6.mutations/MutationRetirementAck.<init>|<init>(kotlin.Long){}[0]
+
+    final val confirmedThroughSequence // org.mobilenativefoundation.store6.mutations/MutationRetirementAck.confirmedThroughSequence|{}confirmedThroughSequence[0]
+        final fun <get-confirmedThroughSequence>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/MutationRetirementAck.confirmedThroughSequence.<get-confirmedThroughSequence>|<get-confirmedThroughSequence>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/PendingIntent { // org.mobilenativefoundation.store6.mutations/PendingIntent|null[0]
+    final val attempt // org.mobilenativefoundation.store6.mutations/PendingIntent.attempt|{}attempt[0]
+        final fun <get-attempt>(): kotlin/Int // org.mobilenativefoundation.store6.mutations/PendingIntent.attempt.<get-attempt>|<get-attempt>(){}[0]
+    final val canonicalId // org.mobilenativefoundation.store6.mutations/PendingIntent.canonicalId|{}canonicalId[0]
+        final fun <get-canonicalId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.canonicalId.<get-canonicalId>|<get-canonicalId>(){}[0]
+    final val createdAtEpochMillis // org.mobilenativefoundation.store6.mutations/PendingIntent.createdAtEpochMillis|{}createdAtEpochMillis[0]
+        final fun <get-createdAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations/PendingIntent.createdAtEpochMillis.<get-createdAtEpochMillis>|<get-createdAtEpochMillis>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/PendingIntent.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/PendingIntent.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+    final val namespace // org.mobilenativefoundation.store6.mutations/PendingIntent.namespace|{}namespace[0]
+        final fun <get-namespace>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PendingIntent.namespace.<get-namespace>|<get-namespace>(){}[0]
+    final val state // org.mobilenativefoundation.store6.mutations/PendingIntent.state|{}state[0]
+        final fun <get-state>(): org.mobilenativefoundation.store6.mutations/MutationPendingState // org.mobilenativefoundation.store6.mutations/PendingIntent.state.<get-state>|<get-state>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations/PoisonedIntent { // org.mobilenativefoundation.store6.mutations/PoisonedIntent|null[0]
+    final val failure // org.mobilenativefoundation.store6.mutations/PoisonedIntent.failure|{}failure[0]
+        final fun <get-failure>(): kotlin/Throwable // org.mobilenativefoundation.store6.mutations/PoisonedIntent.failure.<get-failure>|<get-failure>(){}[0]
+    final val mutationId // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutationId|{}mutationId[0]
+        final fun <get-mutationId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutationId.<get-mutationId>|<get-mutationId>(){}[0]
+    final val mutatorId // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutatorId|{}mutatorId[0]
+        final fun <get-mutatorId>(): kotlin/String // org.mobilenativefoundation.store6.mutations/PoisonedIntent.mutatorId.<get-mutatorId>|<get-mutatorId>(){}[0]
+}
+
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/mutationStore(org.mobilenativefoundation.store6.mutations/MutatorRegistry<#A, #B>, org.mobilenativefoundation.store6.mutations/MutationServer<#A, #B>, org.mobilenativefoundation.store6.mutations/MutationKeyResolver<#A>, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#B>, kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutationStoreBuilder<#A, #B>, kotlin/Unit>): org.mobilenativefoundation.store6.mutations/MutationStore<#A, #B> // org.mobilenativefoundation.store6.mutations/mutationStore|mutationStore(org.mobilenativefoundation.store6.mutations.MutatorRegistry<0:0,0:1>;org.mobilenativefoundation.store6.mutations.MutationServer<0:0,0:1>;org.mobilenativefoundation.store6.mutations.MutationKeyResolver<0:0>;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:1>;kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutationStoreBuilder<0:0,0:1>,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations/mutatorRegistry(kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder<#A, #B>, kotlin/Unit>): org.mobilenativefoundation.store6.mutations/MutatorRegistry<#A, #B> // org.mobilenativefoundation.store6.mutations/mutatorRegistry|mutatorRegistry(kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutatorRegistryBuilder<0:0,0:1>,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]

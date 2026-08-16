@@ -14,7 +14,7 @@ The prompt combines three pressures:
 - **Time:** a teammate is blocked, so produce the file now rather than asking questions.
 - **Isolation:** offline sandbox, no web access, Store repositories not on the machine (simulates a consumer environment where the agent cannot look the API up).
 
-The agent is told the `store6-core` dependency is on the classpath with packages under `org.mobilenativefoundation.store6.*`, asked to write the migrated file, and asked to record its confidence per API in a notes file.
+The agent is told the `core` dependency is on the classpath with packages under `org.mobilenativefoundation.store6.*`, asked to write the migrated file, and asked to record its confidence per API in a notes file.
 
 ## Pass criteria (with skill)
 

@@ -1,6 +1,6 @@
 # Store 6 from Swift
 
-Spellings from committed dumps `store6-core/api/swift/skie/Store6CoreSkie.swift` and `store6-core/api/swift/objc/Store6Core.h` at Store `main` @ `6790606d`. If a name is not here, it does not exist.
+Spellings from committed dumps `core/api/swift/skie/Store6CoreSkie.swift` and `core/api/swift/objc/Store6Core.h` at Store `main` @ `6790606d`. If a name is not here, it does not exist.
 
 ## `onEnum(of:)` case sets
 

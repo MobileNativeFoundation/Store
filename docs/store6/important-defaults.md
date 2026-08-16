@@ -125,6 +125,6 @@ window's millisecond value is an internal constant, and this page deliberately d
 ---
 
 *Every test named above lives under
-[`store6-core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/`](../../store6-core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/).*
+[`core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/`](../../core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/).*
 
 *Last verified: 2026-08-10 · `main` @ `a6a156e9`, pre-6.0.0-alpha01*

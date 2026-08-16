@@ -28,7 +28,7 @@ What the user sees: the content stays on screen, and updates in place when the f
 the stale-while-revalidate shape, and it is what you want for pull-to-refresh, for a "data changed"
 push, and for anything where showing the previous answer beats showing nothing.
 
-<!-- recipe: shapes from store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:70-98 (landed invalidate/invalidateNamespace signatures and their contracts); behavior per StoreInvalidationConformanceTest.invalidate_activeStream_observesRefetchedData -->
+<!-- recipe: shapes from core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:70-98 (landed invalidate/invalidateNamespace signatures and their contracts); behavior per StoreInvalidationConformanceTest.invalidate_activeStream_observesRefetchedData -->
 
 ```kotlin
 import kotlinx.coroutines.flow.Flow
@@ -78,7 +78,7 @@ What the user sees: the content disappears and a loading state appears. That is 
 value is not just outdated but *wrong to show* — a different user's data, data the current session is
 no longer entitled to, a record the server says no longer exists.
 
-<!-- recipe: shapes from store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:113-164 (landed clear/clearNamespace/clearAll signatures and their contracts); behavior per StoreInvalidationConformanceTest.clear_thenNewStreamEmitsLoadingNeverStaleReplay -->
+<!-- recipe: shapes from core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:113-164 (landed clear/clearNamespace/clearAll signatures and their contracts); behavior per StoreInvalidationConformanceTest.clear_thenNewStreamEmitsLoadingNeverStaleReplay -->
 
 ```kotlin
 import org.mobilenativefoundation.store6.core.Store

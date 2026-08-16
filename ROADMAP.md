@@ -41,8 +41,8 @@ under principle 1. The confidence range above is real: treat Q1 2027 as the hone
 
 | | |
 |---|---|
-| `store6-core`, `store6-testing` | The engine and its conformance kit. |
-| `store6-mutations` | The write path: journal, drain, rebase, conflict stack, restart replay. Experimental artifact, in the floor rather than the may-slip list. |
+| `core`, `testing` | The engine and its conformance kit. |
+| `mutations` | The write path: journal, drain, rebase, conflict stack, restart replay. Experimental artifact, in the floor rather than the may-slip list. |
 | STABILITY.md + this roadmap | The published policy: tiers, deprecation cycle, cadence commitment. |
 | Quickstart + Important Defaults | The mental model before the API reference. |
 
@@ -100,7 +100,7 @@ There is no date-driven graduation.
   come from modules CI compiles. If a page loses you, open an issue saying where. That is a useful
   bug report, and it is the one we most want.
 - **Semantics.** The conformance suite under
-  [`store6-core/src/commonTest`](store6-core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/)
+  [`core/src/commonTest`](core/src/commonTest/kotlin/org/mobilenativefoundation/store6/core/)
   is the specification. If you can describe a behavior you expected and a test that would have
   caught it, that is a complete contribution before a line of implementation.
 - **Adapters and platforms.** The source-of-truth seam is small on purpose. An adapter for a store

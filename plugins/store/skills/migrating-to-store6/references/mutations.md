@@ -1,6 +1,6 @@
 # MutableStore and Updater → the journalled mutation path
 
-`store6-mutations` is a separate experimental artifact: every public symbol carries `@ExperimentalStoreApi`, so shapes may change or be removed in any release. Confirm the consuming team has accepted that before porting writes. Reads can migrate to core first.
+`mutations` is a separate experimental artifact: every public symbol carries `@ExperimentalStoreApi`, so shapes may change or be removed in any release. Confirm the consuming team has accepted that before porting writes. Reads can migrate to core first.
 
 `mutationStore(...)` returns a `MutationStore`, which implements `Store`, so read, freshness, invalidation, clear, and close behavior follows the core read contract.
 

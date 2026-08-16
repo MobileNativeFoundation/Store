@@ -8,7 +8,7 @@ consequences when you get them wrong.
 
 ## The two jobs
 
-<!-- provenance: store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/StoreKey.kt:9-19 — the landed public interface, declarations only (KDoc elided; not a copy-paste recipe) -->
+<!-- provenance: core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/StoreKey.kt:9-19 — the landed public interface, declarations only (KDoc elided; not a copy-paste recipe) -->
 
 ```kotlin
 public interface StoreKey {
@@ -33,7 +33,7 @@ requests would return different bytes, their canonical ids must differ.
 
 ## The smallest correct key
 
-<!-- recipe: shapes from store6-quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:11-21 (the landed key implementation CI compiles and runs) -->
+<!-- recipe: shapes from quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:11-21 (the landed key implementation CI compiles and runs) -->
 
 ```kotlin
 import org.mobilenativefoundation.store6.core.StoreKey
@@ -86,7 +86,7 @@ profile screen should invalidate the user, not everything. A sign-out should cle
 "this organization's data changed" push notification is exactly the case for a per-organization
 namespace, because it lets one call invalidate the right subset instead of all of it.
 
-<!-- recipe: shapes from store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:84-147 (the landed invalidate/clear signatures); namespace-watermark behavior per StoreInvalidationConformanceTest and StoreDurableMaintenanceConformanceTest -->
+<!-- recipe: shapes from core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/Store.kt:84-147 (the landed invalidate/clear signatures); namespace-watermark behavior per StoreInvalidationConformanceTest and StoreDurableMaintenanceConformanceTest -->
 
 ```kotlin
 import org.mobilenativefoundation.store6.core.Store

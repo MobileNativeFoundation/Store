@@ -57,7 +57,8 @@ subprojects {
         }
     }
 
-    if (name.startsWith("store6")) return@subprojects
+    // Store 6 modules use their own formatting conventions.
+    return@subprojects
 
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "com.diffplug.spotless")
@@ -89,18 +90,18 @@ tasks.getByName("wrapper")
 
 tasks.register("refreshSwiftDumps") {
     dependsOn(
-        ":store6-swift-dumps-objc:refreshSwiftDump",
-        ":store6-swift-dumps-skie:refreshSwiftDump",
-        ":store6-swift-dumps-mutations-objc:refreshSwiftDump",
-        ":store6-swift-dumps-mutations-skie:refreshSwiftDump",
+        ":swift-dumps-objc:refreshSwiftDump",
+        ":swift-dumps-skie:refreshSwiftDump",
+        ":swift-dumps-mutations-objc:refreshSwiftDump",
+        ":swift-dumps-mutations-skie:refreshSwiftDump",
     )
 }
 
 tasks.register("checkSwiftDumps") {
     dependsOn(
-        ":store6-swift-dumps-objc:checkSwiftDump",
-        ":store6-swift-dumps-skie:checkSwiftDump",
-        ":store6-swift-dumps-mutations-objc:checkSwiftDump",
-        ":store6-swift-dumps-mutations-skie:checkSwiftDump",
+        ":swift-dumps-objc:checkSwiftDump",
+        ":swift-dumps-skie:checkSwiftDump",
+        ":swift-dumps-mutations-objc:checkSwiftDump",
+        ":swift-dumps-mutations-skie:checkSwiftDump",
     )
 }

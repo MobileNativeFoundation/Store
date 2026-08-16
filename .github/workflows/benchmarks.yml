@@ -1,0 +1,92 @@
+name: Store6 Benchmarks
+
+# Non-blocking measurement lane. Report-only: runs the smoke configuration and uploads JSON
+# results. NO step asserts against a number — no numeric performance target has been adopted
+# (see benchmarks/README.md for the CI boundary). This workflow is deliberately OUTSIDE
+# the exact-head-green ready-gate convention, which continues to mean: the Store6 and CI
+# workflows green at the head.
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, store6 ]
+    paths:
+      - 'benchmarks/**'
+      - '.github/workflows/benchmarks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmarks-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run smoke benchmarks (report-only; no thresholds)
+        run: ./gradlew :benchmarks:smokeBenchmark --stacktrace
+
+      - name: Summarize results
+        shell: bash
+        run: |
+          set -euo pipefail
+          reports_dir="benchmarks/build/reports/benchmarks"
+          mapfile -t json_reports < <(find "${reports_dir}" -type f -name '*.json' -print | LC_ALL=C sort)
+          report_count="${#json_reports[@]}"
+          if [[ "${report_count}" -ne 1 ]]; then
+            echo "ERROR: expected exactly one benchmark JSON under ${reports_dir}; found ${report_count}" >&2
+            if [[ "${report_count}" -gt 0 ]]; then
+              printf '  %s\n' "${json_reports[@]}" >&2
+            fi
+            exit 1
+          fi
+          json="${json_reports[0]}"
+          if ! jq -e '
+            type == "array" and
+            length > 0 and
+            all(.[];
+              type == "object" and
+              ((.benchmark | type) == "string") and
+              ((.benchmark | length) > 0) and
+              ((has("params") | not) or ((.params | type) == "object")) and
+              ((.primaryMetric | type) == "object") and
+              ((.primaryMetric.score | type) == "number") and
+              ((.primaryMetric.scoreUnit | type) == "string") and
+              ((.primaryMetric.scoreUnit | length) > 0)
+            )
+          ' "${json}" >/dev/null; then
+            echo "ERROR: benchmark JSON failed structural validation: ${json}" >&2
+            exit 1
+          fi
+          echo "Results from ${json} (smoke-grade numbers; hosted-runner noise applies — see benchmarks/README.md):"
+          jq -r '.[] | [.benchmark,
+                        ((.params // {}) | to_entries | map("\(.key)=\(.value)") | join(",")),
+                        (.primaryMetric.score | tostring),
+                        .primaryMetric.scoreUnit]
+                       | @tsv' "${json}" | column -t -s $'\t'
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks-smoke-${{ github.run_id }}
+          path: benchmarks/build/reports/benchmarks/
+          if-no-files-found: error

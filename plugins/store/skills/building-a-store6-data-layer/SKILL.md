@@ -19,7 +19,7 @@ Route: legacy Store 4/5 code present → `migrating-to-store6`.
 - **Keys:** every key implements `StoreKey` (`namespace: StoreNamespace`, `canonicalId(): String`). `StoreNamespace` is a class: `StoreNamespace("users")` exposes `.value`. Canonical id is identity/dedup. Namespace is the bulk-operation unit. A bare `String` or a type that does not implement `StoreKey` does not satisfy `K : StoreKey`.
 - **Reads:** freshness is per call: `stream(key, freshness)` and `get(key, freshness)`, default `Freshness.CachedOrFetch`. Exactly five policies: `CachedOrFetch`, `MaxAge(notOlderThan)`, `MustBeFresh`, `StaleIfError`, `LocalOnly`.
 - **Results:** `StoreResult` has exactly four kinds: `Loading`, `Data(value, origin, age, isStale, refreshing)`, `Revalidated(age)`, `Error(error: StoreError, servedStale)`. `StoreError` is six frozen kinds (`Fetch`, `Persistence`, `Conversion`, `FreshnessUnsatisfiable`, `Conflict`, `Missing`). `stream` emits errors and never throws retrieval failures. `get` returns a value or throws `StoreException`.
-- **Persistence:** seam `SourceOfTruth<K, V>` via `persistence(...)`. Both `@ExperimentalStoreApi`; implementing the interface also needs `DelicateStoreApi`. Prefer `store6-room` or `store6-sqldelight`. Validate custom seams with `store6-testing`.
+- **Persistence:** seam `SourceOfTruth<K, V>` via `persistence(...)`. Both `@ExperimentalStoreApi`; implementing the interface also needs `DelicateStoreApi`. Prefer `room` or `sqldelight`. Validate custom seams with `testing`.
 - **Maintenance:** `invalidate*` marks stale and keeps. `clear*` destroys. Decision test: clear when the value is wrong to show, invalidate when it is merely old. Maintenance ops suspend and can throw `StoreException`. `close()` is a plain function.
 - **Engine behavior you do not build:** per-key single-flight dedup, stale-while-revalidate, durable invalidation, `maxIdleKeys` default 128 (idle-engine bound, **not** a data-lifetime or row-count cap). The engine retries the fetcher zero times and has no TTL/cache-policy knob. Retry/backoff/fallback belong inside the fetcher.
 
@@ -27,7 +27,7 @@ Route: legacy Store 4/5 code present → `migrating-to-store6`.
 
 1. **Model keys.** One namespace per record type. `canonicalId()` contains everything that changes the returned bytes.
 2. **Write the fetcher.** Put retry, backoff, and fallback policy inside it. The engine will not retry.
-3. **Choose persistence.** Default in-memory; or `store6-room` / `store6-sqldelight`; or a custom seam validated with the `store6-testing` contract kit.
+3. **Choose persistence.** Default in-memory; or `room` / `sqldelight`; or a custom seam validated with the `testing` contract kit.
 4. **Choose per-read `Freshness` at each call site.** Offline-first → default `CachedOrFetch`. Bounded trust → `MaxAge`. User-forced refresh → `MustBeFresh`. Flaky-network tolerance → `StaleIfError`. Never fetch → `LocalOnly`.
 5. **Place the code.** Keys, models, and the `store { }` definition live in the shared module's `commonMain`. Platform-constructed inputs (Room database instance, SQLDelight driver) are injected from platform source sets. One store instance is shared by Android and iOS. Room 3 KMP: common `@Database` + `@ConstructedBy` + platform `Room.databaseBuilder` actuals.
 6. **Wire consumption** per platform — [references/compose.md](references/compose.md), [references/swift.md](references/swift.md).
@@ -49,7 +49,7 @@ Route: legacy Store 4/5 code present → `migrating-to-store6`.
 
 ## Red flags: stop and open a reference
 
-About to type `StoreBuilder.from`, `Store.Builder`, `Fetcher.of`, `SourceOfTruth.of`, `Validator`, `.cachePolicy`, `.ttl`, `.freshness(` on the builder, `RetryPolicy`, `MemoryPolicy`, `RoomPersister`, `Read.`/`ReadResult`, a retry/backoff argument on the builder, a bare-`String` key, or any `store6-room` / `store6-sqldelight` / compose / Swift name not in the references? Stop. Open the matching reference before writing the line.
+About to type `StoreBuilder.from`, `Store.Builder`, `Fetcher.of`, `SourceOfTruth.of`, `Validator`, `.cachePolicy`, `.ttl`, `.freshness(` on the builder, `RetryPolicy`, `MemoryPolicy`, `RoomPersister`, `Read.`/`ReadResult`, a retry/backoff argument on the builder, a bare-`String` key, or any `room` / `sqldelight` / compose / Swift name not in the references? Stop. Open the matching reference before writing the line.
 
 ## References
 

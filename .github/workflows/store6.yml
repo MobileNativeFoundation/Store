@@ -54,15 +54,15 @@ jobs:
 
           printf 'Documentation sources changed:\n%s\n' "${changed_sources}" >&2
           cat >&2 <<'EOF'
-          This PR edits sources published to the docs site (listed in .github/docs-sync-sources.txt; pinned by store-docs evidence/T4-store6-source-lock.json). Merging makes the site stale until the docs repo re-pins. Add the 'docs-sync-ack' label to proceed; the docs repo's scheduled drift check will open the re-pin PR after merge. If your edit inserts or deletes lines in STABILITY.md, ROADMAP.md, store6-compose/README.md, or store6-sqldelight/README.md above an existing section, prefer appending — the site applies line-anchored publication transforms to these files.
+          This PR edits sources published to the docs site (listed in .github/docs-sync-sources.txt; pinned by store-docs evidence/T4-store6-source-lock.json). Merging makes the site stale until the docs repo re-pins. Add the 'docs-sync-ack' label to proceed; the docs repo's scheduled drift check will open the re-pin PR after merge. If your edit inserts or deletes lines in STABILITY.md, ROADMAP.md, compose/README.md, or sqldelight/README.md above an existing section, prefer appending — the site applies line-anchored publication transforms to these files.
           EOF
           exit 1
 
   linux-build-test:
     runs-on: ubuntu-latest
-    # The store6-mutations Lincheck budget measured ~58-59m locally and 2h40m-3h13m hosted
+    # The mutations Lincheck budget measured ~58-59m locally and 2h40m-3h13m hosted
     # at the current suite (and once 9h23m locally at an earlier revision). The default
-    # jvmTest excludes it via the build-gated filter in store6-mutations/build.gradle.kts
+    # jvmTest excludes it via the build-gated filter in mutations/build.gradle.kts
     # (census-guarded below); the scheduled "Store6 full mutations JVM suite" workflow runs
     # the full suite daily.
     timeout-minutes: 120
@@ -97,27 +97,27 @@ jobs:
 
       - name: Build Store6 core
         run: >
-          ./gradlew :store6-core:build :store6-testing:build :store6-sqldelight:build
+          ./gradlew :core:build :testing:build :sqldelight:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 quickstart
-        run: ./gradlew :store6-quickstart:run --stacktrace
+        run: ./gradlew :quickstart:run --stacktrace
 
       - name: Run Store6 sqldelight sample
-        run: ./gradlew :store6-sqldelight-sample:run --stacktrace
+        run: ./gradlew :sqldelight-sample:run --stacktrace
 
       - name: Build Store6 extension probe (seam-only consumer)
         run: >
-          ./gradlew :store6-extension-probe:build
+          ./gradlew :extension-probe:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Build Store6 compose and demo
         run: >
-          ./gradlew :store6-compose:build :store6-compose-demo:build
+          ./gradlew :compose:build :compose-demo:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
@@ -126,18 +126,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          reports_dir=store6-compose-demo/build/compose-reports
+          reports_dir=compose-demo/build/compose-reports
           # Force a complete, non-incremental report. Kotlin incremental compilation rewrites the
           # stability report with ONLY the recompiled subset, and the report is an undeclared task
           # output, so neither deleting it nor editing a source guarantees a whole-module snapshot.
           # Discarding the module's build directory makes the next compile a full one. The demo
           # module's compilations are also opted out of the build cache (see its build.gradle.kts)
           # so this cannot be served from cache without running the compiler.
-          rm -rf store6-compose-demo/build
-          ./gradlew :store6-compose-demo:compileKotlin --stacktrace
+          rm -rf compose-demo/build
+          ./gradlew :compose-demo:compileKotlin --stacktrace
           if [[ "$(find "${reports_dir}" -name '*-composables.txt' 2>/dev/null | wc -l | tr -d ' ')" -eq 0 ]]; then
             echo "ERROR: no composables report under ${reports_dir}" >&2
-            echo "The compose metrics wiring in store6-compose-demo/build.gradle.kts was removed or renamed." >&2
+            echo "The compose metrics wiring in compose-demo/build.gradle.kts was removed or renamed." >&2
             exit 1
           fi
           # All reports are concatenated (deterministic; probes exist only in the main compilation,
@@ -181,86 +181,86 @@ jobs:
 
       - name: Build Store6 Room adapter
         run: >
-          ./gradlew :store6-room:build
+          ./gradlew :room:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 Room sample
-        run: ./gradlew :store6-room-sample:run --stacktrace
+        run: ./gradlew :room-sample:run --stacktrace
 
       - name: Build Store6 benchmarks
-        run: ./gradlew :store6-benchmarks:build --stacktrace
+        run: ./gradlew :benchmarks:build --stacktrace
 
       - name: Build Store6 devtools modules and demo
         run: >
-          ./gradlew :store6-devtools:build :store6-devtools-inspector:build :store6-devtools-demo:build
+          ./gradlew :devtools:build :devtools-inspector:build :devtools-demo:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Build Store6 mutations
         run: >
-          ./gradlew :store6-mutations:build
+          ./gradlew :mutations:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 mutations quickstart
-        run: ./gradlew :store6-mutations-quickstart:run --stacktrace
+        run: ./gradlew :mutations-quickstart:run --stacktrace
 
       - name: Census — default jvmTest must execute exactly the non-Lincheck suites
         shell: bash
         run: |
           set -euo pipefail
-          expected=$(( $(find store6-mutations/src/commonTest store6-mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ') - 1 ))
-          executed=$(find store6-mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          expected=$(( $(find mutations/src/commonTest mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ') - 1 ))
+          executed=$(find mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
           echo "expected=${expected} executed=${executed}"
           [ "${expected}" -eq "${executed}" ]
 
       - name: Build Store6 mutation journal support
         run: >
-          ./gradlew :store6-mutations-testing:build :store6-mutations-sqldelight:build
+          ./gradlew :mutations-testing:build :mutations-sqldelight:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Build Store6 paging-androidx
         run: >
-          ./gradlew :store6-paging-androidx:build
+          ./gradlew :paging-androidx:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 paging sample
-        run: ./gradlew :store6-paging-androidx-sample:run --stacktrace
+        run: ./gradlew :paging-androidx-sample:run --stacktrace
 
       - name: Build Store6 graphql
         run: >
-          ./gradlew :store6-graphql:build
+          ./gradlew :graphql:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 graphql sample
-        run: ./gradlew :store6-graphql-sample:run --stacktrace
+        run: ./gradlew :graphql-sample:run --stacktrace
 
       - name: Build Store6 realtime
         run: >
-          ./gradlew :store6-realtime:build
+          ./gradlew :realtime:build
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
 
       - name: Run Store6 realtime sample
-        run: ./gradlew :store6-realtime-sample:run --stacktrace
+        run: ./gradlew :realtime-sample:run --stacktrace
 
       - name: Reject core-internal access from extension modules
         shell: bash
         run: |
           set -euo pipefail
           status=0
-          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room store6-benchmarks store6-devtools store6-devtools-inspector store6-devtools-demo store6-mutations store6-mutations-quickstart store6-mutations-testing store6-mutations-sqldelight store6-paging-androidx store6-paging-androidx/sample store6-graphql store6-graphql/sample store6-realtime store6-realtime/sample; do
+          for module in extension-probe testing sqldelight compose compose-demo room benchmarks devtools devtools-inspector devtools-demo mutations mutations-quickstart mutations-testing mutations-sqldelight paging-androidx paging-androidx/sample graphql graphql/sample realtime realtime/sample; do
             source_dir="${module}/src"
             if [[ ! -d "${source_dir}" ]]; then
               echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2
@@ -268,7 +268,7 @@ jobs:
               continue
             fi
             if grep -rnE 'InternalStoreApi|org[.]mobilenativefoundation[.]store6[.]core[.]internal' "${source_dir}"; then
-              echo "ERROR: ${module} accesses store6-core internals" >&2
+              echo "ERROR: ${module} accesses core internals" >&2
               status=1
             else
               grep_status=$?
@@ -284,7 +284,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          seam_dir="store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/seam"
+          seam_dir="core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/seam"
           expected=(
             Bookkeeper.kt
             Fetcher.kt
@@ -311,7 +311,7 @@ jobs:
           status=0
           banned_regex='(^|[^[:alnum:]_])(runBlocking|GlobalScope|atomicfu|Channel|actor)([^[:alnum:]_]|$)|kotlinx[.]coroutines[.]channels[.][*]'
           shopt -s nullglob
-          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main store6-room/src/*Main store6-devtools/src/*Main store6-devtools-inspector/src/*Main store6-mutations/src/*Main store6-mutations-testing/src/*Main store6-mutations-sqldelight/src/*Main store6-paging-androidx/src/*Main store6-graphql/src/*Main store6-realtime/src/*Main)
+          production_source_dirs=(core/src/*Main testing/src/*Main sqldelight/src/*Main compose/src/*Main room/src/*Main devtools/src/*Main devtools-inspector/src/*Main mutations/src/*Main mutations-testing/src/*Main mutations-sqldelight/src/*Main paging-androidx/src/*Main graphql/src/*Main realtime/src/*Main)
           for source_dir in "${production_source_dirs[@]}"; do
             [[ -d "${source_dir}" ]] || continue
             if grep -rnE --include='*.kt' "${banned_regex}" "${source_dir}"; then
@@ -325,7 +325,7 @@ jobs:
               fi
             fi
           done
-          key_engine="store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/internal/KeyEngine.kt"
+          key_engine="core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/internal/KeyEngine.kt"
           python3 - "${key_engine}" <<'PY' || status=1
           import re
           import sys
@@ -438,7 +438,7 @@ jobs:
           exit "${status}"
 
       - name: JS lock-discipline canary (full conformance suite on the JS lane)
-        run: ./gradlew :store6-core:jsNodeTest :store6-testing:jsNodeTest :store6-mutations:jsNodeTest :store6-mutations-testing:jsNodeTest :store6-paging-androidx:jsNodeTest :store6-graphql:jsNodeTest :store6-realtime:jsNodeTest --stacktrace
+        run: ./gradlew :core:jsNodeTest :testing:jsNodeTest :mutations:jsNodeTest :mutations-testing:jsNodeTest :paging-androidx:jsNodeTest :graphql:jsNodeTest :realtime:jsNodeTest --stacktrace
 
       - name: Upload test reports
         if: ${{ failure() }}
@@ -446,8 +446,8 @@ jobs:
         with:
           name: test-reports-store6-linux-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            store6-*/build/test-results/**/*.xml
-            store6-*/build/reports/tests/**
+            */build/test-results/**/*.xml
+            */build/reports/tests/**
           if-no-files-found: warn
           retention-days: 7
 
@@ -500,39 +500,39 @@ jobs:
           STORE6_IOS_SIMULATOR_DEVICE: ${{ steps.ios_simulator.outputs.device_name }}
         run: |
           ./gradlew \
-            :store6-core:iosSimulatorArm64Test \
-            :store6-core:macosArm64Test \
-            :store6-extension-probe:iosSimulatorArm64Test \
-            :store6-extension-probe:macosArm64Test \
-            :store6-testing:iosSimulatorArm64Test \
-            :store6-testing:macosArm64Test \
-            :store6-sqldelight:iosSimulatorArm64Test \
-            :store6-sqldelight:macosArm64Test \
-            :store6-compose:iosSimulatorArm64Test \
-            :store6-compose:macosArm64Test \
-            :store6-room:iosSimulatorArm64Test \
-            :store6-room:macosArm64Test \
-            :store6-paging-androidx:iosSimulatorArm64Test \
-            :store6-paging-androidx:macosArm64Test \
-            :store6-graphql:iosSimulatorArm64Test \
-            :store6-graphql:macosArm64Test \
-            :store6-realtime:iosSimulatorArm64Test \
-            :store6-realtime:macosArm64Test \
-            :store6-devtools:iosSimulatorArm64Test \
-            :store6-devtools:macosArm64Test \
-            :store6-devtools-inspector:iosSimulatorArm64Test \
-            :store6-devtools-inspector:macosArm64Test \
-            :store6-mutations:iosSimulatorArm64Test \
-            :store6-mutations:macosArm64Test \
-            :store6-mutations-testing:iosSimulatorArm64Test \
-            :store6-mutations-testing:macosArm64Test \
-            :store6-mutations-sqldelight:iosSimulatorArm64Test \
-            :store6-mutations-sqldelight:macosArm64Test \
+            :core:iosSimulatorArm64Test \
+            :core:macosArm64Test \
+            :extension-probe:iosSimulatorArm64Test \
+            :extension-probe:macosArm64Test \
+            :testing:iosSimulatorArm64Test \
+            :testing:macosArm64Test \
+            :sqldelight:iosSimulatorArm64Test \
+            :sqldelight:macosArm64Test \
+            :compose:iosSimulatorArm64Test \
+            :compose:macosArm64Test \
+            :room:iosSimulatorArm64Test \
+            :room:macosArm64Test \
+            :paging-androidx:iosSimulatorArm64Test \
+            :paging-androidx:macosArm64Test \
+            :graphql:iosSimulatorArm64Test \
+            :graphql:macosArm64Test \
+            :realtime:iosSimulatorArm64Test \
+            :realtime:macosArm64Test \
+            :devtools:iosSimulatorArm64Test \
+            :devtools:macosArm64Test \
+            :devtools-inspector:iosSimulatorArm64Test \
+            :devtools-inspector:macosArm64Test \
+            :mutations:iosSimulatorArm64Test \
+            :mutations:macosArm64Test \
+            :mutations-testing:iosSimulatorArm64Test \
+            :mutations-testing:macosArm64Test \
+            :mutations-sqldelight:iosSimulatorArm64Test \
+            :mutations-sqldelight:macosArm64Test \
             "-Pstore6.iosSimulatorDevice=${STORE6_IOS_SIMULATOR_DEVICE}" \
             --stacktrace
 
       - name: Link Store6 devtools demo iOS framework
-        run: ./gradlew :store6-devtools-demo:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+        run: ./gradlew :devtools-demo:linkDebugFrameworkIosSimulatorArm64 --stacktrace
 
       - name: Upload test reports
         if: ${{ failure() }}
@@ -540,8 +540,8 @@ jobs:
         with:
           name: test-reports-store6-apple-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            store6-*/build/test-results/**/*.xml
-            store6-*/build/reports/tests/**
+            */build/test-results/**/*.xml
+            */build/reports/tests/**
           if-no-files-found: warn
           retention-days: 7
 
@@ -583,11 +583,11 @@ jobs:
         with:
           name: swift-dump-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            store6-swift-dumps/**/build/swift-dump/**
-            store6-swift-dumps/**/build/bin/iosArm64/debugFramework/**/*.h
-            store6-swift-dumps/**/build/skie/**
-            store6-core/api/swift/**
-            store6-mutations/api/swift/**
+            swift-dumps/**/build/swift-dump/**
+            swift-dumps/**/build/bin/iosArm64/debugFramework/**/*.h
+            swift-dumps/**/build/skie/**
+            core/api/swift/**
+            mutations/api/swift/**
           if-no-files-found: warn
           retention-days: 7
 
@@ -622,7 +622,7 @@ jobs:
 
       - name: Publish Store6 core to Maven local without signing
         run: >
-          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal :store6-room:publishToMavenLocal :store6-devtools:publishToMavenLocal :store6-devtools-inspector:publishToMavenLocal :store6-mutations:publishToMavenLocal :store6-mutations-testing:publishToMavenLocal :store6-mutations-sqldelight:publishToMavenLocal :store6-paging-androidx:publishToMavenLocal :store6-graphql:publishToMavenLocal :store6-realtime:publishToMavenLocal
+          ./gradlew :core:publishToMavenLocal :testing:publishToMavenLocal :sqldelight:publishToMavenLocal :compose:publishToMavenLocal :room:publishToMavenLocal :devtools:publishToMavenLocal :devtools-inspector:publishToMavenLocal :mutations:publishToMavenLocal :mutations-testing:publishToMavenLocal :mutations-sqldelight:publishToMavenLocal :paging-androidx:publishToMavenLocal :graphql:publishToMavenLocal :realtime:publishToMavenLocal
           -Pkotlin.native.enableKlibsCrossCompilation=true
           -Pkotlin.apple.xcodeCompatibility.nowarn=true
           --stacktrace
@@ -634,7 +634,7 @@ jobs:
           version="6.0.0-SNAPSHOT"
           repository="${HOME}/.m2/repository/org/mobilenativefoundation/store"
 
-          modules=(store6-core store6-testing store6-sqldelight store6-compose store6-room store6-devtools store6-devtools-inspector store6-mutations store6-mutations-testing store6-mutations-sqldelight store6-paging-androidx store6-graphql store6-realtime)
+          modules=(core testing sqldelight compose room devtools devtools-inspector mutations mutations-testing mutations-sqldelight paging-androidx graphql realtime)
           suffixes=(
             ""
             -android
@@ -655,18 +655,18 @@ jobs:
           for module in "${modules[@]}"; do
             for suffix in "${suffixes[@]}"; do
               case "${module}:${suffix}" in
-                store6-paging-androidx:-iosx64)
-                  # store6-paging-androidx ships the paging-common-3.5.1 target subset; androidx.paging
+                paging-androidx:-iosx64)
+                  # paging-androidx ships the paging-common-3.5.1 target subset; androidx.paging
                   # publishes no Intel artifacts since 3.4.0-rc01.
                   continue
                   ;;
-                store6-room:-js|store6-room:-wasm-js|store6-room:-mingwx64|store6-room:-iosx64)
-                  # store6-room ships Room 3's target subset; room3 publishes no iosX64 and no
+                room:-js|room:-wasm-js|room:-mingwx64|room:-iosx64)
+                  # room ships Room 3's target subset; room3 publishes no iosX64 and no
                   # web/mingw klibs for this module's scope.
                   continue
                   ;;
-                store6-devtools-inspector:-watchosarm64|store6-devtools-inspector:-tvosarm64|store6-devtools-inspector:-linuxx64|store6-devtools-inspector:-mingwx64)
-                  # store6-devtools-inspector ships the CMP-UI subset; Compose foundation/material3
+                devtools-inspector:-watchosarm64|devtools-inspector:-tvosarm64|devtools-inspector:-linuxx64|devtools-inspector:-mingwx64)
+                  # devtools-inspector ships the CMP-UI subset; Compose foundation/material3
                   # publish no watchOS/tvOS/Linux/MinGW variants.
                   continue
                   ;;
@@ -728,14 +728,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew :store6-core:macosArm64Test \
+          ./gradlew :core:macosArm64Test \
             --tests '*StoreEvictionStressTest' \
             --tests '*StoreInvalidationStressTest' \
             --tests '*StoreCloseLifecycleTest' \
             --tests '*StoreBackpressureConformanceTest' \
             --stacktrace
 
-          result_dir="store6-core/build/test-results/macosArm64Test"
+          result_dir="core/build/test-results/macosArm64Test"
           expected_test_classes=(
             StoreEvictionStressTest
             StoreInvalidationStressTest
@@ -795,7 +795,7 @@ jobs:
         with:
           name: test-reports-store6-native-stress-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            store6-*/build/test-results/**/*.xml
-            store6-*/build/reports/tests/**
+            */build/test-results/**/*.xml
+            */build/reports/tests/**
           if-no-files-found: warn
           retention-days: 7

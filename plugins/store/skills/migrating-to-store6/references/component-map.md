@@ -6,7 +6,7 @@ Store 5 documents eight components: Store, Fetcher, SourceOfTruth, Converter, Va
 | --- | --- |
 | `Store` | `Store<K, V>` with `stream(key, freshness)`, suspending `get(key, freshness)`, namespace-aware `invalidate*`/`clear*`, and explicit `close()` |
 | `Fetcher` | `fetcher { }`, `fetcherOfResult { }`, or the experimental seam `Fetcher` (receives conditional-request ETags). Last registration wins across all three. |
-| `SourceOfTruth` | The seam `SourceOfTruth<K, V>` installed via `persistence(...)`, or a `store6-room`/`store6-sqldelight` adapter |
+| `SourceOfTruth` | The seam `SourceOfTruth<K, V>` installed via `persistence(...)`, or a `room`/`sqldelight` adapter |
 | `Converter` | **No direct analog.** Mapping lives in fetcher and persistence callbacks. |
 | `Validator` | Native per-call `Freshness`, durable invalidation, and the expert `FreshnessValidator` read-planning seam |
 | `MutableStore` + `Updater` | `mutationStore` plus typed `mutate`. **Updater has no direct analog:** its transport job moves to an app-owned `MutationServer` invoked by foreground `drain`. See [mutations.md](mutations.md). |
@@ -28,7 +28,7 @@ No engine-level fallback chain exists. Store performs zero retries. Compose retr
 
 Store 5's `SourceOfTruth<Key, Local, Output>` had separate local and output types, with a `Converter` bridging the fetcher's network type. The Store 6 seam is `SourceOfTruth<K, V>` with one value type and a nullable-row reader.
 
-The contract: `reader(key)` immediately first-emits the current row or `null`, stays live, and publishes changes made through that instance. Mutations provide read-your-writes on normal return and are exception-atomic, including cancellation. `deleteNamespace` is new. Validate implementations with the `store6-testing` contract kit.
+The contract: `reader(key)` immediately first-emits the current row or `null`, stays live, and publishes changes made through that instance. Mutations provide read-your-writes on normal return and are exception-atomic, including cancellation. `deleteNamespace` is new. Validate implementations with the `testing` contract kit.
 
 ## Converter → callbacks
 

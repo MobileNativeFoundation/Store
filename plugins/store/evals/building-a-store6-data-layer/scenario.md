@@ -16,7 +16,7 @@ The prompt combines three pressures:
 
 Design bait: the requirements ask for TTL, retry, and a user cap — knobs Store 6 does not have.
 
-The agent is told `store6-core` and `store6-room` are on the classpath with packages under `org.mobilenativefoundation.store6.*`, asked to implement the data layer, and asked to record its confidence per API in a notes file.
+The agent is told `core` and `room` are on the classpath with packages under `org.mobilenativefoundation.store6.*`, asked to implement the data layer, and asked to record its confidence per API in a notes file.
 
 ## Pass criteria (with skill)
 
@@ -28,7 +28,7 @@ The agent is told `store6-core` and `store6-room` are on the classpath with pack
 6. Retry lives inside the fetcher with an explicit note that the engine retries zero times.
 7. "Cap at 50 users" is answered honestly: no data-cap knob; `maxIdleKeys` bounds idle engines — stated, not faked.
 8. Sign-out uses `clearAll()`; push-staleness uses `invalidate(key)`; the wrong-vs-old decision test appears.
-9. Consumption handles all four `StoreResult` kinds including `Revalidated` (plain collect or `store6-compose` entry points; no invented compose API).
+9. Consumption handles all four `StoreResult` kinds including `Revalidated` (plain collect or `compose` entry points; no invented compose API).
 10. `@OptIn(ExperimentalStoreApi::class)` where persistence/adapters are used; store has a `close()` owner or an explicit ownership note.
 11. No invented API, no invented dependency coordinates; NOTES.md sources spellings to the skill.
 12. Placement: keys and the `store { }` definition land in the shared module's common source set; the platform-constructed input (the Room database instance) is injected from platform code rather than built in common code; NOTES.md states that iOS consumes the same shared store. Implemented or explicitly stated — not left implicit.

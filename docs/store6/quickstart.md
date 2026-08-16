@@ -10,7 +10,7 @@ those two things.
 
 Here is the whole idea in five lines.
 
-<!-- display: store block verbatim from store6-quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:49-51, dedent 8 (parity-checked); the stream and get lines are display forms, shapes from Main.kt:53-62, NOT parity-checked -->
+<!-- display: store block verbatim from quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:49-51, dedent 8 (parity-checked); the stream and get lines are display forms, shapes from Main.kt:53-62, NOT parity-checked -->
 
 ```kotlin
 val users = store<UserKey, User> {
@@ -27,14 +27,14 @@ one CI executes, and it is where the real `stream` and `get` call sites live.
 
 ## The whole program
 
-**This exact program compiles and runs on every pull request.** It is the `store6-quickstart`
-module, executed by the `./gradlew :store6-quickstart:run` step in
+**This exact program compiles and runs on every pull request.** It is the `quickstart`
+module, executed by the `./gradlew :quickstart:run` step in
 [`.github/workflows/store6.yml`](../../.github/workflows/store6.yml). If it broke, this page
 would not be shipping.
 
 Supporting declarations — the key, the model, and a stand-in service:
 
-<!-- verbatim: store6-quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:1-39, dedent 0 (parity-checked) -->
+<!-- verbatim: quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:1-39, dedent 0 (parity-checked) -->
 
 ```kotlin
 package org.mobilenativefoundation.store6.quickstart
@@ -85,7 +85,7 @@ own guide: [Keys and Namespaces](key-design.md).
 
 And `main`:
 
-<!-- verbatim: store6-quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:47-63, dedent 0 (parity-checked) -->
+<!-- verbatim: quickstart/src/main/kotlin/org/mobilenativefoundation/store6/quickstart/Main.kt:47-63, dedent 0 (parity-checked) -->
 
 ```kotlin
 public fun main(): Unit =
@@ -131,7 +131,7 @@ uses resident and fetched data.
 
 ## Write path (experimental)
 
-> **Experimental.** `store6-mutations` is a separate artifact and every public symbol is
+> **Experimental.** `mutations` is a separate artifact and every public symbol is
 > `@ExperimentalStoreApi`. It ships **with** 6.0.0-alpha01 — nothing here is published yet.
 >
 > **The spelling below is the current API surface.** The module is still experimental — shapes

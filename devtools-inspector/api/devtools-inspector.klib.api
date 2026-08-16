@@ -1,0 +1,10 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, macosArm64, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:devtools-inspector>
+final fun org.mobilenativefoundation.store6.devtools.compose/StoreInspector(org.mobilenativefoundation.store6.devtools/StoreDevtoolsMonitor, androidx.compose.ui/Modifier?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.mobilenativefoundation.store6.devtools.compose/StoreInspector|StoreInspector(org.mobilenativefoundation.store6.devtools.StoreDevtoolsMonitor;androidx.compose.ui.Modifier?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun org.mobilenativefoundation.store6.devtools.compose/StoreInspectorOverlay(org.mobilenativefoundation.store6.devtools/StoreDevtoolsMonitor, androidx.compose.ui/Modifier?, kotlin/Boolean, kotlin/Function2<androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // org.mobilenativefoundation.store6.devtools.compose/StoreInspectorOverlay|StoreInspectorOverlay(org.mobilenativefoundation.store6.devtools.StoreDevtoolsMonitor;androidx.compose.ui.Modifier?;kotlin.Boolean;kotlin.Function2<androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]

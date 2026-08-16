@@ -34,7 +34,7 @@ ksp = "2.3.10"
 # PIN: SQLDelight 2.1.0 remains intentionally pinned; it was built with older Kotlin.
 sqldelight = "2.1.0"
 # room3: new coordinates/packages/type identity; native KLIBs require Kotlin >=2.3 + AGP >=8.10
-# (falsified-claim record in decisions/store6-room-packaging.md).
+# (falsified-claim record in decisions/room-packaging.md).
 room3 = "3.0.0"
 # Exactly the androidx.sqlite version in room3 3.0.0's POM.
 androidxSqlite = "2.7.0"
@@ -42,7 +42,7 @@ androidxSqlite = "2.7.0"
 jetbrainsCompose = "1.8.2"
 # PIN: Lifecycle 2.9.1 remains intentionally pinned for 012.
 jetbrainsAndroidxLifecycle = "2.9.1"
-# PIN: kotlinx-benchmark for the unpublished store6-benchmarks harness. 0.4.17 is the newest
+# PIN: kotlinx-benchmark for the unpublished benchmarks harness. 0.4.17 is the newest
 # stable release at execution (repo is on Kotlin 2.3.20; the resolution probe below is the
 # compatibility ground truth). Unpublished-module dep: never appears in any public signature
 # (C-4 untouched).
