@@ -7,8 +7,8 @@ comments, commit messages, and pull-request bodies.
 ## Documentation discipline
 
 The full rules are embedded in this repository as skills:
-`.claude/skills/documentation-discipline/` (governs every sentence) and
-`.claude/skills/code-documentation/` (governs evidence, artifact shape, mutation, and
+`plugins/internal/documentation/skills/documentation-discipline/` (governs every sentence) and
+`plugins/internal/documentation/skills/code-documentation/` (governs evidence, artifact shape, mutation, and
 verification; composes with the discipline skill). Agents with skill support invoke them by
 name before documentation work; agents without it read the `SKILL.md` files and their
 `references/` directly. The core rules below are the load-bearing summary and apply either

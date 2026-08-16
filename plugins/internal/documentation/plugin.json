@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "documentation",
+  "version": "0.1.0",
+  "description": "Contributor-facing documentation skills for work inside this repository.",
+  "author": {
+    "name": "Matt Ramotar",
+    "email": "matt.ramotar@uber.com"
+  },
+  "repository": "https://github.com/matt-ramotar/Store6",
+  "license": "Apache-2.0",
+  "keywords": [
+    "documentation",
+    "readme",
+    "kdoc"
+  ]
+}
