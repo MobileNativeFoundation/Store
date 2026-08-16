@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "store",
+  "displayName": "Store",
+  "description": "Skills for applications using Store (org.mobilenativefoundation.store): building a Store 6 data layer and migrating from Store 4/5.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Matt Ramotar",
+    "email": "matt.ramotar@uber.com"
+  },
+  "keywords": [
+    "store",
+    "store6",
+    "kotlin",
+    "multiplatform",
+    "migration",
+    "caching",
+    "data-layer",
+    "offline",
+    "android",
+    "ios",
+    "compose"
+  ]
+}

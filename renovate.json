@@ -2,5 +2,19 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Kotlin-locked (klib ABI): move only with baseKotlin, as one manual coordinated bump.",
+      "matchPackagePrefixes": [
+        "app.cash.sqldelight",
+        "org.jetbrains.compose",
+        "org.jetbrains.androidx.lifecycle",
+        "com.google.devtools.ksp",
+        "androidx.room3",
+        "androidx.sqlite"
+      ],
+      "enabled": false
+    }
   ]
 }

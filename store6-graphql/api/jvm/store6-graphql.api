@@ -1,0 +1,209 @@
+public final class org/mobilenativefoundation/store6/graphql/GraphQlError {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMessage ()Ljava/lang/String;
+	public final fun getPath ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/graphql/GraphQlError$PathSegment {
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlError$PathSegment$Field : org/mobilenativefoundation/store6/graphql/GraphQlError$PathSegment {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlError$PathSegment$Index : org/mobilenativefoundation/store6/graphql/GraphQlError$PathSegment {
+	public fun <init> (I)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIndex ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/graphql/GraphQlExecutor {
+	public abstract fun execute (Lorg/mobilenativefoundation/store6/graphql/GraphQlRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/graphql/GraphQlExecutorResult {
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlExecutorResult$Data : org/mobilenativefoundation/store6/graphql/GraphQlExecutorResult {
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getData ()Ljava/lang/Object;
+	public final fun getErrors ()Ljava/util/List;
+	public final fun getEtag ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlExecutorResult$NotModified : org/mobilenativefoundation/store6/graphql/GraphQlExecutorResult {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEtag ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlFetcherKt {
+	public static final fun graphQlFetcher (Lorg/mobilenativefoundation/store6/core/StoreBuilder;Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy;Lorg/mobilenativefoundation/store6/graphql/GraphQlExecutor;)V
+	public static final fun graphQlFetcher (Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy;Lorg/mobilenativefoundation/store6/graphql/GraphQlExecutor;)Lorg/mobilenativefoundation/store6/core/seam/Fetcher;
+	public static synthetic fun graphQlFetcher$default (Lorg/mobilenativefoundation/store6/core/StoreBuilder;Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy;Lorg/mobilenativefoundation/store6/graphql/GraphQlExecutor;ILjava/lang/Object;)V
+	public static synthetic fun graphQlFetcher$default (Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy;Lorg/mobilenativefoundation/store6/graphql/GraphQlExecutor;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/seam/Fetcher;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlListBuilder {
+	public final fun add (D)V
+	public final fun add (I)V
+	public final fun add (J)V
+	public final fun add (Ljava/lang/String;)V
+	public final fun add (Lorg/mobilenativefoundation/store6/graphql/GraphQlValue;)V
+	public final fun add (Z)V
+	public final fun addList (Lkotlin/jvm/functions/Function1;)V
+	public final fun addNull ()V
+	public final fun addObject (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlObjectBuilder {
+	public final fun put (Ljava/lang/String;D)V
+	public final fun put (Ljava/lang/String;I)V
+	public final fun put (Ljava/lang/String;J)V
+	public final fun put (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun put (Ljava/lang/String;Lorg/mobilenativefoundation/store6/graphql/GraphQlValue;)V
+	public final fun put (Ljava/lang/String;Z)V
+	public final fun putList (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public final fun putNull (Ljava/lang/String;)V
+	public final fun putObject (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlOperation {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getDocument ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun key (Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;)Lorg/mobilenativefoundation/store6/graphql/GraphQlOperationKey;
+	public static synthetic fun key$default (Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/graphql/GraphQlOperationKey;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlOperationException : java/lang/Exception {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun getErrors ()Ljava/util/List;
+	public final fun getOperationName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlOperationKey : org/mobilenativefoundation/store6/core/StoreKey {
+	public fun <init> (Ljava/lang/String;Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;Lorg/mobilenativefoundation/store6/core/StoreNamespace;)V
+	public synthetic fun <init> (Ljava/lang/String;Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;Lorg/mobilenativefoundation/store6/core/StoreNamespace;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun canonicalId ()Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getNamespace ()Lorg/mobilenativefoundation/store6/core/StoreNamespace;
+	public final fun getOperationName ()Ljava/lang/String;
+	public final fun getVariables ()Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy {
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy$AdoptPartialData : org/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy$AdoptPartialData;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy$FailOnErrors : org/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/graphql/GraphQlPartialDataPolicy$FailOnErrors;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlRequest {
+	public fun <init> (Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;Ljava/lang/String;)V
+	public final fun getEtag ()Ljava/lang/String;
+	public final fun getOperation ()Lorg/mobilenativefoundation/store6/graphql/GraphQlOperation;
+	public final fun getVariables ()Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/graphql/GraphQlValue {
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$BooleanValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (Z)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$FloatValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (D)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$IntValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (J)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$ListValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (Ljava/util/List;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValues ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$NullValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/graphql/GraphQlValue$NullValue;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$ObjectValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (Ljava/util/Map;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFields ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValue$StringValue : org/mobilenativefoundation/store6/graphql/GraphQlValue {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlValueKt {
+	public static final fun graphQlVariables (Lkotlin/jvm/functions/Function1;)Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlVariables {
+	public static final field Companion Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables$Companion;
+	public fun <init> (Ljava/util/Map;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEntries ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/graphql/GraphQlVariables$Companion {
+	public final fun getEmpty ()Lorg/mobilenativefoundation/store6/graphql/GraphQlVariables;
+}
+

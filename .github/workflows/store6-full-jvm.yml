@@ -1,0 +1,71 @@
+name: Store6 full mutations JVM suite
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  full-mutations-jvm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run the FULL mutations JVM suite (Lincheck included)
+        run: ./gradlew :store6-mutations:jvmTest -Pstore6.fullJvmSuite --stacktrace
+
+      - name: Census — no suite may be lost
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(find store6-mutations/src/commonTest store6-mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ')
+          executed=$(find store6-mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          echo "expected=${expected} executed=${executed}"
+          [ "${expected}" -eq "${executed}" ]
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-jvm-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            store6-mutations/build/test-results/**/*.xml
+            store6-mutations/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: File the classification duty on failure
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list -R "${GITHUB_REPOSITORY}" --state open \
+            --search "Scheduled full mutations JVM suite red in:title" --json number \
+            --jq '.[0].number' > /tmp/existing || true
+          body="Scheduled full-suite run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} failed. Classify per docs/v6 conduct (017 register / 031 job-cap class / novel). Never rerun for evidence."
+          if [ -s /tmp/existing ] && [ "$(cat /tmp/existing)" != "null" ] && [ -n "$(cat /tmp/existing)" ]; then
+            gh issue comment "$(cat /tmp/existing)" -R "${GITHUB_REPOSITORY}" --body "${body}"
+          else
+            gh issue create -R "${GITHUB_REPOSITORY}" \
+              --title "Scheduled full mutations JVM suite red (${GITHUB_RUN_ID})" --body "${body}"
+          fi

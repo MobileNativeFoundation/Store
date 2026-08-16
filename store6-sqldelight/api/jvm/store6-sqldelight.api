@@ -1,0 +1,24 @@
+public final class org/mobilenativefoundation/store6/sqldelight/SqlDelightBookkeeper : org/mobilenativefoundation/store6/core/seam/Bookkeeper {
+	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;Lapp/cash/sqldelight/Transacter;)V
+	public fun advanceGlobalStaleWatermark (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun advanceStaleWatermark (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forget (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun markStale (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordFailure (Lorg/mobilenativefoundation/store6/core/StoreKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordSuccess (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreMeta;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun status (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/sqldelight/SqlDelightSourceOfTruth : org/mobilenativefoundation/store6/core/seam/TransactionalSourceOfTruth {
+	public fun <init> (Lapp/cash/sqldelight/db/SqlDriver;Lapp/cash/sqldelight/Transacter;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lorg/mobilenativefoundation/store6/core/seam/WallClock;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lapp/cash/sqldelight/db/SqlDriver;Lapp/cash/sqldelight/Transacter;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lorg/mobilenativefoundation/store6/core/seam/WallClock;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun delete (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun reader (Lorg/mobilenativefoundation/store6/core/StoreKey;)Lkotlinx/coroutines/flow/Flow;
+	public fun withTransaction (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun write (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

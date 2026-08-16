@@ -1,0 +1,21 @@
+CREATE TABLE user (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL
+);
+
+selectById:
+SELECT *
+FROM user
+WHERE id = ?;
+
+upsert:
+INSERT OR REPLACE INTO user(id, name, email)
+VALUES (?, ?, ?);
+
+deleteById:
+DELETE FROM user
+WHERE id = ?;
+
+deleteAll:
+DELETE FROM user;

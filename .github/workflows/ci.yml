@@ -2,21 +2,29 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, store6 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, store6 ]
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The store6-mutations Lincheck budget measured ~58-59m locally and 2h40m-3h13m hosted
+    # at the current suite (and once 9h23m locally at an earlier revision). The default
+    # jvmTest excludes it via the build-gated filter in store6-mutations/build.gradle.kts
+    # (census-guarded below); the scheduled "Store6 full mutations JVM suite" workflow runs
+    # the full suite daily.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
         api-level: [ 29 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           # PR builds (including forks) check out the PR head from its source repo;
           # push builds fall back to the pushed ref on this repo. Without the
@@ -31,7 +39,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -42,22 +50,28 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace --continue
+      - name: Build and Test
+        run: ./gradlew clean build --stacktrace
 
-      - name: Upload Coverage to Codecov
-        # Secrets (including CODECOV_TOKEN) are not exposed to fork PRs, so the
-        # upload would fail under fail_ci_if_error. Skip it for forks; coverage is
-        # still uploaded and enforced for same-repo PRs and pushes to main.
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
-        uses: codecov/codecov-action@v6
+      - name: Census — default jvmTest must execute exactly the non-Lincheck suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(( $(find store6-mutations/src/commonTest store6-mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ') - 1 ))
+          executed=$(find store6-mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          echo "expected=${expected} executed=${executed}"
+          [ "${expected}" -eq "${executed}" ]
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/kover/coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          verbose: true
+          name: test-reports-root-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            **/build/test-results/**/*.xml
+            **/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 7
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'MobileNativeFoundation/Store'
@@ -65,10 +79,12 @@ jobs:
     needs: build-and-test
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -81,7 +97,7 @@ jobs:
 
       - name: Retrieve Version
         run: |
-          echo "VERSION_NAME=$(grep -E '^store[[:space:]]*=' gradle/libs.versions.toml | head -1 | cut -d'"' -f2)" >> $GITHUB_ENV
+          echo "VERSION_NAME=$(grep -w 'VERSION_NAME' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Publish to Maven Central (Central Portal)
         env:

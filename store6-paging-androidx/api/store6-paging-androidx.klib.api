@@ -1,0 +1,30 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:store6-paging-androidx>
+abstract class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> org.mobilenativefoundation.store6.paging/StoreRemoteMediator : androidx.paging/RemoteMediator<#C, #D> { // org.mobilenativefoundation.store6.paging/StoreRemoteMediator|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.core/Store<#A, #B>) // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.<init>|<init>(org.mobilenativefoundation.store6.core.Store<1:0,1:1>){}[0]
+
+    abstract fun nextKey(#A, #B): #C? // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.nextKey|nextKey(1:0;1:1){}[0]
+    abstract fun pageKey(#C?, kotlin/Int): #A // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.pageKey|pageKey(1:2?;kotlin.Int){}[0]
+    final suspend fun load(androidx.paging/LoadType, androidx.paging/PagingState<#C, #D>): androidx.paging/RemoteMediator.MediatorResult // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.load|load(androidx.paging.LoadType;androidx.paging.PagingState<1:2,1:3>){}[0]
+    open fun prevKey(#A, #B): #C? // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.prevKey|prevKey(1:0;1:1){}[0]
+    open fun refreshFreshness(): org.mobilenativefoundation.store6.core/Freshness // org.mobilenativefoundation.store6.paging/StoreRemoteMediator.refreshFreshness|refreshFreshness(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> org.mobilenativefoundation.store6.paging/StorePagingBuilder { // org.mobilenativefoundation.store6.paging/StorePagingBuilder|null[0]
+    final fun freshness(kotlin/Function1<androidx.paging/LoadType, org.mobilenativefoundation.store6.core/Freshness>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.freshness|freshness(kotlin.Function1<androidx.paging.LoadType,org.mobilenativefoundation.store6.core.Freshness>){}[0]
+    final fun items(kotlin/Function1<#B, kotlin.collections/List<#D>>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.items|items(kotlin.Function1<1:1,kotlin.collections.List<1:3>>){}[0]
+    final fun itemsAfter(kotlin/Function2<#A, #B, kotlin/Int>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.itemsAfter|itemsAfter(kotlin.Function2<1:0,1:1,kotlin.Int>){}[0]
+    final fun itemsBefore(kotlin/Function2<#A, #B, kotlin/Int>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.itemsBefore|itemsBefore(kotlin.Function2<1:0,1:1,kotlin.Int>){}[0]
+    final fun nextKey(kotlin/Function2<#A, #B, #C?>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.nextKey|nextKey(kotlin.Function2<1:0,1:1,1:2?>){}[0]
+    final fun pageKey(kotlin/Function2<#C?, kotlin/Int, #A>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.pageKey|pageKey(kotlin.Function2<1:2?,kotlin.Int,1:0>){}[0]
+    final fun prevKey(kotlin/Function2<#A, #B, #C?>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.prevKey|prevKey(kotlin.Function2<1:0,1:1,1:2?>){}[0]
+    final fun refreshKey(kotlin/Function1<androidx.paging/PagingState<#C, #D>, #C?>) // org.mobilenativefoundation.store6.paging/StorePagingBuilder.refreshKey|refreshKey(kotlin.Function1<androidx.paging.PagingState<1:2,1:3>,1:2?>){}[0]
+}
+
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> (org.mobilenativefoundation.store6.core/Store<#A, #B>).org.mobilenativefoundation.store6.paging/pagingSourceFactory(kotlin/Function1<org.mobilenativefoundation.store6.paging/StorePagingBuilder<#A, #B, #C, #D>, kotlin/Unit>): androidx.paging/InvalidatingPagingSourceFactory<#C, #D> // org.mobilenativefoundation.store6.paging/pagingSourceFactory|pagingSourceFactory@org.mobilenativefoundation.store6.core.Store<0:0,0:1>(kotlin.Function1<org.mobilenativefoundation.store6.paging.StorePagingBuilder<0:0,0:1,0:2,0:3>,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>;2§<kotlin.Any>;3§<kotlin.Any>}[0]

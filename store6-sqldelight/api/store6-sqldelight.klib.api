@@ -1,0 +1,32 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:store6-sqldelight>
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth : org.mobilenativefoundation.store6.core.seam/TransactionalSourceOfTruth<#A, #B> { // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth|null[0]
+    constructor <init>(app.cash.sqldelight.db/SqlDriver, app.cash.sqldelight/Transacter, kotlin/Function1<#A, app.cash.sqldelight/Query<#B>>, kotlin/Function2<#A, #B, kotlin/Unit>, kotlin/Function1<#A, kotlin/Unit>, kotlin/Function1<org.mobilenativefoundation.store6.core/StoreNamespace, kotlin/Unit>, kotlin/Function0<kotlin/Unit>, org.mobilenativefoundation.store6.core.seam/WallClock? = ..., kotlin.coroutines/CoroutineContext = ...) // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.<init>|<init>(app.cash.sqldelight.db.SqlDriver;app.cash.sqldelight.Transacter;kotlin.Function1<1:0,app.cash.sqldelight.Query<1:1>>;kotlin.Function2<1:0,1:1,kotlin.Unit>;kotlin.Function1<1:0,kotlin.Unit>;kotlin.Function1<org.mobilenativefoundation.store6.core.StoreNamespace,kotlin.Unit>;kotlin.Function0<kotlin.Unit>;org.mobilenativefoundation.store6.core.seam.WallClock?;kotlin.coroutines.CoroutineContext){}[0]
+
+    final fun reader(#A): kotlinx.coroutines.flow/Flow<#B?> // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.reader|reader(1:0){}[0]
+    final suspend fun <#A1: kotlin/Any?> withTransaction(kotlin.coroutines/SuspendFunction0<#A1>): #A1 // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.withTransaction|withTransaction(kotlin.coroutines.SuspendFunction0<0:0>){0§<kotlin.Any?>}[0]
+    final suspend fun delete(#A) // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.delete|delete(1:0){}[0]
+    final suspend fun deleteAll() // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.deleteAll|deleteAll(){}[0]
+    final suspend fun deleteNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.deleteNamespace|deleteNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun write(#A, #B) // org.mobilenativefoundation.store6.sqldelight/SqlDelightSourceOfTruth.write|write(1:0;1:1){}[0]
+}
+
+final class org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper : org.mobilenativefoundation.store6.core.seam/Bookkeeper { // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper|null[0]
+    constructor <init>(app.cash.sqldelight.db/SqlDriver, app.cash.sqldelight/Transacter) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.<init>|<init>(app.cash.sqldelight.db.SqlDriver;app.cash.sqldelight.Transacter){}[0]
+
+    final suspend fun advanceGlobalStaleWatermark() // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.advanceGlobalStaleWatermark|advanceGlobalStaleWatermark(){}[0]
+    final suspend fun advanceStaleWatermark(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.advanceStaleWatermark|advanceStaleWatermark(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun forget(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.forget|forget(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun forgetAll() // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.forgetAll|forgetAll(){}[0]
+    final suspend fun forgetNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.forgetNamespace|forgetNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun markStale(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.markStale|markStale(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun recordFailure(org.mobilenativefoundation.store6.core/StoreKey, kotlin/Long) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.recordFailure|recordFailure(org.mobilenativefoundation.store6.core.StoreKey;kotlin.Long){}[0]
+    final suspend fun recordSuccess(org.mobilenativefoundation.store6.core/StoreKey, org.mobilenativefoundation.store6.core/StoreMeta) // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.recordSuccess|recordSuccess(org.mobilenativefoundation.store6.core.StoreKey;org.mobilenativefoundation.store6.core.StoreMeta){}[0]
+    final suspend fun status(org.mobilenativefoundation.store6.core/StoreKey): org.mobilenativefoundation.store6.core.seam/KeyStatus? // org.mobilenativefoundation.store6.sqldelight/SqlDelightBookkeeper.status|status(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+}

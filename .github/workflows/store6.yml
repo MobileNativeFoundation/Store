@@ -1,0 +1,801 @@
+name: Store6
+
+on:
+  push:
+    branches: [ main, store6 ]
+  pull_request:
+    branches: [ main, store6 ]
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store6-${{ github.ref }}-${{ (github.event.action == 'labeled' || github.event.action == 'unlabeled') && 'docs-sync-guard' || 'validation' }}
+  cancel-in-progress: true
+
+jobs:
+  docs-sync-guard:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Require documentation sync acknowledgment
+        shell: bash
+        env:
+          DOCS_SYNC_ACK: ${{ contains(github.event.pull_request.labels.*.name, 'docs-sync-ack') }}
+        run: |
+          set -euo pipefail
+          source_list=.github/docs-sync-sources.txt
+
+          if [[ ! -s "${source_list}" ]]; then
+            echo "ERROR: ${source_list} must be non-empty." >&2
+            exit 1
+          fi
+          if ! LC_ALL=C sort -c "${source_list}"; then
+            echo "ERROR: ${source_list} must be sorted." >&2
+            exit 1
+          fi
+
+          changed_sources="$(
+            comm -12 \
+              <(LC_ALL=C sort "${source_list}") \
+              <(git diff --name-only origin/main...HEAD | LC_ALL=C sort)
+          )"
+          if [[ -z "${changed_sources}" || "${DOCS_SYNC_ACK}" == "true" ]]; then
+            exit 0
+          fi
+
+          printf 'Documentation sources changed:\n%s\n' "${changed_sources}" >&2
+          cat >&2 <<'EOF'
+          This PR edits sources published to the docs site (listed in .github/docs-sync-sources.txt; pinned by store-docs evidence/T4-store6-source-lock.json). Merging makes the site stale until the docs repo re-pins. Add the 'docs-sync-ack' label to proceed; the docs repo's scheduled drift check will open the re-pin PR after merge. If your edit inserts or deletes lines in STABILITY.md, ROADMAP.md, store6-compose/README.md, or store6-sqldelight/README.md above an existing section, prefer appending — the site applies line-anchored publication transforms to these files.
+          EOF
+          exit 1
+
+  linux-build-test:
+    runs-on: ubuntu-latest
+    # The store6-mutations Lincheck budget measured ~58-59m locally and 2h40m-3h13m hosted
+    # at the current suite (and once 9h23m locally at an earlier revision). The default
+    # jvmTest excludes it via the build-gated filter in store6-mutations/build.gradle.kts
+    # (census-guarded below); the scheduled "Store6 full mutations JVM suite" workflow runs
+    # the full suite daily.
+    timeout-minutes: 120
+    env:
+      # Kotlin JS/Wasm lock tasks must see one complete project graph across separate Gradle steps.
+      GRADLE_OPTS: -Dorg.gradle.configureondemand=false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache Kotlin/Native compiler
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Store6 core
+        run: >
+          ./gradlew :store6-core:build :store6-testing:build :store6-sqldelight:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 quickstart
+        run: ./gradlew :store6-quickstart:run --stacktrace
+
+      - name: Run Store6 sqldelight sample
+        run: ./gradlew :store6-sqldelight-sample:run --stacktrace
+
+      - name: Build Store6 extension probe (seam-only consumer)
+        run: >
+          ./gradlew :store6-extension-probe:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Build Store6 compose and demo
+        run: >
+          ./gradlew :store6-compose:build :store6-compose-demo:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Verify Compose stability of core public types
+        shell: bash
+        run: |
+          set -euo pipefail
+          reports_dir=store6-compose-demo/build/compose-reports
+          # Force a complete, non-incremental report. Kotlin incremental compilation rewrites the
+          # stability report with ONLY the recompiled subset, and the report is an undeclared task
+          # output, so neither deleting it nor editing a source guarantees a whole-module snapshot.
+          # Discarding the module's build directory makes the next compile a full one. The demo
+          # module's compilations are also opted out of the build cache (see its build.gradle.kts)
+          # so this cannot be served from cache without running the compiler.
+          rm -rf store6-compose-demo/build
+          ./gradlew :store6-compose-demo:compileKotlin --stacktrace
+          if [[ "$(find "${reports_dir}" -name '*-composables.txt' 2>/dev/null | wc -l | tr -d ' ')" -eq 0 ]]; then
+            echo "ERROR: no composables report under ${reports_dir}" >&2
+            echo "The compose metrics wiring in store6-compose-demo/build.gradle.kts was removed or renamed." >&2
+            exit 1
+          fi
+          # All reports are concatenated (deterministic; probes exist only in the main compilation,
+          # so tier counts stay exact regardless of how many reports the plugin writes — the test
+          # compilation writes a separate, empty *_test-composables.txt and never clobbers it).
+          #
+          # Every probe parameter must be rendered EXPLICITLY `stable`. Asserting the mere absence
+          # of `unstable` would pass silently on the compiler's third rendering — a bare, unprefixed
+          # `value: X` line, which it emits for unknown/runtime stability.
+          #
+          # iface_strict=1 asserts that the shipped conf renders every probe parameter stable,
+          # including the interface-typed and generic ones. Set it to 0 only if a toolchain bump
+          # makes interface-typed parameters unprovable, which downgrades the iface tier to
+          # skippable-only and reports the residual instead of failing.
+          find "${reports_dir}" -name '*-composables.txt' | sort | xargs cat | awk -v iface_strict=1 '
+            /fun / {
+              tier = 0
+              if ($0 ~ /ProbeStrict/) { tier = 1; strict += 1 }
+              else if ($0 ~ /ProbeIface/) { tier = 2; iface += 1 }
+              if (tier > 0 && $0 !~ /skippable/) { print "NOT SKIPPABLE: " $0; bad = 1 }
+              next
+            }
+            /^\)/ { tier = 0; next }
+            tier > 0 {
+              if ($1 != "stable") {
+                label = (tier == 1) ? "strict" : "iface"
+                if (tier == 1 || iface_strict) {
+                  print "PARAM NOT STABLE (" label " tier): " $0
+                  bad = 1
+                } else {
+                  print "INFO: non-stable iface-tier param (allowed when iface_strict=0): " $0
+                }
+              }
+            }
+            END {
+              if (strict != 8) { print "Expected 8 ProbeStrict composables, found " strict + 0; exit 1 }
+              if (iface != 5) { print "Expected 5 ProbeIface composables, found " iface + 0; exit 1 }
+              exit bad + 0
+            }
+          '
+
+      - name: Build Store6 Room adapter
+        run: >
+          ./gradlew :store6-room:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 Room sample
+        run: ./gradlew :store6-room-sample:run --stacktrace
+
+      - name: Build Store6 benchmarks
+        run: ./gradlew :store6-benchmarks:build --stacktrace
+
+      - name: Build Store6 devtools modules and demo
+        run: >
+          ./gradlew :store6-devtools:build :store6-devtools-inspector:build :store6-devtools-demo:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Build Store6 mutations
+        run: >
+          ./gradlew :store6-mutations:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 mutations quickstart
+        run: ./gradlew :store6-mutations-quickstart:run --stacktrace
+
+      - name: Census — default jvmTest must execute exactly the non-Lincheck suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(( $(find store6-mutations/src/commonTest store6-mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ') - 1 ))
+          executed=$(find store6-mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          echo "expected=${expected} executed=${executed}"
+          [ "${expected}" -eq "${executed}" ]
+
+      - name: Build Store6 mutation journal support
+        run: >
+          ./gradlew :store6-mutations-testing:build :store6-mutations-sqldelight:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Build Store6 paging-androidx
+        run: >
+          ./gradlew :store6-paging-androidx:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 paging sample
+        run: ./gradlew :store6-paging-androidx-sample:run --stacktrace
+
+      - name: Build Store6 graphql
+        run: >
+          ./gradlew :store6-graphql:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 graphql sample
+        run: ./gradlew :store6-graphql-sample:run --stacktrace
+
+      - name: Build Store6 realtime
+        run: >
+          ./gradlew :store6-realtime:build
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Run Store6 realtime sample
+        run: ./gradlew :store6-realtime-sample:run --stacktrace
+
+      - name: Reject core-internal access from extension modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          for module in store6-extension-probe store6-testing store6-sqldelight store6-compose store6-compose-demo store6-room store6-benchmarks store6-devtools store6-devtools-inspector store6-devtools-demo store6-mutations store6-mutations-quickstart store6-mutations-testing store6-mutations-sqldelight store6-paging-androidx store6-paging-androidx/sample store6-graphql store6-graphql/sample store6-realtime store6-realtime/sample; do
+            source_dir="${module}/src"
+            if [[ ! -d "${source_dir}" ]]; then
+              echo "ERROR: expected extension source directory is missing: ${source_dir}" >&2
+              status=1
+              continue
+            fi
+            if grep -rnE 'InternalStoreApi|org[.]mobilenativefoundation[.]store6[.]core[.]internal' "${source_dir}"; then
+              echo "ERROR: ${module} accesses store6-core internals" >&2
+              status=1
+            else
+              grep_status=$?
+              if [[ "${grep_status}" -ne 1 ]]; then
+                echo "ERROR: grep failed for ${source_dir} with status ${grep_status}" >&2
+                status=1
+              fi
+            fi
+          done
+          exit "${status}"
+
+      - name: Verify seam package matches the TD-13 freeze list
+        shell: bash
+        run: |
+          set -euo pipefail
+          seam_dir="store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/seam"
+          expected=(
+            Bookkeeper.kt
+            Fetcher.kt
+            FetcherResult.kt
+            FreshnessValidator.kt
+            KeyEvents.kt
+            Overlay.kt
+            SourceOfTruth.kt
+            StoreResults.kt
+            StoreRuntime.kt
+            StoreTelemetry.kt
+            StoreWriteHandle.kt
+            TransactionalSourceOfTruth.kt
+            WallClock.kt
+          )
+          diff -u \
+            <(printf '%s\n' "${expected[@]}" | LC_ALL=C sort) \
+            <(LC_ALL=C ls -1A "${seam_dir}" | LC_ALL=C sort)
+
+      - name: Enforce the TD-8 primitive whitelist and single-writer residence
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          banned_regex='(^|[^[:alnum:]_])(runBlocking|GlobalScope|atomicfu|Channel|actor)([^[:alnum:]_]|$)|kotlinx[.]coroutines[.]channels[.][*]'
+          shopt -s nullglob
+          production_source_dirs=(store6-core/src/*Main store6-testing/src/*Main store6-sqldelight/src/*Main store6-compose/src/*Main store6-room/src/*Main store6-devtools/src/*Main store6-devtools-inspector/src/*Main store6-mutations/src/*Main store6-mutations-testing/src/*Main store6-mutations-sqldelight/src/*Main store6-paging-androidx/src/*Main store6-graphql/src/*Main store6-realtime/src/*Main)
+          for source_dir in "${production_source_dirs[@]}"; do
+            [[ -d "${source_dir}" ]] || continue
+            if grep -rnE --include='*.kt' "${banned_regex}" "${source_dir}"; then
+              echo "ERROR: banned concurrency primitive found in ${source_dir}" >&2
+              status=1
+            else
+              grep_status=$?
+              if [[ "${grep_status}" -ne 1 ]]; then
+                echo "ERROR: grep failed for ${source_dir} with status ${grep_status}" >&2
+                status=1
+              fi
+            fi
+          done
+          key_engine="store6-core/src/commonMain/kotlin/org/mobilenativefoundation/store6/core/internal/KeyEngine.kt"
+          python3 - "${key_engine}" <<'PY' || status=1
+          import re
+          import sys
+          from pathlib import Path
+
+          assignment = re.compile(r"\bresidence\s*\.\s*value\s*=(?!=)")
+
+
+          def mask_non_code(source: str) -> str:
+              output: list[str] = []
+              state = "code"
+              block_depth = 0
+              index = 0
+
+              def mask(text: str) -> None:
+                  output.extend(char if char in "\r\n" else " " for char in text)
+
+              while index < len(source):
+                  if state == "code":
+                      if source.startswith("//", index):
+                          mask(source[index:index + 2])
+                          index += 2
+                          state = "line-comment"
+                      elif source.startswith("/*", index):
+                          mask(source[index:index + 2])
+                          index += 2
+                          block_depth = 1
+                          state = "block-comment"
+                      elif source.startswith('"""', index):
+                          mask(source[index:index + 3])
+                          index += 3
+                          state = "raw-string"
+                      elif source[index] == '"':
+                          mask(source[index])
+                          index += 1
+                          state = "string"
+                      elif source[index] == "'":
+                          mask(source[index])
+                          index += 1
+                          state = "char"
+                      else:
+                          output.append(source[index])
+                          index += 1
+                  elif state == "line-comment":
+                      mask(source[index])
+                      if source[index] == "\n":
+                          state = "code"
+                      index += 1
+                  elif state == "block-comment":
+                      if source.startswith("/*", index):
+                          mask(source[index:index + 2])
+                          index += 2
+                          block_depth += 1
+                      elif source.startswith("*/", index):
+                          mask(source[index:index + 2])
+                          index += 2
+                          block_depth -= 1
+                          if block_depth == 0:
+                              state = "code"
+                      else:
+                          mask(source[index])
+                          index += 1
+                  elif state in ("string", "char"):
+                      delimiter = '"' if state == "string" else "'"
+                      if source[index] == "\\":
+                          end = min(index + 2, len(source))
+                          mask(source[index:end])
+                          index = end
+                      else:
+                          closing = source[index] == delimiter
+                          mask(source[index])
+                          index += 1
+                          if closing:
+                              state = "code"
+                  elif state == "raw-string":
+                      if source.startswith('"""', index):
+                          mask(source[index:index + 3])
+                          index += 3
+                          state = "code"
+                      else:
+                          mask(source[index])
+                          index += 1
+
+              if state not in ("code", "line-comment"):
+                  raise ValueError(f"unterminated Kotlin lexical state: {state}")
+              return "".join(output)
+
+
+          source_path = Path(sys.argv[1])
+          try:
+              source = source_path.read_text(encoding="utf-8")
+              raw_count = len(assignment.findall(source))
+              code_count = len(assignment.findall(mask_non_code(source)))
+          except (OSError, UnicodeError, ValueError) as error:
+              print(f"ERROR: writer audit failed for {source_path}: {error}", file=sys.stderr)
+              raise SystemExit(1)
+
+          if raw_count != 1 or code_count != 1:
+              print(
+                  f"ERROR: expected exactly one raw and one code-level residence.value "
+                  f"assignment in {source_path}; raw_count={raw_count}, code_count={code_count}",
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+          print(
+              f"Verified residence.value assignment counts in {source_path}: "
+              f"raw_count={raw_count}, code_count={code_count}"
+          )
+          PY
+          exit "${status}"
+
+      - name: JS lock-discipline canary (full conformance suite on the JS lane)
+        run: ./gradlew :store6-core:jsNodeTest :store6-testing:jsNodeTest :store6-mutations:jsNodeTest :store6-mutations-testing:jsNodeTest :store6-paging-androidx:jsNodeTest :store6-graphql:jsNodeTest :store6-realtime:jsNodeTest --stacktrace
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-store6-linux-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            store6-*/build/test-results/**/*.xml
+            store6-*/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 7
+
+  apple-tests:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache Kotlin/Native compiler
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Select an available iPhone simulator
+        id: ios_simulator
+        shell: bash
+        run: |
+          device_name="$(
+            xcrun simctl list devices available -j |
+              jq -r '[.devices[][] | select(.name | startswith("iPhone"))] | first | .name // empty'
+          )"
+          if [[ -z "${device_name}" ]]; then
+            echo "No available iPhone simulator was found." >&2
+            exit 1
+          fi
+          echo "Selected iPhone simulator: ${device_name}"
+          echo "device_name=${device_name}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run Store6 Apple tests
+        env:
+          STORE6_IOS_SIMULATOR_DEVICE: ${{ steps.ios_simulator.outputs.device_name }}
+        run: |
+          ./gradlew \
+            :store6-core:iosSimulatorArm64Test \
+            :store6-core:macosArm64Test \
+            :store6-extension-probe:iosSimulatorArm64Test \
+            :store6-extension-probe:macosArm64Test \
+            :store6-testing:iosSimulatorArm64Test \
+            :store6-testing:macosArm64Test \
+            :store6-sqldelight:iosSimulatorArm64Test \
+            :store6-sqldelight:macosArm64Test \
+            :store6-compose:iosSimulatorArm64Test \
+            :store6-compose:macosArm64Test \
+            :store6-room:iosSimulatorArm64Test \
+            :store6-room:macosArm64Test \
+            :store6-paging-androidx:iosSimulatorArm64Test \
+            :store6-paging-androidx:macosArm64Test \
+            :store6-graphql:iosSimulatorArm64Test \
+            :store6-graphql:macosArm64Test \
+            :store6-realtime:iosSimulatorArm64Test \
+            :store6-realtime:macosArm64Test \
+            :store6-devtools:iosSimulatorArm64Test \
+            :store6-devtools:macosArm64Test \
+            :store6-devtools-inspector:iosSimulatorArm64Test \
+            :store6-devtools-inspector:macosArm64Test \
+            :store6-mutations:iosSimulatorArm64Test \
+            :store6-mutations:macosArm64Test \
+            :store6-mutations-testing:iosSimulatorArm64Test \
+            :store6-mutations-testing:macosArm64Test \
+            :store6-mutations-sqldelight:iosSimulatorArm64Test \
+            :store6-mutations-sqldelight:macosArm64Test \
+            "-Pstore6.iosSimulatorDevice=${STORE6_IOS_SIMULATOR_DEVICE}" \
+            --stacktrace
+
+      - name: Link Store6 devtools demo iOS framework
+        run: ./gradlew :store6-devtools-demo:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-store6-apple-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            store6-*/build/test-results/**/*.xml
+            store6-*/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 7
+
+  swift-dumps:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache Kotlin/Native compiler
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Check committed Swift dumps
+        run: ./gradlew checkSwiftDumps --stacktrace
+
+      - name: Upload Swift dump diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-dump-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            store6-swift-dumps/**/build/swift-dump/**
+            store6-swift-dumps/**/build/bin/iosArm64/debugFramework/**/*.h
+            store6-swift-dumps/**/build/skie/**
+            store6-core/api/swift/**
+            store6-mutations/api/swift/**
+          if-no-files-found: warn
+          retention-days: 7
+
+  klib-publication-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache Kotlin/Native compiler
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Publish Store6 core to Maven local without signing
+        run: >
+          ./gradlew :store6-core:publishToMavenLocal :store6-testing:publishToMavenLocal :store6-sqldelight:publishToMavenLocal :store6-compose:publishToMavenLocal :store6-room:publishToMavenLocal :store6-devtools:publishToMavenLocal :store6-devtools-inspector:publishToMavenLocal :store6-mutations:publishToMavenLocal :store6-mutations-testing:publishToMavenLocal :store6-mutations-sqldelight:publishToMavenLocal :store6-paging-androidx:publishToMavenLocal :store6-graphql:publishToMavenLocal :store6-realtime:publishToMavenLocal
+          -Pkotlin.native.enableKlibsCrossCompilation=true
+          -Pkotlin.apple.xcodeCompatibility.nowarn=true
+          --stacktrace
+
+      - name: Verify common and target publications
+        shell: bash
+        run: |
+          group_id="org.mobilenativefoundation.store"
+          version="6.0.0-SNAPSHOT"
+          repository="${HOME}/.m2/repository/org/mobilenativefoundation/store"
+
+          modules=(store6-core store6-testing store6-sqldelight store6-compose store6-room store6-devtools store6-devtools-inspector store6-mutations store6-mutations-testing store6-mutations-sqldelight store6-paging-androidx store6-graphql store6-realtime)
+          suffixes=(
+            ""
+            -android
+            -iosarm64
+            -iossimulatorarm64
+            -iosx64
+            -js
+            -jvm
+            -linuxx64
+            -macosarm64
+            -mingwx64
+            -tvosarm64
+            -wasm-js
+            -watchosarm64
+          )
+
+          failed=0
+          for module in "${modules[@]}"; do
+            for suffix in "${suffixes[@]}"; do
+              case "${module}:${suffix}" in
+                store6-paging-androidx:-iosx64)
+                  # store6-paging-androidx ships the paging-common-3.5.1 target subset; androidx.paging
+                  # publishes no Intel artifacts since 3.4.0-rc01.
+                  continue
+                  ;;
+                store6-room:-js|store6-room:-wasm-js|store6-room:-mingwx64|store6-room:-iosx64)
+                  # store6-room ships Room 3's target subset; room3 publishes no iosX64 and no
+                  # web/mingw klibs for this module's scope.
+                  continue
+                  ;;
+                store6-devtools-inspector:-watchosarm64|store6-devtools-inspector:-tvosarm64|store6-devtools-inspector:-linuxx64|store6-devtools-inspector:-mingwx64)
+                  # store6-devtools-inspector ships the CMP-UI subset; Compose foundation/material3
+                  # publish no watchOS/tvOS/Linux/MinGW variants.
+                  continue
+                  ;;
+              esac
+              artifact_id="${module}${suffix}"
+              artifact_dir="${repository}/${artifact_id}/${version}"
+              case "${suffix}" in
+                ""|-jvm)
+                  extension="jar"
+                  ;;
+                -android)
+                  extension="aar"
+                  ;;
+                *)
+                  extension="klib"
+                  ;;
+              esac
+              artifact_file="${artifact_dir}/${artifact_id}-${version}.${extension}"
+              if [[ ! -f "${artifact_file}" ]]; then
+                echo "Missing consumable publication artifact: ${artifact_file}" >&2
+                failed=1
+                continue
+              fi
+              echo "Verified ${group_id}:${artifact_id}:${version} (${extension})"
+            done
+          done
+          exit "${failed}"
+
+  native-stress:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache Kotlin/Native compiler
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run Store6 Native stress and soak lane (macOS)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew :store6-core:macosArm64Test \
+            --tests '*StoreEvictionStressTest' \
+            --tests '*StoreInvalidationStressTest' \
+            --tests '*StoreCloseLifecycleTest' \
+            --tests '*StoreBackpressureConformanceTest' \
+            --stacktrace
+
+          result_dir="store6-core/build/test-results/macosArm64Test"
+          expected_test_classes=(
+            StoreEvictionStressTest
+            StoreInvalidationStressTest
+            StoreCloseLifecycleTest
+            StoreBackpressureConformanceTest
+          )
+          python3 - "${result_dir}" "${expected_test_classes[@]}" <<'PY'
+          import sys
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+
+          def local_name(tag: str) -> str:
+              return tag.rsplit("}", 1)[-1]
+
+
+          result_dir = Path(sys.argv[1])
+          expected_test_classes = sys.argv[2:]
+          result_files = sorted(result_dir.glob("TEST-*.xml"))
+          if not result_files:
+              print(f"ERROR: no Kotlin/Native test-result XML found in {result_dir}", file=sys.stderr)
+              raise SystemExit(1)
+
+          executed = {test_class: 0 for test_class in expected_test_classes}
+          for result_file in result_files:
+              try:
+                  root = ET.parse(result_file).getroot()
+              except (OSError, ET.ParseError) as error:
+                  print(f"ERROR: failed to parse {result_file}: {error}", file=sys.stderr)
+                  raise SystemExit(1)
+
+              for testcase in root.iter():
+                  if local_name(testcase.tag) != "testcase":
+                      continue
+                  if any(local_name(child.tag) == "skipped" for child in testcase):
+                      continue
+                  classname = testcase.get("classname", "")
+                  for test_class in expected_test_classes:
+                      if classname == test_class or classname.endswith(f".{test_class}"):
+                          executed[test_class] += 1
+
+          missing = [test_class for test_class, count in executed.items() if count == 0]
+          for test_class, count in executed.items():
+              if count:
+                  print(f"Verified {count} executed Native testcase(s) for {test_class}")
+          if missing:
+              print(
+                  "ERROR: no non-skipped Native testcase evidence for: " + ", ".join(missing),
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+          PY
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-store6-native-stress-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            store6-*/build/test-results/**/*.xml
+            store6-*/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 7

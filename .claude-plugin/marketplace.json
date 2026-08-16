@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "store6",
+  "owner": {
+    "name": "Matt Ramotar",
+    "email": "matt.ramotar@uber.com"
+  },
+  "description": "Plugins for applications using Store.",
+  "plugins": [
+    {
+      "name": "store",
+      "source": "./plugins/store",
+      "description": "Skills for applications using Store (org.mobilenativefoundation.store), starting with Store 4/5 to Store 6 migration."
+    }
+  ]
+}

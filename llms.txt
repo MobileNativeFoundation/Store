@@ -1,0 +1,65 @@
+# Store 6
+
+> Store 6 is a Kotlin Multiplatform library for reading and writing data that lives in more than one
+> place: a network, a local database, and memory. You describe a key and a fetcher; Store handles
+> single-flighting concurrent demand, staleness, invalidation, and bounded memory. Every zero-config
+> behavior is named and covered by a conformance test. Published under `store6-*` coordinates in the
+> group `org.mobilenativefoundation.store`, side by side with Store 5 for the whole 6.x major.
+> Status: in development, targeting 6.0.0-alpha01. Nothing is published yet.
+
+## Start
+
+- [Quickstart](docs/store6/quickstart.md): the five-line store, the full runnable program that CI compiles and runs on every pull request, and the experimental write path.
+- [Important Defaults](docs/store6/important-defaults.md): every zero-config behavior — freshness, retry, cache and memory, single-flighting, emission — each line traceable to a named conformance test.
+
+## Use Store
+
+- [Keys and Namespaces](docs/store6/key-design.md): key design is the one skill Store asks you to learn. `StoreKey`, `StoreNamespace`, `canonicalId()`, and namespace-level operations.
+- [Invalidate or Clear](docs/store6/invalidate-vs-clear.md): invalidate marks stale and refetches for live streams; clear removes and never replays. Which one you want, and why.
+
+## Concepts
+
+- [The read contract](/docs/store6/concepts/read-contract): what `stream`, `get`, and the four `StoreResult` kinds guarantee.
+- [Freshness](/docs/store6/concepts/freshness): the freshness policies, conditional-fetch boundary, and stale-while-revalidate behavior.
+- [Errors](/docs/store6/concepts/errors): the six `StoreError` categories, error-as-value boundary, cancellation, and retry ownership.
+- [Memory and lifecycle](/docs/store6/concepts/memory-and-lifecycle): residency, idle-key bounds, Store lifetime, and persistence choices.
+- [API tiers](/docs/store6/concepts/api-tiers): stable-track, experimental, and delicate surfaces and their opt-in rules.
+
+## Guides
+
+- [Fetchers](/docs/store6/guides/fetchers): lambda, result-aware, and seam fetchers, including conditional requests and retry composition.
+- [Persistence](/docs/store6/guides/persistence): the SourceOfTruth and Bookkeeper contracts and how to choose or certify an adapter.
+- [Testing](/docs/store6/guides/testing): fakes, contract kits, policy tests, and deterministic time.
+- [Devtools and observability](/docs/store6/guides/devtools): logging, telemetry, inspection hosts, and the runnable demo.
+- [Extending Store](/docs/store6/guides/extending): decorators, runtime capabilities, key events, overlay projection, and wall time.
+- [Performance](/docs/store6/guides/performance): measurement commands, benchmark scope, and evidence boundaries.
+- [Swift](/docs/store6/guides/swift): Objective-C export, SKIE, coroutine bridges, duration representation, and target coverage.
+- [Room adapter](/docs/store6/room): connect Store to an existing `androidx.room3` database and its sidecar metadata.
+- [SQLDelight adapter](/docs/store6/sqldelight): connect an existing SQLDelight schema with atomic value and metadata transactions.
+- [Compose integration](/docs/store6/compose): collect Store streams as Compose state without unstable recomposition.
+
+## Mutations
+
+- [Mutations overview](/docs/store6/mutations): the journalled write path, experimental posture, and adoption sequence.
+- [Mutations quickstart](/docs/store6/mutations/quickstart): register a typed intent, project it optimistically, push it, and observe the acknowledgement.
+- [Authoring mutators](/docs/store6/mutations/mutators): the five registration shapes, codecs, purity, and invalidation effects.
+- [Pending-write UI](/docs/store6/mutations/pending-write-ui): render optimistic overlay state without confusing it with staleness.
+- [MutationServer](/docs/store6/mutations/server): implement push, idempotency, acknowledgement, conflict, and retirement transport.
+- [Conflict resolution](/docs/store6/mutations/conflicts): select preconditions, merge into a new generation, or accept server-wins.
+- [Aliases and canonical rekeying](/docs/store6/mutations/aliases): move a provisional identity to its server-assigned canonical key.
+- [Draining and restart](/docs/store6/mutations/drain-and-restart): keyed and global drain behavior, backoff, hydration, and replay.
+- [Journal storage](/docs/store6/mutations/journal-storage): choose the in-memory default, SQLDelight, or a custom storage seam.
+- [Inspection and observability](/docs/store6/mutations/inspection): durable pending and dead-letter truth versus advisory event flows.
+- [Testing mutations](/docs/store6/mutations/testing): certify journal storage, crash boundaries, and projector purity.
+
+## Migration
+
+- [Migrate from Store 5](/docs/store6/migration/from-store5): map Store 5 concepts and APIs to Store 6, including side-by-side adoption and rollback boundaries.
+- [Component map](/docs/store6/migration/component-map): translate Store 5 components, policies, and extension points to their Store 6 equivalents.
+- [Migrate from Store 4](/docs/store6/migration/from-store4): move through Store 5 or adopt Store 6 directly, with explicit compatibility and validation checkpoints.
+
+## Project
+
+- [Stability](STABILITY.md): API tiers, the deprecation cycle, the release cadence commitment, how stability is verified from a released tag, and the mutations posture at alpha01.
+- [Roadmap](ROADMAP.md): operating principles, the phase table, target windows, and how to contribute.
+- [Contributing](CONTRIBUTING.md): how to get involved.

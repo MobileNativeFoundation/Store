@@ -1,0 +1,380 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Alias: native => [iosArm64, iosSimulatorArm64, iosX64, linuxX64, macosArm64, mingwX64, tvosArm64, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:store6-mutations-testing>
+final enum class org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint : kotlin/Enum<org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint> { // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint|null[0]
+    enum entry AFTER_PRUNE_COMMIT // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.AFTER_PRUNE_COMMIT|null[0]
+    enum entry AFTER_RETIREMENT_FINALIZATION_COMMIT // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.AFTER_RETIREMENT_FINALIZATION_COMMIT|null[0]
+    enum entry BEFORE_PRUNE // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.BEFORE_PRUNE|null[0]
+    enum entry BEFORE_PRUNE_COMMIT // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.BEFORE_PRUNE_COMMIT|null[0]
+    enum entry BEFORE_RETIREMENT_FINALIZATION_COMMIT // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.BEFORE_RETIREMENT_FINALIZATION_COMMIT|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint.values|values#static(){}[0]
+}
+
+abstract class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit { // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.<init>|<init>(){}[0]
+
+    abstract fun createSubject(): org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject<#A, #B, #C, #D> // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.createSubject|createSubject(){}[0]
+    final fun ambientState_doesNotAffectProjection() // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.ambientState_doesNotAffectProjection|ambientState_doesNotAffectProjection(){}[0]
+    final fun doubleApplication_independentReplayTracesAreEquivalent() // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.doubleApplication_independentReplayTracesAreEquivalent|doubleApplication_independentReplayTracesAreEquivalent(){}[0]
+    final fun invocationCount_doesNotAffectProjection() // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.invocationCount_doesNotAffectProjection|invocationCount_doesNotAffectProjection(){}[0]
+    final fun repeatDeterminism_sameInputsProduceStructurallyEqualOutput() // org.mobilenativefoundation.store6.mutations.testing/MutatorPurityContractKit.repeatDeterminism_sameInputsProduceStructurallyEqualOutput|repeatDeterminism_sameInputsProduceStructurallyEqualOutput(){}[0]
+}
+
+abstract class org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios { // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.<init>|<init>(){}[0]
+
+    abstract fun createStorage(): org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.createStorage|createStorage(){}[0]
+    abstract fun reopenStorage(org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage): org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.reopenStorage|reopenStorage(org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage){}[0]
+
+    // Targets: [native]
+    final fun afterPruneCommit_commitsAndClears() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterPruneCommit_commitsAndClears|afterPruneCommit_commitsAndClears(){}[0]
+
+    // Targets: [native]
+    final fun afterRetirementFinalizationCommit_commitsAndClears() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterRetirementFinalizationCommit_commitsAndClears|afterRetirementFinalizationCommit_commitsAndClears(){}[0]
+
+    // Targets: [native]
+    final fun beforePruneCommit_rollsBackAndClears() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePruneCommit_rollsBackAndClears|beforePruneCommit_rollsBackAndClears(){}[0]
+
+    // Targets: [native]
+    final fun beforePrune_abortsBeforeDeleteAndClears() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePrune_abortsBeforeDeleteAndClears|beforePrune_abortsBeforeDeleteAndClears(){}[0]
+
+    // Targets: [native]
+    final fun beforeRetirementFinalizationCommit_rollsBackAndClears() // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforeRetirementFinalizationCommit_rollsBackAndClears|beforeRetirementFinalizationCommit_rollsBackAndClears(){}[0]
+
+    // Targets: [js]
+    final fun afterPruneCommit_commitsAndClears(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterPruneCommit_commitsAndClears|afterPruneCommit_commitsAndClears(){}[0]
+
+    // Targets: [js]
+    final fun afterRetirementFinalizationCommit_commitsAndClears(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterRetirementFinalizationCommit_commitsAndClears|afterRetirementFinalizationCommit_commitsAndClears(){}[0]
+
+    // Targets: [js]
+    final fun beforePruneCommit_rollsBackAndClears(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePruneCommit_rollsBackAndClears|beforePruneCommit_rollsBackAndClears(){}[0]
+
+    // Targets: [js]
+    final fun beforePrune_abortsBeforeDeleteAndClears(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePrune_abortsBeforeDeleteAndClears|beforePrune_abortsBeforeDeleteAndClears(){}[0]
+
+    // Targets: [js]
+    final fun beforeRetirementFinalizationCommit_rollsBackAndClears(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforeRetirementFinalizationCommit_rollsBackAndClears|beforeRetirementFinalizationCommit_rollsBackAndClears(){}[0]
+
+    // Targets: [wasmJs]
+    final fun afterPruneCommit_commitsAndClears(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterPruneCommit_commitsAndClears|afterPruneCommit_commitsAndClears(){}[0]
+
+    // Targets: [wasmJs]
+    final fun afterRetirementFinalizationCommit_commitsAndClears(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.afterRetirementFinalizationCommit_commitsAndClears|afterRetirementFinalizationCommit_commitsAndClears(){}[0]
+
+    // Targets: [wasmJs]
+    final fun beforePruneCommit_rollsBackAndClears(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePruneCommit_rollsBackAndClears|beforePruneCommit_rollsBackAndClears(){}[0]
+
+    // Targets: [wasmJs]
+    final fun beforePrune_abortsBeforeDeleteAndClears(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforePrune_abortsBeforeDeleteAndClears|beforePrune_abortsBeforeDeleteAndClears(){}[0]
+
+    // Targets: [wasmJs]
+    final fun beforeRetirementFinalizationCommit_rollsBackAndClears(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios.beforeRetirementFinalizationCommit_rollsBackAndClears|beforeRetirementFinalizationCommit_rollsBackAndClears(){}[0]
+}
+
+abstract class org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit : org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPointScenarios { // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.<init>|<init>(){}[0]
+
+    abstract fun createStorage(): org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.createStorage|createStorage(){}[0]
+    abstract fun reopenStorage(org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage): org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopenStorage|reopenStorage(org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage){}[0]
+
+    // Targets: [native]
+    final fun ackReceipt_ackRoutingGenerationAndAckedCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ackReceipt_ackRoutingGenerationAndAckedCommitAtomically|ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun ack_isWriteOnceAndMismatchDoesNotOverwrite() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ack_isWriteOnceAndMismatchDoesNotOverwrite|ack_isWriteOnceAndMismatchDoesNotOverwrite(){}[0]
+
+    // Targets: [native]
+    final fun adoptionAdvance_commitsAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.adoptionAdvance_commitsAtomically|adoptionAdvance_commitsAtomically(){}[0]
+
+    // Targets: [native]
+    final fun alias_equalDuplicateIsIdempotentAndActivationIsMonotonic() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_equalDuplicateIsIdempotentAndActivationIsMonotonic|alias_equalDuplicateIsIdempotentAndActivationIsMonotonic(){}[0]
+
+    // Targets: [native]
+    final fun alias_rejectsSelfEdgeRetargetAndCycle() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_rejectsSelfEdgeRetargetAndCycle|alias_rejectsSelfEdgeRetargetAndCycle(){}[0]
+
+    // Targets: [native]
+    final fun attemptGeneration_isImmutableAndAppendOnly() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.attemptGeneration_isImmutableAndAppendOnly|attemptGeneration_isImmutableAndAppendOnly(){}[0]
+
+    // Targets: [native]
+    final fun blobs_areCopiedOnEntryAndDelivery() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.blobs_areCopiedOnEntryAndDelivery|blobs_areCopiedOnEntryAndDelivery(){}[0]
+
+    // Targets: [native]
+    final fun clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation|clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation(){}[0]
+
+    // Targets: [native]
+    final fun effect_startsPendingAndAdvancesDispositionForwardOnly() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.effect_startsPendingAndAdvancesDispositionForwardOnly|effect_startsPendingAndAdvancesDispositionForwardOnly(){}[0]
+
+    // Targets: [native]
+    final fun enqueue_intentAndUnpreparedExecutionCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.enqueue_intentAndUnpreparedExecutionCommitAtomically|enqueue_intentAndUnpreparedExecutionCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun execution_ackedRequiresMatchingAcknowledgement() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_ackedRequiresMatchingAcknowledgement|execution_ackedRequiresMatchingAcknowledgement(){}[0]
+
+    // Targets: [native]
+    final fun execution_preservesRuledLegalEdgesAndTerminalStates() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_preservesRuledLegalEdgesAndTerminalStates|execution_preservesRuledLegalEdgesAndTerminalStates(){}[0]
+
+    // Targets: [native]
+    final fun failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary|failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary(){}[0]
+
+    // Targets: [native]
+    final fun intent_isImmutableUniqueAndOrderedByClientSequence() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.intent_isImmutableUniqueAndOrderedByClientSequence|intent_isImmutableUniqueAndOrderedByClientSequence(){}[0]
+
+    // Targets: [native]
+    final fun parking_failurePhaseAndActiveFailureCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.parking_failurePhaseAndActiveFailureCommitAtomically|parking_failurePhaseAndActiveFailureCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun persistedEnums_roundTripEveryStableName() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.persistedEnums_roundTripEveryStableName|persistedEnums_roundTripEveryStableName(){}[0]
+
+    // Targets: [native]
+    final fun preparation_attemptEffectsAndReadyCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.preparation_attemptEffectsAndReadyCommitAtomically|preparation_attemptEffectsAndReadyCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun prune_preservesAliasesAndActiveTombstoneGeneration() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_preservesAliasesAndActiveTombstoneGeneration|prune_preservesAliasesAndActiveTombstoneGeneration(){}[0]
+
+    // Targets: [native]
+    final fun prune_stopsAtServerConfirmedPrefix() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_stopsAtServerConfirmedPrefix|prune_stopsAtServerConfirmedPrefix(){}[0]
+
+    // Targets: [native]
+    final fun reopen_roundTripsAliasAndTombstoneRecords() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAliasAndTombstoneRecords|reopen_roundTripsAliasAndTombstoneRecords(){}[0]
+
+    // Targets: [native]
+    final fun reopen_roundTripsAttemptAndAckRecords() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAttemptAndAckRecords|reopen_roundTripsAttemptAndAckRecords(){}[0]
+
+    // Targets: [native]
+    final fun reopen_roundTripsClientRecord() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsClientRecord|reopen_roundTripsClientRecord(){}[0]
+
+    // Targets: [native]
+    final fun reopen_roundTripsFailureAndEffectRecords() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsFailureAndEffectRecords|reopen_roundTripsFailureAndEffectRecords(){}[0]
+
+    // Targets: [native]
+    final fun reopen_roundTripsIntentAndExecutionRecords() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsIntentAndExecutionRecords|reopen_roundTripsIntentAndExecutionRecords(){}[0]
+
+    // Targets: [native]
+    final fun retirementFinalization_highWaterAndRoutingCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.retirementFinalization_highWaterAndRoutingCommitAtomically|retirementFinalization_highWaterAndRoutingCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun serverWins_skipRetireAndPrefixCommitAtomically() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.serverWins_skipRetireAndPrefixCommitAtomically|serverWins_skipRetireAndPrefixCommitAtomically(){}[0]
+
+    // Targets: [native]
+    final fun tombstone_allowsAtMostOnePendingAndOneActiveGeneration() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_allowsAtMostOnePendingAndOneActiveGeneration|tombstone_allowsAtMostOnePendingAndOneActiveGeneration(){}[0]
+
+    // Targets: [native]
+    final fun tombstone_generationAdvancesForwardOnly() // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_generationAdvancesForwardOnly|tombstone_generationAdvancesForwardOnly(){}[0]
+
+    // Targets: [js]
+    final fun ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ackReceipt_ackRoutingGenerationAndAckedCommitAtomically|ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun ack_isWriteOnceAndMismatchDoesNotOverwrite(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ack_isWriteOnceAndMismatchDoesNotOverwrite|ack_isWriteOnceAndMismatchDoesNotOverwrite(){}[0]
+
+    // Targets: [js]
+    final fun adoptionAdvance_commitsAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.adoptionAdvance_commitsAtomically|adoptionAdvance_commitsAtomically(){}[0]
+
+    // Targets: [js]
+    final fun alias_equalDuplicateIsIdempotentAndActivationIsMonotonic(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_equalDuplicateIsIdempotentAndActivationIsMonotonic|alias_equalDuplicateIsIdempotentAndActivationIsMonotonic(){}[0]
+
+    // Targets: [js]
+    final fun alias_rejectsSelfEdgeRetargetAndCycle(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_rejectsSelfEdgeRetargetAndCycle|alias_rejectsSelfEdgeRetargetAndCycle(){}[0]
+
+    // Targets: [js]
+    final fun attemptGeneration_isImmutableAndAppendOnly(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.attemptGeneration_isImmutableAndAppendOnly|attemptGeneration_isImmutableAndAppendOnly(){}[0]
+
+    // Targets: [js]
+    final fun blobs_areCopiedOnEntryAndDelivery(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.blobs_areCopiedOnEntryAndDelivery|blobs_areCopiedOnEntryAndDelivery(){}[0]
+
+    // Targets: [js]
+    final fun clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation|clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation(){}[0]
+
+    // Targets: [js]
+    final fun effect_startsPendingAndAdvancesDispositionForwardOnly(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.effect_startsPendingAndAdvancesDispositionForwardOnly|effect_startsPendingAndAdvancesDispositionForwardOnly(){}[0]
+
+    // Targets: [js]
+    final fun enqueue_intentAndUnpreparedExecutionCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.enqueue_intentAndUnpreparedExecutionCommitAtomically|enqueue_intentAndUnpreparedExecutionCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun execution_ackedRequiresMatchingAcknowledgement(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_ackedRequiresMatchingAcknowledgement|execution_ackedRequiresMatchingAcknowledgement(){}[0]
+
+    // Targets: [js]
+    final fun execution_preservesRuledLegalEdgesAndTerminalStates(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_preservesRuledLegalEdgesAndTerminalStates|execution_preservesRuledLegalEdgesAndTerminalStates(){}[0]
+
+    // Targets: [js]
+    final fun failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary|failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary(){}[0]
+
+    // Targets: [js]
+    final fun intent_isImmutableUniqueAndOrderedByClientSequence(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.intent_isImmutableUniqueAndOrderedByClientSequence|intent_isImmutableUniqueAndOrderedByClientSequence(){}[0]
+
+    // Targets: [js]
+    final fun parking_failurePhaseAndActiveFailureCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.parking_failurePhaseAndActiveFailureCommitAtomically|parking_failurePhaseAndActiveFailureCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun persistedEnums_roundTripEveryStableName(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.persistedEnums_roundTripEveryStableName|persistedEnums_roundTripEveryStableName(){}[0]
+
+    // Targets: [js]
+    final fun preparation_attemptEffectsAndReadyCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.preparation_attemptEffectsAndReadyCommitAtomically|preparation_attemptEffectsAndReadyCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun prune_preservesAliasesAndActiveTombstoneGeneration(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_preservesAliasesAndActiveTombstoneGeneration|prune_preservesAliasesAndActiveTombstoneGeneration(){}[0]
+
+    // Targets: [js]
+    final fun prune_stopsAtServerConfirmedPrefix(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_stopsAtServerConfirmedPrefix|prune_stopsAtServerConfirmedPrefix(){}[0]
+
+    // Targets: [js]
+    final fun reopen_roundTripsAliasAndTombstoneRecords(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAliasAndTombstoneRecords|reopen_roundTripsAliasAndTombstoneRecords(){}[0]
+
+    // Targets: [js]
+    final fun reopen_roundTripsAttemptAndAckRecords(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAttemptAndAckRecords|reopen_roundTripsAttemptAndAckRecords(){}[0]
+
+    // Targets: [js]
+    final fun reopen_roundTripsClientRecord(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsClientRecord|reopen_roundTripsClientRecord(){}[0]
+
+    // Targets: [js]
+    final fun reopen_roundTripsFailureAndEffectRecords(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsFailureAndEffectRecords|reopen_roundTripsFailureAndEffectRecords(){}[0]
+
+    // Targets: [js]
+    final fun reopen_roundTripsIntentAndExecutionRecords(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsIntentAndExecutionRecords|reopen_roundTripsIntentAndExecutionRecords(){}[0]
+
+    // Targets: [js]
+    final fun retirementFinalization_highWaterAndRoutingCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.retirementFinalization_highWaterAndRoutingCommitAtomically|retirementFinalization_highWaterAndRoutingCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun serverWins_skipRetireAndPrefixCommitAtomically(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.serverWins_skipRetireAndPrefixCommitAtomically|serverWins_skipRetireAndPrefixCommitAtomically(){}[0]
+
+    // Targets: [js]
+    final fun tombstone_allowsAtMostOnePendingAndOneActiveGeneration(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_allowsAtMostOnePendingAndOneActiveGeneration|tombstone_allowsAtMostOnePendingAndOneActiveGeneration(){}[0]
+
+    // Targets: [js]
+    final fun tombstone_generationAdvancesForwardOnly(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_generationAdvancesForwardOnly|tombstone_generationAdvancesForwardOnly(){}[0]
+
+    // Targets: [wasmJs]
+    final fun ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ackReceipt_ackRoutingGenerationAndAckedCommitAtomically|ackReceipt_ackRoutingGenerationAndAckedCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun ack_isWriteOnceAndMismatchDoesNotOverwrite(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.ack_isWriteOnceAndMismatchDoesNotOverwrite|ack_isWriteOnceAndMismatchDoesNotOverwrite(){}[0]
+
+    // Targets: [wasmJs]
+    final fun adoptionAdvance_commitsAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.adoptionAdvance_commitsAtomically|adoptionAdvance_commitsAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun alias_equalDuplicateIsIdempotentAndActivationIsMonotonic(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_equalDuplicateIsIdempotentAndActivationIsMonotonic|alias_equalDuplicateIsIdempotentAndActivationIsMonotonic(){}[0]
+
+    // Targets: [wasmJs]
+    final fun alias_rejectsSelfEdgeRetargetAndCycle(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.alias_rejectsSelfEdgeRetargetAndCycle|alias_rejectsSelfEdgeRetargetAndCycle(){}[0]
+
+    // Targets: [wasmJs]
+    final fun attemptGeneration_isImmutableAndAppendOnly(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.attemptGeneration_isImmutableAndAppendOnly|attemptGeneration_isImmutableAndAppendOnly(){}[0]
+
+    // Targets: [wasmJs]
+    final fun blobs_areCopiedOnEntryAndDelivery(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.blobs_areCopiedOnEntryAndDelivery|blobs_areCopiedOnEntryAndDelivery(){}[0]
+
+    // Targets: [wasmJs]
+    final fun clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation|clientRecord_enforcesThreeWayInvariantAndMonotonicConfirmation(){}[0]
+
+    // Targets: [wasmJs]
+    final fun effect_startsPendingAndAdvancesDispositionForwardOnly(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.effect_startsPendingAndAdvancesDispositionForwardOnly|effect_startsPendingAndAdvancesDispositionForwardOnly(){}[0]
+
+    // Targets: [wasmJs]
+    final fun enqueue_intentAndUnpreparedExecutionCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.enqueue_intentAndUnpreparedExecutionCommitAtomically|enqueue_intentAndUnpreparedExecutionCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun execution_ackedRequiresMatchingAcknowledgement(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_ackedRequiresMatchingAcknowledgement|execution_ackedRequiresMatchingAcknowledgement(){}[0]
+
+    // Targets: [wasmJs]
+    final fun execution_preservesRuledLegalEdgesAndTerminalStates(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.execution_preservesRuledLegalEdgesAndTerminalStates|execution_preservesRuledLegalEdgesAndTerminalStates(){}[0]
+
+    // Targets: [wasmJs]
+    final fun failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary|failure_isAppendOnlyAndUtf8BoundedAtCodePointBoundary(){}[0]
+
+    // Targets: [wasmJs]
+    final fun intent_isImmutableUniqueAndOrderedByClientSequence(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.intent_isImmutableUniqueAndOrderedByClientSequence|intent_isImmutableUniqueAndOrderedByClientSequence(){}[0]
+
+    // Targets: [wasmJs]
+    final fun parking_failurePhaseAndActiveFailureCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.parking_failurePhaseAndActiveFailureCommitAtomically|parking_failurePhaseAndActiveFailureCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun persistedEnums_roundTripEveryStableName(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.persistedEnums_roundTripEveryStableName|persistedEnums_roundTripEveryStableName(){}[0]
+
+    // Targets: [wasmJs]
+    final fun preparation_attemptEffectsAndReadyCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.preparation_attemptEffectsAndReadyCommitAtomically|preparation_attemptEffectsAndReadyCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun prune_preservesAliasesAndActiveTombstoneGeneration(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_preservesAliasesAndActiveTombstoneGeneration|prune_preservesAliasesAndActiveTombstoneGeneration(){}[0]
+
+    // Targets: [wasmJs]
+    final fun prune_stopsAtServerConfirmedPrefix(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.prune_stopsAtServerConfirmedPrefix|prune_stopsAtServerConfirmedPrefix(){}[0]
+
+    // Targets: [wasmJs]
+    final fun reopen_roundTripsAliasAndTombstoneRecords(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAliasAndTombstoneRecords|reopen_roundTripsAliasAndTombstoneRecords(){}[0]
+
+    // Targets: [wasmJs]
+    final fun reopen_roundTripsAttemptAndAckRecords(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsAttemptAndAckRecords|reopen_roundTripsAttemptAndAckRecords(){}[0]
+
+    // Targets: [wasmJs]
+    final fun reopen_roundTripsClientRecord(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsClientRecord|reopen_roundTripsClientRecord(){}[0]
+
+    // Targets: [wasmJs]
+    final fun reopen_roundTripsFailureAndEffectRecords(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsFailureAndEffectRecords|reopen_roundTripsFailureAndEffectRecords(){}[0]
+
+    // Targets: [wasmJs]
+    final fun reopen_roundTripsIntentAndExecutionRecords(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.reopen_roundTripsIntentAndExecutionRecords|reopen_roundTripsIntentAndExecutionRecords(){}[0]
+
+    // Targets: [wasmJs]
+    final fun retirementFinalization_highWaterAndRoutingCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.retirementFinalization_highWaterAndRoutingCommitAtomically|retirementFinalization_highWaterAndRoutingCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun serverWins_skipRetireAndPrefixCommitAtomically(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.serverWins_skipRetireAndPrefixCommitAtomically|serverWins_skipRetireAndPrefixCommitAtomically(){}[0]
+
+    // Targets: [wasmJs]
+    final fun tombstone_allowsAtMostOnePendingAndOneActiveGeneration(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_allowsAtMostOnePendingAndOneActiveGeneration|tombstone_allowsAtMostOnePendingAndOneActiveGeneration(){}[0]
+
+    // Targets: [wasmJs]
+    final fun tombstone_generationAdvancesForwardOnly(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.mutations.testing/MutationJournalStorageContractKit.tombstone_generationAdvancesForwardOnly|tombstone_generationAdvancesForwardOnly(){}[0]
+}
+
+final class <#A: kotlin/Any, #B: kotlin/Any> org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample { // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample|null[0]
+    constructor <init>(kotlin/String, kotlin/Function0<org.mobilenativefoundation.store6.mutations/MutationPresence<#A>>, kotlin/Function0<#B>) // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample.<init>|<init>(kotlin.String;kotlin.Function0<org.mobilenativefoundation.store6.mutations.MutationPresence<1:0>>;kotlin.Function0<1:1>){}[0]
+
+    final val name // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample.name|{}name[0]
+        final fun <get-name>(): kotlin/String // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample.name.<get-name>|<get-name>(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject { // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject|null[0]
+    final val ref // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject.ref|{}ref[0]
+        final fun <get-ref>(): org.mobilenativefoundation.store6.mutations/MutatorRef<#A, #B, #C> // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject.ref.<get-ref>|<get-ref>(){}[0]
+    final val registry // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject.registry|{}registry[0]
+        final fun <get-registry>(): org.mobilenativefoundation.store6.mutations/MutatorRegistry<#A, #B> // org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject.registry.<get-registry>|<get-registry>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.testing/JournalStorageCrashException : kotlin/RuntimeException { // org.mobilenativefoundation.store6.mutations.testing/JournalStorageCrashException|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint) // org.mobilenativefoundation.store6.mutations.testing/JournalStorageCrashException.<init>|<init>(org.mobilenativefoundation.store6.mutations.testing.JournalStorageKillPoint){}[0]
+
+    final val killPoint // org.mobilenativefoundation.store6.mutations.testing/JournalStorageCrashException.killPoint|{}killPoint[0]
+        final fun <get-killPoint>(): org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint // org.mobilenativefoundation.store6.mutations.testing/JournalStorageCrashException.killPoint.<get-killPoint>|<get-killPoint>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.testing/KillPointJournalStorage : org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage { // org.mobilenativefoundation.store6.mutations.testing/KillPointJournalStorage|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.mutations.storage/MutationJournalStorage) // org.mobilenativefoundation.store6.mutations.testing/KillPointJournalStorage.<init>|<init>(org.mobilenativefoundation.store6.mutations.storage.MutationJournalStorage){}[0]
+
+    final suspend fun <#A1: kotlin/Any?> transaction(kotlin/Function1<org.mobilenativefoundation.store6.mutations.storage/MutationJournalTransaction, #A1>): #A1 // org.mobilenativefoundation.store6.mutations.testing/KillPointJournalStorage.transaction|transaction(kotlin.Function1<org.mobilenativefoundation.store6.mutations.storage.MutationJournalTransaction,0:0>){0§<kotlin.Any?>}[0]
+    final suspend fun arm(org.mobilenativefoundation.store6.mutations.testing/JournalStorageKillPoint) // org.mobilenativefoundation.store6.mutations.testing/KillPointJournalStorage.arm|arm(org.mobilenativefoundation.store6.mutations.testing.JournalStorageKillPoint){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe { // org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe|null[0]
+    constructor <init>(kotlin/String, kotlin/Function0<kotlin/Unit>, kotlin/Function0<kotlin/Unit>, kotlin/Function0<kotlin/Unit>) // org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe.<init>|<init>(kotlin.String;kotlin.Function0<kotlin.Unit>;kotlin.Function0<kotlin.Unit>;kotlin.Function0<kotlin.Unit>){}[0]
+
+    final val name // org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe.name|{}name[0]
+        final fun <get-name>(): kotlin/String // org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe.name.<get-name>|<get-name>(){}[0]
+}
+
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any, #C: kotlin/Any, #D: kotlin/Any> org.mobilenativefoundation.store6.mutations.testing/mutatorPuritySubject(kotlin/String, kotlin/Int, org.mobilenativefoundation.store6.mutations/MutationCodec<#C>, kotlin/Function2<#A, #C, org.mobilenativefoundation.store6.mutations/StaleSet<#A>>, kotlin.collections/List<org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySample<#B, #C>>, kotlin/Function1<#B, #D>, kotlin.collections/List<org.mobilenativefoundation.store6.mutations.testing/MutatorAmbientProbe>, kotlin/Function1<org.mobilenativefoundation.store6.mutations/MutatorRegistryBuilder<#A, #B>, kotlin/Unit> = ..., kotlin/Function2<org.mobilenativefoundation.store6.mutations/MutationPresence<#B>, #C, org.mobilenativefoundation.store6.mutations/MutationPresence<#B>?>): org.mobilenativefoundation.store6.mutations.testing/MutatorPuritySubject<#A, #B, #C, #D> // org.mobilenativefoundation.store6.mutations.testing/mutatorPuritySubject|mutatorPuritySubject(kotlin.String;kotlin.Int;org.mobilenativefoundation.store6.mutations.MutationCodec<0:2>;kotlin.Function2<0:0,0:2,org.mobilenativefoundation.store6.mutations.StaleSet<0:0>>;kotlin.collections.List<org.mobilenativefoundation.store6.mutations.testing.MutatorPuritySample<0:1,0:2>>;kotlin.Function1<0:1,0:3>;kotlin.collections.List<org.mobilenativefoundation.store6.mutations.testing.MutatorAmbientProbe>;kotlin.Function1<org.mobilenativefoundation.store6.mutations.MutatorRegistryBuilder<0:0,0:1>,kotlin.Unit>;kotlin.Function2<org.mobilenativefoundation.store6.mutations.MutationPresence<0:1>,0:2,org.mobilenativefoundation.store6.mutations.MutationPresence<0:1>?>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>;2§<kotlin.Any>;3§<kotlin.Any>}[0]

@@ -1,53 +1,79 @@
 [versions]
-#noinspection UnusedVersionCatalogEntry
 androidMinSdk = "24"
-#noinspection UnusedVersionCatalogEntry
+# room3/androidx.sqlite 2.7 AARs declare minCompileSdk=34; the repo's Android floor must not advertise below it.
 androidCompileSdk = "34"
-androidGradlePlugin = "9.3.0"
-#noinspection UnusedVersionCatalogEntry
-androidTargetSdk = "34"
-atomicFu = "0.33.0"
-baseKotlin = "2.3.21"
+# room3 Gradle plugin floor is AGP 8.10.0.
+androidGradlePlugin = "8.10.0"
+androidTargetSdk = "33"
+atomicFu = "0.24.0"
+# Room 3 native KLIBs are ABI 2.3.0; any 2.3.x compiler consumes them.
+baseKotlin = "2.3.20"
 dokkaGradlePlugin = "2.2.0"
-ktlintGradle = "14.2.0"
-mavenPublishPlugin = "0.37.0"
-spotlessPluginGradle = "8.8.0"
+ktlintGradle = "12.1.0"
+jacocoGradlePlugin = "0.8.12"
+mavenPublishPlugin = "0.34.0"
+moleculeGradlePlugin = "1.2.1"
+# androidx.paging KMP line (paging-common/testing); 3.5.1 = latest stable 2026-08-12. No Intel targets since 3.4.0-rc01.
+paging = "3.5.1"
+spotlessPluginGradle = "6.4.1"
+skie = "0.10.13"
 junit = "4.13.2"
-#noinspection UnusedVersionCatalogEntry
-jvmToolchain = "17"
-#noinspection UnusedVersionCatalogEntry
-jvmCompat = "11"
-kotlinxCoroutines = "1.11.0"
-kotlinxSerialization = "1.11.0"
-kermit = "2.1.0"
-testCore = "1.7.0"
-kmmBridge = "1.2.1"
-#noinspection UnusedVersionCatalogEntry
-ktlint = "1.8.0"
-kover = "0.9.9"
-#noinspection UnusedVersionCatalogEntry
-store = "5.1.0-SNAPSHOT"
-truth = "1.4.5"
-turbine = "1.2.1"
-binary-compatibility-validator = "0.18.1"
+kotlinxCoroutines = "1.8.1"
+kotlinxSerialization = "1.6.3"
+kermit = "2.0.5"
+testCore = "1.6.1"
+kmmBridge = "0.5.7"
+ktlint = "0.39.0"
+kover = "0.9.0-RC"
+store = "5.1.0-alpha10"
+truth = "1.1.3"
+turbine = "1.2.0"
+binary-compatibility-validator = "0.17.0"
+# PIN: KSP2 standalone versioning (no Kotlin lockstep); verify Kotlin support range on every Kotlin bump.
+ksp = "2.3.10"
+# PIN: SQLDelight 2.1.0 remains intentionally pinned; it was built with older Kotlin.
+sqldelight = "2.1.0"
+# room3: new coordinates/packages/type identity; native KLIBs require Kotlin >=2.3 + AGP >=8.10
+# (falsified-claim record in decisions/store6-room-packaging.md).
+room3 = "3.0.0"
+# Exactly the androidx.sqlite version in room3 3.0.0's POM.
+androidxSqlite = "2.7.0"
+# PIN: Compose 1.8.2 remains intentionally pinned for 012.
+jetbrainsCompose = "1.8.2"
+# PIN: Lifecycle 2.9.1 remains intentionally pinned for 012.
+jetbrainsAndroidxLifecycle = "2.9.1"
+# PIN: kotlinx-benchmark for the unpublished store6-benchmarks harness. 0.4.17 is the newest
+# stable release at execution (repo is on Kotlin 2.3.20; the resolution probe below is the
+# compatibility ground truth). Unpublished-module dep: never appears in any public signature
+# (C-4 untouched).
+kotlinxBenchmark = "0.4.17"
+# TEST-3 JVM-only model checking; 2.39 uses dynamic instrumentation and needs no module opens.
+lincheck = "2.39"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+androidx-paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
+androidx-paging-testing = { module = "androidx.paging:paging-testing", version.ref = "paging" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "baseKotlin" }
+kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "baseKotlin" }
 dokka-gradle-plugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokkaGradlePlugin" }
+ktlint-gradle-plugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlintGradle" }
+jacoco-gradle-plugin = { group = "org.jacoco", name = "org.jacoco.core", version.ref = "jacocoGradlePlugin" }
 maven-publish-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "mavenPublishPlugin" }
+kover-gradle-plugin = {group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover"}
 
 atomic-fu-gradle-plugin = { group = "org.jetbrains.kotlinx", name = "atomicfu-gradle-plugin", version.ref = "atomicFu" }
-kmmBridge-gradle-plugin = { group = "co.touchlab.kmmbridge.github", name = "co.touchlab.kmmbridge.github.gradle.plugin", version.ref = "kmmBridge" }
-ktlint-gradle-plugin = { module = "org.jlleitschuh.gradle.ktlint:org.jlleitschuh.gradle.ktlint.gradle.plugin", version.ref = "ktlintGradle" }
-spotless-gradle-plugin = { module = "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin", version.ref = "spotlessPluginGradle" }
+kmmBridge-gradle-plugin =  { group = "co.touchlab.kmmbridge", name = "co.touchlab.kmmbridge.gradle.plugin", version.ref = "kmmBridge" }
 
 kotlinx-atomic-fu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicFu" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "baseKotlin" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "kotlinxCoroutines" }
+molecule-gradle-plugin = { module = "app.cash.molecule:molecule-gradle-plugin", version.ref = "moleculeGradlePlugin" }
+molecule-runtime = { module = "app.cash.molecule:molecule-runtime", version.ref = "moleculeGradlePlugin" }
 rxjava = { group = "io.reactivex.rxjava2", name = "rxjava", version = "2.2.21" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "testCore" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
@@ -55,18 +81,31 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 touchlab-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+binary-compatibility-validator = {module = "org.jetbrains.kotlinx:binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
+sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
+sqldelight-coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-primitive-adapters = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "sqldelight" }
+sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
+sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+sqldelight-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+sqldelight-web-worker-driver = { module = "app.cash.sqldelight:web-worker-driver", version.ref = "sqldelight" }
+room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room3" }
+room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room3" }
+room3-testing = { module = "androidx.room3:room3-testing", version.ref = "room3" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidxSqlite" }
+jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetbrainsCompose" }
+jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
+lincheck = { module = "org.jetbrains.kotlinx:lincheck", version.ref = "lincheck" }
 
 [plugins]
-android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-android-kotlin-multiplatform = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin"}
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
-spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPluginGradle" }
-kmmbridge-github = { id = "co.touchlab.kmmbridge.github", version.ref = "kmmBridge" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref="baseKotlin"}
-vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublishPlugin"}
-dokka = { id = "org.jetbrains.dokka" , version.ref = "dokkaGradlePlugin"}
-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicFu"}
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "baseKotlin"}
-kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "baseKotlin"}
+ktlint = {id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle"}
+binary-compatibility-validator = {id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator"}
+kover = {id = "org.jetbrains.kotlinx.kover", version.ref = "kover"}
+skie = { id = "co.touchlab.skie", version.ref = "skie" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+room3 = { id = "androidx.room3", version.ref = "room3" }
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "baseKotlin" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrainsCompose" }
+kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }

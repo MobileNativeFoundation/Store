@@ -1,0 +1,386 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Alias: native => [iosArm64, iosSimulatorArm64, iosX64, linuxX64, macosArm64, mingwX64, tvosArm64, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store5:store6-testing>
+abstract class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit { // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.<init>|<init>(){}[0]
+
+    abstract val keyA // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyA|{}keyA[0]
+        abstract fun <get-keyA>(): #A // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyA.<get-keyA>|<get-keyA>(){}[0]
+    abstract val keyB // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyB|{}keyB[0]
+        abstract fun <get-keyB>(): #A // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyB.<get-keyB>|<get-keyB>(){}[0]
+    abstract val keyOtherNamespace // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyOtherNamespace|{}keyOtherNamespace[0]
+        abstract fun <get-keyOtherNamespace>(): #A // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keyOtherNamespace.<get-keyOtherNamespace>|<get-keyOtherNamespace>(){}[0]
+
+    abstract fun createSourceOfTruth(): org.mobilenativefoundation.store6.core.seam/SourceOfTruth<#A, #B> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.createSourceOfTruth|createSourceOfTruth(){}[0]
+    abstract fun value(kotlin/Int): #B // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.value|value(kotlin.Int){}[0]
+
+    // Targets: [native]
+    final fun deleteAllDeletesEveryNamespaceAndEmitsNull() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteAllDeletesEveryNamespaceAndEmitsNull|deleteAllDeletesEveryNamespaceAndEmitsNull(){}[0]
+
+    // Targets: [native]
+    final fun deleteEmitsNull() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteEmitsNull|deleteEmitsNull(){}[0]
+
+    // Targets: [native]
+    final fun deleteIsVisibleToLateReader() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteIsVisibleToLateReader|deleteIsVisibleToLateReader(){}[0]
+
+    // Targets: [native]
+    final fun deleteNamespaceDeletesOnlyMatchingNamespace() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceDeletesOnlyMatchingNamespace|deleteNamespaceDeletesOnlyMatchingNamespace(){}[0]
+
+    // Targets: [native]
+    final fun deleteNamespaceEmitsNullToActiveMatchingReader() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceEmitsNullToActiveMatchingReader|deleteNamespaceEmitsNullToActiveMatchingReader(){}[0]
+
+    // Targets: [native]
+    final fun equalValueRewriteEmits() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.equalValueRewriteEmits|equalValueRewriteEmits(){}[0]
+
+    // Targets: [native]
+    final fun keysAreIsolated() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keysAreIsolated|keysAreIsolated(){}[0]
+
+    // Targets: [native]
+    final fun readerFirstEmissionIsCurrentValue() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsCurrentValue|readerFirstEmissionIsCurrentValue(){}[0]
+
+    // Targets: [native]
+    final fun readerFirstEmissionIsNullWhenAbsent() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsNullWhenAbsent|readerFirstEmissionIsNullWhenAbsent(){}[0]
+
+    // Targets: [native]
+    final fun readerNeverCompletesNormally() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerNeverCompletesNormally|readerNeverCompletesNormally(){}[0]
+
+    // Targets: [native]
+    final fun readerStaysLiveAcrossDelete() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossDelete|readerStaysLiveAcrossDelete(){}[0]
+
+    // Targets: [native]
+    final fun readerStaysLiveAcrossNamespaceDelete() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossNamespaceDelete|readerStaysLiveAcrossNamespaceDelete(){}[0]
+
+    // Targets: [native]
+    final fun readerStaysLiveAcrossThreeDeleteCycles() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossThreeDeleteCycles|readerStaysLiveAcrossThreeDeleteCycles(){}[0]
+
+    // Targets: [native]
+    final fun twoConcurrentReadersBothSeeWrite() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.twoConcurrentReadersBothSeeWrite|twoConcurrentReadersBothSeeWrite(){}[0]
+
+    // Targets: [native]
+    final fun writeIsVisibleToLateReader() // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.writeIsVisibleToLateReader|writeIsVisibleToLateReader(){}[0]
+
+    // Targets: [js]
+    final fun deleteAllDeletesEveryNamespaceAndEmitsNull(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteAllDeletesEveryNamespaceAndEmitsNull|deleteAllDeletesEveryNamespaceAndEmitsNull(){}[0]
+
+    // Targets: [js]
+    final fun deleteEmitsNull(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteEmitsNull|deleteEmitsNull(){}[0]
+
+    // Targets: [js]
+    final fun deleteIsVisibleToLateReader(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteIsVisibleToLateReader|deleteIsVisibleToLateReader(){}[0]
+
+    // Targets: [js]
+    final fun deleteNamespaceDeletesOnlyMatchingNamespace(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceDeletesOnlyMatchingNamespace|deleteNamespaceDeletesOnlyMatchingNamespace(){}[0]
+
+    // Targets: [js]
+    final fun deleteNamespaceEmitsNullToActiveMatchingReader(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceEmitsNullToActiveMatchingReader|deleteNamespaceEmitsNullToActiveMatchingReader(){}[0]
+
+    // Targets: [js]
+    final fun equalValueRewriteEmits(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.equalValueRewriteEmits|equalValueRewriteEmits(){}[0]
+
+    // Targets: [js]
+    final fun keysAreIsolated(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keysAreIsolated|keysAreIsolated(){}[0]
+
+    // Targets: [js]
+    final fun readerFirstEmissionIsCurrentValue(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsCurrentValue|readerFirstEmissionIsCurrentValue(){}[0]
+
+    // Targets: [js]
+    final fun readerFirstEmissionIsNullWhenAbsent(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsNullWhenAbsent|readerFirstEmissionIsNullWhenAbsent(){}[0]
+
+    // Targets: [js]
+    final fun readerNeverCompletesNormally(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerNeverCompletesNormally|readerNeverCompletesNormally(){}[0]
+
+    // Targets: [js]
+    final fun readerStaysLiveAcrossDelete(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossDelete|readerStaysLiveAcrossDelete(){}[0]
+
+    // Targets: [js]
+    final fun readerStaysLiveAcrossNamespaceDelete(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossNamespaceDelete|readerStaysLiveAcrossNamespaceDelete(){}[0]
+
+    // Targets: [js]
+    final fun readerStaysLiveAcrossThreeDeleteCycles(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossThreeDeleteCycles|readerStaysLiveAcrossThreeDeleteCycles(){}[0]
+
+    // Targets: [js]
+    final fun twoConcurrentReadersBothSeeWrite(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.twoConcurrentReadersBothSeeWrite|twoConcurrentReadersBothSeeWrite(){}[0]
+
+    // Targets: [js]
+    final fun writeIsVisibleToLateReader(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.writeIsVisibleToLateReader|writeIsVisibleToLateReader(){}[0]
+
+    // Targets: [wasmJs]
+    final fun deleteAllDeletesEveryNamespaceAndEmitsNull(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteAllDeletesEveryNamespaceAndEmitsNull|deleteAllDeletesEveryNamespaceAndEmitsNull(){}[0]
+
+    // Targets: [wasmJs]
+    final fun deleteEmitsNull(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteEmitsNull|deleteEmitsNull(){}[0]
+
+    // Targets: [wasmJs]
+    final fun deleteIsVisibleToLateReader(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteIsVisibleToLateReader|deleteIsVisibleToLateReader(){}[0]
+
+    // Targets: [wasmJs]
+    final fun deleteNamespaceDeletesOnlyMatchingNamespace(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceDeletesOnlyMatchingNamespace|deleteNamespaceDeletesOnlyMatchingNamespace(){}[0]
+
+    // Targets: [wasmJs]
+    final fun deleteNamespaceEmitsNullToActiveMatchingReader(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.deleteNamespaceEmitsNullToActiveMatchingReader|deleteNamespaceEmitsNullToActiveMatchingReader(){}[0]
+
+    // Targets: [wasmJs]
+    final fun equalValueRewriteEmits(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.equalValueRewriteEmits|equalValueRewriteEmits(){}[0]
+
+    // Targets: [wasmJs]
+    final fun keysAreIsolated(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.keysAreIsolated|keysAreIsolated(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerFirstEmissionIsCurrentValue(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsCurrentValue|readerFirstEmissionIsCurrentValue(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerFirstEmissionIsNullWhenAbsent(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerFirstEmissionIsNullWhenAbsent|readerFirstEmissionIsNullWhenAbsent(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerNeverCompletesNormally(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerNeverCompletesNormally|readerNeverCompletesNormally(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerStaysLiveAcrossDelete(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossDelete|readerStaysLiveAcrossDelete(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerStaysLiveAcrossNamespaceDelete(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossNamespaceDelete|readerStaysLiveAcrossNamespaceDelete(){}[0]
+
+    // Targets: [wasmJs]
+    final fun readerStaysLiveAcrossThreeDeleteCycles(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.readerStaysLiveAcrossThreeDeleteCycles|readerStaysLiveAcrossThreeDeleteCycles(){}[0]
+
+    // Targets: [wasmJs]
+    final fun twoConcurrentReadersBothSeeWrite(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.twoConcurrentReadersBothSeeWrite|twoConcurrentReadersBothSeeWrite(){}[0]
+
+    // Targets: [wasmJs]
+    final fun writeIsVisibleToLateReader(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/SourceOfTruthContractKit.writeIsVisibleToLateReader|writeIsVisibleToLateReader(){}[0]
+}
+
+abstract class org.mobilenativefoundation.store6.testing/BookkeeperContractKit { // org.mobilenativefoundation.store6.testing/BookkeeperContractKit|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.<init>|<init>(){}[0]
+
+    abstract fun createBookkeeper(): org.mobilenativefoundation.store6.core.seam/Bookkeeper // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.createBookkeeper|createBookkeeper(){}[0]
+
+    // Targets: [native]
+    final fun failureOnlyRecord_isNotDurablyStale() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.failureOnlyRecord_isNotDurablyStale|failureOnlyRecord_isNotDurablyStale(){}[0]
+
+    // Targets: [native]
+    final fun identityDerivation_differentCanonicalId_isolated() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_differentCanonicalId_isolated|identityDerivation_differentCanonicalId_isolated(){}[0]
+
+    // Targets: [native]
+    final fun identityDerivation_equalCanonicalPair_sharesRecords() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_equalCanonicalPair_sharesRecords|identityDerivation_equalCanonicalPair_sharesRecords(){}[0]
+
+    // Targets: [native]
+    final fun namespaceWatermark_thenLaterSuccess_clearsDurableStaleness() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.namespaceWatermark_thenLaterSuccess_clearsDurableStaleness|namespaceWatermark_thenLaterSuccess_clearsDurableStaleness(){}[0]
+
+    // Targets: [native]
+    final fun recordSuccess_clearsFailureCountAndTimestamp() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.recordSuccess_clearsFailureCountAndTimestamp|recordSuccess_clearsFailureCountAndTimestamp(){}[0]
+
+    // Targets: [native]
+    final fun watermarkOnlyKey_reportsDurablyStale() // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.watermarkOnlyKey_reportsDurablyStale|watermarkOnlyKey_reportsDurablyStale(){}[0]
+
+    // Targets: [js]
+    final fun failureOnlyRecord_isNotDurablyStale(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.failureOnlyRecord_isNotDurablyStale|failureOnlyRecord_isNotDurablyStale(){}[0]
+
+    // Targets: [js]
+    final fun identityDerivation_differentCanonicalId_isolated(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_differentCanonicalId_isolated|identityDerivation_differentCanonicalId_isolated(){}[0]
+
+    // Targets: [js]
+    final fun identityDerivation_equalCanonicalPair_sharesRecords(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_equalCanonicalPair_sharesRecords|identityDerivation_equalCanonicalPair_sharesRecords(){}[0]
+
+    // Targets: [js]
+    final fun namespaceWatermark_thenLaterSuccess_clearsDurableStaleness(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.namespaceWatermark_thenLaterSuccess_clearsDurableStaleness|namespaceWatermark_thenLaterSuccess_clearsDurableStaleness(){}[0]
+
+    // Targets: [js]
+    final fun recordSuccess_clearsFailureCountAndTimestamp(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.recordSuccess_clearsFailureCountAndTimestamp|recordSuccess_clearsFailureCountAndTimestamp(){}[0]
+
+    // Targets: [js]
+    final fun watermarkOnlyKey_reportsDurablyStale(): kotlin.js/Promise<kotlin/Unit> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.watermarkOnlyKey_reportsDurablyStale|watermarkOnlyKey_reportsDurablyStale(){}[0]
+
+    // Targets: [wasmJs]
+    final fun failureOnlyRecord_isNotDurablyStale(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.failureOnlyRecord_isNotDurablyStale|failureOnlyRecord_isNotDurablyStale(){}[0]
+
+    // Targets: [wasmJs]
+    final fun identityDerivation_differentCanonicalId_isolated(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_differentCanonicalId_isolated|identityDerivation_differentCanonicalId_isolated(){}[0]
+
+    // Targets: [wasmJs]
+    final fun identityDerivation_equalCanonicalPair_sharesRecords(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.identityDerivation_equalCanonicalPair_sharesRecords|identityDerivation_equalCanonicalPair_sharesRecords(){}[0]
+
+    // Targets: [wasmJs]
+    final fun namespaceWatermark_thenLaterSuccess_clearsDurableStaleness(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.namespaceWatermark_thenLaterSuccess_clearsDurableStaleness|namespaceWatermark_thenLaterSuccess_clearsDurableStaleness(){}[0]
+
+    // Targets: [wasmJs]
+    final fun recordSuccess_clearsFailureCountAndTimestamp(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.recordSuccess_clearsFailureCountAndTimestamp|recordSuccess_clearsFailureCountAndTimestamp(){}[0]
+
+    // Targets: [wasmJs]
+    final fun watermarkOnlyKey_reportsDurablyStale(): kotlin.js/Promise<kotlin.js/JsAny?> // org.mobilenativefoundation.store6.testing/BookkeeperContractKit.watermarkOnlyKey_reportsDurablyStale|watermarkOnlyKey_reportsDurablyStale(){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.testing/FakeFetcher : org.mobilenativefoundation.store6.core.seam/Fetcher<#A, #B> { // org.mobilenativefoundation.store6.testing/FakeFetcher|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.testing/FakeFetcher.<init>|<init>(){}[0]
+
+    final val invocations // org.mobilenativefoundation.store6.testing/FakeFetcher.invocations|{}invocations[0]
+        final fun <get-invocations>(): kotlin.collections/List<org.mobilenativefoundation.store6.testing/FakeFetcherInvocation> // org.mobilenativefoundation.store6.testing/FakeFetcher.invocations.<get-invocations>|<get-invocations>(){}[0]
+
+    final var onUnscripted // org.mobilenativefoundation.store6.testing/FakeFetcher.onUnscripted|{}onUnscripted[0]
+        final fun <get-onUnscripted>(): kotlin/Function2<#A, kotlin/String?, org.mobilenativefoundation.store6.core.seam/FetcherResult<#B>> // org.mobilenativefoundation.store6.testing/FakeFetcher.onUnscripted.<get-onUnscripted>|<get-onUnscripted>(){}[0]
+        final fun <set-onUnscripted>(kotlin/Function2<#A, kotlin/String?, org.mobilenativefoundation.store6.core.seam/FetcherResult<#B>>) // org.mobilenativefoundation.store6.testing/FakeFetcher.onUnscripted.<set-onUnscripted>|<set-onUnscripted>(kotlin.Function2<1:0,kotlin.String?,org.mobilenativefoundation.store6.core.seam.FetcherResult<1:1>>){}[0]
+
+    final fun clearInvocations() // org.mobilenativefoundation.store6.testing/FakeFetcher.clearInvocations|clearInvocations(){}[0]
+    final fun enqueue(#A, kotlin/Array<out org.mobilenativefoundation.store6.core.seam/FetcherResult<#B>>...) // org.mobilenativefoundation.store6.testing/FakeFetcher.enqueue|enqueue(1:0;kotlin.Array<out|org.mobilenativefoundation.store6.core.seam.FetcherResult<1:1>>...){}[0]
+    final suspend fun fetch(#A, kotlin/String?): org.mobilenativefoundation.store6.core.seam/FetcherResult<#B> // org.mobilenativefoundation.store6.testing/FakeFetcher.fetch|fetch(1:0;kotlin.String?){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.testing/FakeSourceOfTruth : org.mobilenativefoundation.store6.core.seam/SourceOfTruth<#A, #B> { // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.<init>|<init>(){}[0]
+
+    final fun reader(#A): kotlinx.coroutines.flow/Flow<#B?> // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.reader|reader(1:0){}[0]
+    final suspend fun delete(#A) // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.delete|delete(1:0){}[0]
+    final suspend fun deleteAll() // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.deleteAll|deleteAll(){}[0]
+    final suspend fun deleteNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.deleteNamespace|deleteNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun write(#A, #B) // org.mobilenativefoundation.store6.testing/FakeSourceOfTruth.write|write(1:0;1:1){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.testing/FakeStore : org.mobilenativefoundation.store6.core/Store<#A, #B> { // org.mobilenativefoundation.store6.testing/FakeStore|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.testing/TestWallClock = ...) // org.mobilenativefoundation.store6.testing/FakeStore.<init>|<init>(org.mobilenativefoundation.store6.testing.TestWallClock){}[0]
+
+    final val interactions // org.mobilenativefoundation.store6.testing/FakeStore.interactions|{}interactions[0]
+        final fun <get-interactions>(): kotlin.collections/List<org.mobilenativefoundation.store6.testing/FakeStoreInteraction> // org.mobilenativefoundation.store6.testing/FakeStore.interactions.<get-interactions>|<get-interactions>(){}[0]
+    final val wallClock // org.mobilenativefoundation.store6.testing/FakeStore.wallClock|{}wallClock[0]
+        final fun <get-wallClock>(): org.mobilenativefoundation.store6.testing/TestWallClock // org.mobilenativefoundation.store6.testing/FakeStore.wallClock.<get-wallClock>|<get-wallClock>(){}[0]
+
+    final fun clearInteractions() // org.mobilenativefoundation.store6.testing/FakeStore.clearInteractions|clearInteractions(){}[0]
+    final fun close() // org.mobilenativefoundation.store6.testing/FakeStore.close|close(){}[0]
+    final fun enqueueFetchError(#A, org.mobilenativefoundation.store6.core/StoreError, kotlin/Boolean = ...) // org.mobilenativefoundation.store6.testing/FakeStore.enqueueFetchError|enqueueFetchError(1:0;org.mobilenativefoundation.store6.core.StoreError;kotlin.Boolean){}[0]
+    final fun enqueueFetchRevalidated(#A, kotlin.time/Duration = ...) // org.mobilenativefoundation.store6.testing/FakeStore.enqueueFetchRevalidated|enqueueFetchRevalidated(1:0;kotlin.time.Duration){}[0]
+    final fun enqueueFetchValue(#A, #B) // org.mobilenativefoundation.store6.testing/FakeStore.enqueueFetchValue|enqueueFetchValue(1:0;1:1){}[0]
+    final fun setValue(#A, #B, org.mobilenativefoundation.store6.core/Origin = ..., kotlin/Boolean = ...) // org.mobilenativefoundation.store6.testing/FakeStore.setValue|setValue(1:0;1:1;org.mobilenativefoundation.store6.core.Origin;kotlin.Boolean){}[0]
+    final fun stream(#A, org.mobilenativefoundation.store6.core/Freshness): kotlinx.coroutines.flow/Flow<org.mobilenativefoundation.store6.core/StoreResult<#B>> // org.mobilenativefoundation.store6.testing/FakeStore.stream|stream(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun clear(#A) // org.mobilenativefoundation.store6.testing/FakeStore.clear|clear(1:0){}[0]
+    final suspend fun clearAll() // org.mobilenativefoundation.store6.testing/FakeStore.clearAll|clearAll(){}[0]
+    final suspend fun clearNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeStore.clearNamespace|clearNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun get(#A, org.mobilenativefoundation.store6.core/Freshness): #B // org.mobilenativefoundation.store6.testing/FakeStore.get|get(1:0;org.mobilenativefoundation.store6.core.Freshness){}[0]
+    final suspend fun invalidate(#A) // org.mobilenativefoundation.store6.testing/FakeStore.invalidate|invalidate(1:0){}[0]
+    final suspend fun invalidateAll() // org.mobilenativefoundation.store6.testing/FakeStore.invalidateAll|invalidateAll(){}[0]
+    final suspend fun invalidateNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeStore.invalidateNamespace|invalidateNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+}
+
+final class org.mobilenativefoundation.store6.testing/FakeBookkeeper : org.mobilenativefoundation.store6.core.seam/Bookkeeper { // org.mobilenativefoundation.store6.testing/FakeBookkeeper|null[0]
+    constructor <init>() // org.mobilenativefoundation.store6.testing/FakeBookkeeper.<init>|<init>(){}[0]
+
+    final suspend fun advanceGlobalStaleWatermark() // org.mobilenativefoundation.store6.testing/FakeBookkeeper.advanceGlobalStaleWatermark|advanceGlobalStaleWatermark(){}[0]
+    final suspend fun advanceStaleWatermark(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.advanceStaleWatermark|advanceStaleWatermark(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun forget(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.forget|forget(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun forgetAll() // org.mobilenativefoundation.store6.testing/FakeBookkeeper.forgetAll|forgetAll(){}[0]
+    final suspend fun forgetNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.forgetNamespace|forgetNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun markStale(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.markStale|markStale(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun recordFailure(org.mobilenativefoundation.store6.core/StoreKey, kotlin/Long) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.recordFailure|recordFailure(org.mobilenativefoundation.store6.core.StoreKey;kotlin.Long){}[0]
+    final suspend fun recordSuccess(org.mobilenativefoundation.store6.core/StoreKey, org.mobilenativefoundation.store6.core/StoreMeta) // org.mobilenativefoundation.store6.testing/FakeBookkeeper.recordSuccess|recordSuccess(org.mobilenativefoundation.store6.core.StoreKey;org.mobilenativefoundation.store6.core.StoreMeta){}[0]
+    final suspend fun status(org.mobilenativefoundation.store6.core/StoreKey): org.mobilenativefoundation.store6.core.seam/KeyStatus? // org.mobilenativefoundation.store6.testing/FakeBookkeeper.status|status(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+}
+
+final class org.mobilenativefoundation.store6.testing/FakeFetcherInvocation { // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.core/StoreKey, kotlin/String?) // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation.<init>|<init>(org.mobilenativefoundation.store6.core.StoreKey;kotlin.String?){}[0]
+
+    final val etag // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation.etag.<get-etag>|<get-etag>(){}[0]
+    final val key // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation.key|{}key[0]
+        final fun <get-key>(): org.mobilenativefoundation.store6.core/StoreKey // org.mobilenativefoundation.store6.testing/FakeFetcherInvocation.key.<get-key>|<get-key>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.testing/TestStoreMeta : org.mobilenativefoundation.store6.core/StoreMeta { // org.mobilenativefoundation.store6.testing/TestStoreMeta|null[0]
+    constructor <init>(kotlin/Long, kotlin/String? = ...) // org.mobilenativefoundation.store6.testing/TestStoreMeta.<init>|<init>(kotlin.Long;kotlin.String?){}[0]
+
+    final val etag // org.mobilenativefoundation.store6.testing/TestStoreMeta.etag|{}etag[0]
+        final fun <get-etag>(): kotlin/String? // org.mobilenativefoundation.store6.testing/TestStoreMeta.etag.<get-etag>|<get-etag>(){}[0]
+    final val writtenAtEpochMillis // org.mobilenativefoundation.store6.testing/TestStoreMeta.writtenAtEpochMillis|{}writtenAtEpochMillis[0]
+        final fun <get-writtenAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.testing/TestStoreMeta.writtenAtEpochMillis.<get-writtenAtEpochMillis>|<get-writtenAtEpochMillis>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.testing/TestWallClock : org.mobilenativefoundation.store6.core.seam/WallClock { // org.mobilenativefoundation.store6.testing/TestWallClock|null[0]
+    constructor <init>(kotlin/Long = ...) // org.mobilenativefoundation.store6.testing/TestWallClock.<init>|<init>(kotlin.Long){}[0]
+
+    final fun advanceBy(kotlin.time/Duration) // org.mobilenativefoundation.store6.testing/TestWallClock.advanceBy|advanceBy(kotlin.time.Duration){}[0]
+    final fun nowEpochMillis(): kotlin/Long // org.mobilenativefoundation.store6.testing/TestWallClock.nowEpochMillis|nowEpochMillis(){}[0]
+    final fun setEpochMillis(kotlin/Long) // org.mobilenativefoundation.store6.testing/TestWallClock.setEpochMillis|setEpochMillis(kotlin.Long){}[0]
+}
+
+sealed class org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction|null[0]
+    final class Clear : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Clear|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Clear.<init>|<init>(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+
+        final val key // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Clear.key|{}key[0]
+            final fun <get-key>(): org.mobilenativefoundation.store6.core/StoreKey // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Clear.key.<get-key>|<get-key>(){}[0]
+    }
+
+    final class ClearNamespace : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearNamespace|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearNamespace.<init>|<init>(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+
+        final val namespace // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearNamespace.namespace|{}namespace[0]
+            final fun <get-namespace>(): org.mobilenativefoundation.store6.core/StoreNamespace // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearNamespace.namespace.<get-namespace>|<get-namespace>(){}[0]
+    }
+
+    final class Get : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreKey, org.mobilenativefoundation.store6.core/Freshness) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get.<init>|<init>(org.mobilenativefoundation.store6.core.StoreKey;org.mobilenativefoundation.store6.core.Freshness){}[0]
+
+        final val freshness // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get.freshness|{}freshness[0]
+            final fun <get-freshness>(): org.mobilenativefoundation.store6.core/Freshness // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get.freshness.<get-freshness>|<get-freshness>(){}[0]
+        final val key // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get.key|{}key[0]
+            final fun <get-key>(): org.mobilenativefoundation.store6.core/StoreKey // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Get.key.<get-key>|<get-key>(){}[0]
+    }
+
+    final class Invalidate : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Invalidate|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Invalidate.<init>|<init>(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+
+        final val key // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Invalidate.key|{}key[0]
+            final fun <get-key>(): org.mobilenativefoundation.store6.core/StoreKey // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Invalidate.key.<get-key>|<get-key>(){}[0]
+    }
+
+    final class InvalidateNamespace : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateNamespace|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateNamespace.<init>|<init>(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+
+        final val namespace // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateNamespace.namespace|{}namespace[0]
+            final fun <get-namespace>(): org.mobilenativefoundation.store6.core/StoreNamespace // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateNamespace.namespace.<get-namespace>|<get-namespace>(){}[0]
+    }
+
+    final class Stream : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.core/StoreKey, org.mobilenativefoundation.store6.core/Freshness) // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream.<init>|<init>(org.mobilenativefoundation.store6.core.StoreKey;org.mobilenativefoundation.store6.core.Freshness){}[0]
+
+        final val freshness // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream.freshness|{}freshness[0]
+            final fun <get-freshness>(): org.mobilenativefoundation.store6.core/Freshness // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream.freshness.<get-freshness>|<get-freshness>(){}[0]
+        final val key // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream.key|{}key[0]
+            final fun <get-key>(): org.mobilenativefoundation.store6.core/StoreKey // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Stream.key.<get-key>|<get-key>(){}[0]
+    }
+
+    final object ClearAll : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearAll|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearAll.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearAll.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.ClearAll.toString|toString(){}[0]
+    }
+
+    final object Close : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Close|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Close.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Close.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.Close.toString|toString(){}[0]
+    }
+
+    final object InvalidateAll : org.mobilenativefoundation.store6.testing/FakeStoreInteraction { // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateAll|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateAll.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateAll.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // org.mobilenativefoundation.store6.testing/FakeStoreInteraction.InvalidateAll.toString|toString(){}[0]
+    }
+}
+
+final object org.mobilenativefoundation.store6.testing/TestStoreResults { // org.mobilenativefoundation.store6.testing/TestStoreResults|null[0]
+    final fun <#A1: kotlin/Any?> data(#A1, org.mobilenativefoundation.store6.core/Origin = ..., kotlin.time/Duration = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): org.mobilenativefoundation.store6.core/StoreResult.Data<#A1> // org.mobilenativefoundation.store6.testing/TestStoreResults.data|data(0:0;org.mobilenativefoundation.store6.core.Origin;kotlin.time.Duration;kotlin.Boolean;kotlin.Boolean){0§<kotlin.Any?>}[0]
+    final fun conflict(org.mobilenativefoundation.store6.core/StoreMeta?, kotlin/String): org.mobilenativefoundation.store6.core/StoreError.Conflict // org.mobilenativefoundation.store6.testing/TestStoreResults.conflict|conflict(org.mobilenativefoundation.store6.core.StoreMeta?;kotlin.String){}[0]
+    final fun conversionError(kotlin/String, kotlin/Throwable? = ...): org.mobilenativefoundation.store6.core/StoreError.Conversion // org.mobilenativefoundation.store6.testing/TestStoreResults.conversionError|conversionError(kotlin.String;kotlin.Throwable?){}[0]
+    final fun error(org.mobilenativefoundation.store6.core/StoreError, kotlin/Boolean = ...): org.mobilenativefoundation.store6.core/StoreResult.Error // org.mobilenativefoundation.store6.testing/TestStoreResults.error|error(org.mobilenativefoundation.store6.core.StoreError;kotlin.Boolean){}[0]
+    final fun exception(org.mobilenativefoundation.store6.core/StoreError, kotlin/Throwable? = ...): org.mobilenativefoundation.store6.core/StoreException // org.mobilenativefoundation.store6.testing/TestStoreResults.exception|exception(org.mobilenativefoundation.store6.core.StoreError;kotlin.Throwable?){}[0]
+    final fun fetchError(kotlin/String, kotlin/Throwable? = ...): org.mobilenativefoundation.store6.core/StoreError.Fetch // org.mobilenativefoundation.store6.testing/TestStoreResults.fetchError|fetchError(kotlin.String;kotlin.Throwable?){}[0]
+    final fun freshnessUnsatisfiable(kotlin/String): org.mobilenativefoundation.store6.core/StoreError.FreshnessUnsatisfiable // org.mobilenativefoundation.store6.testing/TestStoreResults.freshnessUnsatisfiable|freshnessUnsatisfiable(kotlin.String){}[0]
+    final fun loading(): org.mobilenativefoundation.store6.core/StoreResult.Loading // org.mobilenativefoundation.store6.testing/TestStoreResults.loading|loading(){}[0]
+    final fun missing(org.mobilenativefoundation.store6.core/StoreKey, kotlin/String): org.mobilenativefoundation.store6.core/StoreError.Missing // org.mobilenativefoundation.store6.testing/TestStoreResults.missing|missing(org.mobilenativefoundation.store6.core.StoreKey;kotlin.String){}[0]
+    final fun persistenceError(kotlin/String, kotlin/Throwable? = ...): org.mobilenativefoundation.store6.core/StoreError.Persistence // org.mobilenativefoundation.store6.testing/TestStoreResults.persistenceError|persistenceError(kotlin.String;kotlin.Throwable?){}[0]
+    final fun revalidated(kotlin.time/Duration = ...): org.mobilenativefoundation.store6.core/StoreResult.Revalidated // org.mobilenativefoundation.store6.testing/TestStoreResults.revalidated|revalidated(kotlin.time.Duration){}[0]
+}

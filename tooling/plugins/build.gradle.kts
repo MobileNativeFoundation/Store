@@ -1,38 +1,33 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.ktlint)
 }
 
 group = "org.mobilenativefoundation.store"
 
 java {
-    val compatVersion = JavaVersion.toVersion(libs.versions.jvmToolchain.get())
-    sourceCompatibility = compatVersion
-    targetCompatibility = compatVersion
-
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.jvmToolchain.get()))
-    }
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.fromTarget(libs.versions.jvmToolchain.get())
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_11)
 }
 
 dependencies {
     compileOnly(libs.android.gradle.plugin)
+    compileOnly(libs.binary.compatibility.validator)
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.dokka.gradle.plugin)
     compileOnly(libs.maven.publish.plugin)
     compileOnly(libs.kmmBridge.gradle.plugin)
     compileOnly(libs.atomic.fu.gradle.plugin)
-    compileOnly(libs.ktlint.gradle.plugin)
-    compileOnly(libs.spotless.gradle.plugin)
+
+    testImplementation(kotlin("test", embeddedKotlinVersion))
+    testImplementation(libs.junit)
+    testImplementation(gradleTestKit())
 }
 
 gradlePlugin {
@@ -42,22 +37,29 @@ gradlePlugin {
             implementationClass = "org.mobilenativefoundation.store.tooling.plugins.KotlinMultiplatformConventionPlugin"
         }
 
+        register("store6MultiplatformConventionPlugin") {
+            id = "org.mobilenativefoundation.store.store6.multiplatform"
+            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.Store6MultiplatformConventionPlugin"
+        }
+
+        register("store6MultiplatformSubsetConventionPlugin") {
+            id = "org.mobilenativefoundation.store.store6.multiplatform.subset"
+            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.Store6MultiplatformSubsetConventionPlugin"
+        }
+
+        register("store6ObjcSwiftDumpPlugin") {
+            id = "org.mobilenativefoundation.store.store6.swift-dump.objc"
+            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.Store6ObjcSwiftDumpPlugin"
+        }
+
+        register("store6SkieSwiftDumpPlugin") {
+            id = "org.mobilenativefoundation.store.store6.swift-dump.skie"
+            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.Store6SkieSwiftDumpPlugin"
+        }
+
         register("androidConventionPlugin") {
             id = "org.mobilenativefoundation.store.android"
             implementationClass = "org.mobilenativefoundation.store.tooling.plugins.AndroidConventionPlugin"
         }
-
-        register("formattingConventionPlugin") {
-            id = "org.mobilenativefoundation.store.formatting"
-            implementationClass = "org.mobilenativefoundation.store.tooling.plugins.FormattingConventionPlugin"
-        }
     }
-}
-
-ktlint {
-    version = libs.versions.ktlint.get()
-    additionalEditorconfig.put("ktlint_standard_function-expression-body", "disabled")
-    additionalEditorconfig.put("ktlint_standard_function-signature", "disabled")
-    additionalEditorconfig.put("ktlint_standard_multiline-expression-wrapping", "disabled")
-    additionalEditorconfig.put("ktlint_standard_string-template-indent", "disabled")
 }

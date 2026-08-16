@@ -1,29 +1,54 @@
 pluginManagement {
     includeBuild("tooling")
     repositories {
-        mavenCentral()
         gradlePluginPortal()
+        mavenCentral()
         google()
     }
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-        google()
-    }
-}
-
 rootProject.name = "Store5"
 
-include ':store'
-include ':cache'
-include ':multicast'
-include ':rx2'
-include ':core'
+include ':store6-core'
+include ':store6-quickstart'
+include ':store6-swift-dumps-objc'
+project(':store6-swift-dumps-objc').projectDir = file('store6-swift-dumps/objc')
+include ':store6-swift-dumps-skie'
+project(':store6-swift-dumps-skie').projectDir = file('store6-swift-dumps/skie')
+include ':store6-swift-dumps-mutations-objc'
+project(':store6-swift-dumps-mutations-objc').projectDir = file('store6-swift-dumps/mutations-objc')
+include ':store6-swift-dumps-mutations-skie'
+project(':store6-swift-dumps-mutations-skie').projectDir = file('store6-swift-dumps/mutations-skie')
+include ':store6-extension-probe'
+include ':store6-testing'
+include ':store6-sqldelight'
+include ':store6-sqldelight-sample'
+project(':store6-sqldelight-sample').projectDir = file('store6-sqldelight/sample')
+include ':store6-compose'
+include ':store6-compose-demo'
+include ':store6-room'
+include ':store6-room-sample'
+project(':store6-room-sample').projectDir = file('store6-room/sample')
+include ':store6-paging-androidx'
+include ':store6-paging-androidx-sample'
+project(':store6-paging-androidx-sample').projectDir = file('store6-paging-androidx/sample')
+include ':store6-graphql'
+include ':store6-graphql-sample'
+project(':store6-graphql-sample').projectDir = file('store6-graphql/sample')
+include ':store6-realtime'
+include ':store6-realtime-sample'
+project(':store6-realtime-sample').projectDir = file('store6-realtime/sample')
+include ':store6-benchmarks'
+include ':store6-devtools'
+include ':store6-devtools-inspector'
+include ':store6-devtools-demo'
+include ':store6-mutations'
+include ':store6-mutations-quickstart'
+include ':store6-mutations-testing'
+include ':store6-mutations-sqldelight'

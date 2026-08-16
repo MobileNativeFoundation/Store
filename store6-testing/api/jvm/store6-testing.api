@@ -1,0 +1,192 @@
+public abstract class org/mobilenativefoundation/store6/testing/BookkeeperContractKit {
+	public fun <init> ()V
+	public abstract fun createBookkeeper ()Lorg/mobilenativefoundation/store6/core/seam/Bookkeeper;
+	public final fun failureOnlyRecord_isNotDurablyStale ()V
+	public final fun identityDerivation_differentCanonicalId_isolated ()V
+	public final fun identityDerivation_equalCanonicalPair_sharesRecords ()V
+	public final fun namespaceWatermark_thenLaterSuccess_clearsDurableStaleness ()V
+	public final fun recordSuccess_clearsFailureCountAndTimestamp ()V
+	public final fun watermarkOnlyKey_reportsDurablyStale ()V
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeBookkeeper : org/mobilenativefoundation/store6/core/seam/Bookkeeper {
+	public fun <init> ()V
+	public fun advanceGlobalStaleWatermark (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun advanceStaleWatermark (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forget (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun markStale (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordFailure (Lorg/mobilenativefoundation/store6/core/StoreKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordSuccess (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreMeta;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun status (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeFetcher : org/mobilenativefoundation/store6/core/seam/Fetcher {
+	public fun <init> ()V
+	public final fun clearInvocations ()V
+	public final fun enqueue (Lorg/mobilenativefoundation/store6/core/StoreKey;[Lorg/mobilenativefoundation/store6/core/seam/FetcherResult;)V
+	public fun fetch (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getInvocations ()Ljava/util/List;
+	public final fun getOnUnscripted ()Lkotlin/jvm/functions/Function2;
+	public final fun setOnUnscripted (Lkotlin/jvm/functions/Function2;)V
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeFetcherInvocation {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/String;)V
+	public final fun getEtag ()Ljava/lang/String;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeSourceOfTruth : org/mobilenativefoundation/store6/core/seam/SourceOfTruth {
+	public fun <init> ()V
+	public fun delete (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun reader (Lorg/mobilenativefoundation/store6/core/StoreKey;)Lkotlinx/coroutines/flow/Flow;
+	public fun write (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStore : org/mobilenativefoundation/store6/core/Store {
+	public fun <init> ()V
+	public fun <init> (Lorg/mobilenativefoundation/store6/testing/TestWallClock;)V
+	public synthetic fun <init> (Lorg/mobilenativefoundation/store6/testing/TestWallClock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clear (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun clearAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun clearInteractions ()V
+	public fun clearNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun close ()V
+	public final fun enqueueFetchError (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreError;Z)V
+	public static synthetic fun enqueueFetchError$default (Lorg/mobilenativefoundation/store6/testing/FakeStore;Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreError;ZILjava/lang/Object;)V
+	public final fun enqueueFetchRevalidated-HG0u8IE (Lorg/mobilenativefoundation/store6/core/StoreKey;J)V
+	public static synthetic fun enqueueFetchRevalidated-HG0u8IE$default (Lorg/mobilenativefoundation/store6/testing/FakeStore;Lorg/mobilenativefoundation/store6/core/StoreKey;JILjava/lang/Object;)V
+	public final fun enqueueFetchValue (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;)V
+	public fun get (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getInteractions ()Ljava/util/List;
+	public final fun getWallClock ()Lorg/mobilenativefoundation/store6/testing/TestWallClock;
+	public fun invalidate (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun invalidateAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun invalidateNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setValue (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lorg/mobilenativefoundation/store6/core/Origin;Z)V
+	public static synthetic fun setValue$default (Lorg/mobilenativefoundation/store6/testing/FakeStore;Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lorg/mobilenativefoundation/store6/core/Origin;ZILjava/lang/Object;)V
+	public fun stream (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract class org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$Clear : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$ClearAll : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/testing/FakeStoreInteraction$ClearAll;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$ClearNamespace : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreNamespace;)V
+	public final fun getNamespace ()Lorg/mobilenativefoundation/store6/core/StoreNamespace;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$Close : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/testing/FakeStoreInteraction$Close;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$Get : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;)V
+	public final fun getFreshness ()Lorg/mobilenativefoundation/store6/core/Freshness;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$Invalidate : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$InvalidateAll : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/testing/FakeStoreInteraction$InvalidateAll;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$InvalidateNamespace : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreNamespace;)V
+	public final fun getNamespace ()Lorg/mobilenativefoundation/store6/core/StoreNamespace;
+}
+
+public final class org/mobilenativefoundation/store6/testing/FakeStoreInteraction$Stream : org/mobilenativefoundation/store6/testing/FakeStoreInteraction {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;)V
+	public final fun getFreshness ()Lorg/mobilenativefoundation/store6/core/Freshness;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public abstract class org/mobilenativefoundation/store6/testing/SourceOfTruthContractKit {
+	public fun <init> ()V
+	public abstract fun createSourceOfTruth ()Lorg/mobilenativefoundation/store6/core/seam/SourceOfTruth;
+	public final fun deleteAllDeletesEveryNamespaceAndEmitsNull ()V
+	public final fun deleteEmitsNull ()V
+	public final fun deleteIsVisibleToLateReader ()V
+	public final fun deleteNamespaceDeletesOnlyMatchingNamespace ()V
+	public final fun deleteNamespaceEmitsNullToActiveMatchingReader ()V
+	public final fun equalValueRewriteEmits ()V
+	public abstract fun getKeyA ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public abstract fun getKeyB ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public abstract fun getKeyOtherNamespace ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public final fun keysAreIsolated ()V
+	public final fun readerFirstEmissionIsCurrentValue ()V
+	public final fun readerFirstEmissionIsNullWhenAbsent ()V
+	public final fun readerNeverCompletesNormally ()V
+	public final fun readerStaysLiveAcrossDelete ()V
+	public final fun readerStaysLiveAcrossNamespaceDelete ()V
+	public final fun readerStaysLiveAcrossThreeDeleteCycles ()V
+	public final fun twoConcurrentReadersBothSeeWrite ()V
+	public abstract fun value (I)Ljava/lang/Object;
+	public final fun writeIsVisibleToLateReader ()V
+}
+
+public final class org/mobilenativefoundation/store6/testing/TestStoreMeta : org/mobilenativefoundation/store6/core/StoreMeta {
+	public fun <init> (JLjava/lang/String;)V
+	public synthetic fun <init> (JLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getEtag ()Ljava/lang/String;
+	public fun getWrittenAtEpochMillis ()J
+}
+
+public final class org/mobilenativefoundation/store6/testing/TestStoreResults {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/testing/TestStoreResults;
+	public final fun conflict (Lorg/mobilenativefoundation/store6/core/StoreMeta;Ljava/lang/String;)Lorg/mobilenativefoundation/store6/core/StoreError$Conflict;
+	public final fun conversionError (Ljava/lang/String;Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store6/core/StoreError$Conversion;
+	public static synthetic fun conversionError$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreError$Conversion;
+	public final fun data-1Y68eR8 (Ljava/lang/Object;Lorg/mobilenativefoundation/store6/core/Origin;JZZ)Lorg/mobilenativefoundation/store6/core/StoreResult$Data;
+	public static synthetic fun data-1Y68eR8$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Ljava/lang/Object;Lorg/mobilenativefoundation/store6/core/Origin;JZZILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreResult$Data;
+	public final fun error (Lorg/mobilenativefoundation/store6/core/StoreError;Z)Lorg/mobilenativefoundation/store6/core/StoreResult$Error;
+	public static synthetic fun error$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Lorg/mobilenativefoundation/store6/core/StoreError;ZILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreResult$Error;
+	public final fun exception (Lorg/mobilenativefoundation/store6/core/StoreError;Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store6/core/StoreException;
+	public static synthetic fun exception$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Lorg/mobilenativefoundation/store6/core/StoreError;Ljava/lang/Throwable;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreException;
+	public final fun fetchError (Ljava/lang/String;Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store6/core/StoreError$Fetch;
+	public static synthetic fun fetchError$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreError$Fetch;
+	public final fun freshnessUnsatisfiable (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/core/StoreError$FreshnessUnsatisfiable;
+	public final fun loading ()Lorg/mobilenativefoundation/store6/core/StoreResult$Loading;
+	public final fun missing (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/String;)Lorg/mobilenativefoundation/store6/core/StoreError$Missing;
+	public final fun persistenceError (Ljava/lang/String;Ljava/lang/Throwable;)Lorg/mobilenativefoundation/store6/core/StoreError$Persistence;
+	public static synthetic fun persistenceError$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreError$Persistence;
+	public final fun revalidated-LRDsOJo (J)Lorg/mobilenativefoundation/store6/core/StoreResult$Revalidated;
+	public static synthetic fun revalidated-LRDsOJo$default (Lorg/mobilenativefoundation/store6/testing/TestStoreResults;JILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/StoreResult$Revalidated;
+}
+
+public final class org/mobilenativefoundation/store6/testing/TestWallClock : org/mobilenativefoundation/store6/core/seam/WallClock {
+	public fun <init> ()V
+	public fun <init> (J)V
+	public synthetic fun <init> (JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun advanceBy-LRDsOJo (J)V
+	public fun nowEpochMillis ()J
+	public final fun setEpochMillis (J)V
+}
+

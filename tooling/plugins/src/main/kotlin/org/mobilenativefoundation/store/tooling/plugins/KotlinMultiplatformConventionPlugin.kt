@@ -2,59 +2,52 @@
 
 package org.mobilenativefoundation.store.tooling.plugins
 
-import co.touchlab.kmmbridge.KmmBridgeExtension
-import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import addGithubPackagesRepository
+import co.touchlab.faktory.KmmBridgeExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import gitHubReleaseArtifacts
 import kotlinx.atomicfu.plugin.gradle.AtomicFUPluginExtension
-import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 class KotlinMultiplatformConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
-        val versionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
-        val jvmToolchainVersion = versionCatalog.jvmToolchainVersion
 
-        // Single source of truth for the published version: gradle/libs.versions.toml (store).
-        // vanniktech maven-publish falls back to project.version when VERSION_NAME is absent.
-        version = versionCatalog.store
 
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
             apply("org.jetbrains.kotlin.plugin.serialization")
-            apply("com.android.kotlin.multiplatform.library")
+            apply("com.android.library")
             apply("com.vanniktech.maven.publish")
             apply("org.jetbrains.dokka")
-            apply("co.touchlab.kmmbridge.github")
+            apply("co.touchlab.kmmbridge")
             apply("maven-publish")
             apply("org.jetbrains.kotlin.native.cocoapods")
-            apply("org.jetbrains.kotlinx.atomicfu")
+            apply("kotlinx-atomicfu")
             apply("org.jetbrains.kotlinx.binary-compatibility-validator")
-            apply("org.mobilenativefoundation.store.formatting")
         }
 
+
         extensions.configure<KotlinMultiplatformExtension> {
+
             applyDefaultHierarchyTemplate()
 
-            context(this, this@with) {
-                configureAndroid()
-            }
+            androidTarget()
 
             jvm()
 
@@ -65,58 +58,51 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
             linuxX64()
 
             js {
-                browser {
-                    testTask {
-                        useKarma {
-                            useChromeHeadless()
-                        }
-                        // Karma uses Mocha under the hood for the test framework
-                        useMocha {
-                            timeout = "5s"
-                        }
-                    }
-                }
-                nodejs {
-                    testTask {
-                        useMocha {
-                            timeout = "5s"
-                        }
-                    }
-                }
-            }
-
-            @OptIn(ExperimentalWasmDsl::class)
-            wasmJs {
                 browser()
                 nodejs()
             }
 
-            jvmToolchain(jvmToolchainVersion.toInt())
+            @OptIn(ExperimentalWasmDsl::class)
+            wasmJs {
+                nodejs()
+            }
+
+            jvmToolchain(11)
+
+            targets.withType<KotlinJvmTarget>().configureEach {
+                compilerOptions {
+                    jvmDefault.set(JvmDefaultMode.DISABLE)
+                }
+            }
+
+            targets.withType<KotlinAndroidTarget>().configureEach {
+                compilerOptions {
+                    jvmDefault.set(JvmDefaultMode.DISABLE)
+                }
+            }
 
             targets.all {
                 compilations.all {
-                    compileTaskProvider.configure {
-                        compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
+                    compilerOptions.configure {
+                        freeCompilerArgs.add("-Xexpect-actual-classes")
                     }
                 }
             }
 
             targets.withType<KotlinNativeTarget>().configureEach {
                 compilations.configureEach {
-                    compileTaskProvider.configure {
-                        compilerOptions {
-                            freeCompilerArgs.add("-Xallocator=custom")
-                            freeCompilerArgs.add("-Xadd-light-debug=enable")
+                    compilerOptions.configure {
+                        freeCompilerArgs.add("-Xallocator=custom")
+                        freeCompilerArgs.add("-Xadd-light-debug=enable")
 
-                            freeCompilerArgs.addAll(
-                                "-opt-in=kotlin.RequiresOptIn",
-                                "-opt-in=kotlin.time.ExperimentalTime",
-                                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                                "-opt-in=kotlinx.coroutines.FlowPreview",
-                                "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
-                                "-opt-in=kotlinx.cinterop.BetaInteropApi",
-                            )
-                        }
+                        freeCompilerArgs.addAll(
+                            "-opt-in=kotlin.RequiresOptIn",
+                            "-opt-in=kotlin.time.ExperimentalTime",
+                            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                            "-opt-in=kotlinx.coroutines.FlowPreview",
+                            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+                            "-opt-in=kotlinx.cinterop.BetaInteropApi",
+                        )
                     }
                 }
             }
@@ -129,110 +115,157 @@ class KotlinMultiplatformConventionPlugin : Plugin<Project> {
                 }
             }
 
-            sourceSets.getByName("commonTest") { dependencies { implementation(kotlin("test")) } }
+            sourceSets.getByName("commonTest") {
+                dependencies {
+                    implementation(kotlin("test"))
+                }
+            }
 
-            sourceSets.getByName("jvmTest") { dependencies { implementation(kotlin("test-junit")) } }
+            sourceSets.getByName("jvmTest") {
+                dependencies {
+                    implementation(kotlin("test-junit"))
+                }
+            }
 
-            configureCocoapods(project.versionCatalog.store)
+            sourceSets.getByName("nativeMain") {
+                dependsOn(sourceSets.getByName("commonMain"))
+            }
+
+            configureCocoapods()
         }
 
-        configureMultiplatformKotlin()
+        configureKotlin()
+        configureAndroid()
         configureDokka()
         configureMavenPublishing()
+        addGithubPackagesRepository()
         configureKmmBridge()
         configureAtomicFu()
     }
 }
 
-fun Project.configureMultiplatformKotlin() {
-    val jvmCompatVersion = versionCatalog.jvmCompatVersion
-    extensions.configure<KotlinMultiplatformExtension> {
-        targets.configureEach {
-            compilations.configureEach {
-                compileTaskProvider.configure {
-                    compilerOptions {
-                        if (this is KotlinJvmCompilerOptions) {
-                            jvmTarget.set(JvmTarget.fromTarget(jvmCompatVersion))
-                        }
-                    }
-                }
-            }
-        }
-    }
+
+fun Project.configureKotlin() {
     configureJava()
 }
 
 fun Project.configureJava() {
     java {
-        toolchain { languageVersion.set(JavaLanguageVersion.of(versionCatalog.jvmToolchainVersion)) }
-        val jvmCompatVersion = JavaVersion.toVersion(versionCatalog.jvmCompatVersion)
-        sourceCompatibility = jvmCompatVersion
-        targetCompatibility = jvmCompatVersion
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
     }
 }
 
-context(ext: KotlinMultiplatformExtension, project: Project)
-fun configureAndroid() {
-    ext.android {
-        namespace = "org.mobilenativefoundation.store.${project.name}"
-
-        compileSdk = project.versionCatalog.androidCompileSdk.toInt()
-        minSdk = project.versionCatalog.androidMinSdk.toInt()
-        val targetSdkVersion = project.versionCatalog.androidTargetSdk.toInt()
+fun Project.configureAndroid() {
+    android {
+        sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+        compileSdk = Versions.COMPILE_SDK
+        defaultConfig {
+            minSdk = Versions.MIN_SDK
+            targetSdk = Versions.TARGET_SDK
+        }
         lint {
             disable += "ComposableModifierFactory"
             disable += "ModifierFactoryExtensionFunction"
             disable += "ModifierFactoryReturnType"
             disable += "ModifierFactoryUnreferencedReceiver"
-            targetSdk = targetSdkVersion
         }
-        withHostTest {
-            targetSdk {
-                version = release(targetSdkVersion)
-            }
-        }
-        withDeviceTest {
-            targetSdk {
-                version = release(targetSdkVersion)
-            }
-        }
-        compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(project.versionCatalog.jvmCompatVersion))
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
         }
     }
 }
 
-fun KotlinMultiplatformExtension.android(configure: Action<KotlinMultiplatformAndroidLibraryTarget>): Unit =
-    (this as ExtensionAware).extensions.configure("android", configure)
+
+fun Project.android(action: LibraryExtension.() -> Unit) = extensions.configure<LibraryExtension>(action)
 
 private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.configure<JavaPluginExtension>(action)
 
-fun Project.configureMavenPublishing() =
-    extensions.configure<MavenPublishBaseExtension> {
-        publishToMavenCentral(automaticRelease = true)
-        signAllPublications()
-    }
 
-fun Project.configureKmmBridge() =
-    extensions.configure<KmmBridgeExtension> {
-        gitHubReleaseArtifacts()
-        spm()
-    }
+object Versions {
+    const val COMPILE_SDK = 34
+    const val MIN_SDK = 24
+    const val TARGET_SDK = 34
+    const val STORE = "5.1.0-alpha10"
+}
 
-fun Project.configureAtomicFu() = extensions.configure<AtomicFUPluginExtension> { transformJvm = false }
+
+fun Project.configureMavenPublishing() = extensions.configure<MavenPublishBaseExtension> {
+    publishToMavenCentral(automaticRelease = true)
+    signAllPublications()
+}
+
+
+fun Project.configureKmmBridge() = extensions.configure<KmmBridgeExtension> {
+    mavenPublishArtifacts()
+    spm()
+}
+
+fun Project.configureAtomicFu() =
+    extensions.configure<AtomicFUPluginExtension> {
+        transformJvm = false
+        transformJs = false
+    }
 
 fun Project.configureDokka() {
+    val moduleDocumentation = layout.projectDirectory.file("dokka/Module.md")
+
     extensions.configure<DokkaExtension> {
+        dokkaPublications.named("html") {
+            outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+        }
         dokkaSourceSets.configureEach {
             reportUndocumented.set(false)
             skipDeprecated.set(true)
-            jdkVersion.set(versionCatalog.jvmCompatVersion.toInt())
+            jdkVersion.set(11)
+            externalDocumentationLinks.register("kotlinx-coroutines") {
+                url("https://kotlinlang.org/api/kotlinx.coroutines/")
+                packageListUrl("https://kotlinlang.org/api/kotlinx.coroutines/package-list")
+            }
+            if (project.name == "store6-mutations") {
+                externalDocumentationLinks.register("store6-core") {
+                    url("https://store.mobilenativefoundation.org/reference/store6-core/")
+                    packageListUrl.set(
+                        rootProject
+                            .project(":store6-core")
+                            .layout.buildDirectory
+                            .file("dokka/html/store6-core/package-list")
+                            .map { it.asFile.toURI() },
+                    )
+                }
+            }
         }
+
+        if (moduleDocumentation.asFile.isFile) {
+            dokkaSourceSets.matching { it.name == "commonMain" }.configureEach {
+                includes.from(moduleDocumentation)
+            }
+        }
+    }
+
+    if (project.name == "store6-mutations") {
+        tasks.named("dokkaGeneratePublicationHtml").configure {
+            dependsOn(":store6-core:dokkaGeneratePublicationHtml")
+        }
+    }
+    tasks.register("dokkaHtml") {
+        group = "documentation"
+        description = "Generates Dokka HTML documentation."
+        dependsOn("dokkaGeneratePublicationHtml")
     }
 }
 
-fun KotlinMultiplatformExtension.configureCocoapods(storeVersion: String) {
+fun Project.android(name: String) {
+    android {
+        namespace = "org.mobilenativefoundation.store.$name"
+    }
+}
+
+fun KotlinMultiplatformExtension.configureCocoapods(){
     (this as ExtensionAware).extensions.configure(CocoapodsExtension::class.java) {
-        version = storeVersion
+        version = Versions.STORE
     }
 }

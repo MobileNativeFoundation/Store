@@ -1,0 +1,58 @@
+public final class org/mobilenativefoundation/store6/room/RoomBookkeeper : org/mobilenativefoundation/store6/core/seam/Bookkeeper {
+	public fun <init> (Landroidx/room3/RoomDatabase;Lorg/mobilenativefoundation/store6/room/Store6BookkeeperDao;)V
+	public fun advanceGlobalStaleWatermark (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun advanceStaleWatermark (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forget (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun markStale (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordFailure (Lorg/mobilenativefoundation/store6/core/StoreKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordSuccess (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreMeta;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun status (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/room/RoomSourceOfTruth : org/mobilenativefoundation/store6/core/seam/TransactionalSourceOfTruth {
+	public fun <init> (Landroidx/room3/RoomDatabase;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
+	public fun delete (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun reader (Lorg/mobilenativefoundation/store6/core/StoreKey;)Lkotlinx/coroutines/flow/Flow;
+	public fun withTransaction (Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun write (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/room/Store6BookkeeperDao {
+	public abstract fun deleteAllRecords (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteNamespaceRecords (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteRecord (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun record (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun upsertRecord (Lorg/mobilenativefoundation/store6/room/Store6BookkeepingEntity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun upsertWatermark (Lorg/mobilenativefoundation/store6/room/Store6WatermarkEntity;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun watermark (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/room/Store6BookkeepingEntity {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;ILjava/lang/Long;)V
+	public final fun getCanonicalId ()Ljava/lang/String;
+	public final fun getConsecutiveFailures ()I
+	public final fun getEtag ()Ljava/lang/String;
+	public final fun getLastFailureAtEpochMillis ()Ljava/lang/Long;
+	public final fun getLastSuccessSequence ()Ljava/lang/Long;
+	public final fun getNamespace ()Ljava/lang/String;
+	public final fun getStaleSequence ()Ljava/lang/Long;
+	public final fun getWrittenAtEpochMillis ()Ljava/lang/Long;
+}
+
+public final class org/mobilenativefoundation/store6/room/Store6RoomSchema {
+	public static final field CREATE_BOOKKEEPING_TABLE Ljava/lang/String;
+	public static final field CREATE_WATERMARKS_TABLE Ljava/lang/String;
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/room/Store6RoomSchema;
+	public final fun createTables (Landroidx/sqlite/SQLiteConnection;)V
+}
+
+public final class org/mobilenativefoundation/store6/room/Store6WatermarkEntity {
+	public fun <init> (Ljava/lang/String;J)V
+	public final fun getScope ()Ljava/lang/String;
+	public final fun getSequence ()J
+}
+
