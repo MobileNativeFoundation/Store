@@ -1,13 +1,14 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "store",
-  "displayName": "Store",
-  "description": "Skills for applications using Store (org.mobilenativefoundation.store): building a Store 6 data layer and migrating from Store 4/5.",
-  "version": "0.2.0",
+  "version": "0.3.0",
+  "description": "Skills for developers using Store",
   "author": {
     "name": "Matt Ramotar",
     "email": "matt.ramotar@uber.com"
   },
+  "repository": "https://github.com/matt-ramotar/Store6",
+  "license": "Apache-2.0",
   "keywords": [
     "store",
     "store6",
