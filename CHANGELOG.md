@@ -2,6 +2,16 @@
 
 ### Thank you to all our wonderful contributors and users
 
+## [5.1.0-alpha11] (2026-08-28)
+
+**Bug Fixes**
+
+* Stop Store from reconfiguring the host app's global Kermit logger [#750](https://github.com/MobileNativeFoundation/Store/pull/750)
+
+**Improvements**
+
+* Build modernization: Gradle 9.5, AGP 9.2, Kotlin 2.3, and tooling updates [#736](https://github.com/MobileNativeFoundation/Store/pull/736)
+
 ## [5.1.0-alpha10] (2026-07-13)
 
 **Bug Fixes**
@@ -385,7 +395,9 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha10...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha11...HEAD
+
+[5.1.0-alpha11]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha11
 
 [5.1.0-alpha10]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha10
 
