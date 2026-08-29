@@ -26,7 +26,7 @@ kmmBridge = "1.2.1"
 ktlint = "1.8.0"
 kover = "0.9.9"
 #noinspection UnusedVersionCatalogEntry
-store = "5.1.0-SNAPSHOT"
+store = "5.1.0-alpha11"
 truth = "1.4.5"
 turbine = "1.2.1"
 binary-compatibility-validator = "0.18.1"
