@@ -50,7 +50,7 @@ jobs:
         # upload would fail under fail_ci_if_error. Skip it for forks; coverage is
         # still uploaded and enforced for same-repo PRs and pushes to main.
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: build/reports/kover/coverage.xml
