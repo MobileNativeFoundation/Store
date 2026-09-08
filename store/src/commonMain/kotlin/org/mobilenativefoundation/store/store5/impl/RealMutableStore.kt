@@ -1,12 +1,10 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package org.mobilenativefoundation.store.store5.impl
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
@@ -20,9 +18,6 @@ import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.Updater
 import org.mobilenativefoundation.store.store5.UpdaterResult
-import org.mobilenativefoundation.store.store5.impl.extensions.now
-import org.mobilenativefoundation.store.store5.internal.concurrent.ThreadSafety
-import org.mobilenativefoundation.store.store5.internal.definition.WriteRequestQueue
 import org.mobilenativefoundation.store.store5.internal.result.EagerConflictResolutionResult
 import org.mobilenativefoundation.store.store5.internal.result.StoreDelegateWriteResult
 
@@ -32,316 +27,200 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
     private val logger: Logger = DefaultLogger(),
+    private val beforeAcknowledgementCommit: suspend () -> Unit = {},
 ) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
     private val storeLock = Mutex()
-    private val keyToWriteRequestQueue = mutableMapOf<Key, WriteRequestQueue<Key, Output, *>>()
-    private val keyToThreadSafety = mutableMapOf<Key, ThreadSafety>()
+    private val states = mutableMapOf<Key, MutableStoreKeyState<Key, Output>>()
 
     override fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
-            // Ensure we are ready for this key.
-            safeInitStore(request.key)
-
-            // Try to eagerly resolve conflicts before pulling from network.
-            when (val eagerConflictResolutionResult = tryEagerlyResolveConflicts<Response>(request.key)) {
-                // TODO(#678): Many use cases will not want to pull immediately after failing to push local changes.
-                // We should enable configuration of conflict resolution strategies, such as logging, retrying, canceling.
-
-                is EagerConflictResolutionResult.Error.Exception -> {
-                    logger.error(eagerConflictResolutionResult.error.toString())
-                }
-
-                is EagerConflictResolutionResult.Error.Message -> {
-                    logger.error(eagerConflictResolutionResult.message)
-                }
-
-                is EagerConflictResolutionResult.Success.ConflictsResolved -> {
-                    logger.debug(eagerConflictResolutionResult.value.toString())
-                }
-
-                EagerConflictResolutionResult.Success.NoConflicts -> {
-                    logger.debug("No conflicts.")
-                }
+            val state = stateFor(request.key)
+            // TODO(#678): Allow configuring whether a failed push should prevent a subsequent fetch.
+            when (val result = tryEagerlyResolveConflicts<Response>(request.key, state)) {
+                is EagerConflictResolutionResult.Error.Exception -> logger.error(result.error.toString())
+                is EagerConflictResolutionResult.Error.Message -> logger.error(result.message)
+                is EagerConflictResolutionResult.Success.ConflictsResolved -> logger.debug(result.value.toString())
+                EagerConflictResolutionResult.Success.NoConflicts -> logger.debug("No conflicts.")
             }
-
-            // Now, we can just delegate to the underlying stream.
-            delegate.stream(request).collect { storeReadResponse -> emit(storeReadResponse) }
+            delegate.stream(request).collect { emit(it) }
         }
 
     @ExperimentalStoreApi
     override fun <Response : Any> stream(requestStream: Flow<StoreWriteRequest<Key, Output, Response>>): Flow<StoreWriteResponse> =
         flow {
-            // Each incoming write request is enqueued.
-            // Then we try to update the network and delegate.
-
-            requestStream
-                .onEach { writeRequest ->
-                    // Prepare per-key data structures.
-                    safeInitStore(writeRequest.key)
-
-                    // Enqueue the new write request.
-                    addWriteRequestToQueue(writeRequest)
-                }
-                .collect { writeRequest ->
-                    val storeWriteResponse =
-                        try {
-                            // Always write to local first.
-                            // Only proceed to network if local write succeeded.
-                            when (val delegateWriteResult = delegate.write(writeRequest.key, writeRequest.value)) {
-                                is StoreDelegateWriteResult.Error.Exception -> {
-                                    StoreWriteResponse.Error.Exception(delegateWriteResult.error)
-                                }
-                                is StoreDelegateWriteResult.Error.Message -> {
-                                    StoreWriteResponse.Error.Message(delegateWriteResult.error)
-                                }
-                                is StoreDelegateWriteResult.Success -> {
-                                    // Try to sync to network.
-                                    when (val updaterResult = tryUpdateServer(writeRequest)) {
-                                        is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(updaterResult.error)
-                                        is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(updaterResult.message)
-                                        is UpdaterResult.Success.Typed<*> -> {
-                                            val typedValue = updaterResult.value as? Response
-                                            if (typedValue == null) {
-                                                StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                            } else {
-                                                StoreWriteResponse.Success.Typed(updaterResult.value)
-                                            }
-                                        }
-                                        is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                    }
-                                }
-                            }
-                        } catch (throwable: Throwable) {
-                            StoreWriteResponse.Error.Exception(throwable)
-                        }
-                    emit(storeWriteResponse)
-                }
+            requestStream.collect { emit(writeRequest(it)) }
         }
 
     @ExperimentalStoreApi
     override suspend fun <Response : Any> write(request: StoreWriteRequest<Key, Output, Response>): StoreWriteResponse =
         stream(flowOf(request)).first()
 
-    private suspend fun <Response : Any> tryUpdateServer(request: StoreWriteRequest<Key, Output, Response>): UpdaterResult {
-        val updaterResult = postLatest<Response>(request.key)
-
-        if (updaterResult is UpdaterResult.Success) {
-            // We successfully synced to network, can now clear out any stale writes.
-            updateWriteRequestQueue<Response>(
-                key = request.key,
-                created = request.created,
-                updaterResult = updaterResult,
-            )
-            bookkeeper?.clear(request.key)
-        } else {
-            // Could not sync, need to record a failed timestamp.
-            bookkeeper?.setLastFailedSync(request.key)
-        }
-
-        return updaterResult
-    }
-
-    /**
-     * Post the very latest write for [key] to the network using [updater].
-     */
-    private suspend fun <Response : Any> postLatest(key: Key): UpdaterResult {
-        // The "latest" is the last item in the queue for this key.
-        val writer = getLatestWriteRequest(key)
-
-        return when (val updaterResult = updater.post(key, writer.value)) {
-            is UpdaterResult.Error.Exception -> UpdaterResult.Error.Exception(updaterResult.error)
-            is UpdaterResult.Error.Message -> UpdaterResult.Error.Message(updaterResult.message)
-            is UpdaterResult.Success.Untyped -> UpdaterResult.Success.Untyped(updaterResult.value)
-            is UpdaterResult.Success.Typed<*> -> {
-                val typedValue = updaterResult.value as? Response
-                if (typedValue == null) {
-                    UpdaterResult.Success.Untyped(updaterResult.value)
-                } else {
-                    UpdaterResult.Success.Typed(updaterResult.value)
-                }
-            }
-        }
-    }
-
-    /**
-     * Remove or keep queue items after a successful network sync.
-     */
-    private suspend fun <Response : Any> updateWriteRequestQueue(
-        key: Key,
-        created: Long,
-        updaterResult: UpdaterResult.Success,
-    ) {
-        val nextWriteRequestQueue =
-            withWriteRequestQueueLock(key) {
-                val remaining = ArrayDeque<StoreWriteRequest<Key, Output, *>>()
-
-                for (writeRequest in this) {
-                    if (writeRequest.created <= created) {
-                        // Mark each relevant request as succeeded.
-                        updater.onCompletion?.onSuccess?.invoke(updaterResult)
-
-                        val storeWriteResponse =
-                            when (updaterResult) {
-                                is UpdaterResult.Success.Typed<*> -> {
-                                    val typedValue = updaterResult.value as? Response
-                                    if (typedValue == null) {
-                                        StoreWriteResponse.Success.Untyped(updaterResult.value)
-                                    } else {
-                                        StoreWriteResponse.Success.Typed(updaterResult.value)
-                                    }
-                                }
-
-                                is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(updaterResult.value)
-                            }
-
-                        // Notify each on-completion callback.
-                        writeRequest.onCompletions?.forEach { onStoreWriteCompletion ->
-                            onStoreWriteCompletion.onSuccess(storeWriteResponse)
-                        }
-                    } else {
-                        // Keep requests that happened after created.
-                        remaining.add(writeRequest)
+    private suspend fun writeRequest(request: StoreWriteRequest<Key, Output, *>): StoreWriteResponse =
+        try {
+            val state = stateFor(request.key)
+            val entry = PendingStoreWrite(request)
+            val localResult =
+                state.localMutex.withLock {
+                    delegate.write(request.key, request.value).also { result ->
+                        // Admission follows known persistence success without another suspension.
+                        if (result is StoreDelegateWriteResult.Success) state.pending.add(entry)
                     }
                 }
-                remaining
+            when (localResult) {
+                is StoreDelegateWriteResult.Error.Exception -> {
+                    if (localResult.error is CancellationException) throw localResult.error
+                    StoreWriteResponse.Error.Exception(localResult.error)
+                }
+                is StoreDelegateWriteResult.Error.Message -> StoreWriteResponse.Error.Message(localResult.error)
+                is StoreDelegateWriteResult.Success -> requireNotNull(synchronize(request.key, state, entry)).toWriteResponse()
             }
-
-        // Update the in-memory map outside the queue's mutex.
-        storeLock.withLock {
-            keyToWriteRequestQueue[key] = nextWriteRequestQueue
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            StoreWriteResponse.Error.Exception(error)
         }
-    }
 
     /**
-     * Locks the queue for [key] and invokes [block].
+     * A writer releases localMutex before waiting here. The only nested per-key lock order is
+     * remoteMutex then localMutex; local persistence can therefore proceed while the updater waits.
      */
-    private suspend fun <Result : Any> withWriteRequestQueueLock(
+    private suspend fun synchronize(
         key: Key,
-        block: suspend WriteRequestQueue<Key, Output, *>.() -> Result,
-    ): Result {
-        // Acquire the ThreadSafety object for this key without holding storeLock.
-        val threadSafety = getThreadSafety(key)
+        state: MutableStoreKeyState<Key, Output>,
+        entry: PendingStoreWrite<Key, Output>? = null,
+    ): UpdaterResult? {
+        if (entry == null && bookkeeper == null) return null
+        var completed = emptyList<PendingStoreWrite<Key, Output>>()
+        var completedResult: UpdaterResult.Success? = null
+        try {
+            return state.remoteMutex.withLock remote@{
+                val acknowledged = state.localMutex.withLock { entry?.acknowledged }
+                if (acknowledged != null) return@remote acknowledged
 
-        // Exclusively lock the queue's own mutex. The block both reads and structurally mutates the
-        // per-key ArrayDeque (add / iterate-and-rebuild), so callers must mutually exclude each other.
-        // A shared/reader lock here would allow a concurrent add() during iteration, corrupting the
-        // deque's backing array — a ConcurrentModificationException on the JVM and an EXC_BAD_ACCESS
-        // on Kotlin/Native.
-        return threadSafety.writeRequests.mutex.withLock {
-            val queue = getQueue(key)
-            queue.block()
-        }
-    }
-
-    private suspend fun getLatestWriteRequest(key: Key): StoreWriteRequest<Key, Output, *> {
-        val threadSafety = getThreadSafety(key)
-        threadSafety.writeRequests.mutex.lock()
-        return try {
-            val queue = getQueue(key)
-            require(queue.isNotEmpty()) {
-                "No writes found for key=$key."
-            }
-            queue.last()
-        } finally {
-            threadSafety.writeRequests.mutex.unlock()
-        }
-    }
-
-    /**
-     * Checks if we have un-synced writes or a recorded failed sync for [key].
-     */
-    private suspend fun conflictsMightExist(key: Key): Boolean {
-        val failed = bookkeeper?.getLastFailedSync(key)
-        return (failed != null) || !writeRequestsQueueIsEmpty(key)
-    }
-
-    private fun writeRequestsQueueIsEmpty(key: Key): Boolean = keyToWriteRequestQueue[key].isNullOrEmpty()
-
-    private suspend fun <Response : Any> addWriteRequestToQueue(writeRequest: StoreWriteRequest<Key, Output, Response>) =
-        withWriteRequestQueueLock(writeRequest.key) {
-            add(writeRequest)
-        }
-
-    private suspend fun <Response : Any> tryEagerlyResolveConflicts(key: Key): EagerConflictResolutionResult<Response> {
-        // Acquire the ThreadSafety object for this key without holding storeLock.
-        val threadSafety = getThreadSafety(key)
-
-        // Lock just long enough to check if conflicts exist.
-        val (latestValue, conflictsExist) =
-            threadSafety.readCompletions.mutex.withLock {
-                val latestValue = delegate.latestOrNull(key)
-                val conflictsExist = latestValue != null && bookkeeper != null && conflictsMightExist(key)
-                latestValue to conflictsExist
-            }
-
-        return if (!conflictsExist || latestValue == null) {
-            EagerConflictResolutionResult.Success.NoConflicts
-        } else {
-            try {
-                val updaterResult =
-                    updater.post(key, latestValue).also { updaterResult ->
-                        if (updaterResult is UpdaterResult.Success) {
-                            // If it succeeds, we want to remove stale requests and clear the bookkeeper.
-                            updateWriteRequestQueue<Response>(key = key, created = now(), updaterResult = updaterResult)
-
-                            bookkeeper?.clear(key)
+                val snapshot =
+                    state.localMutex.withLock local@{
+                        if (entry != null) {
+                            MutableStoreSyncSnapshot(state.pending.last().request.value, state.pending.toList())
+                        } else {
+                            val failed = bookkeeper?.getLastFailedSync(key)
+                            if (failed == null && state.pending.isEmpty()) return@local null
+                            // Direct SourceOfTruth updates may be newer than the last pending request.
+                            val latest = delegate.latestOrNull(key) ?: return@local null
+                            MutableStoreSyncSnapshot(latest, state.pending.toList())
                         }
-                    }
+                    } ?: return@remote null
 
-                when (updaterResult) {
-                    is UpdaterResult.Error.Exception -> {
-                        EagerConflictResolutionResult.Error.Exception(updaterResult.error)
-                    }
-
-                    is UpdaterResult.Error.Message -> {
-                        EagerConflictResolutionResult.Error.Message(updaterResult.message)
-                    }
-
+                val result = post(key, snapshot.value)
+                when (result) {
                     is UpdaterResult.Success -> {
-                        EagerConflictResolutionResult.Success.ConflictsResolved(updaterResult)
+                        beforeAcknowledgementCommit()
+                        state.localMutex.withLock {
+                            completed = acknowledgeSnapshot(state, snapshot, result)
+                            completedResult = result
+                            // Keep the empty check and clear together so a new admission cannot slip in.
+                            if (state.pending.isEmpty()) {
+                                tryBookkeeping("clear", key) { bookkeeper?.clear(key) }
+                            }
+                        }
+                    }
+                    is UpdaterResult.Error -> {
+                        state.localMutex.withLock {
+                            tryBookkeeping("setLastFailedSync", key) {
+                                if (bookkeeper?.setLastFailedSync(key) == false) {
+                                    logger.error("Bookkeeper.setLastFailedSync returned false for key=$key.")
+                                }
+                            }
+                        }
                     }
                 }
+                result
+            }
+        } finally {
+            // The committed batch survives a canceled clear. Callbacks run after both locks release.
+            completedResult?.let { deliverCallbacks(completed, it) }
+        }
+    }
+
+    private suspend fun post(
+        key: Key,
+        value: Output,
+    ): UpdaterResult =
+        try {
+            updater.post(key, value).also { result ->
+                if (result is UpdaterResult.Error.Exception && result.error is CancellationException) throw result.error
+            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            UpdaterResult.Error.Exception(error)
+        }
+
+    private suspend fun tryBookkeeping(
+        operation: String,
+        key: Key,
+        block: suspend () -> Unit,
+    ) {
+        try {
+            block()
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            logger.error("Bookkeeper.$operation failed for key=$key.", error)
+        }
+    }
+
+    private suspend fun <Response : Any> tryEagerlyResolveConflicts(
+        key: Key,
+        state: MutableStoreKeyState<Key, Output>,
+    ): EagerConflictResolutionResult<Response> =
+        try {
+            when (val result = synchronize(key, state)) {
+                null -> EagerConflictResolutionResult.Success.NoConflicts
+                is UpdaterResult.Error.Exception -> EagerConflictResolutionResult.Error.Exception(result.error)
+                is UpdaterResult.Error.Message -> EagerConflictResolutionResult.Error.Message(result.message)
+                is UpdaterResult.Success -> EagerConflictResolutionResult.Success.ConflictsResolved(result)
+            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Throwable) {
+            EagerConflictResolutionResult.Error.Exception(error)
+        }
+
+    private fun deliverCallbacks(
+        entries: List<PendingStoreWrite<Key, Output>>,
+        result: UpdaterResult.Success,
+    ) {
+        var cancellation: CancellationException? = null
+        fun invokeCallback(callback: () -> Unit) {
+            try {
+                callback()
+            } catch (error: CancellationException) {
+                if (cancellation == null) cancellation = error
             } catch (error: Throwable) {
-                EagerConflictResolutionResult.Error.Exception(error)
+                logger.error("MutableStore success callback failed.", error)
             }
         }
+        val response = result.toSuccessResponse()
+        for (entry in entries) {
+            updater.onCompletion?.onSuccess?.let { callback -> invokeCallback { callback(result) } }
+            entry.request.onCompletions?.forEach { callback -> invokeCallback { callback.onSuccess(response) } }
+        }
+        cancellation?.let { throw it }
     }
 
-    /**
-     * Ensures that [keyToThreadSafety] and [keyToWriteRequestQueue] have entries for [key].
-     * We only hold [storeLock] while touching these two maps, then release it immediately.
-     */
-    private suspend fun safeInitStore(key: Key) {
-        storeLock.withLock {
-            if (keyToThreadSafety[key] == null) {
-                keyToThreadSafety[key] = ThreadSafety()
-            }
-            if (keyToWriteRequestQueue[key] == null) {
-                keyToWriteRequestQueue[key] = ArrayDeque()
-            }
+    private fun UpdaterResult.toWriteResponse(): StoreWriteResponse =
+        when (this) {
+            is UpdaterResult.Error.Exception -> StoreWriteResponse.Error.Exception(error)
+            is UpdaterResult.Error.Message -> StoreWriteResponse.Error.Message(message)
+            is UpdaterResult.Success -> toSuccessResponse()
         }
-    }
 
-    /**
-     * Retrieves the [ThreadSafety] object for [key] without reinitializing it, since [safeInitStore] handles creation.
-     * We do a quick [storeLock] read then release it without nesting per-key locks inside [storeLock].
-     */
-    private suspend fun getThreadSafety(key: Key): ThreadSafety {
-        return storeLock.withLock {
-            requireNotNull(keyToThreadSafety[key]) {
-                "ThreadSafety not initialized for key=$key."
-            }
+    private fun UpdaterResult.Success.toSuccessResponse(): StoreWriteResponse.Success =
+        when (this) {
+            is UpdaterResult.Success.Typed<*> -> StoreWriteResponse.Success.Typed(value)
+            is UpdaterResult.Success.Untyped -> StoreWriteResponse.Success.Untyped(value)
         }
-    }
 
-    /**
-     * Helper to retrieve the queue for [key] without re-initialization logic.
-     */
-    private suspend fun getQueue(key: Key): WriteRequestQueue<Key, Output, *> {
-        return storeLock.withLock {
-            requireNotNull(keyToWriteRequestQueue[key]) {
-                "No write request queue found for key=$key."
-            }
-        }
-    }
+    private suspend fun stateFor(key: Key): MutableStoreKeyState<Key, Output> =
+        storeLock.withLock { states.getOrPut(key) { MutableStoreKeyState() } }
 }
