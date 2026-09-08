@@ -18,6 +18,7 @@ package org.mobilenativefoundation.store.store5.impl
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -157,43 +159,34 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
         value: Local,
     ): SourceOfTruth.WriteException? {
         val barrier = barriers.acquire(key)
+        var writeException: SourceOfTruth.WriteException? = null
         try {
-            barrier.emit(BarrierMsg.Blocked(versionCounter.incrementAndGet()))
-            val writeError =
-                try {
-                    delegate.write(key, value)
-                    null
-                } catch (throwable: Throwable) {
-                    if (throwable !is CancellationException) {
-                        throwable
-                    } else {
-                        null
-                    }
-                }
-
-            // Avoid double-wrapping if the error is already a WriteException.
-            val writeException =
-                writeError?.let {
-                    writeError as? SourceOfTruth.WriteException
+            barrier.value = BarrierMsg.Blocked(versionCounter.incrementAndGet())
+            try {
+                delegate.write(key, value)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                // Preserve an adapter's existing wrapper and its original cause.
+                writeException =
+                    throwable as? SourceOfTruth.WriteException
                         ?: SourceOfTruth.WriteException(
                             key = key,
                             value = value,
-                            cause = writeError,
+                            cause = throwable,
                         )
-                }
-
-            barrier.emit(
+            }
+            return writeException
+        } finally {
+            // Reopen without suspending even when the writer's job was cancelled.
+            barrier.value =
                 BarrierMsg.Open(
                     version = versionCounter.incrementAndGet(),
                     writeError = writeException,
-                ),
-            )
-
-            // Return the error so callers know the operation failed.
-            // The barrier message above notifies readers of the error.
-            return writeException
-        } finally {
-            barriers.release(key, barrier)
+                )
+            withContext(NonCancellable) {
+                barriers.release(key, barrier)
+            }
         }
     }
 
