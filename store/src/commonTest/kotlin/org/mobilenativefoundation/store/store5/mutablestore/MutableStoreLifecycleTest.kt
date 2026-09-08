@@ -4,8 +4,10 @@ package org.mobilenativefoundation.store.store5.mutablestore
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -158,7 +160,10 @@ class MutableStoreLifecycleTest {
         val failure = IllegalArgumentException("updater failed")
         fixture.post = { _, _ -> throw failure }
         val response = fixture.write("A")
-        assertEquals(failure, assertIs<StoreWriteResponse.Error.Exception>(response).error)
+        val returnedError = assertIs<StoreWriteResponse.Error.Exception>(response).error
+        assertIs<IllegalArgumentException>(returnedError)
+        assertEquals(failure.message, returnedError.message)
+        assertTrue(generateSequence<Throwable>(returnedError) { it.cause }.any { it === failure })
         assertTrue(fixture.completed.isEmpty())
         assertTrue(fixture.marker != null)
         fixture.post = { _, value -> UpdaterResult.Success.Typed(value) }
@@ -192,6 +197,203 @@ class MutableStoreLifecycleTest {
         fixture.beforeWrite = { _, _ -> }
         fixture.write("B")
         assertEquals(listOf("B"), fixture.completed)
+    }
+
+    @Test
+    fun updaterRejectsRecursiveWriteReadAndBothClearsBeforeEffects() = runTest {
+        for (operation in listOf("write", "read", "clearKey", "clearAll")) {
+            val fixture = LifecycleFixture(this)
+            var checked = false
+            fixture.post = { _, value ->
+                fixture.assertRejected(operation)
+                checked = true
+                UpdaterResult.Success.Typed(value)
+            }
+            assertIs<StoreWriteResponse.Success>(fixture.write("A"))
+            assertTrue(checked)
+            assertEquals(listOf("k" to "A"), fixture.persisted)
+            assertEquals(1, fixture.posted.size)
+            assertEquals(0, fixture.deletes)
+        }
+    }
+
+    @Test
+    fun sourceWriterAndLatestReaderRejectRecursiveWritesBeforeEffects() = runTest {
+        val fixture = LifecycleFixture(this)
+        var writerChecks = 0
+        fixture.beforeWrite = { _, _ -> fixture.assertRejected("write"); writerChecks++ }
+        fixture.write("A")
+        assertEquals(1, writerChecks)
+        assertEquals(listOf("k" to "A"), fixture.persisted)
+        fixture.beforeWrite = { _, _ -> }
+        fixture.marker = 1L
+        fixture.cache.invalidate("k")
+        var readerChecks = 0
+        fixture.beforeRead = { fixture.beforeRead = {}; fixture.assertRejected("write"); readerChecks++ }
+        fixture.read()
+        assertTrue(readerChecks > 0)
+        assertEquals(listOf("k" to "A"), fixture.persisted)
+        assertEquals(listOf("A", "A"), fixture.posted.map { it.second })
+    }
+
+    @Test
+    fun bookkeeperAdaptersRejectRecursiveOperationsBeforeEffects() = runTest {
+        for (adapter in listOf("get", "set", "clear")) {
+            val fixture = LifecycleFixture(this)
+            var checks = 0
+            val check: suspend () -> Unit = {
+                fixture.assertRejected("write")
+                fixture.assertRejected("read")
+                fixture.assertRejected("clearKey")
+                fixture.assertRejected("clearAll")
+                checks++
+            }
+            when (adapter) {
+                "get" -> fixture.beforeGet = check
+                "set" -> { fixture.beforeSet = check; fixture.post = { _, _ -> UpdaterResult.Error.Message("failed") } }
+                "clear" -> fixture.beforeClear = check
+            }
+            fixture.write("A")
+            if (adapter == "get") fixture.read()
+            assertTrue(checks > 0, adapter)
+            assertEquals(listOf("k" to "A"), fixture.persisted)
+            assertEquals(1, fixture.posted.size)
+            assertEquals(0, fixture.deletes)
+        }
+    }
+
+    @Test
+    fun inheritedChildAndDifferentKeyCycleCannotReenterAncestorKey() = runTest {
+        val fixture = LifecycleFixture(this)
+        var childChecked = false
+        var cycleChecked = false
+        fixture.post = { key, value ->
+            if (key == "k") {
+                coroutineScope { async { fixture.assertRejected("write"); childChecked = true }.await() }
+                assertIs<StoreWriteResponse.Success>(fixture.write("J", "j"))
+            } else {
+                fixture.assertRejected("write")
+                cycleChecked = true
+            }
+            UpdaterResult.Success.Typed(value)
+        }
+        assertIs<StoreWriteResponse.Success>(fixture.write("A"))
+        assertTrue(childChecked)
+        assertTrue(cycleChecked)
+        assertEquals(listOf("k" to "A", "j" to "J"), fixture.persisted)
+        assertEquals(2, fixture.posted.size)
+    }
+
+    @Test
+    fun anotherStoreWithSameKeyIsAllowed() = runTest {
+        val outer = LifecycleFixture(this)
+        val other = LifecycleFixture(this)
+        outer.post = { _, value ->
+            assertIs<StoreWriteResponse.Success>(other.write("nested"))
+            UpdaterResult.Success.Typed(value)
+        }
+        outer.write("A")
+        assertEquals(listOf("k" to "nested"), other.persisted)
+    }
+
+    @Test
+    fun requestAndUpdaterCallbacksCanCompleteSameKeyWriteBeforeReturning() = runTest {
+        for (updaterCallback in listOf(false, true)) {
+            val fixture = LifecycleFixture(this)
+            var reentered = false
+            var provedImmediateCompletion = false
+            val callback: () -> Unit = {
+                if (!reentered) {
+                    reentered = true
+                    var nestedResponse: StoreWriteResponse? = null
+                    val nested = async(start = CoroutineStart.UNDISPATCHED) { nestedResponse = fixture.write("nested") }
+                    assertTrue(nested.isCompleted, "Nested write must complete before callback returns")
+                    assertIs<StoreWriteResponse.Success>(nestedResponse)
+                    assertEquals("nested", fixture.local.value["k"])
+                    provedImmediateCompletion = true
+                }
+            }
+            if (updaterCallback) fixture.onUpdaterSuccess = callback
+            val callbacks = if (updaterCallback) emptyList() else listOf(callback)
+            assertIs<StoreWriteResponse.Success>(fixture.write("A", callbacks = callbacks))
+            assertTrue(reentered)
+            assertTrue(provedImmediateCompletion)
+            assertEquals(2, fixture.posted.size)
+        }
+    }
+
+    @Test
+    fun ordinaryCallbackFailuresDoNotChangeSuccessOrSkipRemainingCallbacks() = runTest {
+        val fixture = LifecycleFixture(this)
+        val events = mutableListOf<String>()
+        fixture.onUpdaterSuccess = { events.add("updater"); error("updater callback") }
+        val response = fixture.write("A", callbacks = listOf({ events.add("first"); error("request callback") }, { events.add("last") }))
+        assertIs<StoreWriteResponse.Success>(response)
+        assertEquals(listOf("updater", "first", "last"), events)
+        assertEquals(listOf("A"), fixture.completed)
+        assertEquals("A", fixture.remote["k"])
+        assertTrue(fixture.logger.errorLogs.size >= 2)
+        fixture.read()
+        assertEquals(1, fixture.posted.size)
+    }
+
+    @Test
+    fun callbackCancellationFinishesEarnedBatchBeforePropagating() = runTest {
+        for (updaterCallback in listOf(false, true)) {
+            val fixture = LifecycleFixture(this)
+            val events = mutableListOf<String>()
+            fixture.post = { _, _ -> UpdaterResult.Error.Message("retry") }
+            fixture.write("A", callbacks = listOf({ events.add("first"); throw CancellationException("request callback") }, { events.add("last") }))
+            fixture.post = { _, value -> UpdaterResult.Success.Typed(value) }
+            fixture.onUpdaterSuccess = {
+                events.add("updater")
+                if (updaterCallback) throw CancellationException("updater callback")
+            }
+            assertFailsWith<CancellationException> {
+                fixture.write("B", callbacks = listOf({ events.add("lastB") }))
+            }
+            assertEquals(listOf("updater", "first", "last", "updater", "lastB"), events)
+            assertEquals(listOf("A", "B"), fixture.completed)
+            assertEquals("B", fixture.remote["k"])
+            fixture.onUpdaterSuccess = {}
+            fixture.read()
+            assertEquals(2, fixture.posted.size)
+            assertIs<StoreWriteResponse.Success>(fixture.write("C"))
+        }
+    }
+
+    @Test
+    fun bookkeepingFalseAndOrdinaryFailuresPreserveOutcomesAndRecoverability() = runTest {
+        for (failure in listOf("setFalse", "setThrow", "clearFalse", "clearThrow", "getThrow")) {
+            val fixture = LifecycleFixture(this)
+            val failedUpdate = UpdaterResult.Error.Message("original failure")
+            when (failure) {
+                "setFalse" -> { fixture.setResult = false; fixture.post = { _, _ -> failedUpdate } }
+                "setThrow" -> { fixture.beforeSet = { error("set failure") }; fixture.post = { _, _ -> failedUpdate } }
+                "clearFalse" -> fixture.clearResult = false
+                "clearThrow" -> fixture.beforeClear = { error("clear failure") }
+                "getThrow" -> fixture.beforeGet = { error("get failure") }
+            }
+            val response = fixture.write("A")
+            if (failure.startsWith("set")) {
+                assertEquals(StoreWriteResponse.Error.Message("original failure"), response)
+                assertTrue(fixture.completed.isEmpty())
+            } else {
+                assertIs<StoreWriteResponse.Success>(response)
+                assertEquals(listOf("A"), fixture.completed)
+            }
+            if (failure == "getThrow") fixture.read()
+            if (failure != "clearFalse") assertTrue(fixture.logger.errorLogs.isNotEmpty(), failure)
+            fixture.beforeGet = {}
+            fixture.beforeSet = {}
+            fixture.beforeClear = {}
+            fixture.setResult = true
+            fixture.clearResult = true
+            fixture.post = { _, value -> UpdaterResult.Success.Typed(value) }
+            assertIs<StoreWriteResponse.Success>(fixture.write("B"))
+            assertEquals(listOf("A", "B"), fixture.completed)
+            assertTrue(fixture.failedCallbacks.isEmpty())
+        }
     }
 
     @Test
@@ -237,6 +439,7 @@ private class LifecycleFixture(scope: TestScope, beforeAcknowledgement: suspend 
     val local = MutableStateFlow<Map<String, String>>(emptyMap())
     val persisted = mutableListOf<Pair<String, String>>()
     val posted = mutableListOf<Pair<String, String>>()
+    val remote = mutableMapOf<String, String>()
     val completed = mutableListOf<String>()
     val failedCallbacks = mutableListOf<StoreWriteResponse.Error>()
     val logger = TestLogger()
@@ -273,7 +476,10 @@ private class LifecycleFixture(scope: TestScope, beforeAcknowledgement: suspend 
             memoryCache = cache,
         ),
         updater = Updater.by<String, String, String>(
-            post = { key, value -> posted.add(key to value); post(key, value) },
+            post = { key, value ->
+                posted.add(key to value)
+                post(key, value).also { result -> if (result is UpdaterResult.Success) remote[key] = value }
+            },
             onCompletion = OnUpdaterCompletion(onSuccess = { onUpdaterSuccess() }, onFailure = {}),
         ),
         bookkeeper = object : Bookkeeper<String> {

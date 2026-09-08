@@ -28,12 +28,13 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val bookkeeper: Bookkeeper<Key>?,
     private val logger: Logger = DefaultLogger(),
     private val beforeAcknowledgementCommit: suspend () -> Unit = {},
-) : MutableStore<Key, Output>, Clear.Key<Key> by delegate, Clear.All by delegate {
+) : MutableStore<Key, Output>, Clear.All {
     private val storeLock = Mutex()
     private val states = mutableMapOf<Key, MutableStoreKeyState<Key, Output>>()
 
     override fun <Response : Any> stream(request: StoreReadRequest<Key>): Flow<StoreReadResponse<Output>> =
         flow {
+            checkMutableStoreEntry(this@RealMutableStore, request.key)
             val state = stateFor(request.key)
             // TODO(#678): Allow configuring whether a failed push should prevent a subsequent fetch.
             when (val result = tryEagerlyResolveConflicts<Response>(request.key, state)) {
@@ -55,15 +56,29 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     override suspend fun <Response : Any> write(request: StoreWriteRequest<Key, Output, Response>): StoreWriteResponse =
         stream(flowOf(request)).first()
 
+    override suspend fun clear(key: Key) {
+        checkMutableStoreEntry(this, key)
+        delegate.clear(key)
+    }
+
+    @ExperimentalStoreApi
+    override suspend fun clear() {
+        checkMutableStoreEntry(this)
+        delegate.clear()
+    }
+
     private suspend fun writeRequest(request: StoreWriteRequest<Key, Output, *>): StoreWriteResponse =
         try {
+            checkMutableStoreEntry(this, request.key)
             val state = stateFor(request.key)
             val entry = PendingStoreWrite(request)
             val localResult =
                 state.localMutex.withLock {
-                    delegate.write(request.key, request.value).also { result ->
-                        // Admission follows known persistence success without another suspension.
-                        if (result is StoreDelegateWriteResult.Success) state.pending.add(entry)
+                    withMutableStoreAdapter(this, request.key) {
+                        delegate.write(request.key, request.value).also { result ->
+                            // Admit inside the adapter context before returning through prompt cancellation.
+                            if (result is StoreDelegateWriteResult.Success) state.pending.add(entry)
+                        }
                     }
                 }
             when (localResult) {
@@ -98,15 +113,17 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
                 if (acknowledged != null) return@remote acknowledged
 
                 val snapshot =
-                    state.localMutex.withLock local@{
+                    state.localMutex.withLock {
                         if (entry != null) {
                             MutableStoreSyncSnapshot(state.pending.last().request.value, state.pending.toList())
                         } else {
-                            val failed = bookkeeper?.getLastFailedSync(key)
-                            if (failed == null && state.pending.isEmpty()) return@local null
-                            // Direct SourceOfTruth updates may be newer than the last pending request.
-                            val latest = delegate.latestOrNull(key) ?: return@local null
-                            MutableStoreSyncSnapshot(latest, state.pending.toList())
+                            withMutableStoreAdapter(this, key) {
+                                val failed = bookkeeper?.getLastFailedSync(key)
+                                if (failed == null && state.pending.isEmpty()) return@withMutableStoreAdapter null
+                                // Direct SourceOfTruth updates may be newer than the last pending request.
+                                val latest = delegate.latestOrNull(key) ?: return@withMutableStoreAdapter null
+                                MutableStoreSyncSnapshot(latest, state.pending.toList())
+                            }
                         }
                     } ?: return@remote null
 
@@ -146,7 +163,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         value: Output,
     ): UpdaterResult =
         try {
-            updater.post(key, value).also { result ->
+            withMutableStoreAdapter(this, key) { updater.post(key, value) }.also { result ->
                 if (result is UpdaterResult.Error.Exception && result.error is CancellationException) throw result.error
             }
         } catch (cancellation: CancellationException) {
@@ -161,7 +178,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         block: suspend () -> Unit,
     ) {
         try {
-            block()
+            withMutableStoreAdapter(this, key) { block() }
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (error: Throwable) {
