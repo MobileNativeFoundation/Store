@@ -59,63 +59,70 @@ internal class MutableStoreRaceFixture(
     val logger = TestLogger()
     val cache = CacheBuilder<String, String>().build()
 
-    val store = RealMutableStore(
-        delegate = testStore<String, String, String, String>(
-            dispatcher = StandardTestDispatcher(scope.testScheduler),
-            scope = scope.backgroundScope,
-            fetcher = Fetcher.of { _: String -> error("Unexpected fetch") },
-            sourceOfTruth = SourceOfTruth.of(
-                reader = { key: String -> local.map { it[key] } },
-                writer = { key: String, value: String ->
-                    localAttempts.add(key to value)
-                    beforeLocalWrite(key, value)
-                    local.value = local.value + (key to value)
-                    localWrites.add(key to value)
-                    beforeLocalReturn(key, value)
-                },
-            ),
-            converter = TestConverter(),
-            validator = TestValidator(),
-            memoryCache = cache,
-        ),
-        updater = Updater.by<String, String, String>(
-            post = { key, value ->
-                posted.add(key to value)
-                val active = (activePosts[key] ?: 0) + 1
-                activePosts[key] = active
-                maximumActivePosts[key] = maxOf(maximumActivePosts[key] ?: 0, active)
-                try {
-                    post(key, value).also { result ->
-                        if (result is UpdaterResult.Success) remote[key] = value
-                    }
-                } finally {
-                    activePosts[key] = (activePosts[key] ?: 1) - 1
-                }
-            },
-            onCompletion = OnUpdaterCompletion(
-                onSuccess = { updaterSuccesses.add(it) },
-                onFailure = { updaterFailures.add(it) },
-            ),
-        ),
-        bookkeeper = bookkeeper.takeIf { withBookkeeper },
-        logger = logger,
-        beforeAcknowledgementCommit = beforeAcknowledgementCommit,
-    )
+    val store =
+        RealMutableStore(
+            delegate =
+                testStore<String, String, String, String>(
+                    dispatcher = StandardTestDispatcher(scope.testScheduler),
+                    scope = scope.backgroundScope,
+                    fetcher = Fetcher.of { _: String -> error("Unexpected fetch") },
+                    sourceOfTruth =
+                        SourceOfTruth.of(
+                            reader = { key: String -> local.map { it[key] } },
+                            writer = { key: String, value: String ->
+                                localAttempts.add(key to value)
+                                beforeLocalWrite(key, value)
+                                local.value = local.value + (key to value)
+                                localWrites.add(key to value)
+                                beforeLocalReturn(key, value)
+                            },
+                        ),
+                    converter = TestConverter(),
+                    validator = TestValidator(),
+                    memoryCache = cache,
+                ),
+            updater =
+                Updater.by<String, String, String>(
+                    post = { key, value ->
+                        posted.add(key to value)
+                        val active = (activePosts[key] ?: 0) + 1
+                        activePosts[key] = active
+                        maximumActivePosts[key] = maxOf(maximumActivePosts[key] ?: 0, active)
+                        try {
+                            post(key, value).also { result ->
+                                if (result is UpdaterResult.Success) remote[key] = value
+                            }
+                        } finally {
+                            activePosts[key] = (activePosts[key] ?: 1) - 1
+                        }
+                    },
+                    onCompletion =
+                        OnUpdaterCompletion(
+                            onSuccess = { updaterSuccesses.add(it) },
+                            onFailure = { updaterFailures.add(it) },
+                        ),
+                ),
+            bookkeeper = bookkeeper.takeIf { withBookkeeper },
+            logger = logger,
+            beforeAcknowledgementCommit = beforeAcknowledgementCommit,
+        )
 
     fun request(
         value: String,
         created: Long,
         id: String = value,
         key: String = "key",
-    ): StoreWriteRequest<String, String, String> = StoreWriteRequest.of(
-        key = key,
-        value = value,
-        created = created,
-        onCompletions = listOf(
-            OnStoreWriteCompletion(
-                onSuccess = { successes.add(id to it) },
-                onFailure = { failures.add(id to it) },
-            ),
-        ),
-    )
+    ): StoreWriteRequest<String, String, String> =
+        StoreWriteRequest.of(
+            key = key,
+            value = value,
+            created = created,
+            onCompletions =
+                listOf(
+                    OnStoreWriteCompletion(
+                        onSuccess = { successes.add(id to it) },
+                        onFailure = { failures.add(id to it) },
+                    ),
+                ),
+        )
 }

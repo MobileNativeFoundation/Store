@@ -208,6 +208,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         result: UpdaterResult.Success,
     ) {
         var cancellation: CancellationException? = null
+
         fun invokeCallback(callback: () -> Unit) {
             try {
                 callback()
