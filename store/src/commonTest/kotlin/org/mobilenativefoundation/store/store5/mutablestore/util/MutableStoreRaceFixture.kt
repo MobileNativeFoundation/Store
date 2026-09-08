@@ -39,12 +39,18 @@ internal class RaceGate {
 internal class MutableStoreRaceFixture(
     scope: TestScope,
     post: suspend (String, String) -> UpdaterResult,
+    beforeLocalWrite: suspend (String, String) -> Unit = { _, _ -> },
     beforeLocalReturn: suspend (String, String) -> Unit = { _, _ -> },
     beforeAcknowledgementCommit: suspend () -> Unit = {},
     val bookkeeper: Bookkeeper<String> = TestInMemoryBookkeeper(),
+    withBookkeeper: Boolean = true,
 ) {
     val local = MutableStateFlow<Map<String, String>>(emptyMap())
+    val localAttempts = mutableListOf<Pair<String, String>>()
+    val localWrites = mutableListOf<Pair<String, String>>()
     val posted = mutableListOf<Pair<String, String>>()
+    val activePosts = mutableMapOf<String, Int>()
+    val maximumActivePosts = mutableMapOf<String, Int>()
     val remote = mutableMapOf<String, String>()
     val successes = mutableListOf<Pair<String, StoreWriteResponse.Success>>()
     val failures = mutableListOf<Pair<String, StoreWriteResponse.Error>>()
@@ -61,7 +67,10 @@ internal class MutableStoreRaceFixture(
             sourceOfTruth = SourceOfTruth.of(
                 reader = { key: String -> local.map { it[key] } },
                 writer = { key: String, value: String ->
+                    localAttempts.add(key to value)
+                    beforeLocalWrite(key, value)
                     local.value = local.value + (key to value)
+                    localWrites.add(key to value)
                     beforeLocalReturn(key, value)
                 },
             ),
@@ -72,8 +81,15 @@ internal class MutableStoreRaceFixture(
         updater = Updater.by<String, String, String>(
             post = { key, value ->
                 posted.add(key to value)
-                post(key, value).also { result ->
-                    if (result is UpdaterResult.Success) remote[key] = value
+                val active = (activePosts[key] ?: 0) + 1
+                activePosts[key] = active
+                maximumActivePosts[key] = maxOf(maximumActivePosts[key] ?: 0, active)
+                try {
+                    post(key, value).also { result ->
+                        if (result is UpdaterResult.Success) remote[key] = value
+                    }
+                } finally {
+                    activePosts[key] = (activePosts[key] ?: 1) - 1
                 }
             },
             onCompletion = OnUpdaterCompletion(
@@ -81,7 +97,7 @@ internal class MutableStoreRaceFixture(
                 onFailure = { updaterFailures.add(it) },
             ),
         ),
-        bookkeeper = bookkeeper,
+        bookkeeper = bookkeeper.takeIf { withBookkeeper },
         logger = logger,
         beforeAcknowledgementCommit = beforeAcknowledgementCommit,
     )
