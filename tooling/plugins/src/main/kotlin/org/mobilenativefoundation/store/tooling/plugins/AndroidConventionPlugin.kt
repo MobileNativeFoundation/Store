@@ -12,6 +12,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 class AndroidConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
+        version = versionCatalog.store
+
         with(pluginManager) {
             apply("com.android.library")
             apply("com.vanniktech.maven.publish")

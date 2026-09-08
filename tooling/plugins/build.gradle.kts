@@ -25,6 +25,8 @@ kotlin {
 }
 
 dependencies {
+    implementation(localGroovy())
+    testImplementation(kotlin("test"))
     compileOnly(libs.android.gradle.plugin)
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.dokka.gradle.plugin)

@@ -43,7 +43,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace --continue
+        run: |
+          ./gradlew -p tooling :plugins:test :plugins:ktlintCheck --stacktrace
+          ./gradlew clean build koverXmlReport --stacktrace --continue
 
       - name: Upload Coverage to Codecov
         # Secrets (including CODECOV_TOKEN) are not exposed to fork PRs, so the
@@ -82,6 +84,9 @@ jobs:
       - name: Retrieve Version
         run: |
           echo "VERSION_NAME=$(grep -E '^store[[:space:]]*=' gradle/libs.versions.toml | head -1 | cut -d'"' -f2)" >> $GITHUB_ENV
+
+      - name: Verify publication versions
+        run: ./gradlew verifyPublicationVersions --stacktrace
 
       - name: Publish to Maven Central (Central Portal)
         env:
