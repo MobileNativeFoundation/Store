@@ -2,6 +2,20 @@
 
 ### Thank you to all our wonderful contributors and users
 
+## [5.1.0-beta01] (2026-09-08)
+
+**Bug Fixes**
+
+* Fix MutableStore synchronization so a successful server update acknowledges only its captured batch, preserving newer pending writes and excluding failed local writes [#762](https://github.com/MobileNativeFoundation/Store/pull/762)
+* Propagate cancellation, retain admitted pending writes in memory until acknowledgement, and unblock SourceOfTruth readers after a cancelled write [#762](https://github.com/MobileNativeFoundation/Store/pull/762)
+* Run success callbacks after releasing synchronization locks so they can reenter the store, and continue delivering callbacks if an earlier callback fails [#762](https://github.com/MobileNativeFoundation/Store/pull/762)
+* Detect recursive adapter calls into the same store and key through inherited coroutine context and fail before reentry can deadlock [#762](https://github.com/MobileNativeFoundation/Store/pull/762)
+
+**Improvements**
+
+* Serialize MutableStore updater calls per key while allowing newer writes to persist locally during an earlier update [#762](https://github.com/MobileNativeFoundation/Store/pull/762)
+* Align the Rx2 artifact's publication version with the shared Store release version
+
 ## [5.1.0-alpha11] (2026-08-28)
 
 **Bug Fixes**
@@ -395,7 +409,9 @@ This is a first alpha release of Store ported to RxJava 2.
 * The change log for Store version 1.x can be
   found [here](https://github.com/NYTimes/Store/blob/develop/CHANGELOG.md).
 
-[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-alpha11...HEAD
+[Unreleased]: https://github.com/MobileNativeFoundation/Store/compare/5.1.0-beta01...HEAD
+
+[5.1.0-beta01]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-beta01
 
 [5.1.0-alpha11]: https://github.com/MobileNativeFoundation/Store/releases/tag/5.1.0-alpha11
 

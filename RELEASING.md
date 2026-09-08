@@ -1,28 +1,35 @@
-Releasing
-========
+# Releasing
 
-1. Change the version in top level `gradle.properties` to a non-SNAPSHOT version.
-2. Update the `cocoapods` version in `build.gradle.kts` in `:store`.
-3. Modify `create_swift_package.yml` workflow.
-    * https://github.com/MobileNativeFoundation/Store/blob/e526400cdf51aa2f78b6b7e9e87f4a6845e6dcea/.github/workflows/create_swift_package.yml
-4. Update the `CHANGELOG.md` for the impending release.
-5. Update the `README.md` with the new version.
-6. `git commit -sam "Prepare for release X.Y.Z."` (where X.Y.Z is the new version)
-7. `git tag -a X.Y.X -m "Version X.Y.Z"` (where X.Y.Z is the new version)
-    * Run `git tag` to verify it.
-8. `git push && git push --tags`
-    * This should be pushed to your fork.
-9. Create a PR with this commit and merge it.
-10. Update the top level `build.gradle` to the next SNAPSHOT version.
-11. Modify `create_swift_package.yml` workflow to only run manually.
-    * https://github.com/MobileNativeFoundation/Store/blob/de9ed1764408eeaafe5e58fe602205c875a8b0b0/.github/workflows/create_swift_package.yml
-12. `git commit -am "Prepare next development version."`
-13. Create a PR with this commit and merge it.
-14. Login to Sonatype to promote the artifacts https://central.sonatype.org/pages/releasing-the-deployment.html
-    * This part is automated. If it fails in CI, follow the steps below.
-    * Click on Staging Repositories under Build Promotion
-    * Select all the Repositories that contain the content you want to release
-    * Click on Close and refresh until the Release button is active
-    * Click Release and submit
-15. Update the sample module's `build.gradle` to point to the newly released version. (It may take ~2 hours for artifact to be available after release)
- 
+1. Set `store` in `gradle/libs.versions.toml` to the new version. The Android and
+   Kotlin Multiplatform conventions use it for Maven publications, and the
+   Multiplatform convention also uses it for CocoaPods.
+2. Update `CHANGELOG.md`, including the release link and `Unreleased` comparison.
+3. Validate the build tooling and generated publication metadata before opening
+   the release PR:
+
+   ```sh
+   ./gradlew -p tooling :plugins:test :plugins:ktlintCheck
+   ./gradlew verifyPublicationVersions
+   ```
+
+   The metadata check validates generated POMs and Gradle module metadata,
+   including internal dependency versions and target redirects. Host-disabled
+   metadata generators can skip execution. Validate on macOS as well as Linux
+   to cover Apple publications. Existing files from skipped tasks are not checked.
+4. Commit with a DCO sign-off and open a PR. Require passing tests, API and
+   formatting checks, and CI on the release commit. Record JVM and Native test
+   execution separately.
+5. Merge the approved release PR. A successful push build on `main` automatically
+   publishes to Maven Central. Non-SNAPSHOT versions use
+   `publishAndReleaseToMavenCentral`; SNAPSHOT versions use `publishToMavenCentral`.
+   The macOS publication job verifies metadata before uploading artifacts.
+6. Verify that consumers can resolve the new Maven coordinates and their internal
+   dependencies after publication completes.
+7. For Swift distribution, run the **KMMBridge-Publish** workflow for the tested
+   release commit. Its reusable workflow reads the same catalog version, creates
+   or finds the GitHub release, publishes XCFrameworks, and updates the release tag.
+   Mark alpha and beta GitHub releases as prereleases and verify the Swift package
+   resolves the intended artifacts.
+
+Do not reuse an already-published version. Prepare any subsequent development
+version through another PR, accounting for automatic publication on `main`.

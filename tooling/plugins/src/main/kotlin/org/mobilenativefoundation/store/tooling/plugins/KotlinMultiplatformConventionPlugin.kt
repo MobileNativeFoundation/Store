@@ -207,11 +207,13 @@ fun KotlinMultiplatformExtension.android(configure: Action<KotlinMultiplatformAn
 
 private fun Project.java(action: JavaPluginExtension.() -> Unit) = extensions.configure<JavaPluginExtension>(action)
 
-fun Project.configureMavenPublishing() =
+fun Project.configureMavenPublishing() {
+    configurePublicationVersionChecks()
     extensions.configure<MavenPublishBaseExtension> {
         publishToMavenCentral(automaticRelease = true)
         signAllPublications()
     }
+}
 
 fun Project.configureKmmBridge() =
     extensions.configure<KmmBridgeExtension> {
