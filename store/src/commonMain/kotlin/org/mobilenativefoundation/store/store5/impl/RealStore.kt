@@ -16,6 +16,7 @@
 package org.mobilenativefoundation.store.store5.impl
 
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -354,6 +355,8 @@ internal class RealStore<Key : Any, Network : Any, Output : Any, Local : Any>(
                 memCache?.put(key, value)
                 StoreDelegateWriteResult.Success
             }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
         } catch (error: Throwable) {
             StoreDelegateWriteResult.Error.Exception(error)
         }

@@ -16,6 +16,7 @@
 package org.mobilenativefoundation.store.store5
 
 import app.cash.turbine.test
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -23,6 +24,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -35,11 +38,60 @@ import org.mobilenativefoundation.store.store5.impl.SourceOfTruthWithBarrier
 import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @FlowPreview
 @ExperimentalCoroutinesApi
 class SourceOfTruthWithBarrierTests {
+    @Test
+    fun writerCancellationEscapesAnOtherwiseActiveJob() =
+        testScope.runTest {
+            persister.preWriteCallback = { _, _ -> throw CancellationException("writer cancelled") }
+
+            assertFailsWith<CancellationException> { source.write(1, "cancelled") }
+            assertTrue(currentCoroutineContext().isActive)
+            assertNull(persister.read(1))
+            assertEquals(0, source.barrierCount())
+
+            persister.preWriteCallback = null
+            source.write(1, "recovered")
+            assertEquals("recovered", persister.read(1))
+        }
+
+    @Test
+    fun cancellingSuspendedWriterReopensBarrierForActiveReader() =
+        testScope.runTest {
+            val entered = CompletableDeferred<Unit>()
+            val release = CompletableDeferred<Unit>()
+            persister.preWriteCallback = { _, value ->
+                if (value == "cancelled") {
+                    entered.complete(Unit)
+                    release.await()
+                }
+                value
+            }
+            val collected = mutableListOf<StoreReadResponse<String?>>()
+            val reader = launch { source.reader(1, CompletableDeferred(Unit)).collect { collected.add(it) } }
+            advanceUntilIdle()
+            val writer = launch { source.write(1, "cancelled") }
+            entered.await()
+            advanceUntilIdle()
+            writer.cancelAndJoin()
+            advanceUntilIdle()
+            assertTrue(reader.isActive)
+            assertTrue(writer.isCancelled)
+            assertEquals(2, collected.size)
+            assertNull(collected.last().dataOrNull())
+
+            source.write(1, "recovered")
+            advanceUntilIdle()
+            assertEquals("recovered", collected.last().dataOrNull())
+            reader.cancelAndJoin()
+            assertEquals(0, source.barrierCount())
+        }
+
     private val testScope = TestScope()
     private val persister = InMemoryPersister<Int, String>()
     private val delegate: SourceOfTruth<Int, String, String> =
