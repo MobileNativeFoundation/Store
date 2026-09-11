@@ -29,7 +29,7 @@ kover = "0.9.9"
 store = "5.1.0-beta01"
 truth = "1.4.5"
 turbine = "1.2.1"
-binary-compatibility-validator = "0.18.1"
+binary-compatibility-validator = "0.18.2"
 
 [libraries]
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
