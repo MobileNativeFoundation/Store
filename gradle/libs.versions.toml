@@ -3,7 +3,7 @@
 androidMinSdk = "24"
 #noinspection UnusedVersionCatalogEntry
 androidCompileSdk = "34"
-androidGradlePlugin = "9.3.0"
+androidGradlePlugin = "9.4.0"
 #noinspection UnusedVersionCatalogEntry
 androidTargetSdk = "34"
 atomicFu = "0.33.0"
