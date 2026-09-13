@@ -1,29 +1,71 @@
 pluginManagement {
     includeBuild("tooling")
     repositories {
-        mavenCentral()
         gradlePluginPortal()
+        mavenCentral()
         google()
     }
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-        google()
-    }
-}
+rootProject.name = "Store6"
 
-rootProject.name = "Store5"
-
-include ':store'
-include ':cache'
-include ':multicast'
-include ':rx2'
 include ':core'
+include ':quickstart'
+include ':swift-dumps-objc'
+project(':swift-dumps-objc').projectDir = file('swift-dumps/objc')
+include ':swift-dumps-skie'
+project(':swift-dumps-skie').projectDir = file('swift-dumps/skie')
+include ':swift-dumps-mutations-objc'
+project(':swift-dumps-mutations-objc').projectDir = file('swift-dumps/mutations-objc')
+include ':swift-dumps-mutations-skie'
+project(':swift-dumps-mutations-skie').projectDir = file('swift-dumps/mutations-skie')
+include ':store6-swift'
+include ':extension-probe'
+include ':testing'
+include ':sqldelight'
+include ':sqldelight-sample'
+project(':sqldelight-sample').projectDir = file('sqldelight/sample')
+include ':compose'
+include ':compose-demo'
+include ':room'
+include ':room-sample'
+project(':room-sample').projectDir = file('room/sample')
+include ':paging-androidx'
+include ':paging-androidx-sample'
+project(':paging-androidx-sample').projectDir = file('paging-androidx/sample')
+include ':graphql'
+include ':graphql-sample'
+project(':graphql-sample').projectDir = file('graphql/sample')
+include ':ktor'
+include ':ktor-sample'
+project(':ktor-sample').projectDir = file('ktor/sample')
+include ':realtime'
+include ':realtime-sample'
+project(':realtime-sample').projectDir = file('realtime/sample')
+include ':file'
+include ':file-sample'
+project(':file-sample').projectDir = file('file/sample')
+include ':opentelemetry'
+include ':opentelemetry-sample'
+project(':opentelemetry-sample').projectDir = file('opentelemetry/sample')
+include ':benchmarks'
+include ':devtools'
+include ':devtools-inspector'
+include ':devtools-demo'
+include ':mutations'
+include ':mutations-quickstart'
+include ':mutations-testing'
+include ':mutations-sqldelight'
+include ':mutations-drain'
+include ':mutations-drain-sample'
+project(':mutations-drain-sample').projectDir = file('mutations-drain/sample')
+include ':mutations-drain-meeseeks'
+include ':mutations-conflicts'
+include ':bom'
+include ':coverage'

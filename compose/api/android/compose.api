@@ -1,0 +1,17 @@
+public final class org/mobilenativefoundation/store6/compose/CollectAsStateKt {
+	public static final fun collectAsState (Lorg/mobilenativefoundation/store6/core/Store;Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
+	public static final fun collectAsStoreState (Lkotlinx/coroutines/flow/Flow;Lorg/mobilenativefoundation/store6/core/StoreResult;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
+}
+
+public final class org/mobilenativefoundation/store6/compose/CollectAsStateWithLifecycleKt {
+	public static final fun collectAsStateWithLifecycle (Lorg/mobilenativefoundation/store6/core/Store;Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Freshness;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
+	public static final fun collectAsStoreStateWithLifecycle (Lkotlinx/coroutines/flow/Flow;Lorg/mobilenativefoundation/store6/core/StoreResult;Landroidx/lifecycle/LifecycleOwner;Landroidx/lifecycle/Lifecycle$State;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)Landroidx/compose/runtime/State;
+}
+
+public final class org/mobilenativefoundation/store6/compose/StoreResultEquivalenceKt {
+	public static final fun skipEqualData (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function2;)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun skipEqualData$default (Lkotlinx/coroutines/flow/Flow;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun storeResultMutationPolicy (Lkotlin/jvm/functions/Function2;)Landroidx/compose/runtime/SnapshotMutationPolicy;
+	public static synthetic fun storeResultMutationPolicy$default (Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Landroidx/compose/runtime/SnapshotMutationPolicy;
+}
+

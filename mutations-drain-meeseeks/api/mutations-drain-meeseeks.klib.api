@@ -1,0 +1,42 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store6:mutations-drain-meeseeks>
+final class org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler : org.mobilenativefoundation.store6.mutations.drain/DrainScheduler { // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler|null[0]
+    constructor <init>(kotlin/Function0<dev.mattramotar.meeseeks.runtime/BGTaskManager>) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler.<init>|<init>(kotlin.Function0<dev.mattramotar.meeseeks.runtime.BGTaskManager>){}[0]
+
+    final fun attach(org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler.attach|attach(org.mobilenativefoundation.store6.mutations.drain.MutationDrainCoordinator){}[0]
+    final fun cancel(kotlin/String) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler.cancel|cancel(kotlin.String){}[0]
+    final fun schedule(org.mobilenativefoundation.store6.mutations.drain/DrainRequest) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler.schedule|schedule(org.mobilenativefoundation.store6.mutations.drain.DrainRequest){}[0]
+    final fun validate(org.mobilenativefoundation.store6.mutations.drain/DrainConstraints) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler.validate|validate(org.mobilenativefoundation.store6.mutations.drain.DrainConstraints){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload : dev.mattramotar.meeseeks.runtime/TaskPayload { // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload|null[0]
+    constructor <init>(kotlin/String) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.<init>|<init>(kotlin.String){}[0]
+
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.storeName.<get-storeName>|<get-storeName>(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload> { // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer|null[0]
+        final val descriptor // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;org.mobilenativefoundation.store6.mutations.drain.meeseeks.StoreDrainPayload){}[0]
+    }
+
+    final object Companion { // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload> // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainWorker : dev.mattramotar.meeseeks.runtime/Worker<org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload> { // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainWorker|null[0]
+    constructor <init>(dev.mattramotar.meeseeks.runtime/AppContext, org.mobilenativefoundation.store6.mutations.drain.meeseeks/MeeseeksDrainScheduler) // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainWorker.<init>|<init>(dev.mattramotar.meeseeks.runtime.AppContext;org.mobilenativefoundation.store6.mutations.drain.meeseeks.MeeseeksDrainScheduler){}[0]
+
+    final suspend fun run(org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainPayload, dev.mattramotar.meeseeks.runtime/RuntimeContext): dev.mattramotar.meeseeks.runtime/TaskResult // org.mobilenativefoundation.store6.mutations.drain.meeseeks/StoreDrainWorker.run|run(org.mobilenativefoundation.store6.mutations.drain.meeseeks.StoreDrainPayload;dev.mattramotar.meeseeks.runtime.RuntimeContext){}[0]
+}

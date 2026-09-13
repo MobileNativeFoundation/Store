@@ -1,0 +1,123 @@
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainActivationCancelled : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public fun getOccurredAtEpochMillis ()J
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainActivationScheduled : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public final fun getDelayMillis ()J
+	public fun getOccurredAtEpochMillis ()J
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainActivationStarted : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public fun getOccurredAtEpochMillis ()J
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainBackoff {
+	public synthetic fun <init> (JDJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JDJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun delayFor-5sfh64U (I)J
+	public final fun getInitialDelay-UwyO8pc ()J
+	public final fun getMaxDelay-UwyO8pc ()J
+	public final fun getMultiplier ()D
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainConstraints {
+	public fun <init> ()V
+	public fun <init> (ZZ)V
+	public synthetic fun <init> (ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getRequiresCharging ()Z
+	public final fun getRequiresNetwork ()Z
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPassCompleted : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public final fun getDeadLetters ()I
+	public fun getOccurredAtEpochMillis ()J
+	public final fun getPendingIntents ()I
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPassFailed : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public final fun getMessage ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome {
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome$Cleared : org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome {
+	public fun <init> ()V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome$Remaining : org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome {
+	public synthetic fun <init> (ILkotlin/time/Duration;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPendingIntents ()I
+	public final fun getScheduledDelay-FghU774 ()Lkotlin/time/Duration;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome$Unavailable : org/mobilenativefoundation/store6/mutations/drain/DrainPassOutcome {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getReason ()Ljava/lang/String;
+	public final fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainPolicy {
+	public fun <init> ()V
+	public fun <init> (Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;Lorg/mobilenativefoundation/store6/mutations/drain/DrainBackoff;Z)V
+	public synthetic fun <init> (Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;Lorg/mobilenativefoundation/store6/mutations/drain/DrainBackoff;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBackoff ()Lorg/mobilenativefoundation/store6/mutations/drain/DrainBackoff;
+	public final fun getConstraints ()Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;
+	public final fun getDrainOnEnqueue ()Z
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainRequest {
+	public synthetic fun <init> (Ljava/lang/String;Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getConstraints ()Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;
+	public final fun getEarliestDelay-UwyO8pc ()J
+	public final fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/DrainScheduleFailed : org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public final fun getMessage ()Ljava/lang/String;
+	public fun getOccurredAtEpochMillis ()J
+	public fun getStoreName ()Ljava/lang/String;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/drain/DrainScheduler {
+	public abstract fun attach (Lorg/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator;)V
+	public abstract fun cancel (Ljava/lang/String;)V
+	public abstract fun schedule (Lorg/mobilenativefoundation/store6/mutations/drain/DrainRequest;)V
+	public abstract fun validate (Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;)V
+}
+
+public abstract interface class org/mobilenativefoundation/store6/mutations/drain/DrainSchedulerEvent {
+	public abstract fun getOccurredAtEpochMillis ()J
+	public abstract fun getStoreName ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/InProcessDrainScheduler : org/mobilenativefoundation/store6/mutations/drain/DrainScheduler {
+	public fun <init> (Lkotlinx/coroutines/CoroutineScope;)V
+	public fun attach (Lorg/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator;)V
+	public fun cancel (Ljava/lang/String;)V
+	public fun schedule (Lorg/mobilenativefoundation/store6/mutations/drain/DrainRequest;)V
+	public fun validate (Lorg/mobilenativefoundation/store6/mutations/drain/DrainConstraints;)V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator {
+	public final fun close ()V
+	public final fun getEvents ()Lkotlinx/coroutines/flow/SharedFlow;
+	public final fun reconcile (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun register (Ljava/lang/String;Lorg/mobilenativefoundation/store6/mutations/MutationStore;Lorg/mobilenativefoundation/store6/mutations/drain/DrainPolicy;)V
+	public static synthetic fun register$default (Lorg/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator;Ljava/lang/String;Lorg/mobilenativefoundation/store6/mutations/MutationStore;Lorg/mobilenativefoundation/store6/mutations/drain/DrainPolicy;ILjava/lang/Object;)V
+	public final fun runActivation (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun unregister (Ljava/lang/String;)V
+	public final fun watch (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinatorKt {
+	public static final fun mutationDrainCoordinator (Lorg/mobilenativefoundation/store6/mutations/drain/DrainScheduler;Lorg/mobilenativefoundation/store6/core/seam/WallClock;)Lorg/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator;
+	public static synthetic fun mutationDrainCoordinator$default (Lorg/mobilenativefoundation/store6/mutations/drain/DrainScheduler;Lorg/mobilenativefoundation/store6/core/seam/WallClock;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/mutations/drain/MutationDrainCoordinator;
+}
+
