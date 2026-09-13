@@ -1,10 +1,157 @@
+# Codecov configuration for the Store 6 library family.
+#
+# Coverage is produced by Kover and aggregated by the `:coverage` module into a
+# single JaCoCo-compatible XML, uploaded by .github/workflows/ci.yml under the
+# flag `store6`. Upstream main's Store v5 lane uploads flag `unittests` into the
+# same Codecov project.
+#
+# IMPORTANT INSTRUMENTATION LIMIT: Kover instruments JVM bytecode only. Common
+# code is measured through its JVM compilation, but source sets that never reach
+# the JVM (appleMain, linuxMain, mingwMain, jsMain, wasmJsMain, androidMain) are
+# exercised by CI yet contribute no coverage data. Every threshold below is
+# calibrated around that fact.
+
+codecov:
+  # Do not comment or set statuses off a half-finished build; the coverage upload
+  # is the last step of build-and-test.
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
 coverage:
   range: 70..80
   round: down
   precision: 2
 
+  status:
+    # Both statuses are informational on purpose: they report on every PR but
+    # never block a merge. Rationale: with JVM-only instrumentation, a PR that
+    # adds Apple/Linux/JS/wasm source would show near-zero patch coverage and go
+    # red for a reason the author cannot fix. Establish a trusted baseline first;
+    # flipping either `informational: false` is a deliberate, separate decision.
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+    patch:
+      default:
+        target: 80%
+        threshold: 0%
+        informational: true
+
+# Two upload flags exist: `store6` (this tree, aggregated by :coverage) and
+# `unittests` (upstream main's Store v5 lane). Carryforward keeps each flag's
+# last-known coverage when a commit uploads only the other flag.
+flag_management:
+  default_rules:
+    carryforward: true
+
+# One component per published Store 6 artifact. The list mirrors the `kover(...)`
+# dependencies in coverage/build.gradle.kts exactly — if a module is added there,
+# add it here too, or its coverage silently lands in no component.
+#
+# Components carry no statuses: 19 extra required checks per PR would drown the
+# signal. They exist to break the single `store6` number down per artifact in the
+# PR comment and to filter the Codecov UI. `ignore` below still wins over these
+# paths, so tests, samples, and demos stay out regardless of the globs.
+component_management:
+  default_rules:
+    statuses: []
+
+  individual_components:
+    - component_id: core
+      name: core
+      paths: [ "core/**" ]
+
+    - component_id: testing
+      name: testing
+      paths: [ "testing/**" ]
+
+    - component_id: mutations
+      name: mutations
+      paths: [ "mutations/**" ]
+
+    - component_id: mutations_testing
+      name: mutations-testing
+      paths: [ "mutations-testing/**" ]
+
+    - component_id: mutations_sqldelight
+      name: mutations-sqldelight
+      paths: [ "mutations-sqldelight/**" ]
+
+    - component_id: mutations_drain
+      name: mutations-drain
+      paths: [ "mutations-drain/**" ]
+
+    - component_id: mutations_drain_meeseeks
+      name: mutations-drain-meeseeks
+      paths: [ "mutations-drain-meeseeks/**" ]
+
+    - component_id: mutations_conflicts
+      name: mutations-conflicts
+      paths: [ "mutations-conflicts/**" ]
+
+    - component_id: sqldelight
+      name: sqldelight
+      paths: [ "sqldelight/**" ]
+
+    - component_id: room
+      name: room
+      paths: [ "room/**" ]
+
+    - component_id: file
+      name: file
+      paths: [ "file/**" ]
+
+    - component_id: paging_androidx
+      name: paging-androidx
+      paths: [ "paging-androidx/**" ]
+
+    - component_id: graphql
+      name: graphql
+      paths: [ "graphql/**" ]
+
+    - component_id: ktor
+      name: ktor
+      paths: [ "ktor/**" ]
+
+    - component_id: realtime
+      name: realtime
+      paths: [ "realtime/**" ]
+
+    - component_id: opentelemetry
+      name: opentelemetry
+      paths: [ "opentelemetry/**" ]
+
+    - component_id: compose
+      name: compose
+      paths: [ "compose/**" ]
+
+    - component_id: devtools
+      name: devtools
+      paths: [ "devtools/**" ]
+
+    - component_id: devtools_inspector
+      name: devtools-inspector
+      paths: [ "devtools-inspector/**" ]
+
 comment:
-  layout: diff, files
+  # `components` is the point of this block: one row per artifact touched by the
+  # PR, so a diff that moves core and mutations does not hide behind one number.
+  layout: "header, diff, components, flags, files"
+  behavior: default
+  # Comment even when total coverage is unchanged — the per-component and patch
+  # breakdown is useful on a PR that only moves code between modules.
+  require_changes: false
+  require_base: false
+  require_head: true
+
+github_checks:
+  # Line annotations are off deliberately. They would flag every added
+  # Apple/Linux/JS/wasm line as uncovered — true of the JVM report, useless as
+  # review signal, and impossible for the author to act on.
+  annotations: false
 
 ignore:
   - "**/fake"
@@ -13,3 +160,16 @@ ignore:
   - "**/iOSTest"
   - "**/jsTest"
   - "**/jvmTest"
+  - "**/sample/**"
+  - "quickstart/**"
+  - "mutations-quickstart/**"
+  - "benchmarks/**"
+  - "extension-probe/**"
+  - "swift-dumps/**"
+  - "compose-demo/**"
+  - "devtools-demo/**"
+  # Build-time and packaging surface, never part of the published library.
+  - "bom/**"
+  - "tooling/**"
+  - "plugins/**"
+  - "store6-swift/**"

@@ -1,0 +1,57 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store6:file>
+final enum class org.mobilenativefoundation.store6.file/FileCorruptionPolicy : kotlin/Enum<org.mobilenativefoundation.store6.file/FileCorruptionPolicy> { // org.mobilenativefoundation.store6.file/FileCorruptionPolicy|null[0]
+    enum entry PROPAGATE // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.PROPAGATE|null[0]
+    enum entry QUARANTINE // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.QUARANTINE|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.file/FileCorruptionPolicy> // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.file/FileCorruptionPolicy // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.file/FileCorruptionPolicy> // org.mobilenativefoundation.store6.file/FileCorruptionPolicy.values|values#static(){}[0]
+}
+
+abstract interface <#A: kotlin/Any> org.mobilenativefoundation.store6.file/FileCodec { // org.mobilenativefoundation.store6.file/FileCodec|null[0]
+    abstract fun decode(kotlinx.io/Source): #A // org.mobilenativefoundation.store6.file/FileCodec.decode|decode(kotlinx.io.Source){}[0]
+    abstract fun encode(#A, kotlinx.io/Sink) // org.mobilenativefoundation.store6.file/FileCodec.encode|encode(1:0;kotlinx.io.Sink){}[0]
+}
+
+final class <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.file/FileSourceOfTruth : org.mobilenativefoundation.store6.core.seam/SourceOfTruth<#A, #B> { // org.mobilenativefoundation.store6.file/FileSourceOfTruth|null[0]
+    constructor <init>(kotlinx.io.files/Path, org.mobilenativefoundation.store6.file/FileCodec<#B>, org.mobilenativefoundation.store6.file/FileCorruptionPolicy = ..., kotlin.coroutines/CoroutineContext = ...) // org.mobilenativefoundation.store6.file/FileSourceOfTruth.<init>|<init>(kotlinx.io.files.Path;org.mobilenativefoundation.store6.file.FileCodec<1:1>;org.mobilenativefoundation.store6.file.FileCorruptionPolicy;kotlin.coroutines.CoroutineContext){}[0]
+
+    final fun reader(#A): kotlinx.coroutines.flow/Flow<#B?> // org.mobilenativefoundation.store6.file/FileSourceOfTruth.reader|reader(1:0){}[0]
+    final suspend fun delete(#A) // org.mobilenativefoundation.store6.file/FileSourceOfTruth.delete|delete(1:0){}[0]
+    final suspend fun deleteAll() // org.mobilenativefoundation.store6.file/FileSourceOfTruth.deleteAll|deleteAll(){}[0]
+    final suspend fun deleteNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.file/FileSourceOfTruth.deleteNamespace|deleteNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun write(#A, #B) // org.mobilenativefoundation.store6.file/FileSourceOfTruth.write|write(1:0;1:1){}[0]
+}
+
+final class org.mobilenativefoundation.store6.file/FileBookkeeper : org.mobilenativefoundation.store6.core.seam/Bookkeeper { // org.mobilenativefoundation.store6.file/FileBookkeeper|null[0]
+    constructor <init>(kotlinx.io.files/Path, kotlin.coroutines/CoroutineContext = ...) // org.mobilenativefoundation.store6.file/FileBookkeeper.<init>|<init>(kotlinx.io.files.Path;kotlin.coroutines.CoroutineContext){}[0]
+
+    final suspend fun advanceGlobalStaleWatermark() // org.mobilenativefoundation.store6.file/FileBookkeeper.advanceGlobalStaleWatermark|advanceGlobalStaleWatermark(){}[0]
+    final suspend fun advanceStaleWatermark(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.file/FileBookkeeper.advanceStaleWatermark|advanceStaleWatermark(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun forget(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.file/FileBookkeeper.forget|forget(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun forgetAll() // org.mobilenativefoundation.store6.file/FileBookkeeper.forgetAll|forgetAll(){}[0]
+    final suspend fun forgetNamespace(org.mobilenativefoundation.store6.core/StoreNamespace) // org.mobilenativefoundation.store6.file/FileBookkeeper.forgetNamespace|forgetNamespace(org.mobilenativefoundation.store6.core.StoreNamespace){}[0]
+    final suspend fun markStale(org.mobilenativefoundation.store6.core/StoreKey) // org.mobilenativefoundation.store6.file/FileBookkeeper.markStale|markStale(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+    final suspend fun recordFailure(org.mobilenativefoundation.store6.core/StoreKey, kotlin/Long) // org.mobilenativefoundation.store6.file/FileBookkeeper.recordFailure|recordFailure(org.mobilenativefoundation.store6.core.StoreKey;kotlin.Long){}[0]
+    final suspend fun recordSuccess(org.mobilenativefoundation.store6.core/StoreKey, org.mobilenativefoundation.store6.core/StoreMeta) // org.mobilenativefoundation.store6.file/FileBookkeeper.recordSuccess|recordSuccess(org.mobilenativefoundation.store6.core.StoreKey;org.mobilenativefoundation.store6.core.StoreMeta){}[0]
+    final suspend fun status(org.mobilenativefoundation.store6.core/StoreKey): org.mobilenativefoundation.store6.core.seam/KeyStatus? // org.mobilenativefoundation.store6.file/FileBookkeeper.status|status(org.mobilenativefoundation.store6.core.StoreKey){}[0]
+}
+
+final object org.mobilenativefoundation.store6.file/ByteArrayFileCodec : org.mobilenativefoundation.store6.file/FileCodec<kotlin/ByteArray> { // org.mobilenativefoundation.store6.file/ByteArrayFileCodec|null[0]
+    final fun decode(kotlinx.io/Source): kotlin/ByteArray // org.mobilenativefoundation.store6.file/ByteArrayFileCodec.decode|decode(kotlinx.io.Source){}[0]
+    final fun encode(kotlin/ByteArray, kotlinx.io/Sink) // org.mobilenativefoundation.store6.file/ByteArrayFileCodec.encode|encode(kotlin.ByteArray;kotlinx.io.Sink){}[0]
+}
+
+final object org.mobilenativefoundation.store6.file/Utf8StringFileCodec : org.mobilenativefoundation.store6.file/FileCodec<kotlin/String> { // org.mobilenativefoundation.store6.file/Utf8StringFileCodec|null[0]
+    final fun decode(kotlinx.io/Source): kotlin/String // org.mobilenativefoundation.store6.file/Utf8StringFileCodec.decode|decode(kotlinx.io.Source){}[0]
+    final fun encode(kotlin/String, kotlinx.io/Sink) // org.mobilenativefoundation.store6.file/Utf8StringFileCodec.encode|encode(kotlin.String;kotlinx.io.Sink){}[0]
+}

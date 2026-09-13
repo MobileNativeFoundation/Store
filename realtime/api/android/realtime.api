@@ -1,0 +1,48 @@
+public final class org/mobilenativefoundation/store6/realtime/RealtimeBinding {
+	public final fun apply (Lorg/mobilenativefoundation/store6/realtime/RealtimeMessage;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun consume (Lkotlinx/coroutines/flow/Flow;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeBindingsKt {
+	public static final fun invalidatingRealtimeBinding (Lorg/mobilenativefoundation/store6/core/Store;)Lorg/mobilenativefoundation/store6/realtime/RealtimeBinding;
+	public static final fun realtimeBinding (Lorg/mobilenativefoundation/store6/core/Store;)Lorg/mobilenativefoundation/store6/realtime/RealtimeBinding;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$Changed : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$ChangedAll : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/realtime/RealtimeMessage$ChangedAll;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$ChangedNamespace : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreNamespace;)V
+	public final fun getNamespace ()Lorg/mobilenativefoundation/store6/core/StoreNamespace;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$Deleted : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$Unchanged : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/String;)V
+	public final fun getEtag ()Ljava/lang/String;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+}
+
+public final class org/mobilenativefoundation/store6/realtime/RealtimeMessage$Upsert : org/mobilenativefoundation/store6/realtime/RealtimeMessage {
+	public fun <init> (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Ljava/lang/String;)V
+	public final fun getEtag ()Ljava/lang/String;
+	public final fun getKey ()Lorg/mobilenativefoundation/store6/core/StoreKey;
+	public final fun getValue ()Ljava/lang/Object;
+}
+

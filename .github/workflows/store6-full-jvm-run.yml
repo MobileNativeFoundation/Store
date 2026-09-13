@@ -1,0 +1,126 @@
+name: Store6 full mutations JVM execution
+
+on:
+  workflow_call:
+    inputs:
+      task:
+        description: 'jvmTest for the rest of the suite, lincheckTest for one Lincheck shard.'
+        type: string
+        required: true
+      shard:
+        description: 'Lincheck shard as k/N. Empty for the jvmTest lane.'
+        type: string
+        required: false
+        default: ''
+      lane:
+        description: 'Filename-safe label for this lane; it names the evidence artifact.'
+        type: string
+        required: true
+      runner:
+        type: string
+        required: false
+        default: ubuntu-latest
+      timeout_minutes:
+        type: number
+        required: false
+        default: 60
+    outputs:
+      source_sha:
+        value: ${{ jobs.full-mutations-jvm.outputs.source_sha }}
+      run_id:
+        value: ${{ jobs.full-mutations-jvm.outputs.run_id }}
+      run_attempt:
+        value: ${{ jobs.full-mutations-jvm.outputs.run_attempt }}
+      version:
+        value: ${{ jobs.full-mutations-jvm.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  full-mutations-jvm:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    outputs:
+      source_sha: ${{ steps.evidence.outputs.source_sha }}
+      run_id: ${{ steps.evidence.outputs.run_id }}
+      run_attempt: ${{ steps.evidence.outputs.run_attempt }}
+      version: ${{ steps.evidence.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run this lane of the full mutations JVM suite
+        id: tests
+        continue-on-error: true
+        shell: bash
+        env:
+          LANE_TASK: ${{ inputs.task }}
+          LANE_SHARD: ${{ inputs.shard }}
+        run: |
+          set -uo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}" || exit 1
+          case "${LANE_TASK}" in
+            jvmTest|lincheckTest) ;;
+            *) echo "LANE_TASK must be jvmTest or lincheckTest, got '${LANE_TASK}'" >&2; exit 1 ;;
+          esac
+          mkdir -p full-suite-evidence
+          rm -rf "mutations/build/test-results/${LANE_TASK}"
+          if [ "${LANE_TASK}" = 'lincheckTest' ]; then
+            arguments="-Pstore6.lincheckShard=${LANE_SHARD}"
+          else
+            arguments='-Pstore6.fullJvmSuite'
+          fi
+          set +e
+          ./gradlew ":mutations:${LANE_TASK}" "${arguments}" --stacktrace --console=plain 2>&1 | tee full-suite-evidence/gradle.log
+          result=${PIPESTATUS[0]}
+          echo "exit_code=${result}" >> "${GITHUB_OUTPUT}"
+          exit "${result}"
+
+      - name: Record task outcome and executed test identifiers
+        id: evidence
+        if: ${{ always() && steps.tests.outputs.exit_code != '' }}
+        env:
+          GRADLE_EXIT_CODE: ${{ steps.tests.outputs.exit_code }}
+          LANE_TASK: ${{ inputs.task }}
+          LANE_SHARD: ${{ inputs.shard }}
+        run: >-
+          python3 .github/scripts/release_control.py full-suite-execution
+          --log full-suite-evidence/gradle.log
+          --results "mutations/build/test-results/${LANE_TASK}"
+          --exit-code "${GRADLE_EXIT_CODE}"
+          --task "${LANE_TASK}"
+          --shard "${LANE_SHARD}"
+          --output full-suite-evidence/execution.json
+
+      - name: Archive this lane's result and its run provenance
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-jvm-results-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.lane }}
+          path: |
+            full-suite-evidence/**
+            mutations/build/test-results/**/*.xml
+            mutations/build/reports/tests/**
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Reject missing execution evidence
+        if: ${{ always() && steps.evidence.outcome != 'success' }}
+        run: |
+          echo "Fresh full-suite execution was not established. Inspect this run and its archived result." >> "${GITHUB_STEP_SUMMARY}"
+          exit 1

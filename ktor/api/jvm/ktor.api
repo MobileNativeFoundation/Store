@@ -1,0 +1,68 @@
+public abstract interface class org/mobilenativefoundation/store6/ktor/KtorErrorMapper {
+	public static final field Companion Lorg/mobilenativefoundation/store6/ktor/KtorErrorMapper$Companion;
+	public abstract fun map (Lorg/mobilenativefoundation/store6/ktor/KtorExchange;)Lorg/mobilenativefoundation/store6/ktor/KtorOutcome;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorErrorMapper$Companion {
+	public final fun getDefault ()Lorg/mobilenativefoundation/store6/ktor/KtorErrorMapper;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorExchange {
+	public fun <init> (Lio/ktor/http/HttpStatusCode;Lio/ktor/http/HttpMethod;Ljava/lang/String;ZLio/ktor/client/statement/HttpResponse;)V
+	public final fun getConditional ()Z
+	public final fun getMethod ()Lio/ktor/http/HttpMethod;
+	public final fun getResponse ()Lio/ktor/client/statement/HttpResponse;
+	public final fun getStatus ()Lio/ktor/http/HttpStatusCode;
+	public final fun getUrl ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorFetchException : java/lang/Exception {
+	public fun <init> (Lio/ktor/http/HttpStatusCode;Lio/ktor/http/HttpMethod;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Lio/ktor/http/HttpStatusCode;Lio/ktor/http/HttpMethod;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getMethod ()Lio/ktor/http/HttpMethod;
+	public final fun getStatus ()Lio/ktor/http/HttpStatusCode;
+	public final fun getUrl ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorFetcherKt {
+	public static final fun ktorFetcher (Lio/ktor/client/HttpClient;Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;ZLorg/mobilenativefoundation/store6/ktor/KtorErrorMapper;ZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)Lorg/mobilenativefoundation/store6/core/seam/Fetcher;
+	public static final fun ktorFetcher (Lorg/mobilenativefoundation/store6/core/StoreBuilder;Lio/ktor/client/HttpClient;Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;ZLorg/mobilenativefoundation/store6/ktor/KtorErrorMapper;ZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)V
+	public static synthetic fun ktorFetcher$default (Lio/ktor/client/HttpClient;Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;ZLorg/mobilenativefoundation/store6/ktor/KtorErrorMapper;ZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lorg/mobilenativefoundation/store6/core/seam/Fetcher;
+	public static synthetic fun ktorFetcher$default (Lorg/mobilenativefoundation/store6/core/StoreBuilder;Lio/ktor/client/HttpClient;Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;ZLorg/mobilenativefoundation/store6/ktor/KtorErrorMapper;ZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy : java/lang/Enum {
+	public static final field Delete Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;
+	public static final field Error Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/ktor/KtorNotFoundPolicy;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/ktor/KtorOutcome {
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorOutcome$Defer : org/mobilenativefoundation/store6/ktor/KtorOutcome {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/ktor/KtorOutcome$Defer;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorOutcome$Delete : org/mobilenativefoundation/store6/ktor/KtorOutcome {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/ktor/KtorOutcome$Delete;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorOutcome$Fail : org/mobilenativefoundation/store6/ktor/KtorOutcome {
+	public fun <init> (Lorg/mobilenativefoundation/store6/ktor/KtorFetchException;)V
+	public final fun getException ()Lorg/mobilenativefoundation/store6/ktor/KtorFetchException;
+}
+
+public final class org/mobilenativefoundation/store6/ktor/KtorOutcome$NotModified : org/mobilenativefoundation/store6/ktor/KtorOutcome {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getValidatorToken ()Ljava/lang/String;
+}
+

@@ -1,0 +1,164 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store6:mutations-drain>
+abstract interface org.mobilenativefoundation.store6.mutations.drain/DrainScheduler { // org.mobilenativefoundation.store6.mutations.drain/DrainScheduler|null[0]
+    abstract fun attach(org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator) // org.mobilenativefoundation.store6.mutations.drain/DrainScheduler.attach|attach(org.mobilenativefoundation.store6.mutations.drain.MutationDrainCoordinator){}[0]
+    abstract fun cancel(kotlin/String) // org.mobilenativefoundation.store6.mutations.drain/DrainScheduler.cancel|cancel(kotlin.String){}[0]
+    abstract fun schedule(org.mobilenativefoundation.store6.mutations.drain/DrainRequest) // org.mobilenativefoundation.store6.mutations.drain/DrainScheduler.schedule|schedule(org.mobilenativefoundation.store6.mutations.drain.DrainRequest){}[0]
+    abstract fun validate(org.mobilenativefoundation.store6.mutations.drain/DrainConstraints) // org.mobilenativefoundation.store6.mutations.drain/DrainScheduler.validate|validate(org.mobilenativefoundation.store6.mutations.drain.DrainConstraints){}[0]
+}
+
+sealed interface org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome { // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome|null[0]
+    final class Cleared : org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome { // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Cleared|null[0]
+        constructor <init>() // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Cleared.<init>|<init>(){}[0]
+    }
+
+    final class Remaining : org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome { // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining|null[0]
+        constructor <init>(kotlin/Int, kotlin.time/Duration?) // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining.<init>|<init>(kotlin.Int;kotlin.time.Duration?){}[0]
+
+        final val pendingIntents // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining.pendingIntents|{}pendingIntents[0]
+            final fun <get-pendingIntents>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining.pendingIntents.<get-pendingIntents>|<get-pendingIntents>(){}[0]
+        final val scheduledDelay // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining.scheduledDelay|{}scheduledDelay[0]
+            final fun <get-scheduledDelay>(): kotlin.time/Duration? // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Remaining.scheduledDelay.<get-scheduledDelay>|<get-scheduledDelay>(){}[0]
+    }
+
+    final class Unavailable : org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome { // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable|null[0]
+        constructor <init>(kotlin/String, kotlin/String) // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+        final val reason // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable.reason|{}reason[0]
+            final fun <get-reason>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable.reason.<get-reason>|<get-reason>(){}[0]
+        final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable.storeName|{}storeName[0]
+            final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome.Unavailable.storeName.<get-storeName>|<get-storeName>(){}[0]
+    }
+}
+
+sealed interface org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent|null[0]
+    abstract val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        abstract fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    abstract val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent.storeName|{}storeName[0]
+        abstract fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled|null[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainActivationCancelled.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled|null[0]
+    final val delayMillis // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.delayMillis|{}delayMillis[0]
+        final fun <get-delayMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.delayMillis.<get-delayMillis>|<get-delayMillis>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainActivationScheduled.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted|null[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainActivationStarted.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainBackoff { // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff|null[0]
+    constructor <init>(kotlin.time/Duration = ..., kotlin/Double = ..., kotlin.time/Duration = ...) // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.<init>|<init>(kotlin.time.Duration;kotlin.Double;kotlin.time.Duration){}[0]
+
+    final val initialDelay // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.initialDelay|{}initialDelay[0]
+        final fun <get-initialDelay>(): kotlin.time/Duration // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.initialDelay.<get-initialDelay>|<get-initialDelay>(){}[0]
+    final val maxDelay // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.maxDelay|{}maxDelay[0]
+        final fun <get-maxDelay>(): kotlin.time/Duration // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.maxDelay.<get-maxDelay>|<get-maxDelay>(){}[0]
+    final val multiplier // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.multiplier|{}multiplier[0]
+        final fun <get-multiplier>(): kotlin/Double // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.multiplier.<get-multiplier>|<get-multiplier>(){}[0]
+
+    final fun delayFor(kotlin/Int): kotlin.time/Duration // org.mobilenativefoundation.store6.mutations.drain/DrainBackoff.delayFor|delayFor(kotlin.Int){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainConstraints { // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ...) // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints.<init>|<init>(kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val requiresCharging // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints.requiresCharging|{}requiresCharging[0]
+        final fun <get-requiresCharging>(): kotlin/Boolean // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints.requiresCharging.<get-requiresCharging>|<get-requiresCharging>(){}[0]
+    final val requiresNetwork // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints.requiresNetwork|{}requiresNetwork[0]
+        final fun <get-requiresNetwork>(): kotlin/Boolean // org.mobilenativefoundation.store6.mutations.drain/DrainConstraints.requiresNetwork.<get-requiresNetwork>|<get-requiresNetwork>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted|null[0]
+    final val deadLetters // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.deadLetters|{}deadLetters[0]
+        final fun <get-deadLetters>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.deadLetters.<get-deadLetters>|<get-deadLetters>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val pendingIntents // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.pendingIntents|{}pendingIntents[0]
+        final fun <get-pendingIntents>(): kotlin/Int // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.pendingIntents.<get-pendingIntents>|<get-pendingIntents>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainPassCompleted.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed|null[0]
+    final val message // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.message|{}message[0]
+        final fun <get-message>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.message.<get-message>|<get-message>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainPassFailed.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainPolicy { // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy|null[0]
+    constructor <init>(org.mobilenativefoundation.store6.mutations.drain/DrainConstraints = ..., org.mobilenativefoundation.store6.mutations.drain/DrainBackoff = ..., kotlin/Boolean = ...) // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.<init>|<init>(org.mobilenativefoundation.store6.mutations.drain.DrainConstraints;org.mobilenativefoundation.store6.mutations.drain.DrainBackoff;kotlin.Boolean){}[0]
+
+    final val backoff // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.backoff|{}backoff[0]
+        final fun <get-backoff>(): org.mobilenativefoundation.store6.mutations.drain/DrainBackoff // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.backoff.<get-backoff>|<get-backoff>(){}[0]
+    final val constraints // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.constraints|{}constraints[0]
+        final fun <get-constraints>(): org.mobilenativefoundation.store6.mutations.drain/DrainConstraints // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.constraints.<get-constraints>|<get-constraints>(){}[0]
+    final val drainOnEnqueue // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.drainOnEnqueue|{}drainOnEnqueue[0]
+        final fun <get-drainOnEnqueue>(): kotlin/Boolean // org.mobilenativefoundation.store6.mutations.drain/DrainPolicy.drainOnEnqueue.<get-drainOnEnqueue>|<get-drainOnEnqueue>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainRequest { // org.mobilenativefoundation.store6.mutations.drain/DrainRequest|null[0]
+    constructor <init>(kotlin/String, org.mobilenativefoundation.store6.mutations.drain/DrainConstraints, kotlin.time/Duration) // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.<init>|<init>(kotlin.String;org.mobilenativefoundation.store6.mutations.drain.DrainConstraints;kotlin.time.Duration){}[0]
+
+    final val constraints // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.constraints|{}constraints[0]
+        final fun <get-constraints>(): org.mobilenativefoundation.store6.mutations.drain/DrainConstraints // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.constraints.<get-constraints>|<get-constraints>(){}[0]
+    final val earliestDelay // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.earliestDelay|{}earliestDelay[0]
+        final fun <get-earliestDelay>(): kotlin.time/Duration // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.earliestDelay.<get-earliestDelay>|<get-earliestDelay>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainRequest.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed : org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent { // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed|null[0]
+    final val message // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.message|{}message[0]
+        final fun <get-message>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.message.<get-message>|<get-message>(){}[0]
+    final val occurredAtEpochMillis // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.occurredAtEpochMillis|{}occurredAtEpochMillis[0]
+        final fun <get-occurredAtEpochMillis>(): kotlin/Long // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.occurredAtEpochMillis.<get-occurredAtEpochMillis>|<get-occurredAtEpochMillis>(){}[0]
+    final val storeName // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.storeName|{}storeName[0]
+        final fun <get-storeName>(): kotlin/String // org.mobilenativefoundation.store6.mutations.drain/DrainScheduleFailed.storeName.<get-storeName>|<get-storeName>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler : org.mobilenativefoundation.store6.mutations.drain/DrainScheduler { // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineScope) // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler.<init>|<init>(kotlinx.coroutines.CoroutineScope){}[0]
+
+    final fun attach(org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator) // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler.attach|attach(org.mobilenativefoundation.store6.mutations.drain.MutationDrainCoordinator){}[0]
+    final fun cancel(kotlin/String) // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler.cancel|cancel(kotlin.String){}[0]
+    final fun schedule(org.mobilenativefoundation.store6.mutations.drain/DrainRequest) // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler.schedule|schedule(org.mobilenativefoundation.store6.mutations.drain.DrainRequest){}[0]
+    final fun validate(org.mobilenativefoundation.store6.mutations.drain/DrainConstraints) // org.mobilenativefoundation.store6.mutations.drain/InProcessDrainScheduler.validate|validate(org.mobilenativefoundation.store6.mutations.drain.DrainConstraints){}[0]
+}
+
+final class org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator { // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator|null[0]
+    final val events // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.events|{}events[0]
+        final fun <get-events>(): kotlinx.coroutines.flow/SharedFlow<org.mobilenativefoundation.store6.mutations.drain/DrainSchedulerEvent> // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.events.<get-events>|<get-events>(){}[0]
+
+    final fun <#A1: org.mobilenativefoundation.store6.core/StoreKey, #B1: kotlin/Any> register(kotlin/String, org.mobilenativefoundation.store6.mutations/MutationStore<#A1, #B1>, org.mobilenativefoundation.store6.mutations.drain/DrainPolicy = ...) // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.register|register(kotlin.String;org.mobilenativefoundation.store6.mutations.MutationStore<0:0,0:1>;org.mobilenativefoundation.store6.mutations.drain.DrainPolicy){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]
+    final fun close() // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.close|close(){}[0]
+    final fun unregister(kotlin/String) // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.unregister|unregister(kotlin.String){}[0]
+    final suspend fun reconcile() // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.reconcile|reconcile(){}[0]
+    final suspend fun runActivation(kotlin/String): org.mobilenativefoundation.store6.mutations.drain/DrainPassOutcome // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.runActivation|runActivation(kotlin.String){}[0]
+    final suspend fun watch(kotlin/String): kotlin/Nothing // org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator.watch|watch(kotlin.String){}[0]
+}
+
+final fun org.mobilenativefoundation.store6.mutations.drain/mutationDrainCoordinator(org.mobilenativefoundation.store6.mutations.drain/DrainScheduler, org.mobilenativefoundation.store6.core.seam/WallClock = ...): org.mobilenativefoundation.store6.mutations.drain/MutationDrainCoordinator // org.mobilenativefoundation.store6.mutations.drain/mutationDrainCoordinator|mutationDrainCoordinator(org.mobilenativefoundation.store6.mutations.drain.DrainScheduler;org.mobilenativefoundation.store6.core.seam.WallClock){}[0]

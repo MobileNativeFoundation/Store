@@ -1,0 +1,53 @@
+public final class org/mobilenativefoundation/store6/file/ByteArrayFileCodec : org/mobilenativefoundation/store6/file/FileCodec {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/file/ByteArrayFileCodec;
+	public synthetic fun decode (Lkotlinx/io/Source;)Ljava/lang/Object;
+	public fun decode (Lkotlinx/io/Source;)[B
+	public synthetic fun encode (Ljava/lang/Object;Lkotlinx/io/Sink;)V
+	public fun encode ([BLkotlinx/io/Sink;)V
+}
+
+public final class org/mobilenativefoundation/store6/file/FileBookkeeper : org/mobilenativefoundation/store6/core/seam/Bookkeeper {
+	public fun <init> (Lkotlinx/io/files/Path;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lkotlinx/io/files/Path;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun advanceGlobalStaleWatermark (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun advanceStaleWatermark (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forget (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun forgetNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun markStale (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordFailure (Lorg/mobilenativefoundation/store6/core/StoreKey;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun recordSuccess (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreMeta;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun status (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class org/mobilenativefoundation/store6/file/FileCodec {
+	public abstract fun decode (Lkotlinx/io/Source;)Ljava/lang/Object;
+	public abstract fun encode (Ljava/lang/Object;Lkotlinx/io/Sink;)V
+}
+
+public final class org/mobilenativefoundation/store6/file/FileCorruptionPolicy : java/lang/Enum {
+	public static final field PROPAGATE Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;
+	public static final field QUARANTINE Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;
+}
+
+public final class org/mobilenativefoundation/store6/file/FileSourceOfTruth : org/mobilenativefoundation/store6/core/seam/SourceOfTruth {
+	public fun <init> (Lkotlinx/io/files/Path;Lorg/mobilenativefoundation/store6/file/FileCodec;Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Lkotlinx/io/files/Path;Lorg/mobilenativefoundation/store6/file/FileCodec;Lorg/mobilenativefoundation/store6/file/FileCorruptionPolicy;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun delete (Lorg/mobilenativefoundation/store6/core/StoreKey;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteAll (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteNamespace (Lorg/mobilenativefoundation/store6/core/StoreNamespace;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun reader (Lorg/mobilenativefoundation/store6/core/StoreKey;)Lkotlinx/coroutines/flow/Flow;
+	public fun write (Lorg/mobilenativefoundation/store6/core/StoreKey;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class org/mobilenativefoundation/store6/file/Utf8StringFileCodec : org/mobilenativefoundation/store6/file/FileCodec {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/file/Utf8StringFileCodec;
+	public synthetic fun decode (Lkotlinx/io/Source;)Ljava/lang/Object;
+	public fun decode (Lkotlinx/io/Source;)Ljava/lang/String;
+	public synthetic fun encode (Ljava/lang/Object;Lkotlinx/io/Sink;)V
+	public fun encode (Ljava/lang/String;Lkotlinx/io/Sink;)V
+}
+

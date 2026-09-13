@@ -2,21 +2,36 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, store6 ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, store6 ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The mutations Lincheck budget measured ~58-59m locally and 2h40m-3h13m hosted
+    # at the current suite (and once 9h23m locally at an earlier revision). The default
+    # jvmTest excludes it via the build-gated filter in mutations/build.gradle.kts
+    # (census-guarded below); the scheduled "Store6 full mutations JVM suite" workflow runs
+    # the full suite daily.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
         api-level: [ 29 ]
+    outputs:
+      source_sha: ${{ steps.provenance.outputs.source_sha }}
+      run_id: ${{ steps.provenance.outputs.run_id }}
+      run_attempt: ${{ steps.provenance.outputs.run_attempt }}
+      version: ${{ steps.provenance.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           # PR builds (including forks) check out the PR head from its source repo;
           # push builds fall back to the pushed ref on this repo. Without the
@@ -31,7 +46,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -43,32 +58,111 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test with Coverage
-        run: ./gradlew clean build koverXmlReport --stacktrace --continue
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SOURCE_SHA}"
+          ./gradlew clean build koverXmlReport --stacktrace
+          test "$(git rev-parse HEAD)" = "${EXPECTED_SOURCE_SHA}"
 
-      - name: Upload Coverage to Codecov
-        # Secrets (including CODECOV_TOKEN) are not exposed to fork PRs, so the
-        # upload would fail under fail_ci_if_error. Skip it for forks; coverage is
-        # still uploaded and enforced for same-repo PRs and pushes to main.
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
-        uses: codecov/codecov-action@v6
+      - name: Census — default jvmTest must execute exactly the non-Lincheck suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(( $(find mutations/src/commonTest mutations/src/jvmTest -name '*Test.kt' | wc -l | tr -d ' ') - 1 ))
+          executed=$(find mutations/build/test-results/jvmTest -name 'TEST-*.xml' | wc -l | tr -d ' ')
+          echo "expected=${expected} executed=${executed}"
+          [ "${expected}" -eq "${executed}" ]
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-root-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            **/build/test-results/**/*.xml
+            **/build/reports/tests/**
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Store6 Coverage to Codecov
+        # Both the upstream repo and the matt-ramotar/Store6 development fork carry a
+        # CODECOV_TOKEN secret. Fork-of-fork PRs cannot read secrets, so uploads are
+        # enforced only for same-repo PRs and pushes. Flag `store6` keeps this family
+        # separate from upstream main's v5 `unittests` flag in the shared Codecov project.
+        if: ${{ (github.repository == 'MobileNativeFoundation/Store' || github.repository == 'matt-ramotar/Store6') && (github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request') }}
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/kover/coverage.xml
-          flags: unittests
-          name: codecov-umbrella
+          files: coverage/build/reports/kover/report.xml
+          flags: store6
+          name: store6-coverage
           fail_ci_if_error: true
           verbose: true
 
+      - name: Record checked-source validation provenance
+        id: provenance
+        if: ${{ github.event_name != 'pull_request' }}
+        run: python3 .github/scripts/release_control.py provenance
+
+  workflow-fixtures:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.provenance.outputs.source_sha }}
+      run_id: ${{ steps.provenance.outputs.run_id }}
+      run_attempt: ${{ steps.provenance.outputs.run_attempt }}
+      version: ${{ steps.provenance.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate release failure fixtures
+        run: python3 -m unittest discover -s .github/scripts/tests -v
+
+      - name: Record checked-source validation provenance
+        id: provenance
+        if: ${{ github.event_name != 'pull_request' }}
+        run: python3 .github/scripts/release_control.py provenance
+
+  release-matrix:
+    if: >-
+      github.repository == 'MobileNativeFoundation/Store' &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      github.event_name == 'workflow_dispatch')
+    uses: ./.github/workflows/store6.yml
+    permissions:
+      contents: read
+
+  release-full-suite:
+    if: >-
+      github.repository == 'MobileNativeFoundation/Store' &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      github.event_name == 'workflow_dispatch')
+    uses: ./.github/workflows/store6-full-jvm.yml
+    permissions:
+      contents: read
+
   publish:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'MobileNativeFoundation/Store'
+    if: |
+      github.repository == 'MobileNativeFoundation/Store' && (
+        (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: macos-latest
-    needs: build-and-test
+    needs: [build-and-test, release-matrix, release-full-suite, workflow-fixtures]
+    permissions:
+      contents: write
+    concurrency:
+      group: maven-publication-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -79,19 +173,46 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Retrieve Version
-        run: |
-          echo "VERSION_NAME=$(grep -E '^store[[:space:]]*=' gradle/libs.versions.toml | head -1 | cut -d'"' -f2)" >> $GITHUB_ENV
+      - name: Validate the release evidence and notes
+        env:
+          VALIDATION_NEEDS: ${{ toJSON(needs) }}
+        run: python3 .github/scripts/release_control.py gate
 
-      - name: Publish to Maven Central (Central Portal)
+      - name: Reserve the immutable release record
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/release_control.py reserve
+
+      - name: Publish to Maven Central and record each completed module
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: python3 .github/scripts/release_control.py publish
+
+      - name: Preserve the publication receipt before updating GitHub
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: publication-receipt-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            publication-receipt.json
+            release-evidence.json
+            release-notes.md
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Complete the GitHub Release record
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/release_control.py record
+
+      - name: Preserve repair instructions in the run record
+        if: ${{ failure() }}
         run: |
-          if [[ "${VERSION_NAME}" == *-SNAPSHOT ]]; then
-            ./gradlew publishToMavenCentral
-          else
-            ./gradlew publishAndReleaseToMavenCentral
-          fi
+          cat >> "${GITHUB_STEP_SUMMARY}" <<'EOF'
+          ### Publication requires inspection
+
+          Inspect this run's publication receipt before taking another publication action. A completed Maven publication must be repaired using **Store6 release record repair**, with this run ID and attempt. That workflow only updates GitHub. An incomplete receipt requires reconciling the attempted module with Central; it cannot be repaired as a completed release. The reserved draft release prevents automatic publication of the immutable version again.
+          EOF

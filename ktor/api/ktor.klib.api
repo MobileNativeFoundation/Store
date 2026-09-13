@@ -1,0 +1,84 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxX64, macosArm64, mingwX64, tvosArm64, wasmJs, watchosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <Store6:ktor>
+final enum class org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy : kotlin/Enum<org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy> { // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy|null[0]
+    enum entry Delete // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.Delete|null[0]
+    enum entry Error // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.Error|null[0]
+
+    final val entries // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy> // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy> // org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy.values|values#static(){}[0]
+}
+
+abstract fun interface org.mobilenativefoundation.store6.ktor/KtorErrorMapper { // org.mobilenativefoundation.store6.ktor/KtorErrorMapper|null[0]
+    abstract fun map(org.mobilenativefoundation.store6.ktor/KtorExchange): org.mobilenativefoundation.store6.ktor/KtorOutcome // org.mobilenativefoundation.store6.ktor/KtorErrorMapper.map|map(org.mobilenativefoundation.store6.ktor.KtorExchange){}[0]
+
+    final object Companion { // org.mobilenativefoundation.store6.ktor/KtorErrorMapper.Companion|null[0]
+        final val Default // org.mobilenativefoundation.store6.ktor/KtorErrorMapper.Companion.Default|{}Default[0]
+            final fun <get-Default>(): org.mobilenativefoundation.store6.ktor/KtorErrorMapper // org.mobilenativefoundation.store6.ktor/KtorErrorMapper.Companion.Default.<get-Default>|<get-Default>(){}[0]
+    }
+}
+
+sealed interface org.mobilenativefoundation.store6.ktor/KtorOutcome { // org.mobilenativefoundation.store6.ktor/KtorOutcome|null[0]
+    final class Fail : org.mobilenativefoundation.store6.ktor/KtorOutcome { // org.mobilenativefoundation.store6.ktor/KtorOutcome.Fail|null[0]
+        constructor <init>(org.mobilenativefoundation.store6.ktor/KtorFetchException) // org.mobilenativefoundation.store6.ktor/KtorOutcome.Fail.<init>|<init>(org.mobilenativefoundation.store6.ktor.KtorFetchException){}[0]
+
+        final val exception // org.mobilenativefoundation.store6.ktor/KtorOutcome.Fail.exception|{}exception[0]
+            final fun <get-exception>(): org.mobilenativefoundation.store6.ktor/KtorFetchException // org.mobilenativefoundation.store6.ktor/KtorOutcome.Fail.exception.<get-exception>|<get-exception>(){}[0]
+    }
+
+    final class NotModified : org.mobilenativefoundation.store6.ktor/KtorOutcome { // org.mobilenativefoundation.store6.ktor/KtorOutcome.NotModified|null[0]
+        constructor <init>(kotlin/String?) // org.mobilenativefoundation.store6.ktor/KtorOutcome.NotModified.<init>|<init>(kotlin.String?){}[0]
+
+        final val validatorToken // org.mobilenativefoundation.store6.ktor/KtorOutcome.NotModified.validatorToken|{}validatorToken[0]
+            final fun <get-validatorToken>(): kotlin/String? // org.mobilenativefoundation.store6.ktor/KtorOutcome.NotModified.validatorToken.<get-validatorToken>|<get-validatorToken>(){}[0]
+    }
+
+    final object Defer : org.mobilenativefoundation.store6.ktor/KtorOutcome { // org.mobilenativefoundation.store6.ktor/KtorOutcome.Defer|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // org.mobilenativefoundation.store6.ktor/KtorOutcome.Defer.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // org.mobilenativefoundation.store6.ktor/KtorOutcome.Defer.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // org.mobilenativefoundation.store6.ktor/KtorOutcome.Defer.toString|toString(){}[0]
+    }
+
+    final object Delete : org.mobilenativefoundation.store6.ktor/KtorOutcome { // org.mobilenativefoundation.store6.ktor/KtorOutcome.Delete|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // org.mobilenativefoundation.store6.ktor/KtorOutcome.Delete.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // org.mobilenativefoundation.store6.ktor/KtorOutcome.Delete.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // org.mobilenativefoundation.store6.ktor/KtorOutcome.Delete.toString|toString(){}[0]
+    }
+}
+
+final class org.mobilenativefoundation.store6.ktor/KtorExchange { // org.mobilenativefoundation.store6.ktor/KtorExchange|null[0]
+    constructor <init>(io.ktor.http/HttpStatusCode, io.ktor.http/HttpMethod, kotlin/String, kotlin/Boolean, io.ktor.client.statement/HttpResponse) // org.mobilenativefoundation.store6.ktor/KtorExchange.<init>|<init>(io.ktor.http.HttpStatusCode;io.ktor.http.HttpMethod;kotlin.String;kotlin.Boolean;io.ktor.client.statement.HttpResponse){}[0]
+
+    final val conditional // org.mobilenativefoundation.store6.ktor/KtorExchange.conditional|{}conditional[0]
+        final fun <get-conditional>(): kotlin/Boolean // org.mobilenativefoundation.store6.ktor/KtorExchange.conditional.<get-conditional>|<get-conditional>(){}[0]
+    final val method // org.mobilenativefoundation.store6.ktor/KtorExchange.method|{}method[0]
+        final fun <get-method>(): io.ktor.http/HttpMethod // org.mobilenativefoundation.store6.ktor/KtorExchange.method.<get-method>|<get-method>(){}[0]
+    final val response // org.mobilenativefoundation.store6.ktor/KtorExchange.response|{}response[0]
+        final fun <get-response>(): io.ktor.client.statement/HttpResponse // org.mobilenativefoundation.store6.ktor/KtorExchange.response.<get-response>|<get-response>(){}[0]
+    final val status // org.mobilenativefoundation.store6.ktor/KtorExchange.status|{}status[0]
+        final fun <get-status>(): io.ktor.http/HttpStatusCode // org.mobilenativefoundation.store6.ktor/KtorExchange.status.<get-status>|<get-status>(){}[0]
+    final val url // org.mobilenativefoundation.store6.ktor/KtorExchange.url|{}url[0]
+        final fun <get-url>(): kotlin/String // org.mobilenativefoundation.store6.ktor/KtorExchange.url.<get-url>|<get-url>(){}[0]
+}
+
+final class org.mobilenativefoundation.store6.ktor/KtorFetchException : kotlin/Exception { // org.mobilenativefoundation.store6.ktor/KtorFetchException|null[0]
+    constructor <init>(io.ktor.http/HttpStatusCode, io.ktor.http/HttpMethod, kotlin/String, kotlin/String, kotlin/Throwable? = ...) // org.mobilenativefoundation.store6.ktor/KtorFetchException.<init>|<init>(io.ktor.http.HttpStatusCode;io.ktor.http.HttpMethod;kotlin.String;kotlin.String;kotlin.Throwable?){}[0]
+
+    final val method // org.mobilenativefoundation.store6.ktor/KtorFetchException.method|{}method[0]
+        final fun <get-method>(): io.ktor.http/HttpMethod // org.mobilenativefoundation.store6.ktor/KtorFetchException.method.<get-method>|<get-method>(){}[0]
+    final val status // org.mobilenativefoundation.store6.ktor/KtorFetchException.status|{}status[0]
+        final fun <get-status>(): io.ktor.http/HttpStatusCode // org.mobilenativefoundation.store6.ktor/KtorFetchException.status.<get-status>|<get-status>(){}[0]
+    final val url // org.mobilenativefoundation.store6.ktor/KtorFetchException.url|{}url[0]
+        final fun <get-url>(): kotlin/String // org.mobilenativefoundation.store6.ktor/KtorFetchException.url.<get-url>|<get-url>(){}[0]
+}
+
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> (org.mobilenativefoundation.store6.core/StoreBuilder<#A, #B>).org.mobilenativefoundation.store6.ktor/ktorFetcher(io.ktor.client/HttpClient, org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy = ..., kotlin/Boolean = ..., org.mobilenativefoundation.store6.ktor/KtorErrorMapper = ..., kotlin/Boolean = ..., kotlin.coroutines/SuspendFunction1<io.ktor.client.statement/HttpResponse, #B>, kotlin/Function2<io.ktor.client.request/HttpRequestBuilder, #A, kotlin/Unit>) // org.mobilenativefoundation.store6.ktor/ktorFetcher|ktorFetcher@org.mobilenativefoundation.store6.core.StoreBuilder<0:0,0:1>(io.ktor.client.HttpClient;org.mobilenativefoundation.store6.ktor.KtorNotFoundPolicy;kotlin.Boolean;org.mobilenativefoundation.store6.ktor.KtorErrorMapper;kotlin.Boolean;kotlin.coroutines.SuspendFunction1<io.ktor.client.statement.HttpResponse,0:1>;kotlin.Function2<io.ktor.client.request.HttpRequestBuilder,0:0,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]
+final fun <#A: org.mobilenativefoundation.store6.core/StoreKey, #B: kotlin/Any> org.mobilenativefoundation.store6.ktor/ktorFetcher(io.ktor.client/HttpClient, org.mobilenativefoundation.store6.ktor/KtorNotFoundPolicy = ..., kotlin/Boolean = ..., org.mobilenativefoundation.store6.ktor/KtorErrorMapper = ..., kotlin/Boolean = ..., kotlin.coroutines/SuspendFunction1<io.ktor.client.statement/HttpResponse, #B>, kotlin/Function2<io.ktor.client.request/HttpRequestBuilder, #A, kotlin/Unit>): org.mobilenativefoundation.store6.core.seam/Fetcher<#A, #B> // org.mobilenativefoundation.store6.ktor/ktorFetcher|ktorFetcher(io.ktor.client.HttpClient;org.mobilenativefoundation.store6.ktor.KtorNotFoundPolicy;kotlin.Boolean;org.mobilenativefoundation.store6.ktor.KtorErrorMapper;kotlin.Boolean;kotlin.coroutines.SuspendFunction1<io.ktor.client.statement.HttpResponse,0:1>;kotlin.Function2<io.ktor.client.request.HttpRequestBuilder,0:0,kotlin.Unit>){0§<org.mobilenativefoundation.store6.core.StoreKey>;1§<kotlin.Any>}[0]

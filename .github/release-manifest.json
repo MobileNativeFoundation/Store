@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "repository": "MobileNativeFoundation/Store",
+  "version_property": "VERSION_NAME",
+  "group_property": "GROUP",
+  "artifacts": ["core", "testing", "sqldelight", "room", "compose", "graphql", "realtime", "mutations", "mutations-testing", "mutations-sqldelight", "paging-androidx", "opentelemetry", "ktor", "file", "mutations-conflicts", "bom"],
+  "release_jobs": ["build-and-test", "release-matrix", "release-full-suite", "workflow-fixtures"],
+  "matrix_jobs": ["linux-build-test", "apple-tests", "swift-dumps", "swift-facade", "klib-publication-check", "native-stress"],
+  "full_suite_jobs": ["full-mutations-jvm", "lincheck"],
+  "non_release_jobs": {"docs-sync-guard": "Pull-request documentation acknowledgment; no pull request exists for a release tag or snapshot dispatch."},
+  "publication_classifications": ["validated"],
+  "full_suite_classifications": ["passed", "test-failure", "infrastructure-or-incomplete", "unexecuted"]
+}

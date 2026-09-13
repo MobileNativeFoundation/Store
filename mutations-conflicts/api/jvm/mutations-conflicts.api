@@ -1,0 +1,36 @@
+public final class org/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias : java/lang/Enum {
+	public static final field MINE Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;
+	public static final field THEIRS Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;
+	public static fun values ()[Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;
+}
+
+public final class org/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBuilderExtensionsKt {
+	public static final fun clientWins (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;)V
+	public static final fun lastWriteWins (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun lastWriteWins$default (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun mergeFields (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun mergeFields$default (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static final fun serverWins (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;)V
+	public static final fun threeWayMerge (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function3;)V
+	public static synthetic fun threeWayMerge$default (Lorg/mobilenativefoundation/store6/mutations/MutationConflictBuilder;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/conflicts/MutationFieldMergeBuilder {
+	public final fun field (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+	public final fun field (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function3;)V
+}
+
+public final class org/mobilenativefoundation/store6/mutations/conflicts/MutationMerges {
+	public static final field INSTANCE Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationMerges;
+	public final fun clientWins ()Lkotlin/jvm/functions/Function3;
+	public final fun fields (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function3;
+	public static synthetic fun fields$default (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationMerges;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function3;
+	public final fun lastWriteWins (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function3;
+	public static synthetic fun lastWriteWins$default (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationMerges;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function3;
+	public final fun serverWins ()Lkotlin/jvm/functions/Function3;
+	public final fun threeWay (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function3;)Lkotlin/jvm/functions/Function3;
+	public static synthetic fun threeWay$default (Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationMerges;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lorg/mobilenativefoundation/store6/mutations/conflicts/MutationConflictBias;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/jvm/functions/Function3;
+}
+

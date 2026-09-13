@@ -1,0 +1,11 @@
+public final class org/mobilenativefoundation/store6/opentelemetry/OpenTelemetryStoreTelemetry : org/mobilenativefoundation/store6/core/seam/StoreTelemetry {
+	public fun <init> (Lio/opentelemetry/api/OpenTelemetry;ZZILio/opentelemetry/api/common/Attributes;)V
+	public synthetic fun <init> (Lio/opentelemetry/api/OpenTelemetry;ZZILio/opentelemetry/api/common/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun onCleared (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public fun onFetchFailed-SxA4cEA (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/StoreError;J)V
+	public fun onFetchStarted (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public fun onFetchSucceeded-HG0u8IE (Lorg/mobilenativefoundation/store6/core/StoreKey;J)V
+	public fun onInvalidated (Lorg/mobilenativefoundation/store6/core/StoreKey;)V
+	public fun onServe (Lorg/mobilenativefoundation/store6/core/StoreKey;Lorg/mobilenativefoundation/store6/core/Origin;)V
+}
+
