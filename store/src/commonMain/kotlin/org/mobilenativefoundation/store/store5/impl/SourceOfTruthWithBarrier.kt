@@ -18,21 +18,19 @@ package org.mobilenativefoundation.store.store5.impl
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mobilenativefoundation.store.store5.Converter
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.StoreReadResponse
 import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
-import org.mobilenativefoundation.store.store5.impl.operators.mapIndexed
 
 /**
  * Wraps a [SourceOfTruth] and blocks reads while a write is in progress.
@@ -71,80 +69,146 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
             val readerVersion: Long = versionCounter.incrementAndGet()
             try {
                 lock.await()
-                emitAll(
-                    barrier
-                        .flatMapLatest { barrierMessage ->
-                            val messageArrivedAfterMe = readerVersion < barrierMessage.version
-                            val writeError =
-                                if (messageArrivedAfterMe && barrierMessage is BarrierMsg.Open) {
-                                    barrierMessage.writeError
-                                } else {
-                                    null
-                                }
-                            val readFlow: Flow<StoreReadResponse<Output?>> =
-                                when (barrierMessage) {
-                                    is BarrierMsg.Open ->
-                                        delegate.reader(key).mapIndexed { index, local: Output? ->
-                                            if (index == 0 && messageArrivedAfterMe) {
-                                                val firstMsgOrigin =
-                                                    if (writeError == null) {
-                                                        // restarted barrier without an error means write succeeded
-                                                        StoreReadResponseOrigin.Fetcher()
-                                                    } else {
-                                                        // when a write fails, we still get a new reader because
-                                                        // we've disabled the previous reader before starting the
-                                                        // write operation. But since write has failed, we should
-                                                        // use the SourceOfTruth as the origin
-                                                        StoreReadResponseOrigin.SourceOfTruth
-                                                    }
-                                                StoreReadResponse.Data(
-                                                    origin = firstMsgOrigin,
-                                                    value = local,
-                                                )
-                                            } else {
-                                                StoreReadResponse.Data(
-                                                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                    value = local,
-                                                ) as StoreReadResponse<Output?>
-                                            }
-                                        }.catch { throwable ->
-                                            this.emit(
-                                                StoreReadResponse.Error.Exception(
-                                                    error =
-                                                        SourceOfTruth.ReadException(
-                                                            key = key,
-                                                            cause = throwable.cause ?: throwable,
-                                                        ),
-                                                    origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                ),
-                                            )
-                                        }
+                // Keep one collection of a live reader across writes. flatMapLatest used to cancel
+                // it on every barrier transition, which restarted Room and channelFlow readers
+                // (#572). A one-shot reader completes after its value, so it is collected again
+                // only after that. The writer can emit the new row before this coroutine observes
+                // the barrier reopen; that value is the post-write read.
+                coroutineScope {
+                    val signals = Channel<ReaderSignal<Output>>(Channel.UNLIMITED)
+                    val barrierJob =
+                        launch {
+                            barrier.collect { message ->
+                                signals.send(ReaderSignal.Barrier(message))
+                            }
+                        }
+                    var readerJob: Job? = null
 
-                                    is BarrierMsg.Blocked -> {
-                                        flowOf()
+                    fun startReader() {
+                        readerJob =
+                            launch {
+                                try {
+                                    delegate.reader(key).collect { value ->
+                                        signals.send(ReaderSignal.Value(value, barrier.value))
+                                    }
+                                    signals.send(ReaderSignal.Completed)
+                                } catch (cancellation: CancellationException) {
+                                    throw cancellation
+                                } catch (throwable: Throwable) {
+                                    signals.send(ReaderSignal.Failed(throwable.cause ?: throwable))
+                                }
+                            }
+                    }
+
+                    var pendingValue: Output? = null
+                    var hasPending = false
+                    var announcedVersion = Long.MIN_VALUE
+                    var emittedVersion = Long.MIN_VALUE
+                    try {
+                        for (signal in signals) {
+                            when (signal) {
+                                is ReaderSignal.Barrier -> {
+                                    val message = signal.message
+                                    if (message is BarrierMsg.Open) {
+                                        val afterMe = readerVersion < message.version
+                                        if (afterMe && announcedVersion < message.version) {
+                                            message.writeError?.let { writeError ->
+                                                emit(
+                                                    StoreReadResponse.Error.Exception(
+                                                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                                                        error = writeError,
+                                                    ),
+                                                )
+                                            }
+                                            announcedVersion = message.version
+                                            if (hasPending && emittedVersion < message.version) {
+                                                emit(
+                                                    StoreReadResponse.Data(
+                                                        origin = postWriteOrigin(message),
+                                                        value = pendingValue,
+                                                    ),
+                                                )
+                                                emittedVersion = message.version
+                                                hasPending = false
+                                                pendingValue = null
+                                            }
+                                        }
+                                        if (readerJob?.isActive != true) {
+                                            startReader()
+                                        }
                                     }
                                 }
-                            readFlow
-                                .onStart {
-                                    // if we have a pending error, make sure to dispatch it first.
-                                    if (writeError != null) {
+
+                                is ReaderSignal.Value -> {
+                                    val snapshot = signal.snapshot
+                                    if (snapshot !is BarrierMsg.Open) {
+                                        pendingValue = signal.value
+                                        hasPending = true
+                                    } else if (
+                                        readerVersion < snapshot.version &&
+                                        emittedVersion < snapshot.version &&
+                                        announcedVersion < snapshot.version
+                                    ) {
+                                        pendingValue = signal.value
+                                        hasPending = true
+                                    } else if (
+                                        readerVersion < snapshot.version &&
+                                        emittedVersion < snapshot.version
+                                    ) {
                                         emit(
-                                            StoreReadResponse.Error.Exception(
+                                            StoreReadResponse.Data(
+                                                origin = postWriteOrigin(snapshot),
+                                                value = signal.value,
+                                            ),
+                                        )
+                                        emittedVersion = snapshot.version
+                                        hasPending = false
+                                        pendingValue = null
+                                    } else {
+                                        emit(
+                                            StoreReadResponse.Data(
                                                 origin = StoreReadResponseOrigin.SourceOfTruth,
-                                                error = writeError,
+                                                value = signal.value,
                                             ),
                                         )
                                     }
                                 }
-                        },
-                )
+
+                                is ReaderSignal.Failed -> {
+                                    emit(
+                                        StoreReadResponse.Error.Exception(
+                                            origin = StoreReadResponseOrigin.SourceOfTruth,
+                                            error =
+                                                SourceOfTruth.ReadException(
+                                                    key = key,
+                                                    cause = signal.cause,
+                                                ),
+                                        ),
+                                    )
+                                }
+
+                                ReaderSignal.Completed -> Unit
+                            }
+                        }
+                    } finally {
+                        barrierJob.cancel()
+                        readerJob?.cancel()
+                    }
+                }
             } finally {
                 // we are using a finally here instead of onCompletion as there might be a
-                // possibility where flow gets cancelled right before `emitAll`.
+                // possibility where flow gets cancelled right before collection starts.
                 barriers.release(key, barrier)
             }
         }
     }
+
+    private fun postWriteOrigin(message: BarrierMsg.Open): StoreReadResponseOrigin =
+        if (message.writeError == null) {
+            StoreReadResponseOrigin.Fetcher()
+        } else {
+            StoreReadResponseOrigin.SourceOfTruth
+        }
 
     /**
      * Writes a value to the underlying [SourceOfTruth] and returns any error that occurred.
@@ -196,6 +260,23 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
 
     suspend fun deleteAll() {
         delegate.deleteAll()
+    }
+
+    private sealed interface ReaderSignal<out Output> {
+        class Barrier(
+            val message: BarrierMsg,
+        ) : ReaderSignal<Nothing>
+
+        class Value<Output>(
+            val value: Output?,
+            val snapshot: BarrierMsg,
+        ) : ReaderSignal<Output>
+
+        class Failed(
+            val cause: Throwable,
+        ) : ReaderSignal<Nothing>
+
+        data object Completed : ReaderSignal<Nothing>
     }
 
     private sealed class BarrierMsg(
