@@ -21,6 +21,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -43,6 +46,7 @@ import org.mobilenativefoundation.store.store5.util.asSourceOfTruth
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 
 @FlowPreview
@@ -1337,5 +1341,67 @@ class FlowStoreTests {
                 assertEquals("network value", dataResponse.value)
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+
+    @Test
+    fun givenLongLivedSourceOfTruthWhenCachedRefreshThenReaderIsCollectedOnce() =
+        testScope.runTest {
+            var subscriptions = 0
+            var readerCancelled = false
+            val storage = mutableMapOf<Int, String>()
+            val updates =
+                MutableSharedFlow<Unit>(
+                    extraBufferCapacity = 16,
+                    onBufferOverflow = BufferOverflow.DROP_OLDEST,
+                )
+            val pipeline =
+                StoreBuilder.from(
+                    fetcher = Fetcher.of { _: Int -> "from-network" },
+                    sourceOfTruth =
+                        SourceOfTruth.of<Int, String, String>(
+                            reader = { key ->
+                                channelFlow {
+                                    subscriptions++
+                                    try {
+                                        send(storage[key])
+                                        updates.collect { send(storage[key]) }
+                                    } finally {
+                                        readerCancelled = true
+                                    }
+                                }
+                            },
+                            writer = { key, value ->
+                                storage[key] = value
+                                updates.tryEmit(Unit)
+                            },
+                        ),
+                ).disableCache()
+                    .buildWithTestScope()
+
+            val collected = mutableListOf<StoreReadResponse<String>>()
+            val collection =
+                launch {
+                    pipeline.stream(StoreReadRequest.cached(3, refresh = true)).collect {
+                        collected.add(it)
+                    }
+                }
+            advanceUntilIdle()
+
+            assertEquals(1, subscriptions)
+            assertFalse(readerCancelled)
+            assertEquals(
+                listOf(
+                    Loading(origin = StoreReadResponseOrigin.Fetcher()),
+                    Data(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "from-network",
+                    ),
+                ),
+                collected,
+            )
+
+            collection.cancelAndJoin()
+            advanceUntilIdle()
+            assertEquals(true, readerCancelled)
         }
 }

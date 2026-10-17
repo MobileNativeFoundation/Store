@@ -23,6 +23,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.currentCoroutineContext
@@ -39,6 +42,8 @@ import org.mobilenativefoundation.store.store5.util.InMemoryPersister
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -333,5 +338,145 @@ class SourceOfTruthWithBarrierTests {
             )
             collection.cancelAndJoin()
         }
+    }
+
+    @Test
+    fun longLivedReaderIsCollectedOnceAcrossWritesAndKeepsFetcherOrigin() =
+        testScope.runTest {
+            val fixture = LongLivedReader()
+            val collected = mutableListOf<StoreReadResponse<String?>>()
+            val reader =
+                launch {
+                    fixture.source.reader(1, CompletableDeferred(Unit)).collect {
+                        collected.add(it)
+                    }
+                }
+            advanceUntilIdle()
+            assertEquals(1, fixture.subscriptions)
+            assertFalse(fixture.readerCancelled)
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                ),
+                collected,
+            )
+
+            fixture.source.write(1, "a")
+            advanceUntilIdle()
+            fixture.source.write(1, "b")
+            advanceUntilIdle()
+
+            assertEquals(1, fixture.subscriptions)
+            assertFalse(fixture.readerCancelled)
+            assertTrue(reader.isActive)
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "a",
+                    ),
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.Fetcher(),
+                        value = "b",
+                    ),
+                ),
+                collected,
+            )
+
+            reader.cancelAndJoin()
+            advanceUntilIdle()
+            assertTrue(fixture.readerCancelled)
+            assertEquals(0, fixture.source.barrierCount())
+        }
+
+    @Test
+    fun longLivedReaderIsNotRestartedWhenWriteFails() =
+        testScope.runTest {
+            val exception = RuntimeException("write fails")
+            val fixture = LongLivedReader(writeFailure = exception)
+            val collected = mutableListOf<StoreReadResponse<String?>>()
+            val reader =
+                launch {
+                    fixture.source.reader(1, CompletableDeferred(Unit)).collect {
+                        collected.add(it)
+                    }
+                }
+            advanceUntilIdle()
+
+            fixture.source.write(1, "nope")
+            advanceUntilIdle()
+
+            assertEquals(1, fixture.subscriptions)
+            assertFalse(fixture.readerCancelled)
+            assertTrue(reader.isActive)
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                    StoreReadResponse.Error.Exception(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        error =
+                            WriteException(
+                                key = 1,
+                                value = "nope",
+                                cause = exception,
+                            ),
+                    ),
+                ),
+                collected,
+            )
+            assertIs<WriteException>(
+                (collected.last() as StoreReadResponse.Error.Exception).error,
+            )
+
+            reader.cancelAndJoin()
+            advanceUntilIdle()
+            assertEquals(0, fixture.source.barrierCount())
+        }
+
+    /**
+     * A reader that emits the current row and then stays open, the way Room or a
+     * [channelFlow] does. Writes notify the same collection instead of completing it.
+     */
+    private class LongLivedReader(
+        writeFailure: Throwable? = null,
+    ) {
+        var subscriptions: Int = 0
+        var readerCancelled: Boolean = false
+        private val storage = mutableMapOf<Int, String>()
+        private val updates =
+            MutableSharedFlow<Unit>(
+                extraBufferCapacity = 16,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+        private val delegate =
+            PersistentSourceOfTruth<Int, String, String>(
+                realReader = { key ->
+                    channelFlow {
+                        subscriptions++
+                        try {
+                            send(storage[key])
+                            updates.collect { send(storage[key]) }
+                        } finally {
+                            readerCancelled = true
+                        }
+                    }
+                },
+                realWriter = { key, value ->
+                    writeFailure?.let { throw it }
+                    storage[key] = value
+                    updates.tryEmit(Unit)
+                },
+            )
+        val source = SourceOfTruthWithBarrier<Int, String, String, String>(delegate)
     }
 }
