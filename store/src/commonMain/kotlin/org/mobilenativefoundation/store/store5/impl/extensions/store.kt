@@ -1,5 +1,6 @@
 package org.mobilenativefoundation.store.store5.impl.extensions
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
@@ -62,6 +63,58 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
+
+/**
+ * Returns data for [key] if cached, otherwise fresh data, wrapped in [Result].
+ * Catches non-cancellation errors into [Result.failure] while rethrowing [CancellationException].
+ *
+ * @param key The key to get cached data for.
+ * @return [Result] containing the data or the failure.
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.getOrResult(key: Key): Result<Output> =
+    try {
+        Result.success(get(key))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }
+
+/**
+ * Returns data for [key] if cached, otherwise fresh data.
+ * Returns `null` if an error occurs while fetching or reading data.
+ *
+ * @param key The key to get cached data for.
+ * @return The data associated with the key, or null if an error occurred.
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.getOrNull(key: Key): Output? =
+    getOrResult(key).getOrNull()
+
+/**
+ * Returns fresh data for [key] while updating caches, wrapped in [Result].
+ * Catches non-cancellation errors into [Result.failure] while rethrowing [CancellationException].
+ *
+ * @param key The key to fetch fresh data for.
+ * @return [Result] containing the fresh data or the failure.
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.freshOrResult(key: Key): Result<Output> =
+    try {
+        Result.success(fresh(key))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }
+
+/**
+ * Returns fresh data for [key] while updating caches.
+ * Returns `null` if an error occurs while fetching data.
+ *
+ * @param key The key to fetch fresh data for.
+ * @return The fresh data associated with the key, or null if an error occurred.
+ */
+suspend fun <Key : Any, Output : Any> Store<Key, Output>.freshOrNull(key: Key): Output? =
+    freshOrResult(key).getOrNull()
 
 /**
  * Extension function to convert a [Store] into a [MutableStore].
@@ -154,3 +207,59 @@ suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
+
+/**
+ * Returns data for the given [key] if cached, otherwise fresh data, wrapped in [Result].
+ * Catches non-cancellation errors into [Result.failure] while rethrowing [CancellationException].
+ *
+ * @param key The key to get cached data for.
+ * @return [Result] containing the data or the failure.
+ */
+@OptIn(ExperimentalStoreApi::class)
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.getOrResult(key: Key): Result<Output> =
+    try {
+        Result.success(get<Key, Output, Response>(key))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }
+
+/**
+ * Returns data for the given [key] if cached, otherwise fresh data.
+ * Returns `null` if an error occurs while fetching or reading data.
+ *
+ * @param key The key to get cached data for.
+ * @return The data associated with the key, or null if an error occurred.
+ */
+@OptIn(ExperimentalStoreApi::class)
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.getOrNull(key: Key): Output? =
+    getOrResult<Key, Output, Response>(key).getOrNull()
+
+/**
+ * Returns fresh data for the given [key] while updating caches, wrapped in [Result].
+ * Catches non-cancellation errors into [Result.failure] while rethrowing [CancellationException].
+ *
+ * @param key The key to fetch fresh data for.
+ * @return [Result] containing the fresh data or the failure.
+ */
+@OptIn(ExperimentalStoreApi::class)
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.freshOrResult(key: Key): Result<Output> =
+    try {
+        Result.success(fresh<Key, Output, Response>(key))
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }
+
+/**
+ * Returns fresh data for the given [key] while updating caches.
+ * Returns `null` if an error occurs while fetching data.
+ *
+ * @param key The key to fetch fresh data for.
+ * @return The fresh data associated with the key, or null if an error occurred.
+ */
+@OptIn(ExperimentalStoreApi::class)
+suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.freshOrNull(key: Key): Output? =
+    freshOrResult<Key, Output, Response>(key).getOrNull()
