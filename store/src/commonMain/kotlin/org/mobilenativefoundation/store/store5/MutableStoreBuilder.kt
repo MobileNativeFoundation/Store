@@ -32,6 +32,8 @@ interface MutableStoreBuilder<Key : Any, Network : Any, Local : Any, Output : An
 
     fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Local, Output>
 
+    fun pushFailurePolicy(policy: PushFailurePolicy): MutableStoreBuilder<Key, Network, Local, Output>
+
     companion object {
         /**
          * Creates a new [MutableStoreBuilder] from a [Fetcher] and a [SourceOfTruth].

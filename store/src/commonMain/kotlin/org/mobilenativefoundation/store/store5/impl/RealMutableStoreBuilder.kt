@@ -10,6 +10,7 @@ import org.mobilenativefoundation.store.store5.Fetcher
 import org.mobilenativefoundation.store.store5.MemoryPolicy
 import org.mobilenativefoundation.store.store5.MutableStore
 import org.mobilenativefoundation.store.store5.MutableStoreBuilder
+import org.mobilenativefoundation.store.store5.PushFailurePolicy
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreDefaults
@@ -45,6 +46,7 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Ou
     private var scope: CoroutineScope? = null
     private var cachePolicy: MemoryPolicy<Key, Output>? = StoreDefaults.memoryPolicy
     private var validator: Validator<Output>? = null
+    private var pushFailurePolicy: PushFailurePolicy = PushFailurePolicy.IGNORE_AND_FETCH
 
     override fun scope(scope: CoroutineScope): MutableStoreBuilder<Key, Network, Local, Output> {
         this.scope = scope
@@ -63,6 +65,11 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Ou
 
     override fun validator(validator: Validator<Output>): MutableStoreBuilder<Key, Network, Local, Output> {
         this.validator = validator
+        return this
+    }
+
+    override fun pushFailurePolicy(policy: PushFailurePolicy): MutableStoreBuilder<Key, Network, Local, Output> {
+        this.pushFailurePolicy = policy
         return this
     }
 
@@ -105,5 +112,6 @@ internal class RealMutableStoreBuilder<Key : Any, Network : Any, Local : Any, Ou
         build().asMutableStore<Key, Network, Output, Local, UpdaterResult>(
             updater = updater,
             bookkeeper = bookkeeper,
+            pushFailurePolicy = pushFailurePolicy,
         )
 }

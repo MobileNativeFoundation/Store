@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.PushFailurePolicy
 import org.mobilenativefoundation.store.store5.Store
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -88,6 +89,7 @@ suspend fun <Key : Any, Output : Any> Store<Key, Output>.fresh(key: Key) =
 fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<Key, Output>.asMutableStore(
     updater: Updater<Key, Output, Response>,
     bookkeeper: Bookkeeper<Key>?,
+    pushFailurePolicy: PushFailurePolicy = PushFailurePolicy.IGNORE_AND_FETCH,
 ): MutableStore<Key, Output> {
     val delegate =
         this as? RealStore<Key, Network, Output, Local>
@@ -97,6 +99,7 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<
         delegate = delegate,
         updater = updater,
         bookkeeper = bookkeeper,
+        pushFailurePolicy = pushFailurePolicy,
     )
 }
 
