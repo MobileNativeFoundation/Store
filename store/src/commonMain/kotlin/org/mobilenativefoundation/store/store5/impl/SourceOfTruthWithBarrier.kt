@@ -85,7 +85,7 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
                                 when (barrierMessage) {
                                     is BarrierMsg.Open ->
                                         delegate.reader(key).mapIndexed { index, local: Output? ->
-                                            if (index == 0 && messageArrivedAfterMe) {
+                                            if (index == 0 && messageArrivedAfterMe && !barrierMessage.isDelete) {
                                                 val firstMsgOrigin =
                                                     if (writeError == null) {
                                                         // restarted barrier without an error means write succeeded
@@ -191,11 +191,61 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
     }
 
     suspend fun delete(key: Key) {
-        delegate.delete(key)
+        val barrier = barriers.acquire(key)
+        var deleteException: Throwable? = null
+        try {
+            barrier.value = BarrierMsg.Blocked(versionCounter.incrementAndGet())
+            try {
+                delegate.delete(key)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                deleteException = throwable
+            }
+        } finally {
+            barrier.value =
+                BarrierMsg.Open(
+                    version = versionCounter.incrementAndGet(),
+                    writeError = deleteException,
+                    isDelete = true,
+                )
+            withContext(NonCancellable) {
+                barriers.release(key, barrier)
+            }
+        }
     }
 
     suspend fun deleteAll() {
-        delegate.deleteAll()
+        val keys = barriers.activeKeys()
+        val acquired = keys.map { it to barriers.acquire(it) }
+        var deleteException: Throwable? = null
+        try {
+            acquired.forEach { (_, barrier) ->
+                barrier.value = BarrierMsg.Blocked(versionCounter.incrementAndGet())
+            }
+            try {
+                delegate.deleteAll()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                deleteException = throwable
+            }
+        } finally {
+            val nextVersion = versionCounter.incrementAndGet()
+            acquired.forEach { (_, barrier) ->
+                barrier.value =
+                    BarrierMsg.Open(
+                        version = nextVersion,
+                        writeError = deleteException,
+                        isDelete = true,
+                    )
+            }
+            withContext(NonCancellable) {
+                acquired.forEach { (key, barrier) ->
+                    barriers.release(key, barrier)
+                }
+            }
+        }
     }
 
     private sealed class BarrierMsg(
@@ -203,7 +253,11 @@ internal class SourceOfTruthWithBarrier<Key : Any, Network : Any, Output : Any, 
     ) {
         class Blocked(version: Long) : BarrierMsg(version)
 
-        class Open(version: Long, val writeError: Throwable? = null) : BarrierMsg(version) {
+        class Open(
+            version: Long,
+            val writeError: Throwable? = null,
+            val isDelete: Boolean = false,
+        ) : BarrierMsg(version) {
             companion object {
                 val INITIAL = Open(INITIAL_VERSION)
             }

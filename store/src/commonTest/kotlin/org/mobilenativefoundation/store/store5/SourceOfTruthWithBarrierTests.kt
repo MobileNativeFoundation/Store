@@ -334,4 +334,49 @@ class SourceOfTruthWithBarrierTests {
             collection.cancelAndJoin()
         }
     }
+
+    @Test
+    fun deleteNotifiesActiveReaderFlow() =
+        testScope.runTest {
+            val lock = CompletableDeferred<Unit>()
+            lock.complete(Unit)
+            val reader = source.reader(1, lock)
+            val collected = mutableListOf<StoreReadResponse<String?>>()
+            val collection =
+                launch {
+                    reader.collect {
+                        collected.add(it)
+                    }
+                }
+            source.write(1, "initial")
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = "initial",
+                    ),
+                ),
+                collected,
+            )
+
+            source.delete(1)
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf<StoreReadResponse<String?>>(
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = "initial",
+                    ),
+                    StoreReadResponse.Data(
+                        origin = StoreReadResponseOrigin.SourceOfTruth,
+                        value = null,
+                    ),
+                ),
+                collected,
+            )
+            collection.cancelAndJoin()
+        }
 }
