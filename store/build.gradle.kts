@@ -25,6 +25,15 @@ kotlin {
                 implementation(libs.turbine)
             }
         }
+
+        val androidDeviceTest by getting {
+            dependencies {
+                implementation(libs.junit)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(kotlin("test"))
+                implementation("androidx.test:runner:1.6.2")
+            }
+        }
     }
 }
 

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.mobilenativefoundation.store.core5.ExperimentalStoreApi
 import org.mobilenativefoundation.store.store5.FetcherResult
+import org.mobilenativefoundation.store.store5.PushFailurePolicy
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
@@ -153,6 +154,54 @@ class RealMutableStoreTest {
                 "Expected error logs due to conflict resolution failing",
             )
             assertNotNull(testBookkeeper.getLastFailedSync("key3"))
+        }
+
+    @Test
+    fun stream_givenConflictResolutionFailsAndFailFast_whenReading_thenEmitsErrorAndAborts() =
+        runTest {
+            val failFastStore =
+                RealMutableStore(
+                    delegate = delegateStore,
+                    updater = testUpdater,
+                    bookkeeper = testBookkeeper,
+                    logger = testLogger,
+                    pushFailurePolicy = PushFailurePolicy.FAIL_FAST,
+                )
+            val request = StoreReadRequest.Companion.cached("keyFailFast", refresh = true)
+            val errorMessage = "Conflict resolution failure"
+            delegateStore.write("keyFailFast", Note("localId", "localContent"))
+            testBookkeeper.setLastFailedSync("keyFailFast")
+            testUpdater.errorMessage = errorMessage
+
+            val results = failFastStore.stream<Unit>(request).toList()
+
+            assertEquals(1, results.size)
+            assertIs<StoreReadResponse.Error.Message>(results[0])
+            assertEquals(errorMessage, (results[0] as StoreReadResponse.Error.Message).message)
+        }
+
+    @Test
+    fun stream_givenConflictResolutionFailsAndSkipFetchKeepLocal_whenReading_thenEmitsLocalOnly() =
+        runTest {
+            val skipFetchStore =
+                RealMutableStore(
+                    delegate = delegateStore,
+                    updater = testUpdater,
+                    bookkeeper = testBookkeeper,
+                    logger = testLogger,
+                    pushFailurePolicy = PushFailurePolicy.SKIP_FETCH_KEEP_LOCAL,
+                )
+            val request = StoreReadRequest.Companion.cached("keySkipFetch", refresh = true)
+            val errorMessage = "Conflict resolution failure"
+            delegateStore.write("keySkipFetch", Note("localId", "localContent"))
+            testBookkeeper.setLastFailedSync("keySkipFetch")
+            testUpdater.errorMessage = errorMessage
+
+            val results = skipFetchStore.stream<Unit>(request).take(1).toList()
+
+            assertEquals(1, results.size)
+            assertIs<StoreReadResponse.Data<Note>>(results[0])
+            assertEquals("localContent", (results[0] as StoreReadResponse.Data<Note>).value.content)
         }
 
     @Test

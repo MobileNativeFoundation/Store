@@ -12,8 +12,10 @@ import org.mobilenativefoundation.store.store5.Bookkeeper
 import org.mobilenativefoundation.store.store5.Clear
 import org.mobilenativefoundation.store.store5.Logger
 import org.mobilenativefoundation.store.store5.MutableStore
+import org.mobilenativefoundation.store.store5.PushFailurePolicy
 import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.StoreReadResponse
+import org.mobilenativefoundation.store.store5.StoreReadResponseOrigin
 import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.Updater
@@ -27,6 +29,7 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
     private val updater: Updater<Key, Output, *>,
     private val bookkeeper: Bookkeeper<Key>?,
     private val logger: Logger = DefaultLogger(),
+    private val pushFailurePolicy: PushFailurePolicy = PushFailurePolicy.IGNORE_AND_FETCH,
     private val beforeAcknowledgementCommit: suspend () -> Unit = {},
 ) : MutableStore<Key, Output>, Clear.All {
     private val storeLock = Mutex()
@@ -36,10 +39,45 @@ internal class RealMutableStore<Key : Any, Network : Any, Output : Any, Local : 
         flow {
             checkMutableStoreEntry(this@RealMutableStore, request.key)
             val state = stateFor(request.key)
-            // TODO(#678): Allow configuring whether a failed push should prevent a subsequent fetch.
             when (val result = tryEagerlyResolveConflicts<Response>(request.key, state)) {
-                is EagerConflictResolutionResult.Error.Exception -> logger.error(result.error.toString())
-                is EagerConflictResolutionResult.Error.Message -> logger.error(result.message)
+                is EagerConflictResolutionResult.Error.Exception -> {
+                    logger.error(result.error.toString())
+                    when (pushFailurePolicy) {
+                        PushFailurePolicy.FAIL_FAST -> {
+                            emit(
+                                StoreReadResponse.Error.Exception(
+                                    error = result.error,
+                                    origin = StoreReadResponseOrigin.SourceOfTruth,
+                                ),
+                            )
+                            return@flow
+                        }
+                        PushFailurePolicy.SKIP_FETCH_KEEP_LOCAL -> {
+                            delegate.stream(StoreReadRequest.cached(request.key, refresh = false)).collect { emit(it) }
+                            return@flow
+                        }
+                        PushFailurePolicy.IGNORE_AND_FETCH -> Unit
+                    }
+                }
+                is EagerConflictResolutionResult.Error.Message -> {
+                    logger.error(result.message)
+                    when (pushFailurePolicy) {
+                        PushFailurePolicy.FAIL_FAST -> {
+                            emit(
+                                StoreReadResponse.Error.Message(
+                                    message = result.message,
+                                    origin = StoreReadResponseOrigin.SourceOfTruth,
+                                ),
+                            )
+                            return@flow
+                        }
+                        PushFailurePolicy.SKIP_FETCH_KEEP_LOCAL -> {
+                            delegate.stream(StoreReadRequest.cached(request.key, refresh = false)).collect { emit(it) }
+                            return@flow
+                        }
+                        PushFailurePolicy.IGNORE_AND_FETCH -> Unit
+                    }
+                }
                 is EagerConflictResolutionResult.Success.ConflictsResolved -> logger.debug(result.value.toString())
                 EagerConflictResolutionResult.Success.NoConflicts -> logger.debug("No conflicts.")
             }
