@@ -52,6 +52,11 @@ internal class RefCountedResource<Key, T>(
         }
     }
 
+    suspend fun activeKeys(): List<Key> =
+        lock.withLock {
+            items.keys.toList()
+        }
+
     // used in tests
     suspend fun size() =
         lock.withLock {
