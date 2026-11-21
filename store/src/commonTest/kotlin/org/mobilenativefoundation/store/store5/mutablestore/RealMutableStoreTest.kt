@@ -18,6 +18,8 @@ import org.mobilenativefoundation.store.store5.StoreWriteRequest
 import org.mobilenativefoundation.store.store5.StoreWriteResponse
 import org.mobilenativefoundation.store.store5.impl.RealMutableStore
 import org.mobilenativefoundation.store.store5.impl.RealStore
+import org.mobilenativefoundation.store.store5.impl.extensions.fresh
+import org.mobilenativefoundation.store.store5.impl.extensions.get
 import org.mobilenativefoundation.store.store5.mutablestore.util.TestCache
 import org.mobilenativefoundation.store.store5.mutablestore.util.TestConverter
 import org.mobilenativefoundation.store.store5.mutablestore.util.TestFetcher
@@ -66,7 +68,7 @@ class RealMutableStoreTest {
                 defaultOutputToLocalConverter = { defaultLocalValue },
             )
         testValidator = TestValidator()
-        testSourceOfTruth = TestSourceOfTruth()
+        testSourceOfTruth = TestSourceOfTruth(localToOutput = { Note(it.id, it.content) })
         testCache = TestCache()
 
         testFetcher.whenever("key1") {
@@ -481,5 +483,22 @@ class RealMutableStoreTest {
             // Then
             assertIs<StoreWriteResponse.Success>(response)
             assertEquals("someContent", delegateStore.latestOrNull("newKey")?.content)
+        }
+
+    @Test
+    fun get_givenCachedData_returnsDataDirectlyWithoutExplicitResponseGeneric() =
+        runTest {
+            delegateStore.write("testKey", Note("testId", "testContent"))
+            // Invoking without explicit <Response> type argument
+            val result = mutableStore.get("testKey")
+            assertEquals("testContent", result.content)
+        }
+
+    @Test
+    fun fresh_givenFetcherData_returnsFreshDataDirectlyWithoutExplicitResponseGeneric() =
+        runTest {
+            // Invoking without explicit <Response> type argument
+            val result = mutableStore.fresh("key1")
+            assertEquals("defaultLocalContent", result.content)
         }
 }

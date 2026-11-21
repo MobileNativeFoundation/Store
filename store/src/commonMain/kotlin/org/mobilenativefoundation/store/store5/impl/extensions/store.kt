@@ -108,7 +108,7 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<
  *
  * ```
  * try {
- *   store.get<Key, Common, WriteResponse>(Key.Read.All)
+ *   store.get(key)
  * } catch (e: Exception) {
  *   // handle exception
  * }
@@ -116,12 +116,11 @@ fun <Key : Any, Network : Any, Output : Any, Local : Any, Response : Any> Store<
  *
  * @param Key The key to get cached data for.
  * @param Output The common representation of the data.
- * @param Response The updater result write response type.
  * @return The data associated with the key.
  */
 @OptIn(ExperimentalStoreApi::class)
-suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.get(key: Key) =
-    stream<Response>(StoreReadRequest.cached(key, refresh = false))
+suspend fun <Key : Any, Output : Any> MutableStore<Key, Output>.get(key: Key): Output =
+    stream<Unit>(StoreReadRequest.cached(key, refresh = false))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()
@@ -137,7 +136,7 @@ suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.
  *
  * ```
  * try {
- *   store.fresh<Key, Common, WriteResponse>(Key.Read.All)
+ *   store.fresh(key)
  * } catch (e: Exception) {
  *   // handle exception
  * }
@@ -145,12 +144,11 @@ suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.
  *
  * @param Key The key to fetch fresh data for.
  * @param Output The common representation of the data.
- * @param Response The updater result write response type.
  * @return The fresh data associated with the key.
  */
 @OptIn(ExperimentalStoreApi::class)
-suspend fun <Key : Any, Output : Any, Response : Any> MutableStore<Key, Output>.fresh(key: Key) =
-    stream<Response>(StoreReadRequest.fresh(key))
+suspend fun <Key : Any, Output : Any> MutableStore<Key, Output>.fresh(key: Key): Output =
+    stream<Unit>(StoreReadRequest.fresh(key))
         .filterNot { it is StoreReadResponse.Loading || it is StoreReadResponse.NoNewData }
         .first()
         .requireData()

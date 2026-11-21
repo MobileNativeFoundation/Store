@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.flow
 import org.mobilenativefoundation.store.store5.SourceOfTruth
 
 @Suppress("UNCHECKED_CAST")
-class TestSourceOfTruth<Key : Any, Local : Any, Output : Any> : SourceOfTruth<Key, Local, Output> {
+class TestSourceOfTruth<Key : Any, Local : Any, Output : Any>(
+    private val localToOutput: ((Local) -> Output)? = null,
+) : SourceOfTruth<Key, Local, Output> {
     private val storage = HashMap<Key, Local?>()
     private val flows = HashMap<Key, MutableSharedFlow<Output?>>()
     private var readError: Throwable? = null
@@ -40,7 +42,8 @@ class TestSourceOfTruth<Key : Any, Local : Any, Output : Any> : SourceOfTruth<Ke
         flow {
             readError?.let { throw SourceOfTruth.ReadException(key, it) }
             val sharedFlow = flows.getOrPut(key) { MutableSharedFlow(replay = 1) }
-            emit(storage[key] as Output?)
+            val item = storage[key]?.let { localToOutput?.invoke(it) ?: (it as Output) }
+            emit(item)
             emitAll(sharedFlow)
         }
 
@@ -50,7 +53,8 @@ class TestSourceOfTruth<Key : Any, Local : Any, Output : Any> : SourceOfTruth<Ke
     ) {
         writeError?.let { throw SourceOfTruth.WriteException(key, value, it) }
         storage[key] = value
-        flows[key]?.emit(value as Output?)
+        val item = localToOutput?.invoke(value) ?: (value as Output)
+        flows[key]?.emit(item)
     }
 
     override suspend fun delete(key: Key) {
